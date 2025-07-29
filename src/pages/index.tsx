@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Geist, Geist_Mono } from 'next/font/google';
 import styles from '@/styles/Home.module.css';
 import { GNB } from '@/components/common/gnb';
+import { Layout } from '@/components/layout';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export default function Home() {
   return (
-    <>
+    <Layout>
       <GNB />
-    </>
+    </Layout>
   );
 }
