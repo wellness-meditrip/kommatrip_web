@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Global, ThemeProvider, css } from '@emotion/react';
 import theme from './theme';
-import './normalize.css';
+// import './normalize.css';
 
 const defaultStyles = css`
   @font-face {
