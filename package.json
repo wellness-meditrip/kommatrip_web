@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "svgr:icons": "rm -rf src/icons/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/icons --no-dimensions --typescript --out-dir src/icons",
+    "svgr:images": "rm -rf src/images/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/images --no-dimensions --typescript --out-dir src/images",
+    "svgr": "pnpm svgr:icons && pnpm svgr:images"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,6 +21,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@locator/runtime": "^0.4.4",
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
