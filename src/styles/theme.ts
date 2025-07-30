@@ -14,6 +14,7 @@ const theme = {
   zIndex: {
     overlay: 5,
     appBar: 10,
+    searchBar: 20,
     gnb: 10,
     fab: 10,
     ctaButton: 10,

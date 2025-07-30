@@ -42,7 +42,12 @@ const wrapper = css`
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  z-index: ${theme.zIndex.searchBar};
+  position: fixed;
+  top: 52px;
 
+  background-color: ${theme.colors.white};
+  max-width: ${theme.size.maxWidth};
   width: 100%;
   height: 80px;
   padding: 16px 20px;
