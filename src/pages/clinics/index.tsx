@@ -8,6 +8,9 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import ClinicCard from '@/components/clinic/clinic-card';
 import { ROUTES } from '@/constants/commons/routes';
+import { TextButton } from '@/components/text-button';
+import { ArrowUpdown } from '@/icons';
+import { Text } from '@/components/text';
 
 // 병원 리스트 페이지
 export default function ClinicListPage() {
@@ -22,7 +25,12 @@ export default function ClinicListPage() {
       <AppBar onBackClick={router.back} showBackButton={false} title="한의원" />
       <SearchBar onValueChange={handleValueChange} />
       <div css={wrapper}>
-        <button>별점 낮은 순</button>
+        <TextButton icons={{ prefix: <ArrowUpdown width={16} height={16} /> }}>
+          <Text typo="button_M" color="text_tertiary">
+            별점 낮은 순
+          </Text>
+        </TextButton>
+
         <ClinicCard
           clinicId={1}
           badges={['한의원', '침 치료']}
@@ -67,6 +75,6 @@ export const wrapper = css`
   flex-direction: column;
   align-items: flex-start;
   background-color: ${theme.colors.bg_surface1};
-  padding: 80px 20px 80px;
+  padding: 104px 20px 80px;
   gap: 24px;
 `;

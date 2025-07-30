@@ -1,4 +1,5 @@
 export * from './AppBarBack';
+export * from './ArrowUpdown';
 export * from './DefaultImage';
 export * from './GnbClinicActive';
 export * from './GnbClinicInactive';

@@ -1,5 +1,4 @@
 import { Dim } from '@/components/dim';
-import { Item } from '@/components/item';
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { DefaultImage } from '@/icons';
