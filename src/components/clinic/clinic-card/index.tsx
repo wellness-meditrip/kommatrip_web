@@ -1,7 +1,7 @@
 import { Dim } from '@/components/dim';
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { DefaultImage, Location } from '@/icons';
+import { DefaultImage } from '@/icons';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 
@@ -89,12 +89,6 @@ export const DetailsWrapper = css`
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-`;
-
-export const address = css`
-  display: flex;
-  align-items: center;
-  gap: 4px;
 `;
 
 export const tags = css`
