@@ -3,6 +3,9 @@ export const colors = {
   white: '#ffffff',
   black: '#000000',
 
+  gray100: '#F6F6F6',
+  gray200: '#E6E6E6',
+
   primary0: '#FFFCFB',
   primary10: '#FFE0D6',
   primary30: '#FFAC8F',
