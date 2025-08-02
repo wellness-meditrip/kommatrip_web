@@ -9,4 +9,5 @@ export * from './GnbMyActive';
 export * from './GnbMyInactive';
 export * from './GnbPackageActive';
 export * from './GnbPackageInactive';
+export * from './Location';
 export * from './Search';

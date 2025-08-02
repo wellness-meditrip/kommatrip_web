@@ -1,9 +1,10 @@
 import { Dim } from '@/components/dim';
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { DefaultImage } from '@/icons';
+import { DefaultImage, Location } from '@/icons';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
+import Image from 'next/image';
 
 interface Props {
   clinicId: number;
@@ -36,9 +37,12 @@ export default function ClinicCard({
         <Text typo="title_M" color="text_primary">
           {clinicName}
         </Text>
-        <Text typo="body_M" color="text_primary">
-          {clinicAddress}
-        </Text>
+        <div css={address}>
+          <Image src="icons/location.svg" alt="병원 주소 아이콘" width={16} height={16} />
+          <Text typo="body_M" color="text_primary">
+            {clinicAddress}
+          </Text>
+        </div>
         <div css={tags}>
           {badges?.map((hashTag) => (
             <Tag key={hashTag} service="meditrip" variant="line">
@@ -86,6 +90,12 @@ export const DetailsWrapper = css`
   flex-direction: column;
   gap: 8px;
   padding: 16px;
+`;
+
+export const address = css`
+  display: flex;
+  align-items: center;
+  gap: 4px;
 `;
 
 export const tags = css`
