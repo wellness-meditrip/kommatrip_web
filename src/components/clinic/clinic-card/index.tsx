@@ -1,9 +1,10 @@
 import { Dim } from '@/components/dim';
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { DefaultImage } from '@/icons';
+import { DefaultImage, Location } from '@/icons';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
+import Image from 'next/image';
 
 interface Props {
   clinicId: number;
@@ -89,6 +90,12 @@ export const DetailsWrapper = css`
   flex-direction: column;
   gap: 8px;
   padding: 16px;
+`;
+
+export const address = css`
+  display: flex;
+  align-items: center;
+  gap: 4px;
 `;
 
 export const tags = css`
