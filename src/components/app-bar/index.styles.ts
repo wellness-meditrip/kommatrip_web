@@ -10,6 +10,7 @@ export const wrapper = css`
   max-width: ${theme.size.maxWidth};
   height: 52px;
   margin: 0 auto;
+  background-color: ${theme.colors.white};
 `;
 
 export const contents = css`

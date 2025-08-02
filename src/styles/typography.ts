@@ -12,16 +12,16 @@ const typography = {
   `,
   title_S: css`
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
   `,
 
   body_M: css`
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
   `,
   body_S: css`
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 400;
   `,
 
   button_L: css`
