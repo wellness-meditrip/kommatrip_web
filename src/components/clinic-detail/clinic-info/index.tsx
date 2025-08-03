@@ -14,6 +14,8 @@ import {
 } from '@/icons';
 import { InfoRow } from '@/components/info-row';
 import { CTAButton } from '@/components/button';
+import { ClinicGoogleMap } from '@/components/map/google-map';
+import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
 
 interface Props {
@@ -180,7 +182,9 @@ export function ClinicInfo({
         </ClinicIntroduction>
 
         <ClinicIntroduction title="지도" showToggle={false}>
-          지도
+          <GoogleMapLoader>
+            <ClinicGoogleMap address={mockAddress.main} />
+          </GoogleMapLoader>
         </ClinicIntroduction>
       </div>
       <CTAButton>예약하기</CTAButton>
