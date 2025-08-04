@@ -18,19 +18,20 @@ import { ClinicGoogleMap } from '@/components/map/google-map';
 import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
 
-interface Props {
-  clinicAddress: string;
-  clinicOpeningHours?: string[];
-  clinicPhoneNumber?: string;
-  clinicUrl?: string[];
-}
+// interface Props {
+//   clinicAddress: string;
+//   clinicOpeningHours?: string[];
+//   clinicPhoneNumber?: string;
+//   clinicUrl?: string[];
+// }
 
-export function ClinicInfo({
-  clinicAddress,
-  clinicOpeningHours,
-  clinicPhoneNumber,
-  clinicUrl,
-}: Props) {
+export function ClinicInfo() {
+  //   {
+  //   clinicAddress,
+  //   clinicOpeningHours,
+  //   clinicPhoneNumber,
+  //   clinicUrl,
+  // }: Props
   // const { data, isError } = useUserReservationGroomingListQuery();
 
   // if (isError) {
@@ -140,8 +141,8 @@ export function ClinicInfo({
       <div css={contents}>
         <ClinicIntroduction title="한의원 소개">
           <Text typo="body_M" color="text_primary">
-            우주연 한의원은 '몸을 존중하는 치료'의 모토 아래 몸의 자연 회복 능력은 최대한 살리며
-            근본적으로 몸을 도와주는 방법을 제시하는 한의원입니다. 몸과 마음은 물론 개인적인
+            우주연 한의원은 &#39;몸을 존중하는 치료&#39;의 모토 아래 몸의 자연 회복 능력은 최대한
+            살리며 근본적으로 몸을 도와주는 방법을 제시하는 한의원입니다. 몸과 마음은 물론 개인적인
             습관까지 들여다보며 만성질환을 겪고 있거나 양방으로만 치료하는데 다소 한계를 느낀 이들의
             근본적인 건강 개선에 초점을 맞추고 있습니다. 또한 체내외 밸런스를 조화롭게 정돈하는 것을
             중요시하며, 내장기와 근골격계 치료를 통해 이너뷰티를 실현하는 한방미용시술을 전문으로

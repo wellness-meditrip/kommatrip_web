@@ -4,7 +4,6 @@ import { GoogleGenAI } from '@google/genai';
 const genAI = new GoogleGenAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY!,
 });
-console.log('AIKey:', process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 
 const mockReviews = [
   { content: '선생님이 친절하고 설명을 잘 해주세요.', starRating: 5 },

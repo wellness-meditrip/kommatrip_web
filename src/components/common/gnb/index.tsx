@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { GNB as DaengleGNB } from '../../../components/gnb';
 // import { useDialog } from '@/hooks';
-import { MENUS, ROUTES } from '@/constants/commons';
+import { MENUS } from '@/constants/commons';
 // import { useGetUserValidateQuery } from '~/queries';
 
 export function GNB() {

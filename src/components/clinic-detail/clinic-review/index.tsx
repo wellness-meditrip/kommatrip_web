@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/router';
 import { Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
@@ -20,9 +19,6 @@ import {
 // import { getUserGroomerReviewListInfiniteQuery } from '~/queries';
 
 export function ClinicReview() {
-  const router = useRouter();
-  const { groomerId } = router.query;
-
   // 목업 데이터
   const MOCK_REVIEWS = [
     {
@@ -49,7 +45,7 @@ export function ClinicReview() {
     },
   ];
 
-  function getUserGroomerReviewListInfiniteQuery(_groomerId: number) {
+  function getUserGroomerReviewListInfiniteQuery() {
     return {
       data: {
         pages: [
@@ -65,7 +61,7 @@ export function ClinicReview() {
     };
   }
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    getUserGroomerReviewListInfiniteQuery(Number(groomerId));
+    getUserGroomerReviewListInfiniteQuery();
 
   const reviewCount = useMemo(() => data?.pages[0]?.reviewCount, [data]);
 
@@ -111,7 +107,7 @@ export function ClinicReview() {
               by Gemini
             </Text>
             <div css={toolTipInfo}>
-              <Text tag="p" typo="body_S" color="text_secondary">
+              <Text typo="body_S" color="text_secondary">
                 <ul css={list}>
                   <li>인공지능 GPT-4로 리뷰를 분석해 생성한 리뷰 요약입니다.</li>
                   <li>개인이 작성한 한 줄 리뷰는 안전하게 관리되며 리뷰 요약 글에만 사용됩니다.</li>
@@ -175,7 +171,7 @@ export function ClinicReview() {
               )
             )
           ) : (
-            <Empty title="아직 받은 리뷰가 없어요" />
+            <Empty key="empty" title="아직 받은 리뷰가 없어요" />
           )
         )}
       </div>

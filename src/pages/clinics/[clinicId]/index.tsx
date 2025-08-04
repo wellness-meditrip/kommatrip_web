@@ -1,11 +1,10 @@
 import { AppBar } from '@/components/app-bar';
 import { Layout } from '@/components/layout';
 import ClinicDetail from '@/components/clinic/clinic-detail';
-import router from 'next/router';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { ClinicInfo, ClinicReview } from '@/components/clinic-detail';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 // import { useGetUserValidateQuery } from '@/queries';
 import { Tabs } from '@/components/tabs';
 // import { ROUTES } from '@/constants/commons';
@@ -36,23 +35,20 @@ export default function ClinicDetailPage() {
     }
   };
 
-  const TABS = [
-    {
-      id: 'info',
-      label: '병원정보',
-    },
-    {
-      id: 'review',
-      label: '리뷰',
-    },
-  ];
+  const TABS = useMemo(
+    () => [
+      { id: 'info', label: '병원정보' },
+      { id: 'review', label: '리뷰' },
+    ],
+    []
+  );
 
   useEffect(() => {
     const queryTab = router.query.service as string;
     if (queryTab && TABS.some((tab) => tab.id === queryTab)) {
       setActiveTab(queryTab);
     }
-  }, [router.query.service]);
+  }, [router.query.service, TABS]);
 
   const handleTabClick = (tabId: string) => {
     router.replace({ query: { ...router.query, service: tabId } }, undefined, { shallow: true });

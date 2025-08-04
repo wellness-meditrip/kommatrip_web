@@ -9,7 +9,6 @@ interface GoogleMapLoaderProps {
 
 export function GoogleMapLoader({ children }: GoogleMapLoaderProps) {
   const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY;
-  console.log('apikey:', process.env.NEXT_PUBLIC_MAPS_API_KEY);
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (

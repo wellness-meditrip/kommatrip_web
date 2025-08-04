@@ -18,13 +18,6 @@ interface TabsProps {
 export function Tabs({ tabs, activeTabId, onTabClick, renderContent }: TabsProps) {
   const [activeTab, setActiveTab] = useState<string>(activeTabId ?? tabs[0]?.id ?? '');
   const [direction, setDirection] = useState<number>(0);
-
-  useEffect(() => {
-    if (activeTabId && activeTabId !== activeTab) {
-      handleTabChange(activeTabId);
-    }
-  }, [activeTabId]);
-
   const activeIndex = useMemo(
     () => tabs.findIndex((tab) => tab.id === activeTab),
     [tabs, activeTab]
@@ -39,6 +32,12 @@ export function Tabs({ tabs, activeTabId, onTabClick, renderContent }: TabsProps
     },
     [activeIndex, tabs, onTabClick]
   );
+
+  useEffect(() => {
+    if (activeTabId && activeTabId !== activeTab) {
+      handleTabChange(activeTabId);
+    }
+  }, [activeTabId, activeTab, handleTabChange]);
 
   return (
     <div css={wrapper}>

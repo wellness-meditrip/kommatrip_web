@@ -15,6 +15,7 @@ import { Text } from '@/components/text';
 // 병원 리스트 페이지
 export default function ClinicPage() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [childValue, setChildValue] = useState('');
 
   const handleValueChange = (value: string) => {

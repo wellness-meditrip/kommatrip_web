@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 // import { AnimatePresence, motion } from 'framer-motion';
 // import { ToastCheck, PartnerToastCheck } from '../../icons';
-import { Text } from '../text';
 // import { Portal } from '../portal';
-import { toast } from './index.styles';
 
 export interface ToastProps {
   isShow: boolean;
@@ -12,7 +10,8 @@ export interface ToastProps {
   service?: 'daengle' | 'partner';
 }
 
-export function Toast({ isShow, title, time = 5000, service = 'daengle' }: ToastProps) {
+export function Toast({ isShow, time = 5000 }: ToastProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isOpen, setIsOpen] = useState<boolean>(isShow);
 
   useEffect(() => {
