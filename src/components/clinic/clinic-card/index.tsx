@@ -4,7 +4,6 @@ import { Text } from '@/components/text';
 import { DefaultImage, Location } from '@/icons';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
-import Image from 'next/image';
 
 interface Props {
   clinicId: number;
@@ -38,7 +37,7 @@ export default function ClinicCard({
           {clinicName}
         </Text>
         <div css={address}>
-          <Image src="icons/location.svg" alt="병원 주소 아이콘" width={16} height={16} />
+          <Location width={16} height={16} />
           <Text typo="body_M" color="text_primary">
             {clinicAddress}
           </Text>

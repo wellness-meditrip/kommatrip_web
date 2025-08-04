@@ -3,9 +3,6 @@ export const colors = {
   white: '#ffffff',
   black: '#000000',
 
-  gray100: '#F6F6F6',
-  gray200: '#E6E6E6',
-
   primary0: '#FFFCFB',
   primary10: '#FFE0D6',
   primary30: '#FFAC8F',
@@ -35,6 +32,20 @@ export const colors = {
   whiteOpacity: 'rgba(255, 255, 255, 0.3)',
 
   whiteGradient100: 'linear-gradient(180deg, rgba(255, 255, 255, 0.00) 0%, #FFF 71.19%)',
+
+  //test
+  blue100: '#DDE6FF',
+  blue200: '#5D86FE',
+  gray100: '#F6F6F6',
+  gray200: '#E6E6E6',
+  gray300: '#D9D9D9',
+  gray400: '#BEBEBE',
+  gray500: '#979797',
+  gray600: '#6E6E6E',
+  gray700: '#4d4d4d',
+  gray800: '#333333',
+  gray900: '#2A2A2A',
+  greenGradient100: 'linear-gradient(180deg, #84DACF 0%, #93E1D7 100%)',
 } as const;
 
 export default colors;
