@@ -13,20 +13,6 @@ export const wrapper = css`
   background: ${theme.colors.white};
 `;
 
-export const top = css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  width: 100%;
-`;
-
-export const topLeft = css`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-`;
-
 export const reviewerInfo = css`
   display: flex;
   align-items: center;
@@ -37,6 +23,24 @@ export const reviewerInfo = css`
     border-radius: 50%;
     object-fit: cover;
   }
+`;
+
+export const top = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background-color: #fff;
+  border-radius: 12px;
+`;
+
+export const reviewContent = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 4px;
+
+  min-width: 0;
 `;
 
 export const imageWrapper = css`

@@ -11,7 +11,7 @@ import {
   tagWrapper,
   wrapper,
   top,
-  topLeft,
+  reviewContent,
 } from './index.styles';
 import dayjs from 'dayjs';
 
@@ -40,22 +40,23 @@ export function Card({
   return (
     <div css={wrapper}>
       <div css={top}>
-        <div css={topLeft}>
-          <div css={reviewerInfo}>
-            {reviewerImageUrl ? (
-              <Image src={reviewerImageUrl} alt="리뷰 작성자 이미지" width={50} height={50} />
-            ) : (
-              <DefaultImage width={50} height={50} />
-            )}
-            <Text typo="title_S" color="black">
-              {reviewerName}
-            </Text>
-          </div>
+        <div css={reviewerInfo}>
+          {reviewerImageUrl ? (
+            <Image src={reviewerImageUrl} alt="리뷰 작성자 이미지" width={50} height={50} />
+          ) : (
+            <DefaultImage width={50} height={50} />
+          )}
+        </div>
+
+        <div css={reviewContent}>
+          <Text typo="button_M" color="text_primary">
+            {reviewerName}
+          </Text>
+          <Text typo="body_S" color="text_secondary">
+            {`우주원 원장님 진료 | ${dayjs(createdAt).format('YY.MM.DD')} 방문`}
+          </Text>
           <Rating rate={starRating} />
         </div>
-        <Text typo="title_S" color="gray200">
-          {dayjs(createdAt).format('YYYY.MM.DD')}
-        </Text>
       </div>
 
       {imageUrlList && !!imageUrlList?.length && (

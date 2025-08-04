@@ -1,14 +1,23 @@
-import { useMemo } from 'react';
-import { css } from '@emotion/react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { AppBar, Empty, Layout, Text } from '@/components';
-import { theme } from '@/styles';
+import { Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { useIntersectionLoad } from '@/hooks/review';
-// import { getUserGroomerReviewListInfiniteQuery } from '~/queries';
-import { ROUTES } from '@/constants/commons';
 import { ReviewAi, ReviewTooltip } from '@/icons';
+import {
+  wrapper,
+  reviewSummary,
+  titleWrapper,
+  title,
+  toolTip,
+  toolTipInfo,
+  list,
+  count,
+  content,
+  bottom,
+} from './index.styles';
+// import { getUserGroomerReviewListInfiniteQuery } from '~/queries';
 
 export function ClinicReview() {
   const router = useRouter();
@@ -17,10 +26,10 @@ export function ClinicReview() {
   // 목업 데이터
   const MOCK_REVIEWS = [
     {
-      groomingReviewId: 1,
+      clinicReviewId: 1,
       reviewerName: '홍길동',
       reviewerImageUrl: '/images/mock-user.png',
-      groomingKeywordList: ['CUSTOMIZED_CARE', 'THOROUGH_TREATMENT'],
+      clinicKeywordList: ['CUSTOMIZED_CARE', 'THOROUGH_TREATMENT'],
       starRating: 3 as 1 | 2 | 3 | 4 | 5,
       content:
         '진료를 하루에 최대 5명까지만 하신대요. 그래서 한명 한명 정성스럽게 진료해주세요. 진료 시간이 긴 만큼 섬세하게 진료해주시고, 전후 차이도 바로 확인할 수 있어서 좋습니다. 다음에 또 원장님께 진료 받고 싶어용🥰',
@@ -28,10 +37,10 @@ export function ClinicReview() {
       createdAt: '2025-08-01T12:00:00',
     },
     {
-      groomingReviewId: 2,
+      clinicReviewId: 2,
       reviewerName: '김철수',
       reviewerImageUrl: '/images/mock-user2.png',
-      groomingKeywordList: ['INTERPRETER_AVAILABLE', 'AFTERCARE_DETAIL'],
+      clinicKeywordList: ['INTERPRETER_AVAILABLE', 'AFTERCARE_DETAIL'],
       starRating: 5 as 1 | 2 | 3 | 4 | 5,
       content:
         '첫 방문이었는데, 너무 친절하셔서 재방문 의사가 있습니다. 개인당 진료시간이 여유로워서 공장형으로 진료하는 곳들과 달랐어요. ',
@@ -62,6 +71,30 @@ export function ClinicReview() {
 
   const { loadMoreRef } = useIntersectionLoad({ fetchNextPage, hasNextPage, isFetchingNextPage });
 
+  // AI 요약
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState(false);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      setIsSummaryLoading(true);
+      setSummaryError(false);
+      try {
+        const res = await fetch('/api/gemini');
+        const json = await res.json();
+        setAiSummary(json.summary ?? null);
+      } catch (err) {
+        console.error('AI 요약 호출 실패', err);
+        setSummaryError(true);
+      } finally {
+        setIsSummaryLoading(false);
+      }
+    };
+
+    fetchSummary();
+  }, []);
+
   return (
     <section css={wrapper}>
       <div css={reviewSummary}>
@@ -90,9 +123,23 @@ export function ClinicReview() {
           </div>
         </div>
 
-        <Text typo="body_M" color="text_secondary">
-          이것은 리뷰 요약 기능 ~!
-        </Text>
+        {isSummaryLoading ? (
+          <Text typo="body_M" color="text_secondary">
+            AI 요약을 불러오는 중...
+          </Text>
+        ) : summaryError ? (
+          <Text typo="body_M" color="text_secondary">
+            요약을 불러오는 데 실패했습니다.
+          </Text>
+        ) : aiSummary ? (
+          <Text typo="body_M" color="text_secondary">
+            {aiSummary}
+          </Text>
+        ) : (
+          <Text typo="body_M" color="text_secondary">
+            요약이 준비되지 않았습니다.
+          </Text>
+        )}
       </div>
       <Text tag="h1" typo="body_M" color="text_secondary" css={count}>
         {`리뷰 ${reviewCount ?? 0}개`}
@@ -103,22 +150,22 @@ export function ClinicReview() {
           page.reviewCount > 0 ? (
             page.reviewList.map(
               ({
-                groomingReviewId,
+                clinicReviewId,
                 reviewerName,
                 reviewerImageUrl,
-                groomingKeywordList,
+                clinicKeywordList,
                 starRating,
                 content,
                 imageUrlList,
                 createdAt,
               }) => (
                 <Card
-                  key={groomingReviewId}
+                  key={clinicReviewId}
                   createdAt={createdAt}
-                  reviewId={groomingReviewId}
+                  reviewId={clinicReviewId}
                   reviewerImageUrl={reviewerImageUrl}
                   reviewerName={reviewerName}
-                  keywordReviewList={groomingKeywordList
+                  keywordReviewList={clinicKeywordList
                     .map((keyword) => CLINIC_REVIEW_KEYWORDS[keyword])
                     .filter((keyword): keyword is string => !!keyword)}
                   starRating={starRating}
@@ -137,108 +184,3 @@ export function ClinicReview() {
     </section>
   );
 }
-
-const wrapper = css`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow-y: hidden;
-  gap: 16px;
-
-  background: ${theme.colors.bg_surface1};
-  h1 {
-    margin: 0 20px;
-  }
-`;
-
-const reviewSummary = css`
-  display: flex;
-  flex-direction: column;
-  margin: 20px 20px 0;
-  padding: 12px 16px;
-  border-radius: 8px;
-  gap: 8px;
-  background: ${theme.colors.white};
-`;
-
-const titleWrapper = css`
-  display: flex;
-  justify-content: space-between;
-`;
-const title = css`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const toolTip = css`
-  display: flex;
-  position: relative;
-  gap: 4px;
-
-  cursor: pointer;
-
-  &:hover > div {
-    opacity: 1;
-
-    visibility: visible;
-  }
-`;
-
-const toolTipInfo = css`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 100px;
-  transform: translateX(-103%);
-  z-index: 2;
-  visibility: hidden;
-
-  width: 322px;
-  padding: 16px;
-  border-radius: 8px;
-
-  background-color: white;
-  box-shadow: 0 0 6px rgb(0 0 6 / 10%);
-
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease;
-  opacity: 0;
-`;
-
-const list = css`
-  padding-left: 16px;
-  margin: 0;
-
-  li {
-    margin-bottom: 4px;
-    list-style-type: disc;
-  }
-`;
-const content = css`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-
-  width: 100%;
-  height: 100%;
-  padding: 0 20px 20px;
-  border-top: 1px solid ${theme.colors.gray200};
-`;
-
-const count = css`
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: ${theme.colors.white};
-`;
-export const bottom = css`
-  position: absolute;
-  bottom: 0;
-
-  width: 100%;
-  height: 18px;
-`;
