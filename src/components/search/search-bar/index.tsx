@@ -1,7 +1,6 @@
 import { theme } from '@/styles';
 import { Search } from '@/icons';
 import { css } from '@emotion/react';
-import { useEffect, useState } from 'react';
 
 interface SearchBarProps {
   onValueChange: (value: string) => void;
