@@ -1,5 +1,5 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
-import { Service } from '../../../types';
+import { Service } from '@/types';
 import { Text } from '../../text';
 import { RoundButton } from '../round-button';
 import { TextButton } from '../text-button';
