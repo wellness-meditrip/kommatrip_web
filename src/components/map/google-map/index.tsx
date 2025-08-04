@@ -35,12 +35,5 @@ export function ClinicGoogleMap({ address }: Props) {
       }
     );
   }, [address]);
-  console.log('입력 주소:', address);
-
-  return (
-    <div
-      ref={mapRef}
-      style={{ width: '100%', height: '300px', borderRadius: '12px', backgroundColor: 'red' }}
-    />
-  );
+  return <div ref={mapRef} style={{ width: '100%', height: '300px', borderRadius: '12px' }} />;
 }

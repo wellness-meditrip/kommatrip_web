@@ -36,18 +36,6 @@ export default function ClinicDetailPage() {
     }
   };
 
-  useEffect(() => {
-    const queryTab = router.query.service as string;
-    if (queryTab && TABS.some((tab) => tab.id === queryTab)) {
-      setActiveTab(queryTab);
-    }
-  }, [router.query.tab]);
-
-  const handleTabClick = (tabId: string) => {
-    router.replace({ query: { service: tabId } }, undefined, { shallow: true });
-    setActiveTab(tabId);
-  };
-
   const TABS = [
     {
       id: 'info',
@@ -58,6 +46,18 @@ export default function ClinicDetailPage() {
       label: '리뷰',
     },
   ];
+
+  useEffect(() => {
+    const queryTab = router.query.service as string;
+    if (queryTab && TABS.some((tab) => tab.id === queryTab)) {
+      setActiveTab(queryTab);
+    }
+  }, [router.query.service]);
+
+  const handleTabClick = (tabId: string) => {
+    router.replace({ query: { ...router.query, service: tabId } }, undefined, { shallow: true });
+    setActiveTab(tabId);
+  };
 
   return (
     <Layout>
