@@ -5,10 +5,10 @@ import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { ClinicInfo, ClinicReview } from '@/components/clinic-detail';
 import { useEffect, useState, useMemo } from 'react';
-// import { useGetUserValidateQuery } from '@/queries';
-import { Tabs } from '@/components/tabs';
-// import { ROUTES } from '@/constants/commons';
+import { Tabs } from '@/components';
 import { theme } from '@/styles';
+// import { useGetUserValidateQuery } from '@/queries';
+// import { ROUTES } from '@/constants/commons';
 
 export default function ClinicDetailPage() {
   const router = useRouter();

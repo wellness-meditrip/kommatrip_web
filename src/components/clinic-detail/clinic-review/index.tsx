@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Empty, Text } from '@/components';
+import { useRouter } from 'next/router';
+import { Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { useIntersectionLoad } from '@/hooks/review';
@@ -171,7 +172,8 @@ export function ClinicReview() {
               )
             )
           ) : (
-            <Empty key="empty" title="아직 받은 리뷰가 없어요" />
+            <p> 아직 받은 리뷰가 없어요.</p>
+            // <Empty key="empty" title="아직 받은 리뷰가 없어요" />
           )
         )}
       </div>
