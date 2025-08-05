@@ -36,6 +36,8 @@ export const colors = {
   //test
   blue100: '#DDE6FF',
   blue200: '#5D86FE',
+  green100: '#F1FFFE',
+  green200: '#84DACF',
   gray100: '#F6F6F6',
   gray200: '#E6E6E6',
   gray300: '#D9D9D9',
