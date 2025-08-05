@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { AppBar } from '@/components/app-bar';
 import { GNB } from '@/components/common/gnb';
 import { Layout } from '@/components/layout';

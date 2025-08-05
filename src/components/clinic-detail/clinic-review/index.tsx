@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/router';
-import { Text } from '@/components';
+import { Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { useIntersectionLoad } from '@/hooks/review';
@@ -143,7 +142,7 @@ export function ClinicReview() {
       </Text>
 
       <div css={content}>
-        {data?.pages.map((page) =>
+        {data?.pages.map((page, index) =>
           page.reviewCount > 0 ? (
             page.reviewList.map(
               ({
@@ -172,8 +171,7 @@ export function ClinicReview() {
               )
             )
           ) : (
-            <p> 아직 받은 리뷰가 없어요.</p>
-            // <Empty key="empty" title="아직 받은 리뷰가 없어요" />
+            <Empty key={`no-review-${index}`} title="아직 받은 리뷰가 없어요" />
           )
         )}
       </div>

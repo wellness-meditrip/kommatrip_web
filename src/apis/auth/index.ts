@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { api, guestApi } from '@/apis';
+import { api } from '@/apis';
 import { GetUserValidateResponse } from '@/models/auth';
 
 export const getUserValidate = async () => {
