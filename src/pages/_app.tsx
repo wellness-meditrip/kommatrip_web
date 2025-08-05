@@ -1,6 +1,7 @@
 import type { AppProps } from 'next/app';
 import { DialogProvider, ToastProvider } from '@/hooks';
 import { GlobalStyle } from '@/styles';
+import { QueryProvider } from '@/providers';
 import '@/styles/normalize.css';
 
 import Head from 'next/head';
@@ -15,13 +16,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0"
         />
       </Head>
-      <GlobalStyle>
-        <DialogProvider>
-          <ToastProvider>
-            <Component {...pageProps} />
-          </ToastProvider>
-        </DialogProvider>
-      </GlobalStyle>
+      <QueryProvider>
+        <GlobalStyle>
+          <DialogProvider>
+            <ToastProvider>
+              <Component {...pageProps} />
+            </ToastProvider>
+          </DialogProvider>
+        </GlobalStyle>
+      </QueryProvider>
     </>
   );
 }

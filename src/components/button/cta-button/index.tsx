@@ -30,7 +30,7 @@ export function CTAButton({
           type="button"
           onClick={onSecondaryButtonClick ? onSecondaryButtonClick : undefined}
         >
-          <Text typo="body8" color="gray200">
+          <Text typo="button_S" color="gray200">
             {secondaryButtonLabel}
           </Text>
         </TextButton>

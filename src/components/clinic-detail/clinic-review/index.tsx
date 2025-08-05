@@ -142,7 +142,7 @@ export function ClinicReview() {
       </Text>
 
       <div css={content}>
-        {data?.pages.map((page) =>
+        {data?.pages.map((page, index) =>
           page.reviewCount > 0 ? (
             page.reviewList.map(
               ({
@@ -171,7 +171,7 @@ export function ClinicReview() {
               )
             )
           ) : (
-            <Empty key="empty" title="아직 받은 리뷰가 없어요" />
+            <Empty key={`no-review-${index}`} title="아직 받은 리뷰가 없어요" />
           )
         )}
       </div>

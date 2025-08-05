@@ -1,26 +1,55 @@
+import { useRouter } from 'next/router';
+import debounce from 'lodash.debounce';
+import { useEffect, useState, useMemo } from 'react';
 import { AppBar } from '@/components/app-bar';
 import { GNB } from '@/components/common/gnb';
 import { Layout } from '@/components/layout';
 import SearchBar from '@/components/search/search-bar';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
+import ClinicCard from '@/components/clinic/clinic-card';
+import { TextButton } from '@/components/text-button';
+import { Text } from '@/components/text';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
-import ClinicCard from '@/components/clinic/clinic-card';
-import { ROUTES } from '@/constants/commons/routes';
-import { TextButton } from '@/components/text-button';
 import { ArrowUpdown } from '@/icons';
-import { Text } from '@/components/text';
+import { useGetClinicInfiniteQuery } from '@/queries/clinic';
+import { ROUTES } from '@/constants/commons/routes';
+import { useIntersectionLoad } from '@/hooks/review';
 
 // 병원 리스트 페이지
 export default function ClinicPage() {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [childValue, setChildValue] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [keyword, setKeyword] = useState('');
+
+  const params = useMemo(
+    () => ({
+      keyword,
+      page: 0,
+      size: 6,
+    }),
+    [keyword]
+  );
+  const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, data } =
+    useGetClinicInfiniteQuery(params);
+
+  const { loadMoreRef } = useIntersectionLoad({
+    fetchNextPage,
+    hasNextPage: Boolean(hasNextPage),
+    isFetchingNextPage,
+  });
 
   const handleValueChange = (value: string) => {
-    setChildValue(value);
+    setInputValue(value);
   };
+
+  useEffect(() => {
+    const debounced = debounce((value: string) => {
+      setKeyword(value);
+    }, 300);
+    debounced(inputValue);
+    return debounced.cancel;
+  }, [inputValue]);
+
   return (
     <Layout isAppBarExist={true}>
       <AppBar onBackClick={router.back} showBackButton={false} title="한의원" />
@@ -32,36 +61,29 @@ export default function ClinicPage() {
           </Text>
         </TextButton>
 
-        <ClinicCard
-          clinicId={1}
-          badges={['한의원', '침 치료']}
-          onClick={(clinicId: number) => {
-            router.push(ROUTES.CLINICS_DETAIL(clinicId));
-          }}
-          clinicImage={''}
-          clinicName={'한의원 이름 1'}
-          clinicAddress={'한의원 주소 1'}
-        />
-        <ClinicCard
-          clinicId={2}
-          badges={['한의원', '약침']}
-          onClick={(clinicId: number) => {
-            router.push(ROUTES.CLINICS_DETAIL(clinicId));
-          }}
-          clinicImage={''}
-          clinicName={'한의원 이름 2'}
-          clinicAddress={'한의원 주소 2'}
-        />
-        <ClinicCard
-          clinicId={3}
-          badges={['한의원', '추나요법']}
-          onClick={(clinicId: number) => {
-            router.push(ROUTES.CLINICS_DETAIL(clinicId));
-          }}
-          clinicImage={''}
-          clinicName={'한의원 이름 3'}
-          clinicAddress={'한의원 주소 3'}
-        />
+        {isLoading && <p>로딩 중...</p>}
+        {isError && <p>에러 발생!</p>}
+        {data?.pages.map((page) =>
+          page.hospitals.map((clinic) => {
+            const detail = clinic.hospital_details[0];
+            const mainImage = detail.images.find((img) => img.is_main)?.image_url ?? '';
+
+            return (
+              <ClinicCard
+                key={clinic.hospital_id}
+                clinicId={clinic.hospital_id}
+                badges={detail.departments.map((d) => d.name)}
+                onClick={(clinicId: number) => {
+                  router.push(ROUTES.CLINICS_DETAIL(clinicId));
+                }}
+                clinicImage={mainImage}
+                clinicName={clinic.hospital_name}
+                clinicAddress={clinic.address}
+              />
+            );
+          })
+        )}
+        <div ref={loadMoreRef} css={bottom} />
       </div>
       <GNB />
     </Layout>
@@ -78,4 +100,11 @@ export const wrapper = css`
   background-color: ${theme.colors.bg_surface1};
   padding: 104px 20px 80px;
   gap: 24px;
+`;
+export const bottom = css`
+  position: absolute;
+  bottom: 0;
+
+  width: 100%;
+  height: 18px;
 `;
