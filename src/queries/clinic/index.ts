@@ -6,7 +6,7 @@ import { PAGE_SIZE } from '@/constants/clinic';
 
 export const useGetClinicInfiniteQuery = (params: GetSearchRequestParams) => {
   return useInfiniteQuery({
-    queryKey: [...QUERY_KEYS.GET_CLINIC],
+    queryKey: [...QUERY_KEYS.GET_CLINIC, params.keyword],
     initialPageParam: 1,
     queryFn: ({ pageParam = 1 }) => {
       return getUserSearchClinic({ ...params, page: pageParam, size: PAGE_SIZE });
