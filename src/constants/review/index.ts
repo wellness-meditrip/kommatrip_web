@@ -1,4 +1,4 @@
-export const PAGE_SIZE = 20 as const;
+const PAGE_SIZE = 20 as const;
 
 // export const CLINIC_REVIEW_KEYWORDS: Record<string, string> = {
 //   // 진료/치료 (CARE)

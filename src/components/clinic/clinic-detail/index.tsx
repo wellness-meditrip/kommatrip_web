@@ -1,9 +1,10 @@
-import { Dim } from '@/components/dim';
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { DefaultImage, Location } from '@/icons';
 import { theme } from '@/styles';
+import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import { css } from '@emotion/react';
+import Image from 'next/image';
 
 interface Props {
   clinicImage: string;
@@ -13,15 +14,17 @@ interface Props {
 }
 // 병원 상세 정보 컴포넌트
 export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, badges }: Props) {
+  const convertedUrl = convertGoogleDriveUrlToImageSrc(clinicImage);
   return (
     <div css={wrapper}>
-      {!clinicImage ? (
+      {!convertedUrl ? (
         <div css={profileWrapper}>
           <DefaultImage />
         </div>
       ) : (
-        // <Image src={clinicImage} alt="프로필 이미지" width={170} height={200} />
-        <Dim />
+        <div css={profileWrapper}>
+          <Image src={convertedUrl} alt="프로필 이미지" width={170} height={200} />
+        </div>
       )}
       <div css={DetailsWrapper}>
         <Text typo="title_M" color="text_primary">
@@ -35,7 +38,7 @@ export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, b
           <Text typo="body_M" color="text_secondary">
             |
           </Text>
-          <div>별점</div>
+          {/* <div>별점</div> */}
         </div>
         <div css={tags}>
           {badges?.map((hashTag) => (

@@ -1,7 +1,13 @@
-export interface GetSearchRequestParams {
+export interface GetClinicRequestParams {
   page?: number;
   size?: number;
   keyword?: string;
+  city?: string;
+  department?: string;
+  parking_required?: boolean;
+}
+export interface GetClinicClinicIdRequestParams {
+  hospitalId: number;
 }
 export interface GetUserGroomerSearchResponse {
   page: number;

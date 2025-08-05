@@ -1,5 +1,6 @@
 // import { useUserReservationGroomingListQuery } from '~/queries/reservation';
-import { wrapper, infoWrapper, url, contents, item } from './index.styles';
+import { Hospital } from '@/models';
+import { wrapper, infoWrapper, urlWrapper, contents, item } from './index.styles';
 import { ClinicLocation } from '@/icons/ClinicLocation';
 import { Text } from '@/components/text';
 import {
@@ -17,21 +18,26 @@ import { CTAButton } from '@/components/button';
 import { ClinicGoogleMap } from '@/components/map/google-map';
 import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
+import { css } from '@emotion/react';
+import { DAY_KR } from '@/constants';
 
-// interface Props {
-//   clinicAddress: string;
-//   clinicOpeningHours?: string[];
-//   clinicPhoneNumber?: string;
-//   clinicUrl?: string[];
-// }
+interface ClinicInfoProps {
+  clinicData: Hospital;
+}
+export function ClinicInfo({ clinicData }: ClinicInfoProps) {
+  const urlList = [
+    { type: 'Instagram', url: clinicData.instagram },
+    { type: 'Line', url: clinicData.line },
+    { type: 'Youtube', url: clinicData.youtube },
+  ].filter(({ url }) => url?.trim() !== '');
 
-export function ClinicInfo() {
-  //   {
-  //   clinicAddress,
-  //   clinicOpeningHours,
-  //   clinicPhoneNumber,
-  //   clinicUrl,
-  // }: Props
+  const detail = clinicData.hospital_details[0];
+
+  const closedDays = detail.operating_hours
+    .filter((item) => item.is_closed)
+    .map((item) => DAY_KR[item.day_of_week]);
+
+  const closedText = closedDays.length > 0 ? `매주 ${closedDays.join('·')} 휴무` : '영업중';
   // const { data, isError } = useUserReservationGroomingListQuery();
 
   // if (isError) {
@@ -46,30 +52,6 @@ export function ClinicInfo() {
 
   // const reservations = data?.contents || [];
 
-  const mockHours = [
-    { day: '월요일', time: '오전 10:00 - 오후 7:00' },
-    { day: '화요일', time: '오전 10:00 - 오후 7:00' },
-    { day: '수요일', time: '오전 10:00 - 오후 7:00' },
-    { day: '목요일', time: '오전 10:00 - 오후 5:00' },
-    { day: '금요일', time: '오전 10:00 - 오후 7:00' },
-    { day: '토요일', time: '오전 10:00 - 오후 5:30' },
-    { day: '일요일', time: '휴무' },
-  ];
-
-  const mockAddress = {
-    main: '대한민국 서울시 종로구 북촌 12길, 한옥 41',
-    sub: '안국역 2번 출구에서 748m',
-  };
-
-  const mockPhone = '82+ 02-745-7511';
-
-  const mockUrls = [
-    'https://www.example.com',
-    'https://instagram.com/example',
-    'https://line.me/example',
-    'https://youtube.com/example',
-  ];
-
   return (
     <div css={wrapper}>
       <div css={infoWrapper}>
@@ -77,39 +59,47 @@ export function ClinicInfo() {
           icon={<ClinicLocation width={16} height={16} />}
           title={
             <Text typo="button_S" color="text_primary">
-              {mockAddress.main}
+              {clinicData.address}
             </Text>
           }
-          expandable
-          showToggleButton
-        >
-          <Text typo="button_S" color="text_primary">
-            {mockAddress.sub}
-          </Text>
-        </InfoRow>
-
+        />
         <InfoRow
           icon={<ClinicClock width={16} height={16} />}
           title={
             <Text typo="button_S" color="text_primary">
-              영업중 매주 일요일 휴무
+              영업중 {closedDays.length > 0 && closedText}
             </Text>
           }
           expandable
           showToggleButton
         >
-          {mockHours.map(({ day, time }) => (
-            <Text key={day} typo="button_S" color="text_secondary">
-              {day} {time}
-            </Text>
-          ))}
+          <div css={operatingWrapper}>
+            {detail.operating_hours.map((hour) => {
+              const dayName = DAY_KR[hour.day_of_week];
+
+              if (hour.is_closed) {
+                return (
+                  <Text key={dayName} typo="button_S" color="text_secondary">
+                    {dayName} 휴무
+                  </Text>
+                );
+              }
+
+              return (
+                <Text key={dayName} typo="button_S" color="text_secondary">
+                  {dayName} {hour.open_time} ~ {hour.close_time} (점심 {hour.lunch_start} ~{' '}
+                  {hour.lunch_end})
+                </Text>
+              );
+            })}
+          </div>
         </InfoRow>
 
         <InfoRow
           icon={<ClinicContact width={16} height={16} />}
           title={
             <Text typo="button_S" color="text_primary">
-              {mockPhone}
+              {clinicData.contact}
             </Text>
           }
         />
@@ -117,22 +107,26 @@ export function ClinicInfo() {
         <InfoRow
           icon={<ClinicGlobe width={16} height={16} />}
           title={
-            <Text typo="button_S" color="text_primary">
-              Website www.example.com
+            <Text
+              typo="button_S"
+              color="text_primary"
+              onClick={() => window.open(clinicData.website, '_blank')}
+            >
+              {clinicData.website}
             </Text>
           }
           expandable
           showToggleButton
         >
-          <div css={url}>
-            {mockUrls.map((url, i) => (
+          <div css={urlWrapper}>
+            {urlList.map(({ type, url }) => (
               <Text
-                key={i}
+                key={type}
                 typo="button_S"
                 color="text_primary"
                 onClick={() => window.open(url, '_blank')}
               >
-                {url.replace(/^https?:\/\/(www\.)?/, '').split('.')[0]}
+                {type}
               </Text>
             ))}
           </div>
@@ -141,12 +135,7 @@ export function ClinicInfo() {
       <div css={contents}>
         <ClinicIntroduction title="한의원 소개">
           <Text typo="body_M" color="text_primary">
-            우주연 한의원은 &#39;몸을 존중하는 치료&#39;의 모토 아래 몸의 자연 회복 능력은 최대한
-            살리며 근본적으로 몸을 도와주는 방법을 제시하는 한의원입니다. 몸과 마음은 물론 개인적인
-            습관까지 들여다보며 만성질환을 겪고 있거나 양방으로만 치료하는데 다소 한계를 느낀 이들의
-            근본적인 건강 개선에 초점을 맞추고 있습니다. 또한 체내외 밸런스를 조화롭게 정돈하는 것을
-            중요시하며, 내장기와 근골격계 치료를 통해 이너뷰티를 실현하는 한방미용시술을 전문으로
-            제공합니다.
+            {clinicData.hospital_description}
           </Text>
         </ClinicIntroduction>
         <ClinicIntroduction title="편의시설" showToggle={false}>
@@ -184,7 +173,7 @@ export function ClinicInfo() {
 
         <ClinicIntroduction title="지도" showToggle={false}>
           <GoogleMapLoader>
-            <ClinicGoogleMap address={mockAddress.main} />
+            <ClinicGoogleMap address={clinicData.address} />
           </GoogleMapLoader>
         </ClinicIntroduction>
       </div>
@@ -192,3 +181,9 @@ export function ClinicInfo() {
     </div>
   );
 }
+export const operatingWrapper = css`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 6px;
+`;
