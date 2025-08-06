@@ -30,7 +30,7 @@ export function KeywordCard({
     <div css={wrapper}>
       <Text typo="subtitle1">어떤 점이 좋았나요?</Text>
       <Text typo="body11" color="gray500">
-        이 곳에 어울리는 키워드를 골라주세요
+        이 곳에 어울리는 키워드를 골라주세요(최대 5개)
       </Text>
       <div css={keyword}>
         {tags.map((tag, index) => {

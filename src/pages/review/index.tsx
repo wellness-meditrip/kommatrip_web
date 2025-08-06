@@ -2,26 +2,22 @@
 
 import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast } from '@/hooks';
-import { css } from '@emotion/react';
-import { theme } from '@/styles';
+import { useToast, useDialog, useS3 } from '@/hooks';
 import { useRouter } from 'next/router';
-import dayjs from 'dayjs';
-import 'dayjs/locale/ko';
+import { DefaultImage } from '@/icons';
+import { convertKeywordNamesToRequestPayload, convertBlobToBase64 } from '@/utils';
 
-import { KeywordCard, PartnersCard, RatingCard, ReviewInputCard } from '@/components/reviews';
+import 'dayjs/locale/ko';
+import { wrapper, header, content, item, image, container, submitButton } from './index.styles';
+import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
-
+import { usePostClinicReviewMutation } from '@/queries';
 const mockData = {
   recipientName: '우주연 한의원',
   shopName: '다이어트 패키지',
   schedule: '2025-08-02T14:00:00',
-};
-
-const getKeywordsByService = (service: string | undefined): string[] => {
-  return Object.values(CLINIC_REVIEW_KEYWORDS).flat();
 };
 
 export default function ReviewPage() {
@@ -32,17 +28,11 @@ export default function ReviewPage() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   const router = useRouter();
-  const { service = 'vet' } = router.query;
-
-  const keywords = getKeywordsByService(service as string);
-
-  const partnersCardData = {
-    partnerName: mockData.recipientName,
-    shopName: mockData.shopName,
-    schedule: dayjs(mockData.schedule).locale('ko').format('YYYY.MM.DD(ddd) • HH:mm'),
-  };
-
   const { showToast } = useToast();
+  const { open } = useDialog();
+  const { mutate, isPending } = usePostClinicReviewMutation();
+  const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
+  // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
   const toggleExpand = () => setIsExpanded((prev) => !prev);
 
@@ -53,46 +43,110 @@ export default function ReviewPage() {
   };
 
   const handleSubmit = async () => {
-    if (!rating || !reviewText) {
-      alert('별점과 리뷰 내용을 입력해주세요.');
+    if (!rating || !reviewText || selectedTags.length === 0) {
+      alert('별점, 키워드, 내용을 모두 입력해주세요.');
       return;
     }
+    // let uploadedImageUrls: string[] = [];
 
-    // 이미지 업로드 로직 생략 (mock 처리)
+    // if (selectedImages.length > 0) {
+    //   uploadedImageUrls = (await uploadToS3(selectedImages)) || [];
+
+    //   if (!uploadedImageUrls) {
+    //     alert('이미지 업로드에 실패했습니다.');
+    //     return;
+    //   }
+    // }
+
+    // selectedImages를 base64 문자열로 변환
+    const base64Images = await Promise.all(
+      selectedImages.map((file) => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      })
+    );
+
     const uploadedImageUrls = selectedImages.map((file, index) => URL.createObjectURL(file));
 
-    console.log('✅ 등록된 리뷰:', {
-      reservationId: 1,
-      starRating: rating,
-      keywordList: selectedTags,
-      content: reviewText,
-      imageUrlList: uploadedImageUrls,
-    });
+    const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
 
-    showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
-    router.push(ROUTES.MYPAGE_PAYMENTS); // 리뷰 완료 후 이동
+    // ✅ postClinicReview API에 맞게 body 구성
+    const body = {
+      hospital_id: mockReservationData.hospital_id,
+      user_id: mockReservationData.user_id,
+      doctor_id: mockReservationData.doctor_id,
+      doctor_name: mockReservationData.doctor_name,
+      title: `${mockReservationData.shopName} 후기`,
+      content: reviewText,
+      rating,
+      keywords: mappedKeywords,
+      images: base64Images,
+    };
+
+    // ✅ API 호출 후 성공/실패 핸들링
+    mutate(body, {
+      onSuccess: () => {
+        showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
+        router.push(ROUTES.MYPAGE_REVIEWS);
+      },
+      onError: (error: any) => {
+        open({
+          type: 'confirm',
+          title: '리뷰 등록 실패',
+          description: error?.message || '알 수 없는 오류가 발생했습니다.',
+          primaryActionLabel: '확인',
+        });
+      },
+    });
+  };
+
+  const mockReservationData = {
+    hospital_id: 1,
+    user_id: 1,
+    doctor_id: 1,
+    doctor_name: '홍길동',
+    partnerName: '우주연 한의원',
+    shopName: '다이어트 패키지',
+    schedule: '2025-08-02T14:00:00',
   };
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰작성" />
+      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
       <div css={wrapper}>
         <div css={header}>
-          <Text typo="title1">
-            {service === 'vet' ? partnersCardData.partnerName : partnersCardData.shopName}
-          </Text>
+          <DefaultImage width={72} height={72} css={image} />
+          <div css={content}>
+            <Text typo="title_M">{mockData.recipientName}</Text>
+            <div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  진료항목
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.shopName}
+                </Text>
+              </div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  방문일자
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.schedule}
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
         <div css={container}>
-          <PartnersCard
-            partnerName={partnersCardData.partnerName}
-            shopName={partnersCardData.shopName}
-            schedule={partnersCardData.schedule}
-          />
-
           <RatingCard rating={rating} onRatingChange={setRating} />
 
           <KeywordCard
-            tags={keywords}
+            tags={keywordNames}
             selectedTags={selectedTags}
             onTagToggle={handleTagToggle}
             isExpanded={isExpanded}
@@ -122,28 +176,3 @@ export default function ReviewPage() {
     </Layout>
   );
 }
-
-const wrapper = css`
-  display: flex;
-  flex-direction: column;
-  background-color: ${theme.colors.bg_surface1};
-`;
-
-const header = css`
-  margin-bottom: 6px;
-  padding: 18px;
-
-  background-color: ${theme.colors.white};
-`;
-
-const container = css`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px 18px 18px;
-`;
-
-const submitButton = css`
-  margin-top: 14px;
-  padding: 18px;
-`;
