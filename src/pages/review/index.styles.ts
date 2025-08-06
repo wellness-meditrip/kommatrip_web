@@ -35,6 +35,7 @@ export const container = css`
   flex-direction: column;
   gap: 16px;
   padding: 16px 18px 18px;
+  min-height: calc(100vh - ${theme.size.gnbHeight});
 `;
 
 export const submitButton = css`

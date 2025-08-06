@@ -1,5 +1,3 @@
-// pages/review.tsx
-
 import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog, useS3 } from '@/hooks';
@@ -14,6 +12,7 @@ import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
 import { usePostClinicReviewMutation } from '@/queries';
+import { Loading } from '@/components/common';
 const mockData = {
   recipientName: '우주연 한의원',
   shopName: '다이어트 패키지',
@@ -30,7 +29,7 @@ export default function ReviewPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
-  const { mutate, isPending } = usePostClinicReviewMutation();
+  const { mutate, isPending, isError } = usePostClinicReviewMutation();
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
   // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
@@ -59,6 +58,7 @@ export default function ReviewPage() {
     // }
 
     // selectedImages를 base64 문자열로 변환
+
     const base64Images = await Promise.all(
       selectedImages.map((file) => {
         return new Promise<string>((resolve, reject) => {
@@ -74,7 +74,6 @@ export default function ReviewPage() {
 
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
 
-    // ✅ postClinicReview API에 맞게 body 구성
     const body = {
       hospital_id: mockReservationData.hospital_id,
       user_id: mockReservationData.user_id,
@@ -87,7 +86,6 @@ export default function ReviewPage() {
       images: base64Images,
     };
 
-    // ✅ API 호출 후 성공/실패 핸들링
     mutate(body, {
       onSuccess: () => {
         showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
@@ -143,24 +141,31 @@ export default function ReviewPage() {
           </div>
         </div>
         <div css={container}>
-          <RatingCard rating={rating} onRatingChange={setRating} />
+          {isPending ? (
+            <Loading title="리뷰 내역을 불러오고 있어요" />
+          ) : isError ? (
+            <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
+          ) : (
+            <>
+              <RatingCard rating={rating} onRatingChange={setRating} />
 
-          <KeywordCard
-            tags={keywordNames}
-            selectedTags={selectedTags}
-            onTagToggle={handleTagToggle}
-            isExpanded={isExpanded}
-            toggleExpand={toggleExpand}
-          />
+              <KeywordCard
+                tags={keywordNames}
+                selectedTags={selectedTags}
+                onTagToggle={handleTagToggle}
+                isExpanded={isExpanded}
+                toggleExpand={toggleExpand}
+              />
 
-          <ReviewInputCard
-            reviewText={reviewText}
-            setReviewText={setReviewText}
-            selectedImages={selectedImages}
-            setSelectedImages={setSelectedImages}
-          />
+              <ReviewInputCard
+                reviewText={reviewText}
+                setReviewText={setReviewText}
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
+              />
+            </>
+          )}
         </div>
-
         <div css={submitButton}>
           <RoundButton
             service="daengle"
