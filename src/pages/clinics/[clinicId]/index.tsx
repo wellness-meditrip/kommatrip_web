@@ -38,7 +38,7 @@ export default function ClinicDetailPage() {
       case 'info':
         return <ClinicInfo clinicData={data} />;
       case 'review':
-        return <ClinicReview />;
+        return <ClinicReview hospitalId={data.hospital_id} />;
       default:
         return <ClinicInfo clinicData={data} />;
     }

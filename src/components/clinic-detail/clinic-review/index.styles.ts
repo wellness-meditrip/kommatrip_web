@@ -2,6 +2,7 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 
 export const wrapper = css`
+  height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;

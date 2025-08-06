@@ -20,6 +20,11 @@ export const guestHospitalApi: HttpClient = axios.create({
   timeout: 5000,
 });
 
+export const guestReviewApi: HttpClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_REVIEW_API_URL ?? '',
+  timeout: 5000,
+});
+
 guestApi.interceptors.response.use(
   // (response: AxiosResponse) => response.data?.response,
   (response: AxiosResponse) => response.data,
@@ -27,6 +32,11 @@ guestApi.interceptors.response.use(
 );
 
 guestHospitalApi.interceptors.response.use(
+  (response: AxiosResponse) => response.data,
+  (error) => Promise.reject(error)
+);
+
+guestReviewApi.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => Promise.reject(error)
 );
