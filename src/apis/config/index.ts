@@ -15,8 +15,18 @@ export const guestApi: HttpClient = axios.create({
   timeout: 5000,
 });
 
+export const guestHospitalApi: HttpClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_HOSPITAL_API_URL ?? '',
+  timeout: 5000,
+});
+
 guestApi.interceptors.response.use(
   // (response: AxiosResponse) => response.data?.response,
+  (response: AxiosResponse) => response.data,
+  (error) => Promise.reject(error)
+);
+
+guestHospitalApi.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => Promise.reject(error)
 );

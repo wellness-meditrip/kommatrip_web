@@ -1,4 +1,4 @@
-import { guestApi } from '@/apis';
+import { guestHospitalApi } from '@/apis';
 import {
   GetClinicRequestParams,
   GetClinicResponse,
@@ -7,9 +7,9 @@ import {
 } from '@/models/clinic';
 
 export const getClinic = async (params: GetClinicRequestParams) => {
-  return await guestApi.get<GetClinicResponse>('/hospitals/', { params });
+  return await guestHospitalApi.get<GetClinicResponse>('/hospitals/', { params });
 };
 
 export const getClinicClinicId = async ({ hospitalId }: GetClinicClinicIdRequestParams) => {
-  return await guestApi.get<Hospital>(`/hospitals/${hospitalId}`);
+  return await guestHospitalApi.get<Hospital>(`/hospitals/${hospitalId}`);
 };
