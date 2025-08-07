@@ -2,6 +2,7 @@ export * from './app-bar';
 export * from './button';
 export * from './clinic-detail';
 export * from './clinic-detail/clinic-info';
+export * from './image-input';
 
 export * from './dialog';
 export * from './dim';

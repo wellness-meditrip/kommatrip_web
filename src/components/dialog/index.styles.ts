@@ -37,6 +37,7 @@ export const buttonWrapper = css`
   gap: 8px;
 
   width: 100%;
+  border-top: 1px solid ${theme.colors.gray100};
 `;
 
 export const button = css`
@@ -48,4 +49,8 @@ export const button = css`
   padding: 20px 0;
 
   cursor: pointer;
+
+  & + & {
+    border-left: 1px solid ${theme.colors.gray100};
+  }
 `;
