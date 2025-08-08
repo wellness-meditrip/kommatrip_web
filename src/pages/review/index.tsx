@@ -23,7 +23,6 @@ export default function ReviewPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
@@ -68,7 +67,15 @@ export default function ReviewPage() {
       })
     );
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
-
+  const mockReservationData = {
+    hospital_id: 1,
+    user_id: 1,
+    doctor_id: 1,
+    doctor_name: '홍길동',
+    partnerName: '우주연 한의원',
+    shopName: '다이어트 패키지',
+    schedule: '2025-08-02T14:00:00',
+  };
     const body = {
       hospital_id: mockReservationData.hospital_id,
       user_id: mockReservationData.user_id,
@@ -95,43 +102,48 @@ export default function ReviewPage() {
         });
       },
     });
-    const token = localStorage.getItem('token');
-    const userInfoRaw = localStorage.getItem('userInfo');
+    const [userID, setUserId] = useState();
 
-    if (!token) {
-      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
-      return;
-    }
+  //   const userInfoRaw = localStorage.getItem('userInfo');
 
+  //   try {
+  //     const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+  //     alert(userInfo);
+
+  //     if (userInfo) {
+  //       // ✅ RN에서 잘 저장됐는지 확인용 alert
+  //       alert(
+  //         `🧑‍💻 유저 정보 확인:\n` +
+  //           `닉네임: ${userInfo.nickname}\n` +
+  //           `이메일: ${userInfo.email}\n` +
+  //           `ID: ${userInfo.id}`
+  //       );
+  //     }
+  //   } catch (e) {
+  //     console.error('❌ userInfo 파싱 오류:', e);
+  //     alert('유저 정보를 불러오지 못했습니다.');
+  //   }
+  // };
+  const userInfoRaw = localStorage.getItem('userInfo');
     try {
       const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-
+      alert(userInfo);
       if (userInfo) {
-        // ✅ RN에서 잘 저장됐는지 확인용 alert
+        // :흰색_확인_표시: RN에서 잘 저장됐는지 확인용 alert
         alert(
-          `🧑‍💻 유저 정보 확인:\n` +
+          `:기술자: 유저 정보 확인:\n` +
             `닉네임: ${userInfo.nickname}\n` +
             `이메일: ${userInfo.email}\n` +
             `ID: ${userInfo.id}`
         );
+       setUserId(userInfo)
       }
-
-      router.push(ROUTES.MYPAGE_REVIEWS);
     } catch (e) {
-      console.error('❌ userInfo 파싱 오류:', e);
+      console.error(':x: userInfo 파싱 오류:', e);
       alert('유저 정보를 불러오지 못했습니다.');
     }
-  };
 
-  const mockReservationData = {
-    hospital_id: 1,
-    user_id: 1,
-    doctor_id: 1,
-    doctor_name: '홍길동',
-    partnerName: '우주연 한의원',
-    shopName: '다이어트 패키지',
-    schedule: '2025-08-02T14:00:00',
-  };
+
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
