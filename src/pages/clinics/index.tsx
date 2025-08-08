@@ -45,7 +45,7 @@ export default function ClinicPage() {
   useEffect(() => {
     const debounced = debounce((value: string) => {
       setKeyword(value);
-    }, 300);
+    }, 500);
     debounced(inputValue);
     return debounced.cancel;
   }, [inputValue]);

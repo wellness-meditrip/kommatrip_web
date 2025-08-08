@@ -19,7 +19,7 @@ import { ClinicGoogleMap } from '@/components/map/google-map';
 import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
 import { css } from '@emotion/react';
-import { DAY_KR } from '@/constants';
+import { DAY_KR, ROUTES } from '@/constants';
 import { useEffect } from 'react';
 import router from 'next/router';
 
@@ -85,11 +85,10 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
   // ✅ 예약하기 버튼 클릭 시 토큰 여부에 따라 동작
   const handleReserveClick = () => {
     const token = localStorage.getItem('token');
-    console.log('[예약하기 클릭] 현재 토큰:', token);
-
+    alert(`[예약하기 클릭] 현재 토큰: ${token}`);
     if (token) {
       // 로그인된 상태 → 예약페이지로 이동
-      // router.push(`/reservation?hospital_id=${clinicData.hospital_id}`);
+      router.push(ROUTES.MYPAGE);
       console.log('로그인 성공 !!');
     } else {
       // 로그인 안 된 상태 → RN에 로그인 요청
