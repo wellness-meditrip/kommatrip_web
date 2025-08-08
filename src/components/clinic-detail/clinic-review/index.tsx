@@ -16,55 +16,19 @@ import {
   content,
   bottom,
 } from './index.styles';
-// import { getUserGroomerReviewListInfiniteQuery } from '~/queries';
+import { getClinicReviewInfiniteQuery } from '@/queries/review';
 
-export function ClinicReview() {
-  // 목업 데이터
-  const MOCK_REVIEWS = [
-    {
-      clinicReviewId: 1,
-      reviewerName: '홍길동',
-      reviewerImageUrl: '/images/mock-user.png',
-      clinicKeywordList: ['CUSTOMIZED_CARE', 'THOROUGH_TREATMENT'],
-      starRating: 3 as 1 | 2 | 3 | 4 | 5,
-      content:
-        '진료를 하루에 최대 5명까지만 하신대요. 그래서 한명 한명 정성스럽게 진료해주세요. 진료 시간이 긴 만큼 섬세하게 진료해주시고, 전후 차이도 바로 확인할 수 있어서 좋습니다. 다음에 또 원장님께 진료 받고 싶어용🥰',
-      imageUrlList: ['/images/mock-review1.png', '/images/mock-review2.png'],
-      createdAt: '2025-08-01T12:00:00',
-    },
-    {
-      clinicReviewId: 2,
-      reviewerName: '김철수',
-      reviewerImageUrl: '/images/mock-user2.png',
-      clinicKeywordList: ['INTERPRETER_AVAILABLE', 'AFTERCARE_DETAIL'],
-      starRating: 5 as 1 | 2 | 3 | 4 | 5,
-      content:
-        '첫 방문이었는데, 너무 친절하셔서 재방문 의사가 있습니다. 개인당 진료시간이 여유로워서 공장형으로 진료하는 곳들과 달랐어요. ',
-      imageUrlList: [],
-      createdAt: '2025-08-02T15:30:00',
-    },
-  ];
-
-  function getUserGroomerReviewListInfiniteQuery() {
-    return {
-      data: {
-        pages: [
-          {
-            reviewCount: MOCK_REVIEWS.length,
-            reviewList: MOCK_REVIEWS,
-          },
-        ],
-      },
-      fetchNextPage: () => {},
-      hasNextPage: false,
-      isFetchingNextPage: false,
-    };
-  }
+export function ClinicReview({ hospitalId }: { hospitalId: number }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    getUserGroomerReviewListInfiniteQuery();
+    getClinicReviewInfiniteQuery(hospitalId);
 
-  const reviewCount = useMemo(() => data?.pages[0]?.reviewCount, [data]);
+  const reviewCount = useMemo(() => {
+    return data?.pages.reduce((acc, page) => acc + page.items.length, 0) ?? 0;
+  }, [data]);
 
+  const reviewList = useMemo(() => {
+    return data?.pages.flatMap((page) => page.items) ?? [];
+  }, [data]);
   const { loadMoreRef } = useIntersectionLoad({ fetchNextPage, hasNextPage, isFetchingNextPage });
 
   // AI 요약
@@ -142,37 +106,22 @@ export function ClinicReview() {
       </Text>
 
       <div css={content}>
-        {data?.pages.map((page, index) =>
-          page.reviewCount > 0 ? (
-            page.reviewList.map(
-              ({
-                clinicReviewId,
-                reviewerName,
-                reviewerImageUrl,
-                clinicKeywordList,
-                starRating,
-                content,
-                imageUrlList,
-                createdAt,
-              }) => (
-                <Card
-                  key={clinicReviewId}
-                  createdAt={createdAt}
-                  reviewId={clinicReviewId}
-                  reviewerImageUrl={reviewerImageUrl}
-                  reviewerName={reviewerName}
-                  keywordReviewList={clinicKeywordList
-                    .map((keyword) => CLINIC_REVIEW_KEYWORDS[keyword])
-                    .filter((keyword): keyword is string => !!keyword)}
-                  starRating={starRating}
-                  content={content}
-                  imageUrlList={imageUrlList}
-                />
-              )
-            )
-          ) : (
-            <Empty key={`no-review-${index}`} title="아직 받은 리뷰가 없어요" />
-          )
+        {reviewList.length > 0 ? (
+          reviewList.map((review) => (
+            <Card
+              key={review.review_id}
+              createdAt={review.created_at}
+              reviewId={review.review_id}
+              reviewerImageUrl="/images/mock-user.png" // 현재 reviewerImageUrl 정보 없음
+              reviewerName={'작성자'} // 현재 reviewerName 정보 없음
+              keywordReviewList={[]} // 현재 keyword 정보 없음
+              starRating={review.rating as 1 | 2 | 3 | 4 | 5}
+              content={review.title}
+              imageUrlList={[]} // 현재 imageUrlList 정보 없음
+            />
+          ))
+        ) : (
+          <Empty title="아직 받은 리뷰가 없어요" />
         )}
       </div>
 
@@ -180,3 +129,7 @@ export function ClinicReview() {
     </section>
   );
 }
+// todo: Card 컴포넌트에 keywordReviewList 수정하기
+//  keywordReviewList={clinicKeywordList
+//                     .map((keyword) => CLINIC_REVIEW_KEYWORDS[keyword])
+//                     .filter((keyword): keyword is string => !!keyword)}

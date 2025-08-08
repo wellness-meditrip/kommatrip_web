@@ -1,7 +1,13 @@
-export interface GetSearchRequestParams {
+export interface GetClinicRequestParams {
   page?: number;
   size?: number;
   keyword?: string;
+  city?: string;
+  department?: string;
+  parking_required?: boolean;
+}
+export interface GetClinicClinicIdRequestParams {
+  hospitalId: number;
 }
 export interface GetUserGroomerSearchResponse {
   page: number;
@@ -49,6 +55,17 @@ export interface HospitalDetail {
   hospital_id: number;
   created_at: string;
   updated_at: string;
+  parking_description: string;
+  wifi_available: boolean;
+  wifi_description: string;
+  luggage_storage: boolean;
+  luggage_storage_description: string;
+  private_treatment: boolean;
+  private_treatment_description: string;
+  airport_pickup: boolean;
+  airport_pickup_description: string;
+  translation_service: boolean;
+  translation_description: string;
 }
 
 export interface OperatingHour {

@@ -24,7 +24,7 @@ export default function ClinicPage() {
   const params = useMemo(
     () => ({
       keyword,
-      page: 0,
+      page: 1,
       size: 6,
     }),
     [keyword]
@@ -65,14 +65,14 @@ export default function ClinicPage() {
         {isError && <p>에러 발생!</p>}
         {data?.pages.map((page) =>
           page.hospitals.map((clinic) => {
-            const detail = clinic.hospital_details[0];
-            const mainImage = detail.images.find((img) => img.is_main)?.image_url ?? '';
+            const detail = clinic.hospital_details?.[0];
+            const mainImage = detail?.images?.find((img) => img.is_main)?.image_url ?? '';
 
             return (
               <ClinicCard
                 key={clinic.hospital_id}
                 clinicId={clinic.hospital_id}
-                badges={detail.departments.map((d) => d.name)}
+                badges={detail?.departments.map((d) => d.name)}
                 onClick={(clinicId: number) => {
                   router.push(ROUTES.CLINICS_DETAIL(clinicId));
                 }}

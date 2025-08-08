@@ -35,7 +35,6 @@ export default function ClinicCard({
         <div css={profileWrapper}>
           <Image src={convertedUrl} alt="프로필 이미지" width={170} height={200} />
         </div>
-        // <Dim />
       )}
       <div css={DetailsWrapper}>
         <Text typo="title_M" color="text_primary">

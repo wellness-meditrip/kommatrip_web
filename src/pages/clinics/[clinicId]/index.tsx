@@ -7,12 +7,20 @@ import { ClinicInfo, ClinicReview } from '@/components/clinic-detail';
 import { useEffect, useState, useMemo } from 'react';
 import { Tabs } from '@/components';
 import { theme } from '@/styles';
-// import { useGetUserValidateQuery } from '@/queries';
+import { useGetClinicClinicIdQuery } from '@/queries';
 // import { ROUTES } from '@/constants/commons';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
+  const { clinicId } = router.query;
 
+  const clinicIdNumber = Number(clinicId);
+
+  const params = {
+    hospitalId: clinicIdNumber,
+  };
+
+  const { data } = useGetClinicClinicIdQuery(params);
   // 비회원 검증 로직
   // const { data: isValidUser, isSuccess } = useGetUserValidateQuery();
 
@@ -25,15 +33,19 @@ export default function ClinicDetailPage() {
   const [activeTab, setActiveTab] = useState<string>('info');
 
   const renderContent = (activeTabId: string) => {
+    if (!data) return null;
     switch (activeTabId) {
       case 'info':
-        return <ClinicInfo />;
+        return <ClinicInfo clinicData={data} />;
       case 'review':
-        return <ClinicReview />;
+        return <ClinicReview hospitalId={data.hospital_id} />;
       default:
-        return <ClinicInfo />;
+        return <ClinicInfo clinicData={data} />;
     }
   };
+  useEffect(() => {
+    console.log('data', data);
+  }, ['']);
 
   const TABS = useMemo(
     () => [
@@ -58,12 +70,20 @@ export default function ClinicDetailPage() {
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="MEDITRIP" />
-      <ClinicDetail
-        badges={['한의원', '침 치료']}
-        clinicImage={''}
-        clinicName={'한의원 이름 1'}
-        clinicAddress={'한의원 주소 1'}
-      />
+
+      {data?.hospital_details.map((clinic) => {
+        const mainImage = clinic.images.find((img) => img.is_main)?.image_url ?? '';
+        console.log('mainImage', mainImage);
+        return (
+          <ClinicDetail
+            badges={clinic.departments.map((d) => d.name)}
+            clinicImage={mainImage}
+            clinicName={data.hospital_name}
+            clinicAddress={data.address}
+          />
+        );
+      })}
+
       <section css={wrapper}>
         <div css={content}>
           <Tabs

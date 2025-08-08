@@ -14,7 +14,7 @@ export const wrapper = css`
 export const infoWrapper = css`
   padding: 0 20px;
 `;
-export const url = css`
+export const urlWrapper = css`
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
