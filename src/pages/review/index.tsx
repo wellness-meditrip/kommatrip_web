@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
@@ -18,7 +18,15 @@ const mockData = {
   shopName: '다이어트 패키지',
   schedule: '2025-08-02T14:00:00',
 };
-
+interface UserInfo {
+  country: string;
+  displayName: string;
+  email: string;
+  id: number;
+  isNewUser: boolean;
+  language: string;
+  nickname: string;
+}
 export default function ReviewPage() {
   const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');
@@ -30,6 +38,8 @@ export default function ReviewPage() {
   const { open } = useDialog();
   const { mutate, isPending, isError } = usePostClinicReviewMutation();
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
   // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
   const toggleExpand = () => setIsExpanded((prev) => !prev);
@@ -39,6 +49,31 @@ export default function ReviewPage() {
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
+  useEffect(() => {
+    const raw = localStorage.getItem('userInfo');
+    console.log('[🧾 raw userInfo from localStorage]', raw);
+    try {
+      if (!raw) {
+        alert('❌ userInfo 없음: RN에서 아직 전달되지 않음');
+        return;
+      }
+
+      const parsed: UserInfo = JSON.parse(raw);
+      setUserInfo(parsed);
+      console.log('[✅ 파싱된 userInfo 객체]', parsed);
+
+      // ✅ RN이 잘 전달해줬는지 확인
+      alert(
+        `🧑‍💻 유저 정보 확인:\n` +
+          `닉네임: ${parsed.nickname}\n` +
+          `이메일: ${parsed.email}\n` +
+          `ID: ${parsed.id}`
+      );
+    } catch (e) {
+      console.error('userInfo 파싱 실패', e);
+      alert('❌ userInfo 파싱 실패: RN에서 잘못된 값이 전달됨');
+    }
+  }, []);
 
   const handleSubmit = async () => {
     if (!rating || !reviewText || selectedTags.length === 0) {
@@ -104,46 +139,6 @@ export default function ReviewPage() {
         });
       },
     });
-    const [userID, setUserId] = useState();
-
-    //   const userInfoRaw = localStorage.getItem('userInfo');
-
-    //   try {
-    //     const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-    //     alert(userInfo);
-
-    //     if (userInfo) {
-    //       // ✅ RN에서 잘 저장됐는지 확인용 alert
-    //       alert(
-    //         `🧑‍💻 유저 정보 확인:\n` +
-    //           `닉네임: ${userInfo.nickname}\n` +
-    //           `이메일: ${userInfo.email}\n` +
-    //           `ID: ${userInfo.id}`
-    //       );
-    //     }
-    //   } catch (e) {
-    //     console.error('❌ userInfo 파싱 오류:', e);
-    //     alert('유저 정보를 불러오지 못했습니다.');
-    //   }
-    // };
-    const userInfoRaw = localStorage.getItem('userInfo');
-    try {
-      const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-      alert(userInfo);
-      if (userInfo) {
-        // :흰색_확인_표시: RN에서 잘 저장됐는지 확인용 alert
-        alert(
-          `:기술자: 유저 정보 확인:\n` +
-            `닉네임: ${userInfo.nickname}\n` +
-            `이메일: ${userInfo.email}\n` +
-            `ID: ${userInfo.id}`
-        );
-        setUserId(userInfo);
-      }
-    } catch (e) {
-      console.error(':x: userInfo 파싱 오류:', e);
-      alert('유저 정보를 불러오지 못했습니다.');
-    }
 
     return (
       <Layout>
