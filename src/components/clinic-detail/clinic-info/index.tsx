@@ -20,6 +20,8 @@ import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
 import { css } from '@emotion/react';
 import { DAY_KR } from '@/constants';
+import { useEffect } from 'react';
+import router from 'next/router';
 
 interface ClinicInfoProps {
   clinicData: Hospital;
@@ -51,7 +53,35 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
   // }
 
   // const reservations = data?.contents || [];
+  // ✅ RN → Web 통신 응답 처리
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'AUTH_STATUS') {
+          const isLoggedIn = data.payload?.isLoggedIn;
 
+          if (isLoggedIn) {
+            router.push(`/reservation?hospital_id=${clinicData.hospital_id}`); // ✅ 예약페이지 이동
+          } else {
+            window?.ReactNativeWebView?.postMessage(
+              JSON.stringify({ type: 'LOGIN_REQUEST' }) // ✅ 로그인 요청
+            );
+          }
+        }
+      } catch (e) {
+        console.error('Invalid message received:', event.data);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [router, clinicData.hospital_id]);
+
+  // ✅ 예약하기 버튼 클릭 → RN에 로그인 여부 요청
+  const handleReserveClick = () => {
+    window?.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'AUTH_STATUS' }));
+  };
   return (
     <div css={wrapper}>
       <div css={infoWrapper}>
@@ -175,7 +205,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
           <ClinicGoogleMap address={clinicData.address} />
         </ClinicIntroduction>
       </div>
-      <CTAButton>예약하기</CTAButton>
+      <CTAButton onClick={handleReserveClick}>예약하기</CTAButton>
     </div>
   );
 }

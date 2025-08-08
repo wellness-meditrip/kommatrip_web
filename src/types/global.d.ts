@@ -5,5 +5,8 @@ export {};
 declare global {
   interface Window {
     google: typeof google;
+    ReactNativeWebView?: {
+      postMessage(message: string): void;
+    };
   }
 }
