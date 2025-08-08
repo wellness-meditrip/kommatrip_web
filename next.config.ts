@@ -49,6 +49,8 @@ const nextConfig: NextConfig = {
 module.exports = {
   env: {
     NEXT_PUBLIC_MAPS_API_KEY: process.env.NEXT_PUBLIC_MAPS_API_KEY,
+    NEXT_PUBLIC_MAP_ID_API_KEY: process.env.NEXT_PUBLIC_MAP_ID_API_KEY,
+    NEXT_PUBLIC_GEMINI_API_KEY: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_BUCKET: process.env.AWS_BUCKET,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,

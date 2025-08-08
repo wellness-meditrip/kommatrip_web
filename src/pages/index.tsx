@@ -1,4 +1,3 @@
-import { GNB } from '@/components/common/gnb';
 import { Layout } from '@/components/layout';
 
 export default function Home() {

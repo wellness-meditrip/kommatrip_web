@@ -13,6 +13,7 @@ import { ArrowUpdown } from '@/icons';
 import { useGetClinicInfiniteQuery } from '@/queries/clinic';
 import { ROUTES } from '@/constants/commons/routes';
 import { useIntersectionLoad } from '@/hooks/review';
+import { Loading } from '@/components/common';
 
 // 병원 리스트 페이지
 export default function ClinicPage() {
@@ -60,7 +61,7 @@ export default function ClinicPage() {
           </Text>
         </TextButton>
 
-        {isLoading && <p>로딩 중...</p>}
+        {isLoading && <Loading title="병원 내역을 불러오고 있어요" />}
         {isError && <p>에러 발생!</p>}
         {data?.pages.map((page) =>
           page.hospitals.map((clinic) => {

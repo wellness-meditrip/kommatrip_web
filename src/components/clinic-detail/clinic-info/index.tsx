@@ -172,9 +172,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
         </ClinicIntroduction>
 
         <ClinicIntroduction title="지도" showToggle={false}>
-          <GoogleMapLoader>
-            <ClinicGoogleMap address={clinicData.address} />
-          </GoogleMapLoader>
+          <ClinicGoogleMap address={clinicData.address} />
         </ClinicIntroduction>
       </div>
       <CTAButton>예약하기</CTAButton>
