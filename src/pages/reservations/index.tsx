@@ -1,136 +1,77 @@
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast, useDialog, useS3 } from '@/hooks';
+import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import { DefaultImage } from '@/icons';
-import { convertKeywordNamesToRequestPayload, convertBlobToBase64 } from '@/utils';
 
-import {
-  wrapper,
-  header,
-  content,
-  item,
-  image,
-  container,
-  submitButton,
-  textarea,
-  itemWrapper,
-} from './index.styles';
-import 'dayjs/locale/ko';
-dayjs.locale('ko'); // 전역에서 단 1회만
-import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
+import { wrapper, header, content, item, image, container, submitButton } from './index.styles';
 
-import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
+import { MedicalInfoCard, VisitDateCard, ContactInfoCard, AdditionalInfoCard } from '@/components';
 import { ROUTES } from '@/constants/commons';
-import { usePostClinicReviewMutation } from '@/queries';
-import { Loading } from '@/components/common';
-import { Section } from '@/components/section';
-import dayjs from 'dayjs';
-import { DatePicker } from '@/components/date-picker';
-import { useValidateGeneralClinicForm } from '@/hooks/reservation/use-validate-general-clinic-form';
 const mockData = {
   recipientName: '우주연 한의원',
   shopName: '다이어트 패키지',
   schedule: '2025-08-02T14:00:00',
 };
 
-export default function ReviewPage() {
-  const [rating, setRating] = useState<number>(0);
-  const [reviewText, setReviewText] = useState<string>('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+export default function ReservationPage() {
+  // 진료 정보
+  const [symptoms, setSymptoms] = useState<string>('');
+  const [medications, setMedications] = useState<string>('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+
+  // 방문 일자
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedTime, setSelectedTime] = useState<string>('');
+
+  // 연락처 정보
+  const [email, setEmail] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [language, setLanguage] = useState<string>('한국어');
+
+  // 기타 정보
+  const [additionalInfo, setAdditionalInfo] = useState<string>('');
 
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
-  const { mutate, isPending, isError } = usePostClinicReviewMutation();
-  const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
-  const { control } = useForm();
-  const validate = useValidateGeneralClinicForm();
-
-  // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
-  const toggleExpand = () => setIsExpanded((prev) => !prev);
-
-  const handleTagToggle = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
 
   const handleSubmit = async () => {
-    if (!rating || !reviewText || selectedTags.length === 0) {
-      alert('별점, 키워드, 내용을 모두 입력해주세요.');
+    // 필수 필드 검증
+    if (!symptoms || !selectedDate || !email || !firstName || !lastName) {
+      alert('필수 항목을 모두 입력해주세요.');
       return;
     }
-    // let uploadedImageUrls: string[] = [];
 
-    // if (selectedImages.length > 0) {
-    //   uploadedImageUrls = (await uploadToS3(selectedImages)) || [];
-
-    //   if (!uploadedImageUrls) {
-    //     alert('이미지 업로드에 실패했습니다.');
-    //     return;
-    //   }
-    // }
-
-    // selectedImages를 base64 문자열로 변환
-
-    const base64Images = await Promise.all(
-      selectedImages.map((file) => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      })
-    );
-
-    const uploadedImageUrls = selectedImages.map((file, index) => URL.createObjectURL(file));
-
-    const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
-
-    const body = {
-      hospital_id: mockReservationData.hospital_id,
-      user_id: mockReservationData.user_id,
-      doctor_id: mockReservationData.doctor_id,
-      doctor_name: mockReservationData.doctor_name,
-      title: `${mockReservationData.shopName} 후기`,
-      content: reviewText,
-      rating,
-      keywords: mappedKeywords,
-      images: base64Images,
+    const reservationData = {
+      clinic_id: 1,
+      symptoms,
+      medications,
+      images: selectedImages,
+      visit_date: selectedDate,
+      visit_time: selectedTime,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      language,
+      additional_info: additionalInfo,
     };
 
-    mutate(body, {
-      onSuccess: () => {
-        showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
-        router.push(ROUTES.MYPAGE_REVIEWS);
-      },
-      onError: (error: any) => {
-        open({
-          type: 'confirm',
-          title: '리뷰 등록 실패',
-          description: error?.message || '알 수 없는 오류가 발생했습니다.',
-          primaryActionLabel: '확인',
-        });
-      },
-    });
+    try {
+      // TODO: 실제 예약 API 호출
+      console.log('예약 데이터:', reservationData);
+      showToast({ title: '예약이 성공적으로 접수되었습니다!' });
+      router.push(ROUTES.CLINICS); // 또는 예약 완료 페이지로 이동
+    } catch (error) {
+      open({
+        type: 'confirm',
+        title: '예약 접수 실패',
+        description: '예약 접수 중 오류가 발생했습니다. 다시 시도해주세요.',
+        primaryActionLabel: '확인',
+      });
+    }
   };
-
-  const mockReservationData = {
-    hospital_id: 1,
-    user_id: 1,
-    doctor_id: 1,
-    doctor_name: '홍길동',
-    partnerName: '우주연 한의원',
-    shopName: '다이어트 패키지',
-    schedule: '2025-08-02T14:00:00',
-  };
-  const reservedDate = '2025-08-10 11:22:11';
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="예약하기" />
@@ -160,51 +101,48 @@ export default function ReviewPage() {
           </div>
         </div>
         <div css={container}>
-          {isPending ? (
-            <Loading title="예약 내역을 불러오고 있어요" />
-          ) : isError ? (
-            <Text typo="body11">예약 데이터를 불러오는 데 실패했습니다.</Text>
-          ) : (
-            <>
-              {/* <KeywordCard
-                tags={keywordNames}
-                selectedTags={selectedTags}
-                onTagToggle={handleTagToggle}
-                isExpanded={isExpanded}
-                toggleExpand={toggleExpand}
-              /> */}
+          <MedicalInfoCard
+            symptoms={symptoms}
+            setSymptoms={setSymptoms}
+            medications={medications}
+            setMedications={setMedications}
+            selectedImages={selectedImages}
+            setSelectedImages={setSelectedImages}
+          />
 
-              <ReviewInputCard
-                reviewText={reviewText}
-                setReviewText={setReviewText}
-                selectedImages={selectedImages}
-                setSelectedImages={setSelectedImages}
-              />
-              <div css={itemWrapper}>
-                <Text typo="title_M">원하는 방문 일자</Text>
-                <Text typo="title_S">방문 날짜</Text>
-                {/* <Section title="시술 희망 날짜 및 시간"> */}
-                {/* <Text typo="title2">{dayjs(reservedDate).format('YYYY.MM.DD(ddd) • HH:mm')}</Text> */}
-                {/* <Controller
-                    name="reservedDate"
-                    control={control}
-                    rules={validate.reservedDate}
-                    render={({ field }) => <DatePicker {...field} onChange={field.onChange} />}
-                  /> */}
-                {/* </Section> */}
-              </div>
-            </>
-          )}
+          <VisitDateCard
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            selectedTime={selectedTime}
+            setSelectedTime={setSelectedTime}
+          />
+
+          <ContactInfoCard
+            email={email}
+            setEmail={setEmail}
+            firstName={firstName}
+            setFirstName={setFirstName}
+            lastName={lastName}
+            setLastName={setLastName}
+            language={language}
+            setLanguage={setLanguage}
+          />
+
+          <AdditionalInfoCard
+            additionalInfo={additionalInfo}
+            setAdditionalInfo={setAdditionalInfo}
+          />
         </div>
+
         <div css={submitButton}>
           <RoundButton
             service="daengle"
             size="L"
             fullWidth
             onClick={handleSubmit}
-            disabled={!rating || !reviewText || selectedTags.length === 0}
+            disabled={!symptoms || !selectedDate || !email || !firstName || !lastName}
           >
-            리뷰 등록하기
+            예약하기
           </RoundButton>
         </div>
       </div>

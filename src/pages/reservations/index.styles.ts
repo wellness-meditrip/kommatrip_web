@@ -4,7 +4,7 @@ import { css } from '@emotion/react';
 export const wrapper = css`
   display: flex;
   flex-direction: column;
-  background-color: ${theme.colors.bg_surface1};
+  background-color: ${theme.colors.bg_default};
 `;
 export const image = css`
   border-radius: 8px;
@@ -34,7 +34,7 @@ export const container = css`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px 18px 18px;
+  padding: 16px 20px 20px;
   min-height: calc(100vh - ${theme.size.gnbHeight});
 `;
 
