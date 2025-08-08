@@ -83,3 +83,5 @@ export const ImageInput = forwardRef(({ onChange, defaultValue = [], maxLength }
     </div>
   );
 });
+
+ImageInput.displayName = 'ImageInput';

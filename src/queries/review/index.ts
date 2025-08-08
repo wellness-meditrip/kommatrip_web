@@ -3,7 +3,6 @@ import { QUERY_KEYS } from '../query-keys';
 import { PostClinicReviewRequestBody } from '@/models';
 import { postClinicReview } from '@/apis';
 import { getClinicReviews } from '@/apis/review';
-import { GetClinicReviewsParams } from '@/models/review';
 import { AxiosError } from 'axios';
 
 export const usePostClinicReviewMutation = () => {
@@ -12,7 +11,7 @@ export const usePostClinicReviewMutation = () => {
     mutationFn: async (body: PostClinicReviewRequestBody) => {
       try {
         return await postClinicReview(body);
-      } catch (error: any) {
+      } catch (error) {
         if (error instanceof AxiosError && error.response?.data?.error) {
           throw error.response.data.error;
         }
@@ -21,19 +20,6 @@ export const usePostClinicReviewMutation = () => {
     },
   });
 };
-
-// export const getUserGroomingMyReviewListInfiniteQuery = () => {
-//   return useInfiniteQuery({
-//     queryKey: QUERY_KEYS.GET_USER_GROOMING_MY_REVIEW_LIST,
-//     initialPageParam: 0,
-//     queryFn: ({ pageParam = 0 }) => {
-//       return getUserGroomingMyReviewList({ page: pageParam, size: PAGE_SIZE });
-//     },
-//     getNextPageParam: (lastPage, allPages) => {
-//       return lastPage.reviewList.length === PAGE_SIZE ? allPages.length + 1 : undefined;
-//     },
-//   });
-// };
 
 // export const getClinicReviewInfiniteQuery = (hospitalId: number) => {
 //   return useInfiniteQuery({
@@ -51,7 +37,7 @@ export const usePostClinicReviewMutation = () => {
 
 const PAGE_SIZE = 20;
 
-export const getClinicReviewInfiniteQuery = (hospitalId: number) => {
+export const useGetClinicReviewInfiniteQuery = (hospitalId: number) => {
   return useInfiniteQuery({
     queryKey: [...QUERY_KEYS.GET_CLINIC_REVIEWS, hospitalId],
     initialPageParam: 0,

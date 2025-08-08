@@ -43,9 +43,6 @@ export default function ClinicDetailPage() {
         return <ClinicInfo clinicData={data} />;
     }
   };
-  useEffect(() => {
-    console.log('data', data);
-  }, ['']);
 
   const TABS = useMemo(
     () => [
@@ -71,11 +68,11 @@ export default function ClinicDetailPage() {
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="MEDITRIP" />
 
-      {data?.hospital_details.map((clinic) => {
+      {data?.hospital_details.map((clinic, index) => {
         const mainImage = clinic.images.find((img) => img.is_main)?.image_url ?? '';
-        console.log('mainImage', mainImage);
         return (
           <ClinicDetail
+            key={clinic.id || index}
             badges={clinic.departments.map((d) => d.name)}
             clinicImage={mainImage}
             clinicName={data.hospital_name}

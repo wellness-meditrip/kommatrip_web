@@ -1,5 +1,3 @@
-const PAGE_SIZE = 20 as const;
-
 // export const CLINIC_REVIEW_KEYWORDS: Record<string, string> = {
 //   // 진료/치료 (CARE)
 //   CUSTOMIZED_CARE: '맞춤 케어를 잘 해줘요',

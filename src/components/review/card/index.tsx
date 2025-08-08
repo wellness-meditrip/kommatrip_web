@@ -62,6 +62,7 @@ export function ReviewCard<T extends PartnersReviewListType>({
 
   const [isImageError, setIsImageError] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
     setIsImageError(true);
   };

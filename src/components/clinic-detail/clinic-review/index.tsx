@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
-import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { useIntersectionLoad } from '@/hooks/review';
 import { ReviewAi, ReviewTooltip } from '@/icons';
 import {
@@ -16,11 +15,11 @@ import {
   content,
   bottom,
 } from './index.styles';
-import { getClinicReviewInfiniteQuery } from '@/queries/review';
+import { useGetClinicReviewInfiniteQuery } from '@/queries/review';
 
 export function ClinicReview({ hospitalId }: { hospitalId: number }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    getClinicReviewInfiniteQuery(hospitalId);
+    useGetClinicReviewInfiniteQuery(hospitalId);
 
   const reviewCount = useMemo(() => {
     return data?.pages.reduce((acc, page) => acc + page.items.length, 0) ?? 0;

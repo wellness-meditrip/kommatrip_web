@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
 import { useEffect, useState, useMemo } from 'react';
 import { AppBar } from '@/components/app-bar';
-import { GNB } from '@/components/common/gnb';
 import { Layout } from '@/components/layout';
 import SearchBar from '@/components/search/search-bar';
 import ClinicCard from '@/components/clinic/clinic-card';
@@ -85,7 +84,6 @@ export default function ClinicPage() {
         )}
         <div ref={loadMoreRef} css={bottom} />
       </div>
-      <GNB />
     </Layout>
   );
 }
