@@ -14,7 +14,7 @@ interface Props {
   maxLength?: number;
 }
 
-export const ImageInput = forwardRef(({ onChange, defaultValue = [], maxLength }: Props, ref) => {
+const ImageInput = forwardRef(({ onChange, defaultValue = [], maxLength }: Props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<File[]>(defaultValue);
   const [files, setFiles] = useState<File[]>(defaultValue);

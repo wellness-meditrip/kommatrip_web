@@ -17,6 +17,7 @@
     "@emotion/styled": "^11.14.1",
     "@google/genai": "^1.12.0",
     "@googlemaps/js-api-loader": "^1.16.10",
+    "@mui/x-date-pickers": "^8.9.2",
     "@tanstack/react-query": "^5.84.1",
     "@types/lodash.debounce": "^4.0.9",
     "axios": "^1.11.0",
@@ -30,6 +31,7 @@
     "next": "15.4.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hook-form": "^7.62.0",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
