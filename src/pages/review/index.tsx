@@ -95,6 +95,32 @@ export default function ReviewPage() {
         });
       },
     });
+    const token = localStorage.getItem('token');
+    const userInfoRaw = localStorage.getItem('userInfo');
+
+    if (!token) {
+      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
+      return;
+    }
+
+    try {
+      const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+
+      if (userInfo) {
+        // ✅ RN에서 잘 저장됐는지 확인용 alert
+        alert(
+          `🧑‍💻 유저 정보 확인:\n` +
+            `닉네임: ${userInfo.nickname}\n` +
+            `이메일: ${userInfo.email}\n` +
+            `ID: ${userInfo.id}`
+        );
+      }
+
+      router.push(ROUTES.MYPAGE_REVIEWS);
+    } catch (e) {
+      console.error('❌ userInfo 파싱 오류:', e);
+      alert('유저 정보를 불러오지 못했습니다.');
+    }
   };
 
   const mockReservationData = {
@@ -106,7 +132,6 @@ export default function ReviewPage() {
     shopName: '다이어트 패키지',
     schedule: '2025-08-02T14:00:00',
   };
-
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
