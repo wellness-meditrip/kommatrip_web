@@ -6,11 +6,13 @@ import { DefaultImage } from '@/icons';
 import { convertKeywordNamesToRequestPayload } from '@/utils';
 import 'dayjs/locale/ko';
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
-
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
 import { usePostClinicReviewMutation } from '@/queries';
 import { Loading } from '@/components/common';
+import { theme } from '@/styles';
+import { css } from '@emotion/react';
+
 const mockData = {
   recipientName: '우주연 한의원',
   shopName: '다이어트 패키지',
@@ -67,15 +69,15 @@ export default function ReviewPage() {
       })
     );
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
-  const mockReservationData = {
-    hospital_id: 1,
-    user_id: 1,
-    doctor_id: 1,
-    doctor_name: '홍길동',
-    partnerName: '우주연 한의원',
-    shopName: '다이어트 패키지',
-    schedule: '2025-08-02T14:00:00',
-  };
+    const mockReservationData = {
+      hospital_id: 1,
+      user_id: 1,
+      doctor_id: 1,
+      doctor_name: '홍길동',
+      partnerName: '우주연 한의원',
+      shopName: '다이어트 패키지',
+      schedule: '2025-08-02T14:00:00',
+    };
     const body = {
       hospital_id: mockReservationData.hospital_id,
       user_id: mockReservationData.user_id,
@@ -104,27 +106,27 @@ export default function ReviewPage() {
     });
     const [userID, setUserId] = useState();
 
-  //   const userInfoRaw = localStorage.getItem('userInfo');
+    //   const userInfoRaw = localStorage.getItem('userInfo');
 
-  //   try {
-  //     const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-  //     alert(userInfo);
+    //   try {
+    //     const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+    //     alert(userInfo);
 
-  //     if (userInfo) {
-  //       // ✅ RN에서 잘 저장됐는지 확인용 alert
-  //       alert(
-  //         `🧑‍💻 유저 정보 확인:\n` +
-  //           `닉네임: ${userInfo.nickname}\n` +
-  //           `이메일: ${userInfo.email}\n` +
-  //           `ID: ${userInfo.id}`
-  //       );
-  //     }
-  //   } catch (e) {
-  //     console.error('❌ userInfo 파싱 오류:', e);
-  //     alert('유저 정보를 불러오지 못했습니다.');
-  //   }
-  // };
-  const userInfoRaw = localStorage.getItem('userInfo');
+    //     if (userInfo) {
+    //       // ✅ RN에서 잘 저장됐는지 확인용 alert
+    //       alert(
+    //         `🧑‍💻 유저 정보 확인:\n` +
+    //           `닉네임: ${userInfo.nickname}\n` +
+    //           `이메일: ${userInfo.email}\n` +
+    //           `ID: ${userInfo.id}`
+    //       );
+    //     }
+    //   } catch (e) {
+    //     console.error('❌ userInfo 파싱 오류:', e);
+    //     alert('유저 정보를 불러오지 못했습니다.');
+    //   }
+    // };
+    const userInfoRaw = localStorage.getItem('userInfo');
     try {
       const userInfo = userInfoRaw ? JSON.parse(userInfoRaw) : null;
       alert(userInfo);
@@ -136,86 +138,83 @@ export default function ReviewPage() {
             `이메일: ${userInfo.email}\n` +
             `ID: ${userInfo.id}`
         );
-       setUserId(userInfo)
+        setUserId(userInfo);
       }
     } catch (e) {
       console.error(':x: userInfo 파싱 오류:', e);
       alert('유저 정보를 불러오지 못했습니다.');
     }
 
-
-  return (
-    <Layout>
-      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
-      <div css={wrapper}>
-        <div css={header}>
-          <DefaultImage width={72} height={72} css={image} />
-          <div css={content}>
-            <Text typo="title_M">{mockData.recipientName}</Text>
-            <div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  진료항목
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {mockData.shopName}
-                </Text>
-              </div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  방문일자
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {mockData.schedule}
-                </Text>
+    return (
+      <Layout>
+        <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
+        <div css={wrapper}>
+          <div css={header}>
+            <DefaultImage width={72} height={72} css={image} />
+            <div css={content}>
+              <Text typo="title_M">{mockData.recipientName}</Text>
+              <div>
+                <div css={item}>
+                  <Text typo="body_M" color="text_tertiary">
+                    진료항목
+                  </Text>
+                  <Text typo="button_M" color="text_secondary">
+                    {mockData.shopName}
+                  </Text>
+                </div>
+                <div css={item}>
+                  <Text typo="body_M" color="text_tertiary">
+                    방문일자
+                  </Text>
+                  <Text typo="button_M" color="text_secondary">
+                    {mockData.schedule}
+                  </Text>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div css={container}>
-          {isPending ? (
-            <Loading title="리뷰 내역을 불러오고 있어요" />
-          ) : isError ? (
-            <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
-          ) : (
-            <>
-              <RatingCard rating={rating} onRatingChange={setRating} />
+          <div css={container}>
+            {isPending ? (
+              <Loading title="리뷰 내역을 불러오고 있어요" />
+            ) : isError ? (
+              <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
+            ) : (
+              <>
+                <RatingCard rating={rating} onRatingChange={setRating} />
 
-              <KeywordCard
-                tags={keywordNames}
-                selectedTags={selectedTags}
-                onTagToggle={handleTagToggle}
-                isExpanded={isExpanded}
-                toggleExpand={toggleExpand}
-              />
+                <KeywordCard
+                  tags={keywordNames}
+                  selectedTags={selectedTags}
+                  onTagToggle={handleTagToggle}
+                  isExpanded={isExpanded}
+                  toggleExpand={toggleExpand}
+                />
 
-              <ReviewInputCard
-                reviewText={reviewText}
-                setReviewText={setReviewText}
-                selectedImages={selectedImages}
-                setSelectedImages={setSelectedImages}
-              />
-            </>
-          )}
+                <ReviewInputCard
+                  reviewText={reviewText}
+                  setReviewText={setReviewText}
+                  selectedImages={selectedImages}
+                  setSelectedImages={setSelectedImages}
+                />
+              </>
+            )}
+          </div>
+          <div css={submitButton}>
+            <RoundButton
+              service="daengle"
+              size="L"
+              fullWidth
+              onClick={handleSubmit}
+              disabled={!rating || !reviewText || selectedTags.length === 0}
+            >
+              리뷰 등록하기
+            </RoundButton>
+          </div>
         </div>
-        <div css={submitButton}>
-          <RoundButton
-            service="daengle"
-            size="L"
-            fullWidth
-            onClick={handleSubmit}
-            disabled={!rating || !reviewText || selectedTags.length === 0}
-          >
-            리뷰 등록하기
-          </RoundButton>
-        </div>
-      </div>
-    </Layout>
-  );
+      </Layout>
+    );
+  };
 }
-
-import { theme } from '@/styles';
-import { css } from '@emotion/react';
 
 export const wrapper = css`
   display: flex;
