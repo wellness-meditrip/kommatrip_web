@@ -70,7 +70,7 @@ export default function ReservationPage() {
       // TODO: 실제 예약 API 호출
       console.log('예약 데이터:', reservationData);
       showToast({ title: '예약이 성공적으로 접수되었습니다!' });
-      router.push(ROUTES.CLINICS); // 또는 예약 완료 페이지로 이동
+      router.push(ROUTES.RESERVATIONS_COMPLETE); // 또는 예약 완료 페이지로 이동
     } catch {
       open({
         type: 'confirm',

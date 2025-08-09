@@ -30,4 +30,8 @@ export const ROUTES = {
   // REVIEWS
   REVIEW: '/review',
   REVIEW_EDIT: '/review/edit',
+
+  // RESERVATIONS
+  RESERVATIONS: '/reservations',
+  RESERVATIONS_COMPLETE: '/reservations/complete',
 } as const;

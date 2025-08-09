@@ -84,18 +84,12 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
   //   return () => window.removeEventListener('message', handleMessage);
   // }, [router, clinicData.hospital_id]);
 
-  // // ✅ 예약하기 버튼 클릭 → RN에 로그인 여부 요청
-  // const handleReserveClick = () => {
-  //   window?.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'AUTH_STATUS' }));
-  // };
   // ✅ 예약하기 버튼 클릭 시 토큰 여부에 따라 동작
   const handleReserveClick = () => {
     const token = localStorage.getItem('token');
-    alert(`[예약하기 클릭] 현재 토큰: ${token}`);
     if (token) {
       // 로그인된 상태 → 예약페이지로 이동
-      router.push(ROUTES.MYPAGE);
-      console.log('로그인 성공 !!');
+      router.push(ROUTES.RESERVATIONS);
     } else {
       // 로그인 안 된 상태 → RN에 로그인 요청
       window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
@@ -136,8 +130,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
 
               return (
                 <Text key={dayName} typo="button_S" color="text_secondary">
-                  {dayName} {hour.open_time} ~ {hour.close_time} (점심 {hour.lunch_start} ~{' '}
-                  {hour.lunch_end})
+                  {dayName} {hour.open_time} ~ {hour.close_time}
                 </Text>
               );
             })}
@@ -158,7 +151,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
           title={
             <Text
               typo="button_S"
-              color="text_primary"
+              color="primary50"
               onClick={() => window.open(clinicData.website, '_blank')}
             >
               {clinicData.website}
@@ -172,7 +165,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
               <Text
                 key={type}
                 typo="button_S"
-                color="text_primary"
+                color="primary50"
                 onClick={() => window.open(url, '_blank')}
               >
                 {type}

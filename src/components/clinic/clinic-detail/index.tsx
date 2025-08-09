@@ -35,10 +35,6 @@ export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, b
           <Text typo="body_M" color="text_secondary">
             {clinicAddress}
           </Text>
-          <Text typo="body_M" color="text_secondary">
-            |
-          </Text>
-          {/* <div>별점</div> */}
         </div>
         <div css={tags}>
           {badges?.map((hashTag) => (
