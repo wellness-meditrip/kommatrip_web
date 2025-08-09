@@ -1,4 +1,4 @@
-import { ImageInput, Text } from '@/components';
+import { Text, ImageInput } from '@/components';
 import { wrapper, textareaContainer, textarea, textCount } from './index.styles';
 
 interface MedicalInfoCardProps {

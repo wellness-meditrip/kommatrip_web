@@ -1,5 +1,4 @@
 'use client'; // 클라이언트 컴포넌트
-
 import { useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 
