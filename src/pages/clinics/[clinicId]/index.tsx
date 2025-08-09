@@ -67,7 +67,6 @@ export default function ClinicDetailPage() {
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="MEDITRIP" />
-
       {data?.hospital_details.map((clinic, index) => {
         const mainImage = clinic.images.find((img) => img.is_main)?.image_url ?? '';
         return (
@@ -98,7 +97,6 @@ export default function ClinicDetailPage() {
 const wrapper = css`
   display: flex;
   flex-direction: column;
-  flex: 1;
 
   background: ${theme.colors.white};
 
@@ -109,5 +107,4 @@ const wrapper = css`
 
 const content = css`
   width: 100%;
-  height: 100%;
 `;

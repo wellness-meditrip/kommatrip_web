@@ -1,6 +1,14 @@
 // import { useUserReservationGroomingListQuery } from '~/queries/reservation';
 import { Hospital } from '@/models';
-import { wrapper, infoWrapper, urlWrapper, contents, item } from './index.styles';
+import {
+  wrapper,
+  infoWrapper,
+  urlWrapper,
+  contents,
+  item,
+  textWrapper,
+  itemWrapper,
+} from './index.styles';
 import { ClinicLocation } from '@/icons/ClinicLocation';
 import { Text } from '@/components/text';
 import {
@@ -182,35 +190,37 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
           </Text>
         </ClinicIntroduction>
         <ClinicIntroduction title="편의시설" showToggle={false}>
-          <div css={item}>
-            <ClinicParking width={24} height={24} />
-            <Text typo="body_S" color="text_tertiary">
-              주차 가능
-            </Text>
-          </div>
-          <div css={item}>
-            <ClinicWifi width={24} height={24} />
-            <Text typo="body_S" color="text_tertiary">
-              무료 Wifi
-            </Text>
-          </div>
-          <div css={item}>
-            <ClinicLuggage width={24} height={24} />
-            <Text typo="body_S" color="text_tertiary">
-              짐 보관
-            </Text>
-          </div>
-          <div css={item}>
-            <ClinicPrivate width={24} height={24} />
-            <Text typo="body_S" color="text_tertiary">
-              프라이빗 진료
-            </Text>
-          </div>
-          <div css={item}>
-            <ClinicPickup width={24} height={24} />
-            <Text typo="body_S" color="text_tertiary">
-              공항 픽업
-            </Text>
+          <div css={itemWrapper}>
+            <div css={item}>
+              <ClinicParking width={24} height={24} />
+              <Text typo="body_S" color="text_tertiary" css={textWrapper}>
+                주차 가능
+              </Text>
+            </div>
+            <div css={item}>
+              <ClinicWifi width={24} height={24} />
+              <Text typo="body_S" color="text_tertiary" css={textWrapper}>
+                무료 Wifi
+              </Text>
+            </div>
+            <div css={item}>
+              <ClinicLuggage width={24} height={24} />
+              <Text typo="body_S" color="text_tertiary" css={textWrapper}>
+                짐 보관
+              </Text>
+            </div>
+            <div css={item}>
+              <ClinicPrivate width={24} height={24} />
+              <Text typo="body_S" color="text_tertiary" css={textWrapper}>
+                프라이빗 진료
+              </Text>
+            </div>
+            <div css={item}>
+              <ClinicPickup width={24} height={24} />
+              <Text typo="body_S" color="text_tertiary" css={textWrapper}>
+                공항 픽업
+              </Text>
+            </div>
           </div>
         </ClinicIntroduction>
 

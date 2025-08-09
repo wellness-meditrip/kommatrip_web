@@ -43,10 +43,11 @@ export interface ClinicReview {
   user_id: number;
   doctor_id: number;
   doctor_name: string;
-  title: string;
+  title?: string;
   rating: number;
   is_verified: boolean;
   created_at: string;
   keyword_count: number;
   image_count: number;
+  content?: string;
 }

@@ -2,34 +2,29 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
 export const wrapper = css`
-  overflow-y: hidden;
-
   width: 100%;
-  height: 100%;
   padding: 0 0 36px;
 `;
 
 export const tabHeader = css`
-  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 
+  display: flex;
   cursor: pointer;
 
+  background: ${theme.colors.white};
   border-bottom: 0.5px solid ${theme.colors.gray500};
 `;
 
 export const tabContent = css`
   display: flex;
   position: relative;
-  overflow-y: auto;
 
   width: 100%;
-  height: 100%;
 `;
 
 export const tabContentItem = css`
-  position: absolute;
-  top: 0;
-
   width: 100%;
-  height: 100%;
 `;

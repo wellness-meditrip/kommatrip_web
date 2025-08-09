@@ -112,10 +112,10 @@ export function ClinicReview({ hospitalId }: { hospitalId: number }) {
               createdAt={review.created_at}
               reviewId={review.review_id}
               reviewerImageUrl="/public/images/mock-user.png" // 현재 reviewerImageUrl 정보 없음
-              reviewerName={'작성자'} // 현재 reviewerName 정보 없음
+              reviewerName={review.doctor_name} // 현재 reviewerName 정보 없음
               keywordReviewList={[]} // 현재 keyword 정보 없음
               starRating={review.rating as 1 | 2 | 3 | 4 | 5}
-              content={review.title}
+              content={review.content ?? ''}
               imageUrlList={[]} // 현재 imageUrlList 정보 없음
             />
           ))

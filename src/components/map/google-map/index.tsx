@@ -21,7 +21,6 @@ export function ClinicGoogleMap({ address }: Props) {
     loader.load().then(() => {
       if (!mapRef.current) return;
 
-      console.log('✅ google.maps.marker:', google.maps.marker);
       const geocoder = new google.maps.Geocoder();
 
       geocoder.geocode(

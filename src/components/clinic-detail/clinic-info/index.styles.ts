@@ -18,6 +18,7 @@ export const urlWrapper = css`
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
+  justify-content: flex-start;
   cursor: pointer;
 `;
 
@@ -30,12 +31,22 @@ export const contents = css`
   padding: 16px 20px calc(${theme.size.ctaButtonHeight} + 16px) 20px;
 `;
 
+export const itemWrapper = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  justify-content: flex-start;
+`;
 export const item = css`
   display: flex;
   align-items: center;
   flex-direction: column;
 
-  flex: 1;
-
+  flex-shrink: 0;
+  min-width: 70px;
   gap: 8px;
+`;
+
+export const textWrapper = css`
+  white-space: nowrap;
 `;

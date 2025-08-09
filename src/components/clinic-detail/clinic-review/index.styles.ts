@@ -28,23 +28,35 @@ export const reviewSummary = css`
 export const titleWrapper = css`
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+  }
 `;
 export const title = css`
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  min-width: 0;
 `;
 
 export const toolTip = css`
   display: flex;
   position: relative;
+  align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  min-width: 0;
 
   cursor: pointer;
 
   &:hover > div {
     opacity: 1;
-
     visibility: visible;
   }
 `;
@@ -55,12 +67,12 @@ export const toolTipInfo = css`
   gap: 14px;
   position: absolute;
   top: calc(100% + 8px);
-  left: 100px;
-  transform: translateX(-103%);
+  right: 0;
   z-index: 2;
   visibility: hidden;
 
-  width: 322px;
+  width: min(320px, calc(100vw - 40px));
+  max-width: 320px;
   padding: 16px;
   border-radius: 8px;
 

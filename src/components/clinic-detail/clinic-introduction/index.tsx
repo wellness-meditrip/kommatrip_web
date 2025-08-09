@@ -7,9 +7,15 @@ interface Props {
   title: string;
   children: React.ReactNode;
   showToggle?: boolean;
+  noPadding?: boolean;
 }
 
-export function ClinicIntroduction({ title, children, showToggle = true }: Props) {
+export function ClinicIntroduction({
+  title,
+  children,
+  showToggle = true,
+  noPadding = false,
+}: Props) {
   const [isOpen, setIsOpen] = useState(showToggle ? false : true);
 
   const handleToggle = () => {
