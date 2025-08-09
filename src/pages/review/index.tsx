@@ -19,8 +19,6 @@ import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
 import { usePostClinicReviewMutation } from '@/queries';
 import { Loading } from '@/components/common';
-import { theme } from '@/styles';
-import { css } from '@emotion/react';
 
 const mockData = {
   recipientName: '우주연 한의원',
@@ -47,7 +45,7 @@ export default function ReviewPage() {
   const { open } = useDialog();
   const { mutate, isPending, isError } = usePostClinicReviewMutation();
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
@@ -58,31 +56,31 @@ export default function ReviewPage() {
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
-  useEffect(() => {
-    const raw = localStorage.getItem('userInfo');
-    console.log('[🧾 raw userInfo from localStorage]', raw);
-    try {
-      if (!raw) {
-        alert('❌ userInfo 없음: RN에서 아직 전달되지 않음');
-        return;
-      }
+  // useEffect(() => {
+  //   const raw = localStorage.getItem('userInfo');
+  //   console.log('[🧾 raw userInfo from localStorage]', raw);
+  //   try {
+  //     if (!raw) {
+  //       alert('❌ userInfo 없음: RN에서 아직 전달되지 않음');
+  //       return;
+  //     }
 
-      const parsed: UserInfo = JSON.parse(raw);
-      setUserInfo(parsed);
-      console.log('[✅ 파싱된 userInfo 객체]', parsed);
+  //     const parsed: UserInfo = JSON.parse(raw);
+  //     // setUserInfo(parsed);
+  //     console.log('[✅ 파싱된 userInfo 객체]', parsed);
 
-      // ✅ RN이 잘 전달해줬는지 확인
-      alert(
-        `🧑‍💻 유저 정보 확인:\n` +
-          `닉네임: ${parsed.nickname}\n` +
-          `이메일: ${parsed.email}\n` +
-          `ID: ${parsed.id}`
-      );
-    } catch (e) {
-      console.error('userInfo 파싱 실패', e);
-      alert('❌ userInfo 파싱 실패: RN에서 잘못된 값이 전달됨');
-    }
-  }, []);
+  //     // ✅ RN이 잘 전달해줬는지 확인
+  //     alert(
+  //       `🧑‍💻 유저 정보 확인:\n` +
+  //         `닉네임: ${parsed.nickname}\n` +
+  //         `이메일: ${parsed.email}\n` +
+  //         `ID: ${parsed.id}`
+  //     );
+  //   } catch (e) {
+  //     console.error('userInfo 파싱 실패', e);
+  //     alert('❌ userInfo 파싱 실패: RN에서 잘못된 값이 전달됨');
+  //   }
+  // }, []);
 
   const handleSubmit = async () => {
     if (!rating || !reviewText || selectedTags.length === 0) {
@@ -101,11 +99,12 @@ export default function ReviewPage() {
     // }
 
     // 이미지 메타데이터 추출
-    let imageMetadata: any[] = [];
+    let imageMetadata: string[] = [];
     if (selectedImages.length > 0) {
       try {
-        imageMetadata = await extractMultipleImageMetadata(selectedImages, 1);
-      } catch (error) {
+        const metadata = await extractMultipleImageMetadata(selectedImages, 1);
+        imageMetadata = metadata.map((item) => item.image_data);
+      } catch {
         alert('이미지 처리에 실패했습니다.');
         return;
       }

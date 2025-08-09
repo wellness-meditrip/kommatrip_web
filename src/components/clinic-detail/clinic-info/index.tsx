@@ -16,11 +16,9 @@ import {
 import { InfoRow } from '@/components/info-row';
 import { CTAButton } from '@/components/button';
 import { ClinicGoogleMap } from '@/components/map/google-map';
-import { GoogleMapLoader } from '@/components/map/loader';
 import { ClinicIntroduction } from '../clinic-introduction';
 import { css } from '@emotion/react';
 import { DAY_KR, ROUTES } from '@/constants';
-import { useEffect } from 'react';
 import router from 'next/router';
 
 interface ClinicInfoProps {
