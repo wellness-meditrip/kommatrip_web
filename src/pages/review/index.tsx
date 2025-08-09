@@ -151,74 +151,74 @@ export default function ReviewPage() {
         });
       },
     });
+  };
 
-    return (
-      <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
-        <div css={wrapper}>
-          <div css={header}>
-            <DefaultImage width={72} height={72} css={image} />
-            <div css={content}>
-              <Text typo="title_M">{mockData.recipientName}</Text>
-              <div>
-                <div css={item}>
-                  <Text typo="body_M" color="text_tertiary">
-                    진료항목
-                  </Text>
-                  <Text typo="button_M" color="text_secondary">
-                    {mockData.shopName}
-                  </Text>
-                </div>
-                <div css={item}>
-                  <Text typo="body_M" color="text_tertiary">
-                    방문일자
-                  </Text>
-                  <Text typo="button_M" color="text_secondary">
-                    {mockData.schedule}
-                  </Text>
-                </div>
+  return (
+    <Layout>
+      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
+      <div css={wrapper}>
+        <div css={header}>
+          <DefaultImage width={72} height={72} css={image} />
+          <div css={content}>
+            <Text typo="title_M">{mockData.recipientName}</Text>
+            <div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  진료항목
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.shopName}
+                </Text>
+              </div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  방문일자
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.schedule}
+                </Text>
               </div>
             </div>
           </div>
-          <div css={container}>
-            {isPending ? (
-              <Loading title="리뷰 내역을 불러오고 있어요" />
-            ) : isError ? (
-              <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
-            ) : (
-              <>
-                <RatingCard rating={rating} onRatingChange={setRating} />
-
-                <KeywordCard
-                  tags={keywordNames}
-                  selectedTags={selectedTags}
-                  onTagToggle={handleTagToggle}
-                  isExpanded={isExpanded}
-                  toggleExpand={toggleExpand}
-                />
-
-                <ReviewInputCard
-                  reviewText={reviewText}
-                  setReviewText={setReviewText}
-                  selectedImages={selectedImages}
-                  setSelectedImages={setSelectedImages}
-                />
-              </>
-            )}
-          </div>
-          <div css={submitButton}>
-            <RoundButton
-              service="daengle"
-              size="L"
-              fullWidth
-              onClick={handleSubmit}
-              disabled={!rating || !reviewText || selectedTags.length === 0}
-            >
-              리뷰 등록하기
-            </RoundButton>
-          </div>
         </div>
-      </Layout>
-    );
-  };
+        <div css={container}>
+          {isPending ? (
+            <Loading title="리뷰 내역을 불러오고 있어요" />
+          ) : isError ? (
+            <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
+          ) : (
+            <>
+              <RatingCard rating={rating} onRatingChange={setRating} />
+
+              <KeywordCard
+                tags={keywordNames}
+                selectedTags={selectedTags}
+                onTagToggle={handleTagToggle}
+                isExpanded={isExpanded}
+                toggleExpand={toggleExpand}
+              />
+
+              <ReviewInputCard
+                reviewText={reviewText}
+                setReviewText={setReviewText}
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
+              />
+            </>
+          )}
+        </div>
+        <div css={submitButton}>
+          <RoundButton
+            service="daengle"
+            size="L"
+            fullWidth
+            onClick={handleSubmit}
+            disabled={!rating || !reviewText || selectedTags.length === 0}
+          >
+            리뷰 등록하기
+          </RoundButton>
+        </div>
+      </div>
+    </Layout>
+  );
 }
