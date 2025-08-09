@@ -18,13 +18,13 @@ export const inputContainer = css`
 
 export const input = css`
   padding: 16px;
-  border: 1px solid ${theme.colors.text_quaternary};
+  border: 1px solid ${theme.colors.text_tertiary};
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
 
   &::placeholder {
-    color: ${theme.colors.text_quaternary};
+    color: ${theme.colors.text_tertiary};
   }
 
   &:focus {
@@ -46,7 +46,7 @@ export const selectContainer = css`
 export const select = css`
   width: 100%;
   padding: 16px;
-  border: 1px solid ${theme.colors.text_quaternary};
+  border: 1px solid ${theme.colors.text_tertiary};
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;

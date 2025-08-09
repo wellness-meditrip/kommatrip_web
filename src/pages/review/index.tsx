@@ -5,6 +5,15 @@ import { useRouter } from 'next/router';
 import { DefaultImage } from '@/icons';
 import { convertKeywordNamesToRequestPayload } from '@/utils';
 import 'dayjs/locale/ko';
+import {
+  wrapper,
+  header,
+  content,
+  item,
+  image,
+  container,
+  submitButton,
+} from '@/styles/pages/review.styles';
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
@@ -103,6 +112,9 @@ export default function ReviewPage() {
         });
       })
     );
+
+    const uploadedImageUrls = selectedImages.map((file, index) => URL.createObjectURL(file));
+
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
     const mockReservationData = {
       hospital_id: 1,
@@ -130,7 +142,7 @@ export default function ReviewPage() {
         showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
         router.push(ROUTES.MYPAGE_REVIEWS);
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         open({
           type: 'confirm',
           title: '리뷰 등록 실패',
@@ -210,45 +222,3 @@ export default function ReviewPage() {
     );
   };
 }
-
-export const wrapper = css`
-  display: flex;
-  flex-direction: column;
-  background-color: ${theme.colors.bg_surface1};
-`;
-export const image = css`
-  border-radius: 8px;
-  background-color: black;
-`;
-export const content = css`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-export const item = css`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-export const header = css`
-  display: flex;
-  gap: 12px;
-  margin-bottom: 6px;
-  padding: 18px;
-
-  background-color: ${theme.colors.white};
-`;
-
-export const container = css`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px 18px 18px;
-  min-height: calc(100vh - ${theme.size.gnbHeight});
-`;
-
-export const submitButton = css`
-  margin-top: 14px;
-  padding: 18px;
-`;

@@ -7,7 +7,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export function Section({ title, children }: Props): JSX.Element {
+export function Section({ title, children }: Props) {
   return (
     <section css={wrapper}>
       <Text typo="subtitle3" color="gray700">

@@ -4,7 +4,15 @@ import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import { DefaultImage } from '@/icons';
 
-import { wrapper, header, content, item, image, container, submitButton } from './index.styles';
+import {
+  wrapper,
+  header,
+  content,
+  item,
+  image,
+  container,
+  submitButton,
+} from '@/styles/pages/reservations.styles';
 
 import { MedicalInfoCard, VisitDateCard, ContactInfoCard, AdditionalInfoCard } from '@/components';
 import { ROUTES } from '@/constants/commons';
@@ -63,7 +71,7 @@ export default function ReservationPage() {
       console.log('예약 데이터:', reservationData);
       showToast({ title: '예약이 성공적으로 접수되었습니다!' });
       router.push(ROUTES.CLINICS); // 또는 예약 완료 페이지로 이동
-    } catch (error) {
+    } catch {
       open({
         type: 'confirm',
         title: '예약 접수 실패',
