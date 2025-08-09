@@ -3,7 +3,7 @@ import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import { DefaultImage } from '@/icons';
-import { convertKeywordNamesToRequestPayload } from '@/utils';
+import { convertKeywordNamesToRequestPayload, extractMultipleImageMetadata } from '@/utils';
 import 'dayjs/locale/ko';
 import {
   wrapper,
@@ -100,20 +100,16 @@ export default function ReviewPage() {
     //   }
     // }
 
-    // selectedImages를 base64 문자열로 변환
-
-    const base64Images = await Promise.all(
-      selectedImages.map((file) => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      })
-    );
-
-    const uploadedImageUrls = selectedImages.map((file, index) => URL.createObjectURL(file));
+    // 이미지 메타데이터 추출
+    let imageMetadata: any[] = [];
+    if (selectedImages.length > 0) {
+      try {
+        imageMetadata = await extractMultipleImageMetadata(selectedImages, 1);
+      } catch (error) {
+        alert('이미지 처리에 실패했습니다.');
+        return;
+      }
+    }
 
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
     const mockReservationData = {
@@ -134,7 +130,7 @@ export default function ReviewPage() {
       content: reviewText,
       rating,
       keywords: mappedKeywords,
-      images: base64Images,
+      images: imageMetadata,
     };
 
     mutate(body, {
@@ -151,74 +147,74 @@ export default function ReviewPage() {
         });
       },
     });
+  };
 
-    return (
-      <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
-        <div css={wrapper}>
-          <div css={header}>
-            <DefaultImage width={72} height={72} css={image} />
-            <div css={content}>
-              <Text typo="title_M">{mockData.recipientName}</Text>
-              <div>
-                <div css={item}>
-                  <Text typo="body_M" color="text_tertiary">
-                    진료항목
-                  </Text>
-                  <Text typo="button_M" color="text_secondary">
-                    {mockData.shopName}
-                  </Text>
-                </div>
-                <div css={item}>
-                  <Text typo="body_M" color="text_tertiary">
-                    방문일자
-                  </Text>
-                  <Text typo="button_M" color="text_secondary">
-                    {mockData.schedule}
-                  </Text>
-                </div>
+  return (
+    <Layout>
+      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
+      <div css={wrapper}>
+        <div css={header}>
+          <DefaultImage width={72} height={72} css={image} />
+          <div css={content}>
+            <Text typo="title_M">{mockData.recipientName}</Text>
+            <div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  진료항목
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.shopName}
+                </Text>
+              </div>
+              <div css={item}>
+                <Text typo="body_M" color="text_tertiary">
+                  방문일자
+                </Text>
+                <Text typo="button_M" color="text_secondary">
+                  {mockData.schedule}
+                </Text>
               </div>
             </div>
           </div>
-          <div css={container}>
-            {isPending ? (
-              <Loading title="리뷰 내역을 불러오고 있어요" />
-            ) : isError ? (
-              <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
-            ) : (
-              <>
-                <RatingCard rating={rating} onRatingChange={setRating} />
-
-                <KeywordCard
-                  tags={keywordNames}
-                  selectedTags={selectedTags}
-                  onTagToggle={handleTagToggle}
-                  isExpanded={isExpanded}
-                  toggleExpand={toggleExpand}
-                />
-
-                <ReviewInputCard
-                  reviewText={reviewText}
-                  setReviewText={setReviewText}
-                  selectedImages={selectedImages}
-                  setSelectedImages={setSelectedImages}
-                />
-              </>
-            )}
-          </div>
-          <div css={submitButton}>
-            <RoundButton
-              service="daengle"
-              size="L"
-              fullWidth
-              onClick={handleSubmit}
-              disabled={!rating || !reviewText || selectedTags.length === 0}
-            >
-              리뷰 등록하기
-            </RoundButton>
-          </div>
         </div>
-      </Layout>
-    );
-  };
+        <div css={container}>
+          {isPending ? (
+            <Loading title="리뷰 내역을 불러오고 있어요" />
+          ) : isError ? (
+            <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
+          ) : (
+            <>
+              <RatingCard rating={rating} onRatingChange={setRating} />
+
+              <KeywordCard
+                tags={keywordNames}
+                selectedTags={selectedTags}
+                onTagToggle={handleTagToggle}
+                isExpanded={isExpanded}
+                toggleExpand={toggleExpand}
+              />
+
+              <ReviewInputCard
+                reviewText={reviewText}
+                setReviewText={setReviewText}
+                selectedImages={selectedImages}
+                setSelectedImages={setSelectedImages}
+              />
+            </>
+          )}
+        </div>
+        <div css={submitButton}>
+          <RoundButton
+            service="daengle"
+            size="L"
+            fullWidth
+            onClick={handleSubmit}
+            disabled={!rating || !reviewText || selectedTags.length === 0}
+          >
+            리뷰 등록하기
+          </RoundButton>
+        </div>
+      </div>
+    </Layout>
+  );
 }
