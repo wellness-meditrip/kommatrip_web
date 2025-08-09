@@ -24,27 +24,14 @@ export function ReviewInputCard({
   };
   return (
     <div css={wrapper}>
-      <Text typo="title_M">진료 정보</Text>
+      <Text typo="subtitle1">리뷰를 작성해주세요</Text>
       <div css={reviewImage}>
         <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
       </div>
       <div css={reviewInput}>
-        <div>
-          <Text typo="title_S">주요 증상 및 진료 목적 *</Text>
-        </div>
         <textarea
           css={textarea}
-          placeholder="진료 받고 싶은 증상이나 목적을 작성해주세요"
-          maxLength={400}
-          value={reviewText}
-          onChange={(e) => setReviewText(e.target.value)}
-        />
-        <div>
-          <Text typo="title_S">복용 중인 약물</Text>
-        </div>
-        <textarea
-          css={textarea}
-          placeholder="복용 중인 약물이 있다면 작성해주세요"
+          placeholder="리뷰를 작성해주세요"
           maxLength={400}
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
