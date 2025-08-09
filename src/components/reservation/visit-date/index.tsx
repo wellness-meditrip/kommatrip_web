@@ -1,0 +1,54 @@
+import { Text } from '@/components';
+import { DatePicker } from '@/components/date-picker';
+import {
+  wrapper,
+  datePickerContainer,
+  timeSlotContainer,
+  timeSlot,
+  selectedTimeSlot,
+} from './index.styles';
+
+interface VisitDateCardProps {
+  selectedDate: string;
+  setSelectedDate: (date: string) => void;
+  selectedTime: string;
+  setSelectedTime: (time: string) => void;
+}
+
+const timeSlots = ['10:00', '11:00', '13:00', '14:00', '15:00', '17:00'];
+
+export function VisitDateCard({
+  setSelectedDate,
+  selectedTime,
+  setSelectedTime,
+}: VisitDateCardProps) {
+  return (
+    <div css={wrapper}>
+      <Text typo="title_M" color="text_primary">
+        원하는 방문일자
+      </Text>
+
+      <div css={datePickerContainer}>
+        <Text typo="title_S" color="text_primary">
+          방문 날짜 *
+        </Text>
+        <DatePicker onChange={setSelectedDate} />
+      </div>
+
+      <div>
+        <Text typo="title_S">방문 시간</Text>
+        <div css={timeSlotContainer}>
+          {timeSlots.map((time) => (
+            <button
+              key={time}
+              css={selectedTime === time ? selectedTimeSlot : timeSlot}
+              onClick={() => setSelectedTime(time)}
+            >
+              {time}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -11,7 +11,7 @@ export const usePostClinicReviewMutation = () => {
     mutationFn: async (body: PostClinicReviewRequestBody) => {
       try {
         return await postClinicReview(body);
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof AxiosError && error.response?.data?.error) {
           throw error.response.data.error;
         }

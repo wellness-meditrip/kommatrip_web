@@ -29,6 +29,7 @@ export default function ClinicPage() {
     }),
     [keyword]
   );
+
   const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError, data } =
     useGetClinicInfiniteQuery(params);
 

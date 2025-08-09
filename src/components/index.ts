@@ -15,3 +15,4 @@ export * from './tabs';
 export * from './tag';
 export * from './text';
 export * from './toast';
+export * from './reservation';
