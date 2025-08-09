@@ -3,6 +3,7 @@ export * from './ArrowDown';
 export * from './ArrowUpdown';
 export * from './ButtonDownArrow';
 export * from './ButtonTextButtonArrow';
+export * from './Check';
 export * from './ClinicClock';
 export * from './ClinicContact';
 export * from './ClinicGlobe';
