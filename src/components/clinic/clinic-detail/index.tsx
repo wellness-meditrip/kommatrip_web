@@ -38,7 +38,13 @@ export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, b
         </div>
       ) : (
         <div css={profileWrapper}>
-          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
+          <img
+            src="/default.png"
+            alt="기본 이미지"
+            width={170}
+            height={200}
+            style={{ objectFit: 'cover', borderRadius: '8px' }}
+          />
         </div>
       )}
       <div css={DetailsWrapper}>

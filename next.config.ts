@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
+
   // webpack 설정
   webpack: (config) => {
     // @ts-expect-error 타입 에러 무시
@@ -44,9 +45,8 @@ const nextConfig: NextConfig = {
     fileLoaderRule.exclude = /\.svg$/i;
     return config;
   },
-};
 
-module.exports = {
+  // 환경 변수
   env: {
     NEXT_PUBLIC_MAPS_API_KEY: process.env.NEXT_PUBLIC_MAPS_API_KEY,
     NEXT_PUBLIC_MAP_ID_API_KEY: process.env.NEXT_PUBLIC_MAP_ID_API_KEY,
@@ -56,9 +56,12 @@ module.exports = {
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   },
+
+  // 이미지 설정
   images: {
     domains: ['drive.google.com', 'meditrip.s3.ap-northeast-2.amazonaws.com'],
-    unoptimized: true,
+    unoptimized: false, // 최적화 활성화
   },
 };
+
 export default nextConfig;

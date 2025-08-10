@@ -62,14 +62,17 @@ export default function ClinicCard({
             onLoad={handleImageLoad}
           />
         ) : (
-          <Image
-            src="/default.png"
-            alt="기본 이미지"
-            width={170}
-            height={200}
-            onError={() => console.log('Default image also failed to load for:', clinicName)}
-            onLoad={() => console.log('Default image loaded successfully for:', clinicName)}
-          />
+          <div css={profileWrapper}>
+            <img
+              src="public/default.png"
+              alt="기본 이미지"
+              width={170}
+              height={200}
+              onError={() => console.log('Default image also failed to load for:', clinicName)}
+              onLoad={() => console.log('Default image loaded successfully for:', clinicName)}
+              style={{ objectFit: 'cover', borderRadius: '8px' }}
+            />
+          </div>
         )}
         {rating && (
           <div css={ratingBadge}>
