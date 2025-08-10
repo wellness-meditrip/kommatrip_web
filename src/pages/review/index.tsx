@@ -16,7 +16,6 @@ import {
 } from '@/styles/pages/review.styles';
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
-import { ROUTES } from '@/constants/commons';
 import { usePostClinicReviewMutation } from '@/queries';
 import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
