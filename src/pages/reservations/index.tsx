@@ -118,7 +118,12 @@ export default function ReservationPage() {
           const axiosError = error as { code?: string; message?: string };
 
           if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
-            errorMessage = '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.';
+            errorMessage = '서버 응답이 지연되고 있습니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.';
+            console.log('타임아웃 에러 상세:', {
+              code: axiosError.code,
+              message: axiosError.message,
+              timeout: '30초 초과'
+            });
           }
         }
 

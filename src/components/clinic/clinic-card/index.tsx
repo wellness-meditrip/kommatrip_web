@@ -64,7 +64,7 @@ export default function ClinicCard({
         ) : (
           <div css={profileWrapper}>
             <img
-              src="public/default.png"
+              src="/default.png"
               alt="기본 이미지"
               width={170}
               height={200}

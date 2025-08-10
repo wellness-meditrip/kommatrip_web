@@ -13,6 +13,7 @@ export const { api: reviewApi } = createHttpClient({
 
 export const guestReservationApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_RESERVATION_API_URL ?? '',
+  timeout: 30000, // 30초로 증가
 });
 
 guestReservationApi.interceptors.response.use(
