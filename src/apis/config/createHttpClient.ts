@@ -25,33 +25,37 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
     async (error) => {
       const originalRequest = error.config;
 
-      const daengleError = error.response.data.error;
+      // 에러 응답 구조 확인
+      const daengleError = error.response?.data?.error;
 
-      // if (daengleError.code === ERROR_CODES.FORBIDDEN) {
-      //   window.location.href = '/login';
-      //   return Promise.reject(error);
-      // }
+      // 에러 객체가 존재하고 code가 있을 때만 처리
+      if (daengleError && daengleError.code) {
+        // if (daengleError.code === ERROR_CODES.FORBIDDEN) {
+        //   window.location.href = '/login';
+        //   return Promise.reject(error);
+        // }
 
-      if (daengleError.code === 1001) {
-        localStorage.clear();
-        return Promise.reject(error);
-      }
-
-      if (daengleError.code === ERROR_CODES.NO_USER_EXIST) {
-        localStorage.clear();
-        return Promise.reject(error);
-      }
-
-      if (daengleError.code === ERROR_CODES.TOKEN_EXPIRED) {
-        originalRequest._retry = true;
-
-        try {
-          const newAccessToken = await getNewAccessToken({ role });
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return api(originalRequest);
-        } catch (err) {
+        if (daengleError.code === 1001) {
           localStorage.clear();
-          return Promise.reject(err);
+          return Promise.reject(error);
+        }
+
+        if (daengleError.code === ERROR_CODES.NO_USER_EXIST) {
+          localStorage.clear();
+          return Promise.reject(error);
+        }
+
+        if (daengleError.code === ERROR_CODES.TOKEN_EXPIRED) {
+          originalRequest._retry = true;
+
+          try {
+            const newAccessToken = await getNewAccessToken({ role });
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return api(originalRequest);
+          } catch (err) {
+            localStorage.clear();
+            return Promise.reject(err);
+          }
         }
       }
 

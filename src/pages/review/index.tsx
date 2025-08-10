@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
@@ -18,6 +18,7 @@ import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { ROUTES } from '@/constants/commons';
 import { usePostClinicReviewMutation } from '@/queries';
+import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
 
 const mockData = {
@@ -46,8 +47,6 @@ export default function ReviewPage() {
   const { mutate, isPending, isError } = usePostClinicReviewMutation();
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
   // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
-  // const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
   const toggleExpand = () => setIsExpanded((prev) => !prev);
 
@@ -87,23 +86,21 @@ export default function ReviewPage() {
       alert('별점, 키워드, 내용을 모두 입력해주세요.');
       return;
     }
-    // let uploadedImageUrls: string[] = [];
 
-    // if (selectedImages.length > 0) {
-    //   uploadedImageUrls = (await uploadToS3(selectedImages)) || [];
-
-    //   if (!uploadedImageUrls) {
-    //     alert('이미지 업로드에 실패했습니다.');
-    //     return;
-    //   }
-    // }
-
-    // 이미지 메타데이터 추출
-    let imageMetadata: string[] = [];
+    let imageMetadata: ImageMetadata[] = [];
     if (selectedImages.length > 0) {
       try {
         const metadata = await extractMultipleImageMetadata(selectedImages, 1);
-        imageMetadata = metadata.map((item) => item.image_data);
+        imageMetadata = metadata.map((item) => ({
+          image_data: item.image_data,
+          image_type: item.image_type,
+          original_filename: item.original_filename,
+          file_size: item.file_size,
+          width: item.width,
+          height: item.height,
+          image_order: item.image_order,
+          alt_text: item.alt_text || '',
+        }));
       } catch {
         alert('이미지 처리에 실패했습니다.');
         return;
@@ -137,11 +134,32 @@ export default function ReviewPage() {
         showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
         router.push(ROUTES.MYPAGE_REVIEWS);
       },
-      onError: (error: Error) => {
+      onError: (error: unknown) => {
+        let errorMessage = '알 수 없는 오류가 발생했습니다.';
+
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { data?: unknown; status?: number } };
+
+          if (axiosError.response?.status === 422) {
+            errorMessage = '입력하신 정보를 확인해주세요.';
+            if (
+              axiosError.response?.data &&
+              typeof axiosError.response.data === 'object' &&
+              'message' in axiosError.response.data
+            ) {
+              errorMessage = String(axiosError.response.data.message);
+            }
+          } else if (axiosError.response?.status === 401) {
+            errorMessage = '로그인이 필요합니다.';
+          } else if (axiosError.response?.status === 403) {
+            errorMessage = '접근 권한이 없습니다.';
+          }
+        }
+
         open({
           type: 'confirm',
           title: '리뷰 등록 실패',
-          description: error?.message || '알 수 없는 오류가 발생했습니다.',
+          description: errorMessage,
           primaryActionLabel: '확인',
         });
       },
@@ -177,30 +195,24 @@ export default function ReviewPage() {
           </div>
         </div>
         <div css={container}>
-          {isPending ? (
-            <Loading title="리뷰 내역을 불러오고 있어요" />
-          ) : isError ? (
-            <Text typo="body11">리뷰 데이터를 불러오는 데 실패했습니다.</Text>
-          ) : (
-            <>
-              <RatingCard rating={rating} onRatingChange={setRating} />
+          {isPending && <Loading title="리뷰를 등록하고 있어요" />}
 
-              <KeywordCard
-                tags={keywordNames}
-                selectedTags={selectedTags}
-                onTagToggle={handleTagToggle}
-                isExpanded={isExpanded}
-                toggleExpand={toggleExpand}
-              />
+          <RatingCard rating={rating} onRatingChange={setRating} />
 
-              <ReviewInputCard
-                reviewText={reviewText}
-                setReviewText={setReviewText}
-                selectedImages={selectedImages}
-                setSelectedImages={setSelectedImages}
-              />
-            </>
-          )}
+          <KeywordCard
+            tags={keywordNames}
+            selectedTags={selectedTags}
+            onTagToggle={handleTagToggle}
+            isExpanded={isExpanded}
+            toggleExpand={toggleExpand}
+          />
+
+          <ReviewInputCard
+            reviewText={reviewText}
+            setReviewText={setReviewText}
+            selectedImages={selectedImages}
+            setSelectedImages={setSelectedImages}
+          />
         </div>
         <div css={submitButton}>
           <RoundButton
@@ -208,9 +220,9 @@ export default function ReviewPage() {
             size="L"
             fullWidth
             onClick={handleSubmit}
-            disabled={!rating || !reviewText || selectedTags.length === 0}
+            disabled={!rating || !reviewText || selectedTags.length === 0 || isPending}
           >
-            리뷰 등록하기
+            {isPending ? '리뷰 등록 중...' : '리뷰 등록하기'}
           </RoundButton>
         </div>
       </div>

@@ -7,7 +7,18 @@ export interface PostClinicReviewRequestBody {
   content: string;
   rating: number;
   keywords: keyword[];
-  images: string[];
+  images: ImageMetadata[];
+}
+
+export interface ImageMetadata {
+  image_data: string;
+  image_type: string;
+  original_filename: string;
+  file_size: number;
+  width: number;
+  height: number;
+  image_order: number;
+  alt_text?: string;
 }
 export interface keyword {
   category: string;
