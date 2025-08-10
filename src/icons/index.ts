@@ -13,7 +13,7 @@ export * from './ClinicParking';
 export * from './ClinicPickup';
 export * from './ClinicPrivate';
 export * from './ClinicWifi';
-export * from './DefaultImage';
+
 export * from './GnbClinicActive';
 export * from './GnbClinicInactive';
 export * from './GnbHomeActive';

@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { DefaultImage, Location } from '@/icons';
+import { Location } from '@/icons';
 import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import { css } from '@emotion/react';
@@ -31,27 +31,19 @@ export default function ClinicCard({
 
   return (
     <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(clinicId)}>
-      {!convertedUrl ? (
-        <div css={profileWrapper}>
-          <DefaultImage />
-          {rating && (
-            <div css={ratingBadge}>
-              <span css={star}>⭐</span>
-              <span css={ratingText}>{rating}</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div css={profileWrapper}>
+      <div css={profileWrapper}>
+        {convertedUrl ? (
           <Image src={convertedUrl} alt="프로필 이미지" width={170} height={200} />
-          {rating && (
-            <div css={ratingBadge}>
-              <span css={star}>⭐</span>
-              <span css={ratingText}>{rating}</span>
-            </div>
-          )}
-        </div>
-      )}
+        ) : (
+          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
+        )}
+        {rating && (
+          <div css={ratingBadge}>
+            <span css={star}>⭐</span>
+            <span css={ratingText}>{rating}</span>
+          </div>
+        )}
+      </div>
       <div css={fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper}>
         <Text typo="title_M" color="text_primary">
           {clinicName}

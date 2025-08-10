@@ -39,11 +39,12 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
     { type: 'Youtube', url: clinicData.youtube },
   ].filter(({ url }) => url?.trim() !== '');
 
-  const detail = clinicData.hospital_details[0];
+  const detail = clinicData.hospital_details?.[0];
 
-  const closedDays = detail.operating_hours
-    .filter((item) => item.is_closed)
-    .map((item) => DAY_KR[item.day_of_week]);
+  const closedDays =
+    detail?.operating_hours
+      ?.filter((item) => item.is_closed)
+      ?.map((item) => DAY_KR[item.day_of_week]) || [];
 
   const closedText = closedDays.length > 0 ? `매주 ${closedDays.join('·')} 휴무` : '영업중';
   // const { data, isError } = useUserReservationGroomingListQuery();
@@ -117,7 +118,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
           showToggleButton
         >
           <div css={operatingWrapper}>
-            {detail.operating_hours.map((hour) => {
+            {detail?.operating_hours?.map((hour) => {
               const dayName = DAY_KR[hour.day_of_week];
 
               if (hour.is_closed) {
@@ -133,7 +134,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
                   {dayName} {hour.open_time} ~ {hour.close_time}
                 </Text>
               );
-            })}
+            }) || []}
           </div>
         </InfoRow>
 

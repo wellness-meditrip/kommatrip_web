@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
-import { DefaultImage } from '@/icons';
+import Image from 'next/image';
 import { convertKeywordNamesToRequestPayload, extractMultipleImageMetadata } from '@/utils';
 import 'dayjs/locale/ko';
 import {
@@ -174,7 +174,7 @@ export default function ReviewPage() {
       <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
       <div css={wrapper}>
         <div css={header}>
-          <DefaultImage width={72} height={72} css={image} />
+          <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
           <div css={content}>
             <Text typo="title_M">{mockData.recipientName}</Text>
             <div>

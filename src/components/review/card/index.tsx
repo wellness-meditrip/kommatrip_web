@@ -14,7 +14,8 @@ import {
   tagWrapper,
 } from './index.styles';
 
-import { ButtonTextButtonArrow, DefaultImage, ReviewFold, ReviewUnfold } from '@/icons';
+import { ButtonTextButtonArrow, ReviewFold, ReviewUnfold } from '@/icons';
+import Image from 'next/image';
 import { useState } from 'react';
 interface PartnersReviewListType {
   reviewId: number;
@@ -79,7 +80,7 @@ export function ReviewCard<T extends PartnersReviewListType>({
               onError={handleImageError}
             />
           ) : (
-            <DefaultImage css={userImage} />
+            <Image src="/default.png" alt="기본 이미지" css={userImage} />
           )}
           <Text typo="subtitle2">{reviewerName}</Text>
           <Rating size="S" rate={starRating} />

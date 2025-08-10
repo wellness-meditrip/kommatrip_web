@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
-import { DefaultImage } from '@/icons';
+import Image from 'next/image';
 
 import {
   wrapper,
@@ -114,6 +114,12 @@ export default function ReservationPage() {
           } else if (axiosError.response?.status === 403) {
             errorMessage = '접근 권한이 없습니다.';
           }
+        } else if (error && typeof error === 'object' && 'code' in error) {
+          const axiosError = error as { code?: string; message?: string };
+
+          if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
+            errorMessage = '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해주세요.';
+          }
         }
 
         open({
@@ -130,7 +136,7 @@ export default function ReservationPage() {
       <AppBar onBackClick={router.back} showBackButton={true} title="예약하기" />
       <div css={wrapper}>
         <div css={header}>
-          <DefaultImage width={72} height={72} css={image} />
+          <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
           <div css={content}>
             <Text typo="title_M">{mockData.recipientName}</Text>
             <div>

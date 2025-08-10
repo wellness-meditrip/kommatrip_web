@@ -45,3 +45,22 @@ export const selectedTimeSlot = css`
   border-color: ${theme.colors.primary50};
   color: ${theme.colors.white};
 `;
+
+export const input = css`
+  width: 100%;
+  padding: 16px;
+  border: 1px solid ${theme.colors.text_tertiary};
+  border-radius: 12px;
+  background-color: ${theme.colors.white};
+  font-size: 16px;
+  color: ${theme.colors.text_primary};
+  outline: none;
+
+  &::placeholder {
+    color: ${theme.colors.text_tertiary};
+  }
+
+  &:focus {
+    border-color: ${theme.colors.primary50};
+  }
+`;

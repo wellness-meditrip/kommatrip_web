@@ -58,6 +58,7 @@ module.exports = {
   },
   images: {
     domains: ['drive.google.com', 'meditrip.s3.ap-northeast-2.amazonaws.com'],
+    unoptimized: true,
   },
 };
 export default nextConfig;

@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { DefaultImage, Location } from '@/icons';
+import { Location } from '@/icons';
 import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import { css } from '@emotion/react';
@@ -19,7 +19,7 @@ export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, b
     <div css={wrapper}>
       {!convertedUrl ? (
         <div css={profileWrapper}>
-          <DefaultImage />
+          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
         </div>
       ) : (
         <div css={profileWrapper}>

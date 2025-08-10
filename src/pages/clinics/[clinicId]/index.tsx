@@ -67,12 +67,12 @@ export default function ClinicDetailPage() {
   return (
     <Layout>
       <AppBar onBackClick={router.back} showBackButton={true} title="MEDITRIP" />
-      {data?.hospital_details.map((clinic, index) => {
-        const mainImage = clinic.images.find((img) => img.is_main)?.image_url ?? '';
+      {data?.hospital_details?.map((clinic, index) => {
+        const mainImage = clinic.images?.find((img) => img.is_main)?.image_url ?? '';
         return (
           <ClinicDetail
             key={clinic.id || index}
-            badges={clinic.departments.map((d) => d.name)}
+            badges={clinic.departments?.map((d) => d.name) || []}
             clinicImage={mainImage}
             clinicName={data.hospital_name}
             clinicAddress={data.address}

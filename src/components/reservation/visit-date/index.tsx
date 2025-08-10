@@ -1,11 +1,11 @@
 import { Text } from '@/components';
-import { DatePicker } from '@/components/date-picker';
 import {
   wrapper,
   datePickerContainer,
   timeSlotContainer,
   timeSlot,
   selectedTimeSlot,
+  input,
 } from './index.styles';
 
 interface VisitDateCardProps {
@@ -18,6 +18,7 @@ interface VisitDateCardProps {
 const timeSlots = ['10:00', '11:00', '13:00', '14:00', '15:00', '17:00'];
 
 export function VisitDateCard({
+  selectedDate,
   setSelectedDate,
   selectedTime,
   setSelectedTime,
@@ -32,7 +33,13 @@ export function VisitDateCard({
         <Text typo="title_S" color="text_primary">
           방문 날짜 *
         </Text>
-        <DatePicker onChange={setSelectedDate} />
+        <input
+          type="date"
+          css={input}
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          placeholder="방문 날짜를 선택해주세요"
+        />
       </div>
 
       <div>

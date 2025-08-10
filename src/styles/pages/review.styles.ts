@@ -8,6 +8,7 @@ export const wrapper = css`
 `;
 export const image = css`
   border-radius: 8px;
+  border: 1px solid ${theme.colors.gray200};
   background-color: black;
 `;
 export const content = css`

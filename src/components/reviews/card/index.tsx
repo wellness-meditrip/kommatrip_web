@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Rating, Text } from '@/components';
-import { DefaultImage, ReviewFold, ReviewUnfold } from '@/icons';
+import { ReviewFold, ReviewUnfold } from '@/icons';
 import {
   clampText,
   reviewerInfo,
@@ -44,7 +44,7 @@ export function Card({
           {reviewerImageUrl ? (
             <Image src={reviewerImageUrl} alt="리뷰 작성자 이미지" width={50} height={50} />
           ) : (
-            <DefaultImage width={50} height={50} />
+            <Image src="/default.png" alt="기본 이미지" width={50} height={50} />
           )}
         </div>
 
