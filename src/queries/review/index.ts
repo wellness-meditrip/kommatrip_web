@@ -1,7 +1,7 @@
-import { useMutation, useInfiniteQuery } from '@tanstack/react-query';
+import { useMutation, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
-import { PostClinicReviewRequestBody } from '@/models';
-import { postClinicReview } from '@/apis';
+import { PostClinicReviewRequestBody, PutReviewRequestBody } from '@/models';
+import { postClinicReview, getReviewDetail, putReview } from '@/apis';
 import { getClinicReviews } from '@/apis/review';
 import { AxiosError } from 'axios';
 
@@ -20,20 +20,6 @@ export const usePostClinicReviewMutation = () => {
     },
   });
 };
-
-// export const getClinicReviewInfiniteQuery = (hospitalId: number) => {
-//   return useInfiniteQuery({
-//     queryKey: [...QUERY_KEYS.GET_CLINIC_REVIEWS, hospitalId],
-//     initialPageParam: 0,
-//     queryFn: async ({ pageParam = 0 }) => {
-//       return getClinicReviews({ offset: pageParam, limit: offset});
-//     },
-//     getNextPageParam: (lastPage, allPages) => {
-//       return lastPage.offset == PAGE_SIZE ? all
-//     //   reviewList.length === PAGE_SIZE ? allPages.length + 1 : undefined;
-//     },
-//   });
-// };
 
 const PAGE_SIZE = 20;
 
@@ -58,5 +44,21 @@ export const useGetClinicReviewInfiniteQuery = (hospitalId: number) => {
       return hasNext ? nextOffset : undefined; // ✅ 다음 offset 반환 or 끝
     },
     enabled: !!hospitalId,
+  });
+};
+
+export const useGetReviewDetailQuery = (reviewId: number) => {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.GET_REVIEW_DETAIL, reviewId],
+    queryFn: () => getReviewDetail(reviewId),
+    enabled: !!reviewId,
+  });
+};
+
+export const usePutReviewMutation = () => {
+  return useMutation({
+    mutationFn: ({ reviewId, body }: { reviewId: number; body: PutReviewRequestBody }) =>
+      putReview(reviewId, body),
+    mutationKey: QUERY_KEYS.PUT_REVIEW,
   });
 };

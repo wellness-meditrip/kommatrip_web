@@ -33,7 +33,6 @@ export const guestHospitalApi: HttpClient = axios.create({
 
 export const guestReviewApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_REVIEW_API_URL ?? '',
-  timeout: 5000,
 });
 
 guestApi.interceptors.response.use(

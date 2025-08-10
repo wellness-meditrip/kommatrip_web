@@ -86,15 +86,14 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
 
   // ✅ 예약하기 버튼 클릭 시 토큰 여부에 따라 동작
   const handleReserveClick = () => {
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   // 로그인된 상태 → 예약페이지로 이동
-    //   router.push(ROUTES.RESERVATIONS);
-    // } else {
-    //   // 로그인 안 된 상태 → RN에 로그인 요청
-    //   window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
-    // }
-    router.push(ROUTES.RESERVATIONS);
+    const token = localStorage.getItem('token');
+    if (token) {
+      // 로그인된 상태 → 예약페이지로 이동
+      router.push(ROUTES.RESERVATIONS);
+    } else {
+      // 로그인 안 된 상태 → RN에 로그인 요청
+      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
+    }
   };
   return (
     <div css={wrapper}>

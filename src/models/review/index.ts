@@ -62,3 +62,33 @@ export interface ClinicReview {
   image_count: number;
   content?: string;
 }
+
+export interface GetReviewDetailResponse {
+  hospital_id: number;
+  user_id: number;
+  doctor_id: number;
+  doctor_name: string;
+  title: string;
+  content: string;
+  rating: number;
+  review_id: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  keywords: keyword[];
+  images: ImageMetadata[];
+}
+
+export interface PutReviewRequestBody {
+  title: string;
+  content: string;
+  rating: number;
+  doctor_id: number;
+  doctor_name: string;
+}
+
+export interface PutReviewResponse {
+  success: boolean;
+  message: string;
+  data: string;
+}
