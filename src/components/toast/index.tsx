@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ToastCheck } from '../../icons';
+import { ToastCheck, ToastExclaim } from '../../icons';
 import { Text } from '../text';
 import { Portal } from '../portal';
 import { toast } from './index.styles';
@@ -10,9 +10,10 @@ export interface ToastProps {
   title: string;
   time?: number;
   service?: 'daengle' | 'partner';
+  icon?: 'check' | 'exclaim';
 }
 
-export function Toast({ isShow, title, time = 5000 }: ToastProps) {
+export function Toast({ isShow, title, time = 5000, icon = 'check' }: ToastProps) {
   const [isOpen, setIsOpen] = useState<boolean>(isShow);
 
   useEffect(() => {
@@ -38,7 +39,11 @@ export function Toast({ isShow, title, time = 5000 }: ToastProps) {
             }}
           >
             <div css={toast}>
-              <ToastCheck width={16} height={16} />
+              {icon === 'check' ? (
+                <ToastCheck width={16} height={16} />
+              ) : (
+                <ToastExclaim width={16} height={16} />
+              )}
 
               <Text typo="body12" color="white">
                 {title}

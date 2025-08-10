@@ -54,6 +54,29 @@ export default function ReservationPage() {
       return;
     }
 
+    // 증상 최소 10자 검증
+    if (symptoms.length < 10) {
+      showToast({ title: '증상을 10자 이상 입력해주세요.', icon: 'exclaim' });
+      return;
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showToast({ title: '올바른 이메일 형식을 입력해주세요.', icon: 'exclaim' });
+      return;
+    }
+
+    // 전화번호 형식 검증 (한국 전화번호)
+    const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
+    if (!phoneRegex.test(contactPhone.replace(/\s/g, ''))) {
+      showToast({
+        title: '올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)',
+        icon: 'exclaim',
+      });
+      return;
+    }
+
     const reservationData = {
       hospital_id: 1, // mockData에서 가져올 수 있도록 수정 필요
       doctor_id: 1, // 실제 의사 ID로 수정 필요
@@ -77,10 +100,13 @@ export default function ReservationPage() {
       },
       onError: (error: unknown) => {
         console.error('예약 실패:', error);
+        console.log('예약 요청 데이터:', reservationData);
         let errorMessage = '예약 접수 중 오류가 발생했습니다. 다시 시도해주세요.';
 
         if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { status?: number } };
+          const axiosError = error as { response?: { status?: number; data?: any } };
+          console.log('서버 응답 데이터:', axiosError.response?.data);
+
           if (axiosError.response?.status === 422) {
             errorMessage = '입력하신 정보를 확인해주세요.';
           } else if (axiosError.response?.status === 401) {

@@ -13,7 +13,6 @@ export const { api: reviewApi } = createHttpClient({
 
 export const guestReservationApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_RESERVATION_API_URL ?? '',
-  timeout: 5000,
 });
 
 guestReservationApi.interceptors.response.use(
@@ -23,12 +22,10 @@ guestReservationApi.interceptors.response.use(
 
 export const guestApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
-  timeout: 5000,
 });
 
 export const guestHospitalApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_HOSPITAL_API_URL ?? '',
-  timeout: 5000,
 });
 
 export const guestReviewApi: HttpClient = axios.create({

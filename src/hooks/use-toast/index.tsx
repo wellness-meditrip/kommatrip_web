@@ -10,8 +10,8 @@ const ToastContext = createContext<ToastContextType | null>(null);
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toastProps, setToastProps] = useState<ToastProps | null>(null);
 
-  const showToast = ({ title, time, service }: Omit<ToastProps, 'isShow'>) => {
-    setToastProps({ isShow: true, title, time, service });
+  const showToast = ({ title, time, service, icon }: Omit<ToastProps, 'isShow'>) => {
+    setToastProps({ isShow: true, title, time, service, icon });
 
     setTimeout(() => {
       setToastProps((prev) => (prev ? { ...prev, isShow: false } : null));
@@ -28,6 +28,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           title={toastProps.title}
           time={toastProps.time}
           service={toastProps.service}
+          icon={toastProps.icon}
         />
       )}
     </ToastContext.Provider>
