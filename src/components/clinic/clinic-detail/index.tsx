@@ -5,6 +5,7 @@ import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import { css } from '@emotion/react';
 import Image from 'next/image';
+import { useState } from 'react';
 
 interface Props {
   clinicImage: string;
@@ -12,18 +13,32 @@ interface Props {
   clinicAddress: string;
   badges: string[];
 }
+
 // 병원 상세 정보 컴포넌트
 export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, badges }: Props) {
+  const [imageError, setImageError] = useState(false);
   const convertedUrl = convertGoogleDriveUrlToImageSrc(clinicImage);
+
+  const handleImageError = () => {
+    console.log('Image load failed, falling back to default image');
+    setImageError(true);
+  };
+
   return (
     <div css={wrapper}>
-      {!convertedUrl ? (
+      {convertedUrl && !imageError ? (
         <div css={profileWrapper}>
-          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
+          <Image
+            src={convertedUrl}
+            alt="프로필 이미지"
+            width={170}
+            height={200}
+            onError={handleImageError}
+          />
         </div>
       ) : (
         <div css={profileWrapper}>
-          <Image src={convertedUrl} alt="프로필 이미지" width={170} height={200} />
+          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
         </div>
       )}
       <div css={DetailsWrapper}>

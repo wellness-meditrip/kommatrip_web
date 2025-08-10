@@ -12,7 +12,15 @@ export function convertGoogleDriveUrlToImageSrc(sharedUrl: string): string | nul
   if (!match) return null;
 
   const fileId = match[1];
-  return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  
+  // 방법 1: 기존 방식
+  // return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  
+  // 방법 2: 새로운 방식 (더 안정적)
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+  
+  // 방법 3: 직접 다운로드 링크 (백업)
+  // return `https://drive.google.com/uc?export=download&id=${fileId}`;
 }
 
 // convertKeywordNamesToRequestPayload

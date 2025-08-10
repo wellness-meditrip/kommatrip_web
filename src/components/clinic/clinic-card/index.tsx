@@ -5,6 +5,7 @@ import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import { css } from '@emotion/react';
 import Image from 'next/image';
+import { useState } from 'react';
 
 interface Props {
   clinicId: number;
@@ -16,6 +17,7 @@ interface Props {
   fixedHeight?: boolean;
   onClick: (clinicId: number) => void;
 }
+
 // 병원 카드 컴포넌트
 export default function ClinicCard({
   clinicId,
@@ -27,15 +29,47 @@ export default function ClinicCard({
   fixedHeight = false,
   onClick,
 }: Props) {
+  const [imageError, setImageError] = useState(false);
   const convertedUrl = convertGoogleDriveUrlToImageSrc(clinicImage);
+
+  console.log('ClinicCard render:', {
+    clinicId,
+    clinicName,
+    originalImage: clinicImage,
+    convertedUrl,
+    imageError,
+  });
+
+  const handleImageError = () => {
+    console.log('Image load failed, falling back to default image for:', clinicName);
+    setImageError(true);
+  };
+
+  const handleImageLoad = () => {
+    console.log('Image loaded successfully for:', clinicName);
+  };
 
   return (
     <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(clinicId)}>
       <div css={profileWrapper}>
-        {convertedUrl ? (
-          <Image src={convertedUrl} alt="프로필 이미지" width={170} height={200} />
+        {convertedUrl && !imageError ? (
+          <Image
+            src={convertedUrl}
+            alt="프로필 이미지"
+            width={170}
+            height={200}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
         ) : (
-          <Image src="/default.png" alt="기본 이미지" width={170} height={200} />
+          <Image
+            src="/default.png"
+            alt="기본 이미지"
+            width={170}
+            height={200}
+            onError={() => console.log('Default image also failed to load for:', clinicName)}
+            onLoad={() => console.log('Default image loaded successfully for:', clinicName)}
+          />
         )}
         {rating && (
           <div css={ratingBadge}>

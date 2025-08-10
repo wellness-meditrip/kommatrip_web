@@ -39,7 +39,7 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
     { type: 'Youtube', url: clinicData.youtube },
   ].filter(({ url }) => url?.trim() !== '');
 
-  const detail = clinicData.hospital_details?.[0];
+  const detail = clinicData.hospital_details[0];
 
   const closedDays =
     detail?.operating_hours
