@@ -14,12 +14,15 @@ import { useGetClinicInfiniteQuery } from '@/queries/clinic';
 import { ROUTES } from '@/constants/commons/routes';
 import { useIntersectionLoad } from '@/hooks/review';
 import { Loading } from '@/components/common';
+import { SortModal } from '@/components/clinic/sort-modal';
 
 // 병원 리스트 페이지
 export default function ClinicPage() {
   const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
+  const [selectedSort, setSelectedSort] = useState('rating_low');
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
   const params = useMemo(
     () => ({
@@ -43,6 +46,27 @@ export default function ClinicPage() {
     setInputValue(value);
   };
 
+  const handleSortClick = () => {
+    setIsSortModalOpen(true);
+  };
+
+  const handleSortChange = (sortId: string) => {
+    setSelectedSort(sortId);
+  };
+
+  const getSortLabel = (sortId: string) => {
+    switch (sortId) {
+      case 'rating_high':
+        return '별점 높은 순';
+      case 'rating_low':
+        return '별점 낮은 순';
+      case 'review_count':
+        return '리뷰 많은 순';
+      default:
+        return '별점 낮은 순';
+    }
+  };
+
   useEffect(() => {
     const debounced = debounce((value: string) => {
       setKeyword(value);
@@ -56,9 +80,12 @@ export default function ClinicPage() {
       <AppBar onBackClick={router.back} showBackButton={false} title="한의원" />
       <SearchBar onValueChange={handleValueChange} />
       <div css={wrapper}>
-        <TextButton icons={{ prefix: <ArrowUpdown width={16} height={16} /> }}>
-          <Text typo="button_M" color="text_tertiary">
-            별점 낮은 순
+        <TextButton
+          icons={{ prefix: <ArrowUpdown width={16} height={16} /> }}
+          onClick={handleSortClick}
+        >
+          <Text typo="button_M" color="primary50">
+            {getSortLabel(selectedSort)}
           </Text>
         </TextButton>
 
@@ -85,6 +112,12 @@ export default function ClinicPage() {
           })
         )}
         <div ref={loadMoreRef} css={bottom} />
+        <SortModal
+          isOpen={isSortModalOpen}
+          onClose={() => setIsSortModalOpen(false)}
+          selectedSort={selectedSort}
+          onSortChange={handleSortChange}
+        />
       </div>
     </Layout>
   );
