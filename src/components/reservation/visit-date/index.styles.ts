@@ -6,7 +6,7 @@ export const wrapper = css`
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.primary0};
   border-radius: 20px;
 `;
 

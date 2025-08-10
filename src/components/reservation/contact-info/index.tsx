@@ -11,10 +11,9 @@ import {
 interface ContactInfoCardProps {
   email: string;
   setEmail: (email: string) => void;
-  firstName: string;
-  setFirstName: (name: string) => void;
-  lastName: string;
-  setLastName: (name: string) => void;
+
+  contactPhone: string;
+  setContactPhone: (phone: string) => void;
   language: string;
   setLanguage: (language: string) => void;
 }
@@ -22,10 +21,8 @@ interface ContactInfoCardProps {
 export function ContactInfoCard({
   email,
   setEmail,
-  firstName,
-  setFirstName,
-  lastName,
-  setLastName,
+  contactPhone,
+  setContactPhone,
   language,
   setLanguage,
 }: ContactInfoCardProps) {
@@ -55,15 +52,9 @@ export function ContactInfoCard({
         <div css={nameInputContainer}>
           <input
             css={input}
-            placeholder="라인"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <input
-            css={input}
-            placeholder="Elena122"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            placeholder="010-1234-5678"
+            value={contactPhone}
+            onChange={(e) => setContactPhone(e.target.value)}
           />
         </div>
       </div>

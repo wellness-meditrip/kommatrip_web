@@ -10,6 +10,17 @@ export const { api: reviewApi } = createHttpClient({
   baseURL: process.env.NEXT_PUBLIC_REVIEW_API_URL ?? '',
   role: 'user',
 });
+
+export const guestReservationApi: HttpClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_RESERVATION_API_URL ?? '',
+  timeout: 5000,
+});
+
+guestReservationApi.interceptors.response.use(
+  (response: AxiosResponse) => response.data,
+  (error) => Promise.reject(error)
+);
+
 export const guestApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
   timeout: 5000,

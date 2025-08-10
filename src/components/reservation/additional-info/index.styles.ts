@@ -6,7 +6,7 @@ export const wrapper = css`
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.primary0};
   border-radius: 12px;
 `;
 export const textareaContainer = css`

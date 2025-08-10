@@ -6,7 +6,7 @@ export const wrapper = css`
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.primary0};
   border-radius: 12px;
 `;
 
@@ -35,7 +35,6 @@ export const input = css`
 
 export const nameInputContainer = css`
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 8px;
 `;
 

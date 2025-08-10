@@ -16,6 +16,8 @@ import {
 
 import { MedicalInfoCard, VisitDateCard, ContactInfoCard, AdditionalInfoCard } from '@/components';
 import { ROUTES } from '@/constants/commons';
+import { usePostCreateReservationMutation } from '@/queries';
+
 const mockData = {
   recipientName: '우주연 한의원',
   shopName: '다이어트 패키지',
@@ -34,8 +36,7 @@ export default function ReservationPage() {
 
   // 연락처 정보
   const [email, setEmail] = useState<string>('');
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
+  const [contactPhone, setContactPhone] = useState<string>('');
   const [language, setLanguage] = useState<string>('한국어');
 
   // 기타 정보
@@ -45,40 +46,58 @@ export default function ReservationPage() {
   const { showToast } = useToast();
   const { open } = useDialog();
 
+  const { mutate, isPending } = usePostCreateReservationMutation();
   const handleSubmit = async () => {
     // 필수 필드 검증
-    if (!symptoms || !selectedDate || !email || !firstName || !lastName) {
+    if (!symptoms || !selectedDate || !email || !contactPhone) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
 
     const reservationData = {
-      clinic_id: 1,
+      hospital_id: 1, // mockData에서 가져올 수 있도록 수정 필요
+      doctor_id: 1, // 실제 의사 ID로 수정 필요
       symptoms,
-      medications,
-      images: selectedImages,
-      visit_date: selectedDate,
-      visit_time: selectedTime,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-      language,
-      additional_info: additionalInfo,
+      current_medications: medications,
+      reservation_date: selectedDate,
+      reservation_time: selectedTime || '14:00:00.000Z',
+      contact_email: email,
+      contact_phone: contactPhone,
+      interpreter_language: language,
+      additional_notes: additionalInfo,
+      user_id: 1, // 실제 사용자 ID로 수정 필요
+      images: [], // 이미지 업로드 로직 필요
     };
 
-    try {
-      // TODO: 실제 예약 API 호출
-      console.log('예약 데이터:', reservationData);
-      showToast({ title: '예약이 성공적으로 접수되었습니다!' });
-      router.push(ROUTES.RESERVATIONS_COMPLETE); // 또는 예약 완료 페이지로 이동
-    } catch {
-      open({
-        type: 'confirm',
-        title: '예약 접수 실패',
-        description: '예약 접수 중 오류가 발생했습니다. 다시 시도해주세요.',
-        primaryActionLabel: '확인',
-      });
-    }
+    mutate(reservationData, {
+      onSuccess: (data) => {
+        console.log('예약 성공:', data);
+        showToast({ title: '예약이 성공적으로 접수되었습니다!' });
+        router.push(ROUTES.RESERVATIONS_COMPLETE);
+      },
+      onError: (error: unknown) => {
+        console.error('예약 실패:', error);
+        let errorMessage = '예약 접수 중 오류가 발생했습니다. 다시 시도해주세요.';
+
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 422) {
+            errorMessage = '입력하신 정보를 확인해주세요.';
+          } else if (axiosError.response?.status === 401) {
+            errorMessage = '로그인이 필요합니다.';
+          } else if (axiosError.response?.status === 403) {
+            errorMessage = '접근 권한이 없습니다.';
+          }
+        }
+
+        open({
+          type: 'confirm',
+          title: '예약 접수 실패',
+          description: errorMessage,
+          primaryActionLabel: '확인',
+        });
+      },
+    });
   };
   return (
     <Layout>
@@ -128,10 +147,8 @@ export default function ReservationPage() {
           <ContactInfoCard
             email={email}
             setEmail={setEmail}
-            firstName={firstName}
-            setFirstName={setFirstName}
-            lastName={lastName}
-            setLastName={setLastName}
+            contactPhone={contactPhone}
+            setContactPhone={setContactPhone}
             language={language}
             setLanguage={setLanguage}
           />
@@ -148,7 +165,7 @@ export default function ReservationPage() {
             size="L"
             fullWidth
             onClick={handleSubmit}
-            disabled={!symptoms || !selectedDate || !email || !firstName || !lastName}
+            disabled={!symptoms || !selectedDate || !email || !contactPhone || isPending}
           >
             예약하기
           </RoundButton>
