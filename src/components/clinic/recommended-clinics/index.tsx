@@ -1,6 +1,5 @@
 import React from 'react';
 import { Text } from '@/components/text';
-import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import ClinicCard from '@/components/clinic/clinic-card';
 import { useRouter } from 'next/router';

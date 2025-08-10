@@ -3,7 +3,6 @@ import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { convertKeywordNamesToRequestPayload, extractMultipleImageMetadata } from '@/utils';
 import 'dayjs/locale/ko';
 import {
   wrapper,
@@ -16,9 +15,7 @@ import {
 } from '@/styles/pages/review.styles';
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
-import { ROUTES } from '@/constants/commons';
 import { useGetReviewDetailQuery, usePutReviewMutation } from '@/queries';
-import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
 
 const mockData = {
@@ -26,15 +23,7 @@ const mockData = {
   shopName: '다이어트 패키지',
   schedule: '2025-08-02T14:00:00',
 };
-interface UserInfo {
-  country: string;
-  displayName: string;
-  email: string;
-  id: number;
-  isNewUser: boolean;
-  language: string;
-  nickname: string;
-}
+
 export default function ReviewEditPage() {
   const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');

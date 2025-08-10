@@ -104,7 +104,7 @@ export default function ReservationPage() {
         let errorMessage = '예약 접수 중 오류가 발생했습니다. 다시 시도해주세요.';
 
         if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { status?: number; data?: any } };
+          const axiosError = error as { response?: { status?: number; data?: unknown } };
           console.log('서버 응답 데이터:', axiosError.response?.data);
 
           if (axiosError.response?.status === 422) {

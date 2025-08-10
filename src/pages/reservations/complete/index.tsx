@@ -3,14 +3,10 @@ import { Layout } from '@/components/layout';
 import { RoundButton } from '@/components/button/round-button';
 import { Text } from '@/components/text';
 import { Check } from '@/icons';
-import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
-import { ROUTES } from '@/constants/commons';
 
 export default function ReservationCompletePage() {
-  const router = useRouter();
-
   const handleGoToReservations = () => {
     alert('예약 목록으로 이동');
   };

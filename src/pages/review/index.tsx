@@ -25,15 +25,7 @@ const mockData = {
   shopName: '다이어트 패키지',
   schedule: '2025-08-02T14:00:00',
 };
-interface UserInfo {
-  country: string;
-  displayName: string;
-  email: string;
-  id: number;
-  isNewUser: boolean;
-  language: string;
-  nickname: string;
-}
+
 export default function ReviewPage() {
   const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');
@@ -43,7 +35,7 @@ export default function ReviewPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
-  const { mutate, isPending, isError } = usePostClinicReviewMutation();
+  const { mutate, isPending } = usePostClinicReviewMutation();
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
   // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
