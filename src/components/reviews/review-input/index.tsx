@@ -1,3 +1,4 @@
+import React from 'react';
 import { ImageInput, Text } from '@/components';
 import {
   wrapper,
@@ -5,7 +6,10 @@ import {
   reviewInput,
   textarea,
   textCount,
+  textCountGray,
   textContainer,
+  errorText,
+  textCountContainer,
 } from './index.styles';
 
 export function ReviewInputCard({
@@ -22,6 +26,7 @@ export function ReviewInputCard({
   const handleImageChange = (files: File[]) => {
     setSelectedImages(files);
   };
+
   return (
     <div css={wrapper}>
       <Text typo="subtitle1">리뷰를 작성해주세요</Text>
@@ -37,8 +42,13 @@ export function ReviewInputCard({
           onChange={(e) => setReviewText(e.target.value)}
         />
         <div css={textContainer}>
-          <span css={textCount(reviewText.length > 0)}>{reviewText.length}&nbsp;</span>
-          <span css={textCount(false)}> / 400 </span>
+          <div css={errorText}>
+            {reviewText.length > 0 && reviewText.length < 10 && '최소 10글자 이상 작성해주세요.'}
+          </div>
+          <div css={textCountContainer}>
+            <span css={textCount(reviewText.length >= 10)}>{reviewText.length}&nbsp;</span>
+            <span css={textCountGray}> / 400 </span>
+          </div>
         </div>
       </div>
     </div>

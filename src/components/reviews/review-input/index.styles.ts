@@ -30,14 +30,33 @@ export const textarea = css`
   outline: none;
 `;
 
-export const textCount = (upperOne: boolean) => css`
-  color: ${upperOne ? theme.colors.blue200 : theme.colors.gray500};
+export const textCount = (isValid: boolean) => css`
+  color: ${isValid ? theme.colors.blue200 : theme.colors.red200};
+  ${theme.typo.body11};
+`;
+
+export const textCountGray = css`
+  color: ${theme.colors.gray500};
   ${theme.typo.body11};
 `;
 
 export const textContainer = css`
   display: flex;
-  justify-content: flex-end;
-
+  justify-content: space-between;
+  align-items: flex-start;
   margin-top: 4px;
+`;
+
+export const errorText = css`
+  color: ${theme.colors.red200};
+  ${theme.typo.body11};
+  font-weight: 500;
+  min-height: 16px;
+  flex: 1;
+`;
+
+export const textCountContainer = css`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 `;

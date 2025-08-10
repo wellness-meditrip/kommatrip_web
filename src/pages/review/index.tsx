@@ -87,6 +87,11 @@ export default function ReviewPage() {
       return;
     }
 
+    if (reviewText.length < 10) {
+      alert('리뷰는 최소 10글자 이상 작성해주세요.');
+      return;
+    }
+
     let imageMetadata: ImageMetadata[] = [];
     if (selectedImages.length > 0) {
       try {
@@ -132,7 +137,6 @@ export default function ReviewPage() {
     mutate(body, {
       onSuccess: () => {
         showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
-        router.push(ROUTES.MYPAGE_REVIEWS);
       },
       onError: (error: unknown) => {
         let errorMessage = '알 수 없는 오류가 발생했습니다.';

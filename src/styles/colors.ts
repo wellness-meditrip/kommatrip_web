@@ -33,6 +33,7 @@ export const colors = {
 
   whiteGradient100: 'linear-gradient(180deg, rgba(255, 255, 255, 0.00) 0%, #FFF 71.19%)',
 
+  red200: '#FF6767',
   //test
   blue100: '#DDE6FF',
   blue200: '#5D86FE',
