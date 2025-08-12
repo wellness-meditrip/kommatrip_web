@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky",
     "svgr:icons": "rm -rf src/icons/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/icons --no-dimensions --typescript --out-dir src/icons",
     "svgr:images": "rm -rf src/images/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/images --no-dimensions --typescript --out-dir src/images",
     "svgr": "pnpm svgr:icons && pnpm svgr:images"
@@ -35,6 +37,9 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@commitlint/types": "^19.8.1",
     "@eslint/eslintrc": "^3",
     "@locator/runtime": "^0.4.4",
     "@svgr/webpack": "^8.1.0",
@@ -47,6 +52,7 @@
     "eslint-config-next": "15.4.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
+    "husky": "^9.1.7",
     "prettier": "3.6.2",
     "typescript": "^5"
   }

@@ -1,0 +1,14 @@
+[ -n "$CI" ] && exit 0
+
+branch=$(git symbolic-ref --short HEAD)
+
+forbidden_branches=("main" "develop")
+
+for branch_name in "${forbidden_branches[@]}"; do
+  if [ "$branch" = "$branch_name" ]; then
+    echo "\n 🚨 $branch_name 브랜치에 커밋할 수 없습니다! 🚨\n"
+    exit 1
+  fi
+done
+
+pnpm lint-staged
