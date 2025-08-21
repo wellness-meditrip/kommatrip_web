@@ -28,15 +28,15 @@ const s3 = new S3Client({
   },
 });
 
-// File을 ArrayBuffer로 변환하는 헬퍼 함수
-const fileToArrayBuffer = (file: File): Promise<Uint8Array> => {
+// File을 Uint8Array로 변환하는 헬퍼 함수
+const fileToUint8Array = (file: File): Promise<Uint8Array> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.result instanceof ArrayBuffer) {
         resolve(new Uint8Array(reader.result));
       } else {
-        reject(new Error('파일을 ArrayBuffer로 변환할 수 없습니다.'));
+        reject(new Error('파일을 Uint8Array로 변환할 수 없습니다.'));
       }
     };
     reader.onerror = () => reject(reader.error);
@@ -70,8 +70,8 @@ export function useS3({ targetFolderPath }: Props) {
         const fileExtension = file.name.split('.').pop() || 'jpg';
         const fileName = `${id}.${fileExtension}`;
 
-        // File을 ArrayBuffer로 변환
-        const uint8Array = await fileToArrayBuffer(file);
+        // File을 Uint8Array로 변환
+        const uint8Array = await fileToUint8Array(file);
 
         const params = {
           Bucket: bucket,

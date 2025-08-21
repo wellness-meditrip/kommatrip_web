@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast, useDialog } from '@/hooks';
+import { useToast, useDialog, useS3 } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 
@@ -25,10 +25,12 @@ const mockData = {
 };
 
 export default function ReservationPage() {
+  const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
+
   // 진료 정보
   const [symptoms, setSymptoms] = useState<string>('');
   const [medications, setMedications] = useState<string>('');
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   // 방문 일자
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -77,6 +79,17 @@ export default function ReservationPage() {
       return;
     }
 
+    // S3 업로드
+    let uploadedImageUrls: string[] = [];
+    if (selectedImages.length > 0) {
+      try {
+        uploadedImageUrls = await uploadToS3(selectedImages);
+      } catch (error) {
+        alert('이미지 업로드에 실패했습니다.');
+        return;
+      }
+    }
+
     const reservationData = {
       hospital_id: 1, // mockData에서 가져올 수 있도록 수정 필요
       doctor_id: 1, // 실제 의사 ID로 수정 필요
@@ -89,7 +102,7 @@ export default function ReservationPage() {
       interpreter_language: language,
       additional_notes: additionalInfo,
       user_id: 1, // 실제 사용자 ID로 수정 필요
-      images: selectedImages, // S3 업로드된 이미지 URL들
+      images: uploadedImageUrls, // S3 업로드된 이미지 URL들
     };
 
     mutate(reservationData, {

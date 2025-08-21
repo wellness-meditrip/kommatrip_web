@@ -29,7 +29,7 @@ export default function ReviewEditPage() {
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();

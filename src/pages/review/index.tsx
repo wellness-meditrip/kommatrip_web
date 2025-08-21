@@ -19,6 +19,7 @@ import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { usePostClinicReviewMutation } from '@/queries';
 import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
+import { useS3 } from '@/hooks/use-s3';
 
 const mockData = {
   recipientName: '우주연 한의원',
@@ -31,11 +32,12 @@ export default function ReviewPage() {
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
   const { mutate, isPending } = usePostClinicReviewMutation();
+  const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
   // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
@@ -83,8 +85,16 @@ export default function ReviewPage() {
       return;
     }
 
-    // S3 업로드된 이미지 URL들을 직접 사용
-    const images = selectedImages;
+    // S3 업로드
+    let uploadedImageUrls: string[] = [];
+    if (selectedImages.length > 0) {
+      try {
+        uploadedImageUrls = await uploadToS3(selectedImages);
+      } catch (error) {
+        alert('이미지 업로드에 실패했습니다.');
+        return;
+      }
+    }
 
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
     const mockReservationData = {

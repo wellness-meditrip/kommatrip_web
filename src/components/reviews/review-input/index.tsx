@@ -1,5 +1,6 @@
 import React from 'react';
-import { ImageInput, Text } from '@/components';
+import { Text } from '@/components';
+import { ImageInput } from '@/components/image-input';
 import {
   wrapper,
   reviewImage,
@@ -20,23 +21,17 @@ export function ReviewInputCard({
 }: {
   reviewText: string;
   setReviewText: (text: string) => void;
-  selectedImages: string[];
-  setSelectedImages: (images: string[]) => void;
+  selectedImages: File[];
+  setSelectedImages: (images: File[]) => void;
 }) {
-  const handleImageChange = (urls: string[]) => {
-    setSelectedImages(urls);
+  const handleImageChange = (files: File[]) => {
+    setSelectedImages(files);
   };
-
   return (
     <div css={wrapper}>
       <Text typo="subtitle1">리뷰를 작성해주세요</Text>
       <div css={reviewImage}>
-        <ImageInput
-          maxLength={10}
-          onChange={handleImageChange}
-          defaultValue={selectedImages}
-          targetFolderPath="user/review-images"
-        />
+        <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
       </div>
       <div css={reviewInput}>
         <textarea

@@ -1,13 +1,15 @@
-import { Text, ImageInput } from '@/components';
+import React from 'react';
+import { Text } from '@/components';
+import { ImageInput } from '@/components/image-input';
 import { wrapper, textareaContainer, textarea, textCount } from './index.styles';
 
 interface MedicalInfoCardProps {
   symptoms: string;
-  setSymptoms: (text: string) => void;
+  setSymptoms: (symptoms: string) => void;
   medications: string;
-  setMedications: (text: string) => void;
-  selectedImages: string[];
-  setSelectedImages: (images: string[]) => void;
+  setMedications: (medications: string) => void;
+  selectedImages: File[];
+  setSelectedImages: (images: File[]) => void;
 }
 
 export function MedicalInfoCard({
@@ -18,8 +20,8 @@ export function MedicalInfoCard({
   selectedImages,
   setSelectedImages,
 }: MedicalInfoCardProps) {
-  const handleImageChange = (urls: string[]) => {
-    setSelectedImages(urls);
+  const handleImageChange = (files: File[]) => {
+    setSelectedImages(files);
   };
 
   return (
@@ -58,12 +60,7 @@ export function MedicalInfoCard({
 
       <div>
         <Text typo="title_S">첨부 사진</Text>
-        <ImageInput
-          maxLength={10}
-          onChange={handleImageChange}
-          defaultValue={selectedImages}
-          targetFolderPath="user/reservation-images"
-        />
+        <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
       </div>
     </div>
   );
