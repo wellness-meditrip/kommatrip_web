@@ -6,7 +6,8 @@ import { ClinicInfo, ClinicReview } from '@/components/clinic-detail';
 import { useEffect, useState, useMemo } from 'react';
 import { Tabs } from '@/components';
 import { useGetClinicClinicIdQuery } from '@/queries';
-import { wrapper, content } from './index.styles';
+import { css } from '@emotion/react';
+import { theme } from '@/styles';
 // import { ROUTES } from '@/constants/commons';
 
 export default function ClinicDetailPage() {
@@ -92,3 +93,18 @@ export default function ClinicDetailPage() {
     </Layout>
   );
 }
+
+const wrapper = css`
+  display: flex;
+  flex-direction: column;
+
+  background: ${theme.colors.white};
+
+  h1 {
+    margin: 0 18px;
+  }
+`;
+
+const content = css`
+  width: 100%;
+`;

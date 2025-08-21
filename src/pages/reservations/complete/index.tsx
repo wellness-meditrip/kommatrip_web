@@ -3,22 +3,8 @@ import { Layout } from '@/components/layout';
 import { RoundButton } from '@/components/button/round-button';
 import { Text } from '@/components/text';
 import { Check } from '@/icons';
-import {
-  container,
-  successSection,
-  checkIconWrapper,
-  successMessage,
-  reservationCard,
-  clinicName,
-  reservationDateTime,
-  packageName,
-  section,
-  policyCard,
-  policyTitle,
-  policyContent,
-  policyText,
-  buttonSection,
-} from './index.styles';
+import { css } from '@emotion/react';
+import { theme } from '@/styles';
 
 export default function ReservationCompletePage() {
   const handleGoToReservations = () => {
@@ -88,3 +74,108 @@ export default function ReservationCompletePage() {
     </Layout>
   );
 }
+
+const container = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 24px;
+`;
+
+const successSection = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+
+  padding: 100px 0 32px;
+`;
+
+const checkIconWrapper = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 8px;
+`;
+
+const successMessage = css`
+  margin-bottom: 32px;
+
+  text-align: center;
+`;
+
+const reservationCard = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  width: 100%;
+  max-width: 320px;
+  padding: 20px;
+  border: 1px solid ${theme.colors.primary50};
+  border-radius: 12px;
+
+  background-color: ${theme.colors.primary0};
+`;
+
+const clinicName = css`
+  margin: 0;
+
+  text-align: center;
+`;
+
+const reservationDateTime = css`
+  margin: 0;
+
+  text-align: center;
+`;
+
+const packageName = css`
+  margin: 0;
+
+  text-align: center;
+`;
+
+const section = css`
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+
+  background-color: ${theme.colors.bg_default};
+`;
+
+const policyCard = css`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  margin: 16px 20px;
+  padding: 20px;
+  border-radius: 12px;
+
+  background-color: ${theme.colors.white};
+`;
+
+const policyTitle = css`
+  margin: 0;
+`;
+
+const policyContent = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const policyText = css`
+  margin: 0;
+
+  line-height: 1.5;
+`;
+
+const buttonSection = css`
+  margin-top: auto;
+  padding-bottom: 20px;
+`;
