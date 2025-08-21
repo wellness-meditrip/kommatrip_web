@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactStrictMode: true,
 
   // TurboPack 설정
@@ -46,7 +45,6 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // 환경 변수
   env: {
     NEXT_PUBLIC_MAPS_API_KEY: process.env.NEXT_PUBLIC_MAPS_API_KEY,
     NEXT_PUBLIC_MAP_ID_API_KEY: process.env.NEXT_PUBLIC_MAP_ID_API_KEY,
@@ -57,7 +55,6 @@ const nextConfig: NextConfig = {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   },
 
-  // 이미지 설정
   images: {
     domains: ['drive.google.com', 'meditrip.s3.ap-northeast-2.amazonaws.com'],
     unoptimized: false, // 최적화 활성화

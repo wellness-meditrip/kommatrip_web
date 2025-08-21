@@ -2,14 +2,16 @@ import { css } from '@emotion/react';
 
 export const container = css`
   border-bottom: 1px solid #eee;
+
   padding: 16px 0;
 `;
 
 export const rowHeader = css`
   display: flex;
   align-items: center;
-  cursor: pointer;
   gap: 20px;
+
+  cursor: pointer;
 `;
 
 export const iconWrapper = css`
@@ -30,7 +32,8 @@ export const titleWrapper = css`
 `;
 
 export const detailWrapper = css`
-  margin-left: 76px;
   display: flex;
   flex-direction: column;
+
+  margin-left: 76px;
 `;

@@ -79,7 +79,6 @@ const container = css`
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* padding: 20px; */
   gap: 24px;
 `;
 
@@ -88,18 +87,22 @@ const successSection = css`
   flex-direction: column;
   align-items: center;
   gap: 16px;
+
   padding: 100px 0 32px;
 `;
+
 const checkIconWrapper = css`
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
   margin-bottom: 8px;
 `;
 
 const successMessage = css`
-  text-align: center;
   margin-bottom: 32px;
+
+  text-align: center;
 `;
 
 const reservationCard = css`
@@ -107,33 +110,40 @@ const reservationCard = css`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 20px;
-  border: 1px solid ${theme.colors.primary50};
-  background-color: ${theme.colors.primary0};
-  border-radius: 12px;
+
   width: 100%;
   max-width: 320px;
+  padding: 20px;
+  border: 1px solid ${theme.colors.primary50};
+  border-radius: 12px;
+
+  background-color: ${theme.colors.primary0};
 `;
 
 const clinicName = css`
-  text-align: center;
   margin: 0;
+
+  text-align: center;
 `;
 
 const reservationDateTime = css`
-  text-align: center;
   margin: 0;
+
+  text-align: center;
 `;
 
 const packageName = css`
-  text-align: center;
   margin: 0;
+
+  text-align: center;
 `;
 
 const section = css`
   display: flex;
   flex-direction: column;
+
   height: 100%;
+
   background-color: ${theme.colors.bg_default};
 `;
 
@@ -141,10 +151,12 @@ const policyCard = css`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 20px;
+
   margin: 16px 20px;
-  background-color: ${theme.colors.white};
+  padding: 20px;
   border-radius: 12px;
+
+  background-color: ${theme.colors.white};
 `;
 
 const policyTitle = css`
@@ -159,6 +171,7 @@ const policyContent = css`
 
 const policyText = css`
   margin: 0;
+
   line-height: 1.5;
 `;
 

@@ -7,14 +7,14 @@ export const wrapper = css`
 `;
 
 export const tabHeader = css`
+  display: flex;
   position: sticky;
   top: 0;
   z-index: 10;
 
-  display: flex;
-  cursor: pointer;
-
   background: ${theme.colors.white};
+
+  cursor: pointer;
   border-bottom: 0.5px solid ${theme.colors.gray500};
 `;
 

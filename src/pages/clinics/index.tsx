@@ -7,8 +7,6 @@ import SearchBar from '@/components/search/search-bar';
 import ClinicCard from '@/components/clinic/clinic-card';
 import { TextButton } from '@/components/text-button';
 import { Text } from '@/components/text';
-import { theme } from '@/styles';
-import { css } from '@emotion/react';
 import { ArrowUpdown } from '@/icons';
 import { useGetClinicInfiniteQuery } from '@/queries/clinic';
 import { ROUTES } from '@/constants/commons/routes';
@@ -16,6 +14,8 @@ import { useIntersectionLoad } from '@/hooks/review';
 import { Loading, NoResults } from '@/components/common';
 import { SortModal } from '@/components/clinic/sort-modal';
 import { RecommendedClinics } from '@/components/clinic/recommended-clinics';
+import { theme } from '@/styles';
+import { css } from '@emotion/react';
 
 const mockRatings = [4.3, 4.1, 3.9, 3.8];
 
@@ -180,27 +180,31 @@ export default function ClinicPage() {
 }
 
 export const wrapper = css`
-  overflow-y: auto;
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background-color: ${theme.colors.bg_surface1};
-  padding: 104px 20px 80px;
   gap: 24px;
+  overflow-y: auto;
+
+  width: 100%;
+  height: 100%;
+  padding: 104px 20px 80px;
+
+  background-color: ${theme.colors.bg_surface1};
 `;
 
 export const wrapperNoPadding = css`
-  overflow-y: auto;
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background-color: ${theme.colors.bg_surface1};
-  padding: 80px 0 80px;
   gap: 24px;
+  overflow-y: auto;
+
+  width: 100%;
+  height: 100%;
+  padding: 80px 0 80px;
+
+  background-color: ${theme.colors.bg_surface1};
 `;
 
 export const bottom = css`

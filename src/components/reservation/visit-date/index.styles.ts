@@ -5,9 +5,11 @@ export const wrapper = css`
   display: flex;
   flex-direction: column;
   gap: 20px;
+
   padding: 20px;
-  background-color: ${theme.colors.primary0};
   border-radius: 20px;
+
+  background-color: ${theme.colors.primary0};
 `;
 
 export const datePickerContainer = css`
@@ -19,7 +21,9 @@ export const datePickerContainer = css`
 export const timeSlotContainer = css`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+
   gap: 8px;
+
   margin-top: 8px;
 `;
 
@@ -27,12 +31,14 @@ export const timeSlot = css`
   padding: 12px 16px;
   border: 1px solid ${theme.colors.text_tertiary};
   border-radius: 20px;
+
   background-color: ${theme.colors.white};
+  color: ${theme.colors.text_secondary};
   font-size: 14px;
   font-weight: 500;
-  color: ${theme.colors.text_secondary};
-  cursor: pointer;
   text-align: center;
+
+  cursor: pointer;
 
   &:hover {
     border-color: ${theme.colors.primary50};
@@ -43,6 +49,7 @@ export const selectedTimeSlot = css`
   ${timeSlot}
   background-color: ${theme.colors.primary50};
   border-color: ${theme.colors.primary50};
+
   color: ${theme.colors.white};
 `;
 
@@ -51,9 +58,10 @@ export const input = css`
   padding: 16px;
   border: 1px solid ${theme.colors.text_tertiary};
   border-radius: 12px;
+
   background-color: ${theme.colors.white};
-  font-size: 16px;
   color: ${theme.colors.text_primary};
+  font-size: 16px;
   outline: none;
 
   &::placeholder {

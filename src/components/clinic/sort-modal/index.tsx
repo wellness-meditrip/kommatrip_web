@@ -1,6 +1,5 @@
 import { Text } from '@/components/text';
-import { theme } from '@/styles';
-import { css } from '@emotion/react';
+import { overlay, modal, handle, content, sortOption } from './index.styles';
 
 interface SortOption {
   id: string;
@@ -50,59 +49,3 @@ export function SortModal({ isOpen, onClose, selectedSort, onSortChange }: SortM
     </>
   );
 }
-
-const overlay = css`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  max-width: 480px;
-  margin: 0 auto;
-`;
-
-const modal = css`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: ${theme.colors.white};
-  border-radius: 20px 20px 0 0;
-  z-index: 1001;
-  padding: 16px 20px 32px;
-  margin: 0 auto;
-  max-width: 480px;
-  width: 100%;
-`;
-
-const handle = css`
-  width: 40px;
-  height: 4px;
-  background-color: ${theme.colors.gray300};
-  border-radius: 2px;
-  margin: 0 auto 24px;
-`;
-
-const content = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const sortOption = (isSelected: boolean) => css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 16px 20px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${theme.colors.gray100};
-  }
-`;

@@ -10,6 +10,7 @@ export const wrapper = css`
   max-width: ${theme.size.maxWidth};
   height: 52px;
   margin: 0 auto;
+
   background-color: ${theme.colors.white};
 `;
 
@@ -27,5 +28,6 @@ export const center = css`
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+
   white-space: nowrap;
 `;

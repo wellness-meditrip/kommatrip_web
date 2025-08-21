@@ -1,9 +1,9 @@
 import React from 'react';
 import { Text } from '@/components/text';
-import { css } from '@emotion/react';
 import ClinicCard from '@/components/clinic/clinic-card';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants/commons/routes';
+import { container, title, grid } from './index.styles';
 
 interface RecommendedClinicsProps {
   clinics: Array<{
@@ -44,21 +44,3 @@ export function RecommendedClinics({ clinics }: RecommendedClinicsProps) {
     </div>
   );
 }
-
-const container = css`
-  width: 100%;
-`;
-
-const title = css`
-  margin: 24px 0 !important;
-  padding: 0 20px;
-  text-align: center;
-`;
-
-const grid = css`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 0 20px;
-  margin: 24px 0;
-`;
