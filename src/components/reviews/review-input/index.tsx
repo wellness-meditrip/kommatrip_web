@@ -20,18 +20,23 @@ export function ReviewInputCard({
 }: {
   reviewText: string;
   setReviewText: (text: string) => void;
-  selectedImages: File[];
-  setSelectedImages: (images: File[]) => void;
+  selectedImages: string[];
+  setSelectedImages: (images: string[]) => void;
 }) {
-  const handleImageChange = (files: File[]) => {
-    setSelectedImages(files);
+  const handleImageChange = (urls: string[]) => {
+    setSelectedImages(urls);
   };
 
   return (
     <div css={wrapper}>
       <Text typo="subtitle1">리뷰를 작성해주세요</Text>
       <div css={reviewImage}>
-        <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
+        <ImageInput
+          maxLength={10}
+          onChange={handleImageChange}
+          defaultValue={selectedImages}
+          targetFolderPath="user/review-images"
+        />
       </div>
       <div css={reviewInput}>
         <textarea

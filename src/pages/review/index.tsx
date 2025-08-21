@@ -31,7 +31,7 @@ export default function ReviewPage() {
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const router = useRouter();
   const { showToast } = useToast();
   const { open } = useDialog();
@@ -83,25 +83,8 @@ export default function ReviewPage() {
       return;
     }
 
-    let imageMetadata: ImageMetadata[] = [];
-    if (selectedImages.length > 0) {
-      try {
-        const metadata = await extractMultipleImageMetadata(selectedImages, 1);
-        imageMetadata = metadata.map((item) => ({
-          image_data: item.image_data,
-          image_type: item.image_type,
-          original_filename: item.original_filename,
-          file_size: item.file_size,
-          width: item.width,
-          height: item.height,
-          image_order: item.image_order,
-          alt_text: item.alt_text || '',
-        }));
-      } catch {
-        alert('이미지 처리에 실패했습니다.');
-        return;
-      }
-    }
+    // S3 업로드된 이미지 URL들을 직접 사용
+    const images = selectedImages;
 
     const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
     const mockReservationData = {
@@ -122,7 +105,7 @@ export default function ReviewPage() {
       content: reviewText,
       rating,
       keywords: mappedKeywords,
-      images: imageMetadata,
+      images: [], // TODO: S3 이미지 URL을 ImageMetadata 형식으로 변환 필요
     };
 
     mutate(body, {

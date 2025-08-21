@@ -28,7 +28,7 @@ export default function ReservationPage() {
   // 진료 정보
   const [symptoms, setSymptoms] = useState<string>('');
   const [medications, setMedications] = useState<string>('');
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
   // 방문 일자
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -89,7 +89,7 @@ export default function ReservationPage() {
       interpreter_language: language,
       additional_notes: additionalInfo,
       user_id: 1, // 실제 사용자 ID로 수정 필요
-      images: [], // 이미지 업로드 로직 필요
+      images: selectedImages, // S3 업로드된 이미지 URL들
     };
 
     mutate(reservationData, {
@@ -118,11 +118,12 @@ export default function ReservationPage() {
           const axiosError = error as { code?: string; message?: string };
 
           if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
-            errorMessage = '서버 응답이 지연되고 있습니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.';
+            errorMessage =
+              '서버 응답이 지연되고 있습니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.';
             console.log('타임아웃 에러 상세:', {
               code: axiosError.code,
               message: axiosError.message,
-              timeout: '30초 초과'
+              timeout: '30초 초과',
             });
           }
         }

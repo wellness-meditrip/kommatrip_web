@@ -6,8 +6,8 @@ interface MedicalInfoCardProps {
   setSymptoms: (text: string) => void;
   medications: string;
   setMedications: (text: string) => void;
-  selectedImages: File[];
-  setSelectedImages: (images: File[]) => void;
+  selectedImages: string[];
+  setSelectedImages: (images: string[]) => void;
 }
 
 export function MedicalInfoCard({
@@ -18,8 +18,8 @@ export function MedicalInfoCard({
   selectedImages,
   setSelectedImages,
 }: MedicalInfoCardProps) {
-  const handleImageChange = (files: File[]) => {
-    setSelectedImages(files);
+  const handleImageChange = (urls: string[]) => {
+    setSelectedImages(urls);
   };
 
   return (
@@ -58,7 +58,12 @@ export function MedicalInfoCard({
 
       <div>
         <Text typo="title_S">첨부 사진</Text>
-        <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
+        <ImageInput
+          maxLength={10}
+          onChange={handleImageChange}
+          defaultValue={selectedImages}
+          targetFolderPath="user/reservation-images"
+        />
       </div>
     </div>
   );
