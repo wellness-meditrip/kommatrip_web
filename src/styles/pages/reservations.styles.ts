@@ -4,11 +4,13 @@ import { css } from '@emotion/react';
 export const wrapper = css`
   display: flex;
   flex-direction: column;
+
   background-color: ${theme.colors.bg_default};
 `;
 export const image = css`
-  border-radius: 8px;
   border: 1px solid ${theme.colors.gray200};
+  border-radius: 8px;
+
   background-color: black;
 `;
 export const content = css`
@@ -25,6 +27,7 @@ export const item = css`
 export const header = css`
   display: flex;
   gap: 12px;
+
   margin-bottom: 6px;
   padding: 18px;
 
@@ -35,8 +38,9 @@ export const container = css`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px 20px 20px;
+
   min-height: calc(100vh - ${theme.size.gnbHeight});
+  padding: 16px 20px 20px;
 `;
 
 export const submitButton = css`

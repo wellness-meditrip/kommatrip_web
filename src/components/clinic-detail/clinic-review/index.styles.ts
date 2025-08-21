@@ -2,14 +2,16 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 
 export const wrapper = css`
-  height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow-y: hidden;
   gap: 16px;
+  overflow-y: hidden;
+
+  height: 100%;
 
   background: ${theme.colors.bg_surface1};
+
   h1 {
     margin: 0 20px;
   }
@@ -18,19 +20,21 @@ export const wrapper = css`
 export const reviewSummary = css`
   display: flex;
   flex-direction: column;
+  gap: 8px;
+
   margin: 20px 20px 0;
   padding: 12px 16px;
   border-radius: 8px;
-  gap: 8px;
+
   background: ${theme.colors.white};
 `;
 
 export const titleWrapper = css`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
   flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
 
   @media (max-width: 480px) {
     flex-direction: column;
@@ -39,24 +43,27 @@ export const titleWrapper = css`
 `;
 export const title = css`
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+
   min-width: 0;
 `;
 
 export const toolTip = css`
   display: flex;
-  position: relative;
+  flex-shrink: 0;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+  position: relative;
+
   min-width: 0;
 
   cursor: pointer;
 
   &:hover > div {
     opacity: 1;
+
     visibility: visible;
   }
 `;
@@ -86,8 +93,8 @@ export const toolTipInfo = css`
 `;
 
 export const list = css`
-  padding-left: 16px;
   margin: 0;
+  padding-left: 16px;
 
   li {
     margin-bottom: 4px;
@@ -109,6 +116,7 @@ export const content = css`
 export const count = css`
   padding: 12px 16px;
   border-radius: 8px;
+
   background: ${theme.colors.white};
 `;
 export const bottom = css`

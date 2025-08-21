@@ -17,34 +17,37 @@ export const infoWrapper = css`
 export const urlWrapper = css`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
   justify-content: flex-start;
+  gap: 10px 14px;
+
   cursor: pointer;
 `;
 
 export const contents = css`
-  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: ${theme.colors.bg_surface1};
+
+  padding: 16px 20px;
   padding: 16px 20px calc(${theme.size.ctaButtonHeight} + 16px) 20px;
+
+  background: ${theme.colors.bg_surface1};
 `;
 
 export const itemWrapper = css`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
   justify-content: flex-start;
+  gap: 10px 14px;
 `;
 export const item = css`
   display: flex;
-  align-items: center;
   flex-direction: column;
-
   flex-shrink: 0;
-  min-width: 70px;
+  align-items: center;
   gap: 8px;
+
+  min-width: 70px;
 `;
 
 export const textWrapper = css`

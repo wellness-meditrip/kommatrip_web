@@ -42,17 +42,20 @@ export const textCountGray = css`
 
 export const textContainer = css`
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
+
   margin-top: 4px;
 `;
 
 export const errorText = css`
+  flex: 1;
+
+  min-height: 16px;
+
   color: ${theme.colors.red200};
   ${theme.typo.body11};
   font-weight: 500;
-  min-height: 16px;
-  flex: 1;
 `;
 
 export const textCountContainer = css`

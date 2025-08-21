@@ -30,8 +30,9 @@ export const top = css`
   align-items: center;
   gap: 8px;
 
-  background-color: #fff;
   border-radius: 12px;
+
+  background-color: #fff;
 `;
 
 export const reviewContent = css`
@@ -53,6 +54,7 @@ export const imageWrapper = css`
 
   img {
     border-radius: 4px;
+
     background: ${theme.colors.bg_default};
   }
 `;

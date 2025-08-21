@@ -11,7 +11,8 @@
     "prepare": "husky",
     "svgr:icons": "rm -rf src/icons/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/icons --no-dimensions --typescript --out-dir src/icons",
     "svgr:images": "rm -rf src/images/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/images --no-dimensions --typescript --out-dir src/images",
-    "svgr": "pnpm svgr:icons && pnpm svgr:images"
+    "svgr": "pnpm svgr:icons && pnpm svgr:images",
+    "lint:styles": "stylelint \"**/*.styles.ts\""
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -20,7 +21,8 @@
     ],
     "*.{md,json}": [
       "prettier --write"
-    ]
+    ],
+    "**/*.styles.ts": "stylelint --fix"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.859.0",
@@ -51,6 +53,7 @@
     "@commitlint/types": "^19.8.1",
     "@eslint/eslintrc": "^3",
     "@locator/runtime": "^0.4.4",
+    "@stylelint/postcss-css-in-js": "^0.38.0",
     "@svgr/webpack": "^8.1.0",
     "@types/google.maps": "^3.58.1",
     "@types/multer": "^2.0.0",
@@ -64,6 +67,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
     "prettier": "3.6.2",
+    "stylelint": "^15.11.0",
+    "stylelint-config-prettier": "^9.0.0",
+    "stylelint-config-standard": "^29.0.0",
+    "stylelint-order": "^5.0.0",
     "typescript": "^5"
   }
 }

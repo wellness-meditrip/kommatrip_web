@@ -10,6 +10,7 @@ export const toast = css`
   left: 50%;
   transform: translateX(-50%);
   z-index: ${theme.zIndex.toast};
+
   width: calc(100% - 18px - 18px);
   max-width: calc(${theme.size.maxWidth} - 18px - 18px);
   padding: 10px;
