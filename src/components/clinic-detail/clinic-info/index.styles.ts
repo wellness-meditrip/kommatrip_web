@@ -14,40 +14,41 @@ export const wrapper = css`
 export const infoWrapper = css`
   padding: 0 20px;
 `;
+
+export const operatingWrapper = css`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding-top: 6px;
+`;
+
 export const urlWrapper = css`
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 10px 14px;
+  flex-direction: column;
+  gap: 8px;
 
-  cursor: pointer;
+  padding-top: 8px;
 `;
 
 export const contents = css`
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 
-  padding: 16px 20px;
-  padding: 16px 20px calc(${theme.size.ctaButtonHeight} + 16px) 20px;
-
-  background: ${theme.colors.bg_surface1};
+  padding: 24px 20px;
 `;
 
 export const itemWrapper = css`
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 10px 14px;
+  gap: 16px;
 `;
+
 export const item = css`
   display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
   align-items: center;
   gap: 8px;
-
-  min-width: 70px;
 `;
 
 export const textWrapper = css`

@@ -8,6 +8,7 @@ import {
   item,
   textWrapper,
   itemWrapper,
+  operatingWrapper,
 } from './index.styles';
 import { ClinicLocation } from '@/icons/ClinicLocation';
 import { Text } from '@/components/text';
@@ -25,7 +26,6 @@ import { InfoRow } from '@/components/info-row';
 import { CTAButton } from '@/components/button';
 import { ClinicGoogleMap } from '@/components/map/google-map';
 import { ClinicIntroduction } from '../clinic-introduction';
-import { css } from '@emotion/react';
 import { DAY_KR, ROUTES } from '@/constants';
 import router from 'next/router';
 
@@ -224,9 +224,3 @@ export function ClinicInfo({ clinicData }: ClinicInfoProps) {
     </div>
   );
 }
-export const operatingWrapper = css`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 6px;
-`;

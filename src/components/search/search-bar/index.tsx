@@ -1,6 +1,5 @@
-import { theme } from '@/styles';
 import { Search } from '@/icons';
-import { css } from '@emotion/react';
+import { wrapper, searchBar, input, button } from './index.styles';
 
 interface SearchBarProps {
   onValueChange: (value: string) => void;
@@ -36,44 +35,3 @@ export default function SearchBar({ onValueChange }: SearchBarProps) {
     </div>
   );
 }
-
-const wrapper = css`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  z-index: ${theme.zIndex.searchBar};
-  position: fixed;
-  top: 52px;
-
-  background-color: ${theme.colors.white};
-  max-width: ${theme.size.maxWidth};
-  width: 100%;
-  height: 80px;
-  padding: 16px 20px;
-`;
-const searchBar = css`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 16px;
-  border-radius: 20px;
-  border: 1px solid ${theme.colors.bg_default};
-
-  background: ${theme.colors.primary0};
-`;
-const input = css`
-  width: 100%;
-
-  font-size: ${theme.typo.body_M};
-  text-align: left;
-  ::placeholder {
-    color: ${theme.colors.text_tertiary};
-  }
-`;
-
-const button = css`
-  width: 24px;
-  height: 24px;
-  margin: 0 8px 0 0;
-`;

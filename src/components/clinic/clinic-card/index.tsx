@@ -1,11 +1,23 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { Location } from '@/icons';
-import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
-import { css } from '@emotion/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import {
+  wrapper,
+  wrapperFixedHeight,
+  profileWrapper,
+  profileImage,
+  DetailsWrapper,
+  DetailsWrapperFixedHeight,
+  address,
+  tags,
+  tagsFixedHeight,
+  ratingBadge,
+  star,
+  ratingText,
+} from './index.styles';
 
 interface Props {
   clinicId: number;
@@ -102,106 +114,3 @@ export default function ClinicCard({
     </div>
   );
 }
-export const wrapper = css`
-  display: flex;
-  flex-direction: column;
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  width: 100%;
-  height: fit-content;
-  cursor: pointer;
-`;
-
-export const wrapperFixedHeight = css`
-  display: flex;
-  flex-direction: column;
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  width: 100%;
-  height: 320px;
-  cursor: pointer;
-`;
-
-export const profileWrapper = css`
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  border-radius: 12px 12px 0 0;
-
-  svg,
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const profileImage = css`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-export const DetailsWrapper = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-`;
-
-export const DetailsWrapperFixedHeight = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  height: 120px;
-  overflow: hidden;
-`;
-
-export const address = css`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  svg {
-    flex-shrink: 0;
-  }
-`;
-
-export const tags = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;
-
-export const tagsFixedHeight = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex-shrink: 0;
-`;
-
-export const ratingBadge = css`
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-`;
-
-export const star = css`
-  font-size: 12px;
-`;
-
-export const ratingText = css`
-  font-size: 12px;
-  font-weight: bold;
-`;

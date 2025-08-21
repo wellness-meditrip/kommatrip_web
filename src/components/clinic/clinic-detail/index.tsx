@@ -1,11 +1,17 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { Location } from '@/icons';
-import { theme } from '@/styles';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
-import { css } from '@emotion/react';
 import Image from 'next/image';
 import { useState } from 'react';
+import {
+  wrapper,
+  profileWrapper,
+  profileImage,
+  DetailsWrapper,
+  address,
+  tags,
+} from './index.styles';
 
 interface Props {
   clinicImage: string;
@@ -68,52 +74,3 @@ export default function ClinicDetail({ clinicImage, clinicName, clinicAddress, b
     </div>
   );
 }
-export const wrapper = css`
-  display: flex;
-  flex-direction: column;
-  background-color: ${theme.colors.white};
-  border-radius: 12px;
-  width: 100%;
-  height: fit-content;
-  cursor: pointer;
-`;
-
-export const profileWrapper = css`
-  width: 100%;
-  height: 280px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  svg,
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-export const profileImage = css`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-export const DetailsWrapper = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 20px;
-`;
-
-export const address = css`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-export const tags = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-`;

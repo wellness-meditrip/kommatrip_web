@@ -2,12 +2,11 @@ import { AppBar } from '@/components/app-bar';
 import { Layout } from '@/components/layout';
 import ClinicDetail from '@/components/clinic/clinic-detail';
 import { useRouter } from 'next/router';
-import { css } from '@emotion/react';
 import { ClinicInfo, ClinicReview } from '@/components/clinic-detail';
 import { useEffect, useState, useMemo } from 'react';
 import { Tabs } from '@/components';
-import { theme } from '@/styles';
 import { useGetClinicClinicIdQuery } from '@/queries';
+import { wrapper, content } from './index.styles';
 // import { ROUTES } from '@/constants/commons';
 
 export default function ClinicDetailPage() {
@@ -93,18 +92,3 @@ export default function ClinicDetailPage() {
     </Layout>
   );
 }
-
-const wrapper = css`
-  display: flex;
-  flex-direction: column;
-
-  background: ${theme.colors.white};
-
-  h1 {
-    margin: 0 18px;
-  }
-`;
-
-const content = css`
-  width: 100%;
-`;
