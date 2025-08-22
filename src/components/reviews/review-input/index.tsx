@@ -1,5 +1,6 @@
 import React from 'react';
-import { ImageInput, Text } from '@/components';
+import { Text } from '@/components';
+import { ImageInput } from '@/components/image-input';
 import {
   wrapper,
   reviewImage,
@@ -26,7 +27,6 @@ export function ReviewInputCard({
   const handleImageChange = (files: File[]) => {
     setSelectedImages(files);
   };
-
   return (
     <div css={wrapper}>
       <Text typo="subtitle1">리뷰를 작성해주세요</Text>

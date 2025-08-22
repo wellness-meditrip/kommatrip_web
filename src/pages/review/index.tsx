@@ -3,7 +3,7 @@ import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { convertKeywordNamesToRequestPayload, extractMultipleImageMetadata } from '@/utils';
+import { convertKeywordNamesToRequestPayload } from '@/utils';
 import 'dayjs/locale/ko';
 import {
   wrapper,
@@ -17,8 +17,8 @@ import {
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { usePostClinicReviewMutation } from '@/queries';
-import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
+import { useS3 } from '@/hooks/use-s3';
 
 const mockData = {
   recipientName: '우주연 한의원',
@@ -36,6 +36,7 @@ export default function ReviewPage() {
   const { showToast } = useToast();
   const { open } = useDialog();
   const { mutate, isPending } = usePostClinicReviewMutation();
+  const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
   // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
@@ -83,22 +84,14 @@ export default function ReviewPage() {
       return;
     }
 
-    let imageMetadata: ImageMetadata[] = [];
+    // S3 업로드
+    let imageUrls: string[] = [];
     if (selectedImages.length > 0) {
       try {
-        const metadata = await extractMultipleImageMetadata(selectedImages, 1);
-        imageMetadata = metadata.map((item) => ({
-          image_data: item.image_data,
-          image_type: item.image_type,
-          original_filename: item.original_filename,
-          file_size: item.file_size,
-          width: item.width,
-          height: item.height,
-          image_order: item.image_order,
-          alt_text: item.alt_text || '',
-        }));
-      } catch {
-        alert('이미지 처리에 실패했습니다.');
+        // S3에 이미지 업로드
+        imageUrls = await uploadToS3(selectedImages);
+      } catch (error) {
+        alert('이미지 업로드에 실패했습니다.');
         return;
       }
     }
@@ -122,7 +115,7 @@ export default function ReviewPage() {
       content: reviewText,
       rating,
       keywords: mappedKeywords,
-      images: imageMetadata,
+      images: imageUrls,
     };
 
     mutate(body, {

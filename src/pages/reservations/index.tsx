@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast, useDialog } from '@/hooks';
+import { useToast, useDialog, useS3 } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 
@@ -25,6 +25,8 @@ const mockData = {
 };
 
 export default function ReservationPage() {
+  const { uploadToS3 } = useS3({ targetFolderPath: 'user/reservation-images' });
+
   // 진료 정보
   const [symptoms, setSymptoms] = useState<string>('');
   const [medications, setMedications] = useState<string>('');
@@ -48,26 +50,22 @@ export default function ReservationPage() {
 
   const { mutate, isPending } = usePostCreateReservationMutation();
   const handleSubmit = async () => {
-    // 필수 필드 검증
     if (!symptoms || !selectedDate || !email || !contactPhone) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
 
-    // 증상 최소 10자 검증
     if (symptoms.length < 10) {
       showToast({ title: '증상을 10자 이상 입력해주세요.', icon: 'exclaim' });
       return;
     }
 
-    // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showToast({ title: '올바른 이메일 형식을 입력해주세요.', icon: 'exclaim' });
       return;
     }
 
-    // 전화번호 형식 검증 (한국 전화번호)
     const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
     if (!phoneRegex.test(contactPhone.replace(/\s/g, ''))) {
       showToast({
@@ -75,6 +73,17 @@ export default function ReservationPage() {
         icon: 'exclaim',
       });
       return;
+    }
+
+    // S3 업로드
+    let imageUrls: string[] = [];
+    if (selectedImages.length > 0) {
+      try {
+        imageUrls = await uploadToS3(selectedImages);
+      } catch (error) {
+        alert('이미지 업로드에 실패했습니다.');
+        return;
+      }
     }
 
     const reservationData = {
@@ -89,7 +98,7 @@ export default function ReservationPage() {
       interpreter_language: language,
       additional_notes: additionalInfo,
       user_id: 1, // 실제 사용자 ID로 수정 필요
-      images: [], // 이미지 업로드 로직 필요
+      images: imageUrls, // S3 업로드된 이미지 URL들
     };
 
     mutate(reservationData, {
@@ -118,11 +127,12 @@ export default function ReservationPage() {
           const axiosError = error as { code?: string; message?: string };
 
           if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
-            errorMessage = '서버 응답이 지연되고 있습니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.';
+            errorMessage =
+              '서버 응답이 지연되고 있습니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.';
             console.log('타임아웃 에러 상세:', {
               code: axiosError.code,
               message: axiosError.message,
-              timeout: '30초 초과'
+              timeout: '30초 초과',
             });
           }
         }

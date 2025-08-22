@@ -54,7 +54,6 @@ export const ImageInput = forwardRef(({ onChange, defaultValue = [], maxLength }
     const updatedFiles = filesRef.current.filter((_, idx) => idx !== index);
 
     filesRef.current = updatedFiles;
-
     setFiles(updatedFiles);
     onChange?.(updatedFiles);
   };
