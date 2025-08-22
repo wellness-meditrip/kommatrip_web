@@ -25,7 +25,7 @@ const mockData = {
 };
 
 export default function ReservationPage() {
-  const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
+  const { uploadToS3 } = useS3({ targetFolderPath: 'user/reservation-images' });
 
   // 진료 정보
   const [symptoms, setSymptoms] = useState<string>('');
@@ -50,26 +50,22 @@ export default function ReservationPage() {
 
   const { mutate, isPending } = usePostCreateReservationMutation();
   const handleSubmit = async () => {
-    // 필수 필드 검증
     if (!symptoms || !selectedDate || !email || !contactPhone) {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
 
-    // 증상 최소 10자 검증
     if (symptoms.length < 10) {
       showToast({ title: '증상을 10자 이상 입력해주세요.', icon: 'exclaim' });
       return;
     }
 
-    // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showToast({ title: '올바른 이메일 형식을 입력해주세요.', icon: 'exclaim' });
       return;
     }
 
-    // 전화번호 형식 검증 (한국 전화번호)
     const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
     if (!phoneRegex.test(contactPhone.replace(/\s/g, ''))) {
       showToast({
@@ -80,10 +76,10 @@ export default function ReservationPage() {
     }
 
     // S3 업로드
-    let uploadedImageUrls: string[] = [];
+    let imageUrls: string[] = [];
     if (selectedImages.length > 0) {
       try {
-        uploadedImageUrls = await uploadToS3(selectedImages);
+        imageUrls = await uploadToS3(selectedImages);
       } catch (error) {
         alert('이미지 업로드에 실패했습니다.');
         return;
@@ -102,7 +98,7 @@ export default function ReservationPage() {
       interpreter_language: language,
       additional_notes: additionalInfo,
       user_id: 1, // 실제 사용자 ID로 수정 필요
-      images: uploadedImageUrls, // S3 업로드된 이미지 URL들
+      images: imageUrls, // S3 업로드된 이미지 URL들
     };
 
     mutate(reservationData, {
