@@ -43,6 +43,14 @@ export const container = css`
   padding: 16px 18px 18px;
 `;
 
+export const loadingContainer = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  min-height: calc(100vh - 120px);
+`;
+
 export const submitButton = css`
   margin-top: 14px;
   padding: 18px;
