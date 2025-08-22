@@ -3,7 +3,7 @@ import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { convertKeywordNamesToRequestPayload, extractMultipleImageMetadata } from '@/utils';
+import { convertKeywordNamesToRequestPayload } from '@/utils';
 import 'dayjs/locale/ko';
 import {
   wrapper,
@@ -17,7 +17,6 @@ import {
 import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
 import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
 import { usePostClinicReviewMutation } from '@/queries';
-import { ImageMetadata } from '@/models/review';
 import { Loading } from '@/components/common';
 import { useS3 } from '@/hooks/use-s3';
 
@@ -86,10 +85,11 @@ export default function ReviewPage() {
     }
 
     // S3 업로드
-    let uploadedImageUrls: string[] = [];
+    let imageUrls: string[] = [];
     if (selectedImages.length > 0) {
       try {
-        uploadedImageUrls = await uploadToS3(selectedImages);
+        // S3에 이미지 업로드
+        imageUrls = await uploadToS3(selectedImages);
       } catch (error) {
         alert('이미지 업로드에 실패했습니다.');
         return;
@@ -115,7 +115,7 @@ export default function ReviewPage() {
       content: reviewText,
       rating,
       keywords: mappedKeywords,
-      images: [], // TODO: S3 이미지 URL을 ImageMetadata 형식으로 변환 필요
+      images: imageUrls,
     };
 
     mutate(body, {
