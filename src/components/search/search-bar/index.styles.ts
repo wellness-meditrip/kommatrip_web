@@ -14,7 +14,7 @@ export const wrapper = css`
   height: 80px;
   padding: 16px 20px;
 
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.bg_default};
 `;
 
 export const searchBar = css`
@@ -27,7 +27,7 @@ export const searchBar = css`
   border: 1px solid ${theme.colors.bg_default};
   border-radius: 20px;
 
-  background: ${theme.colors.primary0};
+  background: ${theme.colors.bg_default};
 `;
 
 export const input = css`

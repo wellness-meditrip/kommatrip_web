@@ -18,9 +18,10 @@ export const bar = css`
   position: absolute;
   bottom: 0;
 
-  width: 100px;
-  height: 2px;
+  width: 90px;
+  height: 3px;
   margin: 0 auto;
+  border-radius: 2px 2px 0 0;
 
   background: ${theme.colors.primary50};
 `;

@@ -141,7 +141,7 @@ export default function ReviewPage() {
           });
         },
       });
-    } catch (error) {
+    } catch {
       // 이미지 업로드 실패 시 여기서 처리됨
     }
   };

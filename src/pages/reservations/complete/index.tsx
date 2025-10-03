@@ -117,7 +117,7 @@ const reservationCard = css`
   border: 1px solid ${theme.colors.primary50};
   border-radius: 12px;
 
-  background-color: ${theme.colors.primary0};
+  background-color: ${theme.colors.primary10};
 `;
 
 const clinicName = css`

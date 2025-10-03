@@ -1,6 +1,9 @@
+export * from './Wallet';
 export * from './AppBarBack';
 export * from './ArrowDown';
 export * from './ArrowUpdown';
+export * from './BgColor';
+export * from './BgList';
 export * from './ButtonDownArrow';
 export * from './ButtonTextButtonArrow';
 export * from './Check';
@@ -13,7 +16,8 @@ export * from './ClinicParking';
 export * from './ClinicPickup';
 export * from './ClinicPrivate';
 export * from './ClinicWifi';
-
+export * from './Clock';
+export * from './DefaultImage';
 export * from './GnbClinicActive';
 export * from './GnbClinicInactive';
 export * from './GnbHomeActive';
@@ -24,6 +28,7 @@ export * from './GnbPackageActive';
 export * from './GnbPackageInactive';
 export * from './ImageUploadPlus';
 export * from './Location';
+export * from './Logo';
 export * from './ReviewAi';
 export * from './ReviewFold';
 export * from './ReviewStarFilled';

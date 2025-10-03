@@ -80,7 +80,7 @@ export default function ReservationPage() {
     if (selectedImages.length > 0) {
       try {
         imageUrls = await uploadToS3(selectedImages);
-      } catch (error) {
+      } catch {
         alert('이미지 업로드에 실패했습니다.');
         return;
       }

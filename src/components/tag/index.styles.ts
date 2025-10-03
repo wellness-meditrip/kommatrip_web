@@ -9,8 +9,8 @@ export const wrapper = ({ variant, service }: { variant: Variant; service: Servi
 
   width: fit-content;
   height: fit-content;
-  padding: 4px 10px;
-  border-radius: 30px;
+  padding: 4px 8px;
+  border-radius: 4px;
 
   ${variant === 'solid' && solid({ service })};
   ${variant === 'line' && line({ service })};
@@ -22,17 +22,10 @@ export const solid = ({ service }: { service: Service }) => css`
 `;
 
 export const line = ({ service }: { service: Service }) => css`
-  border: 1px solid
-    ${service === 'meditrip'
-      ? theme.colors.bg_surface2
-      : service === 'partner'
-        ? theme.colors.gray200
-        : theme.colors.white};
-
   background: ${service === 'search'
     ? theme.colors.white
     : service === 'meditrip'
-      ? theme.colors.bg_surface2
+      ? theme.colors.primary10Opacity40
       : theme.colors.gray100};
   color: ${service === 'search'
     ? theme.colors.text_primary

@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { ArrowDown } from '@/icons';
-import {
-  container,
-  rowHeader,
-  iconWrapper,
-  buttonWrapper,
-  titleWrapper,
-  detailWrapper,
-} from './index.styles';
+import { rowHeader, iconWrapper, buttonWrapper, titleWrapper, detailWrapper } from './index.styles';
 
 interface InfoRowProps {
   icon: React.ReactNode;
@@ -31,7 +24,7 @@ export function InfoRow({
   };
 
   return (
-    <div css={container}>
+    <div>
       <div css={rowHeader} onClick={handleToggle}>
         <div css={iconWrapper}>{icon}</div>
         <div css={titleWrapper}>{title}</div>

@@ -1,7 +1,5 @@
 export * from './app-bar';
 export * from './button';
-export * from './clinic-detail';
-export * from './clinic-detail/clinic-info';
 export * from './image-input';
 
 export * from './dialog';
@@ -16,3 +14,4 @@ export * from './tag';
 export * from './text';
 export * from './toast';
 export * from './reservation';
+export * from './company-detail';
