@@ -17,7 +17,6 @@ export function GoogleMapLoader({ children }: GoogleMapLoaderProps) {
         src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`}
         strategy="afterInteractive"
         onLoad={() => {
-          console.log('✅ Google Maps API Loaded');
           setIsLoaded(true);
         }}
         onError={(e) => {

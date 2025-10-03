@@ -79,15 +79,7 @@ export function CompanyReview() {
           </div>
         </div>
 
-        {isSummaryLoading ? (
-          <Text typo="body_M" color="text_secondary">
-            AI 요약을 불러오는 중...
-          </Text>
-        ) : summaryError ? (
-          <Text typo="body_M" color="text_secondary">
-            요약을 불러오는 데 실패했습니다.
-          </Text>
-        ) : aiSummary ? (
+        {aiSummary ? (
           <Text typo="body_M" color="text_secondary">
             {aiSummary}
           </Text>

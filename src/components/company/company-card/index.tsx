@@ -7,6 +7,7 @@ import { useState } from 'react';
 import {
   wrapper,
   wrapperFixedHeight,
+  profileWrapper,
   DetailsWrapper,
   DetailsWrapperFixedHeight,
   address,
@@ -70,8 +71,6 @@ export default function CompanyCard({
               alt="기본 이미지"
               width={170}
               height={200}
-              onError={() => console.log('Default image also failed to load for:', clinicName)}
-              onLoad={() => console.log('Default image loaded successfully for:', clinicName)}
               style={{ objectFit: 'cover', borderRadius: '8px' }}
             />
           </div>
