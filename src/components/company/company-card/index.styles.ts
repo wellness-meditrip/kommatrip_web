@@ -6,12 +6,17 @@ export const wrapper = css`
   flex-direction: column;
 
   width: 100%;
-  height: fit-content;
+  max-width: 353px;
+  height: 440px;
   border-radius: 12px;
 
   background-color: ${theme.colors.white};
 
   cursor: pointer;
+
+  > div:last-child {
+    margin-top: auto;
+  }
 `;
 
 export const wrapperFixedHeight = css`
@@ -19,23 +24,27 @@ export const wrapperFixedHeight = css`
   flex-direction: column;
 
   width: 100%;
-  height: 320px;
+  max-width: 353px;
+  height: 440px;
   border-radius: 12px;
 
   background-color: ${theme.colors.white};
 
   cursor: pointer;
+
+  > div:last-child {
+    margin-top: auto;
+  }
 `;
 
 export const profileWrapper = css`
+  flex: 1;
   position: relative;
   overflow: hidden;
 
   width: 100%;
-  height: 200px;
   border-radius: 12px 12px 0 0;
 
-  svg,
   img {
     width: 100%;
     height: 100%;
@@ -45,7 +54,7 @@ export const profileWrapper = css`
 
 export const profileImage = css`
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
 `;
 
@@ -95,23 +104,13 @@ export const ratingBadge = css`
   align-items: center;
   gap: 4px;
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 12px;
+  left: 12px;
 
-  padding: 4px 8px;
+  width: fit-content;
+  padding: 6px;
   border-radius: 12px;
 
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-`;
-
-export const star = css`
-  font-size: 12px;
-`;
-
-export const ratingText = css`
-  font-size: 12px;
-  font-weight: bold;
+  background-color: ${theme.colors.bg_default};
+  color: ${theme.colors.text_secondary};
 `;

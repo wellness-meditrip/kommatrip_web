@@ -14,8 +14,6 @@ import {
   tags,
   tagsFixedHeight,
   ratingBadge,
-  star,
-  ratingText,
 } from './index.styles';
 
 interface Props {
@@ -30,13 +28,12 @@ interface Props {
 }
 
 // 병원 카드 컴포넌트
-export default function CompanyCard({
+export function CompanyCard({
   clinicId,
   clinicImage,
   clinicName,
-  clinicAddress,
   badges,
-  rating,
+  clinicAddress,
   fixedHeight = false,
   onClick,
 }: Props) {
@@ -75,10 +72,12 @@ export default function CompanyCard({
             />
           </div>
         )}
-        {rating && (
+        {clinicAddress && (
           <div css={ratingBadge}>
-            <span css={star}>⭐</span>
-            <span css={ratingText}>{rating}</span>
+            <Location width={16} height={16} />
+            <Text typo="body_M" color="text_primary">
+              {clinicAddress}
+            </Text>
           </div>
         )}
       </div>
@@ -86,12 +85,7 @@ export default function CompanyCard({
         <Text typo="title_M" color="text_primary">
           {clinicName}
         </Text>
-        <div css={address}>
-          <Location width={16} height={16} />
-          <Text typo="body_M" color="text_primary">
-            {clinicAddress}
-          </Text>
-        </div>
+
         <div css={fixedHeight ? tagsFixedHeight : tags}>
           {badges?.slice(0, fixedHeight ? 2 : badges.length).map((hashTag) => (
             <Tag key={hashTag} service="meditrip" variant="line">
