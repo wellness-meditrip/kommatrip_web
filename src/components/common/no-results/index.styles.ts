@@ -12,7 +12,7 @@ export const wrapper = css`
   height: 80%;
   padding: 32px 0;
 
-  background-color: ${theme.colors.primary0};
+  background-color: ${theme.colors.bg_surface1};
   line-height: 1.4;
   text-align: center;
 `;

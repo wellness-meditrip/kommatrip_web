@@ -1,15 +1,9 @@
 import { css } from '@emotion/react';
 
-export const container = css`
-  border-bottom: 1px solid #eee;
-
-  padding: 16px 0;
-`;
-
 export const rowHeader = css`
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 
   cursor: pointer;
 `;
@@ -17,8 +11,6 @@ export const rowHeader = css`
 export const iconWrapper = css`
   display: flex;
   align-items: center;
-
-  margin: 0 20px;
 `;
 export const buttonWrapper = (isOpen: boolean) => css`
   display: flex;

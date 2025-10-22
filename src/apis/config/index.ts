@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import { createHttpClient, HttpClient } from './createHttpClient';
 
-export const { api } = createHttpClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
-  role: 'user',
-});
+// export const { api } = createHttpClient({
+//   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
+//   role: 'user',
+// });
 
 export const { api: reviewApi } = createHttpClient({
   baseURL: process.env.NEXT_PUBLIC_REVIEW_API_URL ?? '',
@@ -21,6 +21,10 @@ guestReservationApi.interceptors.response.use(
   (error) => Promise.reject(error)
 );
 
+export const api: HttpClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
+});
+
 export const guestApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
 });
@@ -31,6 +35,10 @@ export const guestHospitalApi: HttpClient = axios.create({
 
 export const guestReviewApi: HttpClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_REVIEW_API_URL ?? '',
+});
+
+export const programApi: HttpClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
 });
 
 guestApi.interceptors.response.use(

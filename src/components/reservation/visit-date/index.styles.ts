@@ -9,7 +9,7 @@ export const wrapper = css`
   padding: 20px;
   border-radius: 20px;
 
-  background-color: ${theme.colors.primary0};
+  background-color: ${theme.colors.primary10};
 `;
 
 export const datePickerContainer = css`

@@ -26,7 +26,7 @@ export const MENUS = [
       active: <GnbClinicActive width="32px" height="32px" />,
       inactive: <GnbClinicInactive width="32px" height="32px" />,
     },
-    path: ROUTES.CLINICS,
+    path: ROUTES.COMPANY,
     canGuest: false,
   },
   {

@@ -3,7 +3,6 @@ import { theme } from '@/styles';
 
 export const wrapper = css`
   width: 100%;
-  padding: 0 0 36px;
 `;
 
 export const tabHeader = css`
@@ -12,10 +11,14 @@ export const tabHeader = css`
   top: 0;
   z-index: 10;
 
-  background: ${theme.colors.white};
+  background: ${theme.colors.bg_default};
+  border-bottom: 1px solid ${theme.colors.gray300};
 
   cursor: pointer;
-  border-bottom: 0.5px solid ${theme.colors.gray500};
+
+  /* 스크롤 성능 최적화 */
+  will-change: transform;
+  backdrop-filter: blur(8px);
 `;
 
 export const tabContent = css`
@@ -23,6 +26,7 @@ export const tabContent = css`
   position: relative;
 
   width: 100%;
+  min-height: 100vh; /* 최소 높이 설정으로 높이 차이 문제 해결 */
 `;
 
 export const tabContentItem = css`

@@ -10,10 +10,11 @@ export const ROUTES = {
   SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
   SEARCH_ADDRESS: '/search-address',
 
-  // Clinics
-  CLINICS: '/clinics',
-  CLINICS_DETAIL: (clinicId: number) => `/clinics/${clinicId}`,
-  CLINICS_REVIEWS: (clinicId: number) => `/clinics/${clinicId}/reviews`,
+  // company
+  COMPANY: '/company',
+  COMPANY_DETAIL: (companyId: number) => `/company/${companyId}`,
+  COMPANY_REVIEWS: (companyId: number) => `/company/${companyId}/reviews`,
+  COMPANY_PROGRAM: (companyId: number) => `/company/${companyId}/program`,
 
   // Packages
   PACKAGES: '/packages',

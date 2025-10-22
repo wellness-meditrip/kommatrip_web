@@ -6,7 +6,7 @@ interface Props {
   address: string;
 }
 
-export function ClinicGoogleMap({ address }: Props) {
+export function CompanyGoogleMap({ address }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

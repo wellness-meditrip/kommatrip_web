@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text } from '@/components';
 import { ImageInput } from '@/components/image-input';
 import {
@@ -13,41 +12,57 @@ import {
   textCountContainer,
 } from './index.styles';
 
+interface ReviewInputCardProps {
+  reviewText: string;
+  setReviewText: (text: string) => void;
+  selectedImages: File[];
+  setSelectedImages: (images: File[]) => void;
+}
+
+const MIN_REVIEW_LENGTH = 10;
+const MAX_REVIEW_LENGTH = 400;
+const MAX_IMAGES = 10;
+
 export function ReviewInputCard({
   reviewText,
   setReviewText,
   selectedImages,
   setSelectedImages,
-}: {
-  reviewText: string;
-  setReviewText: (text: string) => void;
-  selectedImages: File[];
-  setSelectedImages: (images: File[]) => void;
-}) {
+}: ReviewInputCardProps) {
   const handleImageChange = (files: File[]) => {
     setSelectedImages(files);
   };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReviewText(e.target.value);
+  };
+
+  const showError = reviewText.length > 0 && reviewText.length < MIN_REVIEW_LENGTH;
+  const isTextValid = reviewText.length >= MIN_REVIEW_LENGTH;
+
   return (
     <div css={wrapper}>
       <Text typo="subtitle1">리뷰를 작성해주세요</Text>
       <div css={reviewImage}>
-        <ImageInput maxLength={10} onChange={handleImageChange} defaultValue={selectedImages} />
+        <ImageInput
+          maxLength={MAX_IMAGES}
+          onChange={handleImageChange}
+          defaultValue={selectedImages}
+        />
       </div>
       <div css={reviewInput}>
         <textarea
           css={textarea}
           placeholder="리뷰를 작성해주세요"
-          maxLength={400}
+          maxLength={MAX_REVIEW_LENGTH}
           value={reviewText}
-          onChange={(e) => setReviewText(e.target.value)}
+          onChange={handleTextChange}
         />
         <div css={textContainer}>
-          <div css={errorText}>
-            {reviewText.length > 0 && reviewText.length < 10 && '최소 10글자 이상 작성해주세요.'}
-          </div>
+          <div css={errorText}>{showError && '최소 10글자 이상 작성해주세요.'}</div>
           <div css={textCountContainer}>
-            <span css={textCount(reviewText.length >= 10)}>{reviewText.length}&nbsp;</span>
-            <span css={textCountGray}> / 400 </span>
+            <span css={textCount(isTextValid)}>{reviewText.length}&nbsp;</span>
+            <span css={textCountGray}> / {MAX_REVIEW_LENGTH} </span>
           </div>
         </div>
       </div>
