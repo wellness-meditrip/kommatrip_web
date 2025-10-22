@@ -16,6 +16,10 @@ export const wrapper = css`
 
   background: ${theme.colors.white};
   box-shadow: 0 -4px 10px 0 ${theme.colors.grayOpacity50};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
 `;
 
 export const menuItem = css`

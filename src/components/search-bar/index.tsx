@@ -7,7 +7,7 @@ interface SearchBarProps {
   isLeft?: boolean;
 }
 
-export default function SearchBar({ onValueChange, placeholder, isLeft = false }: SearchBarProps) {
+export function SearchBar({ onValueChange, placeholder, isLeft = false }: SearchBarProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     onValueChange(value);

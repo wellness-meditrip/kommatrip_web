@@ -4,8 +4,6 @@ import { theme } from '@/styles';
 export const wrapper = css`
   display: flex;
   justify-content: flex-start;
-  position: fixed;
-  top: 52px;
   z-index: ${theme.zIndex.searchBar};
 
   width: 100%;
