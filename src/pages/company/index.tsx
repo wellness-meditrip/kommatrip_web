@@ -9,7 +9,7 @@ import {
   TextButton,
   Text,
   SortModal,
-  RecommendedCompanies,
+  CompanyList,
   Loading,
   NoResults,
 } from '@/components';
@@ -120,7 +120,8 @@ export default function ClinicPage() {
                 title="검색하신 한의원이 없어요"
                 subtitle="대신 비슷한 한의원을 찾아봤어요!"
               />
-              <RecommendedCompanies
+              <CompanyList
+                title="Recently Viewed"
                 companies={
                   recommendedData?.data?.companies?.map((company, index) => ({
                     hospital_id: company.id,

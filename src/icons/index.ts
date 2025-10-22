@@ -7,6 +7,7 @@ export * from './BgList';
 export * from './ButtonDownArrow';
 export * from './ButtonTextButtonArrow';
 export * from './Check';
+export * from './ChevronRight';
 export * from './ClinicClock';
 export * from './ClinicContact';
 export * from './ClinicGlobe';

@@ -6,7 +6,6 @@ export * from './image-input';
 export * from './dialog';
 export * from './dim';
 export * from './empty';
-export * from './gnb';
 export * from './rating';
 export * from './layout';
 
@@ -16,3 +15,4 @@ export * from './text';
 export * from './toast';
 export * from './reservation';
 export * from './company';
+export * from './common';

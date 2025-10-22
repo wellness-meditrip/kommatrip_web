@@ -1,14 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import {
-  Layout,
-  AppBar,
-  SearchBar,
-  Text,
-  CompanyCard,
-  GNB,
-  RecommendedCompanies,
-} from '@/components';
+import { Layout, AppBar, SearchBar, Text, CompanyCard, GNB, CompanyList } from '@/components';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -40,6 +32,35 @@ export default function HomePage() {
       </div>
 
       <div css={wrapper}>
+        <CompanyList
+          title="Recently Viewed"
+          companies={[
+            {
+              hospital_id: 1,
+              hospital_name: 'Clinic Name',
+              address: 'Clinic Address',
+              rating: 4.5,
+              image_url: 'https://via.placeholder.com/150',
+              departments: ['badge1', 'badge2'],
+            },
+            {
+              hospital_id: 2,
+              hospital_name: 'Clinic Name 2',
+              address: 'Clinic Address 2',
+              rating: 4.5,
+              image_url: 'https://via.placeholder.com/150',
+              departments: ['badge3', 'badge4'],
+            },
+            {
+              hospital_id: 3,
+              hospital_name: 'Clinic Name 3',
+              address: 'Clinic Address 3',
+              rating: 4.5,
+              image_url: 'https://via.placeholder.com/150',
+              departments: ['badge5', 'badge6'],
+            },
+          ]}
+        />
         <Text typo="title_M" color="text_primary" css={title}>
           Recommended for You
         </Text>

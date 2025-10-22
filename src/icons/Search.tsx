@@ -1,10 +1,9 @@
-import { theme } from '@/styles';
 import * as React from 'react';
 import type { SVGProps } from 'react';
 export const Search = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 25 24" {...props}>
     <path
-      stroke={theme.colors.primary30}
+      stroke="#5D4A43"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
