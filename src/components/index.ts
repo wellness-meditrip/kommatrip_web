@@ -1,4 +1,5 @@
 export * from './app-bar';
+export * from './search-bar';
 export * from './button';
 export * from './image-input';
 
@@ -14,4 +15,4 @@ export * from './tag';
 export * from './text';
 export * from './toast';
 export * from './reservation';
-export * from './company-detail';
+export * from './company';

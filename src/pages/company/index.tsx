@@ -3,16 +3,19 @@ import debounce from 'lodash.debounce';
 import { useEffect, useState, useMemo } from 'react';
 import { AppBar } from '@/components/app-bar';
 import { Layout } from '@/components/layout';
-import SearchBar from '@/components/search/search-bar';
-import CompanyCard from '@/components/company/company-card';
-import { TextButton } from '@/components/text-button';
-import { Text } from '@/components/text';
+import {
+  SearchBar,
+  CompanyCard,
+  TextButton,
+  Text,
+  SortModal,
+  RecommendedCompanies,
+  Loading,
+  NoResults,
+} from '@/components';
 import { ArrowUpdown } from '@/icons';
 import { useGetCompanySearchQuery } from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
-import { Loading, NoResults } from '@/components/common';
-import { SortModal } from '@/components/company/sort-modal';
-import { RecommendedCompanies } from '@/components/company/recommended-companies';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { filterCompanies, sortCompanies } from '@/utils/search';
