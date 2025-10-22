@@ -20,11 +20,18 @@ export const isFlexibleMatch = (text: string, searchTerm: string) => {
   return searchIndex === searchTerm.length;
 };
 
+// 통합된 회사 타입 정의
+type Company = {
+  id: number;
+  name: string;
+  address: string;
+  tags?: string[];
+  rating_average?: string;
+  views_count?: number;
+};
+
 // 클라이언트 사이드 필터링 함수
-export const filterCompanies = (
-  companies: Array<{ name: string; address: string; tags?: string[] }>,
-  searchTerm: string
-) => {
+export const filterCompanies = (companies: Array<Company>, searchTerm: string) => {
   if (!searchTerm.trim()) return companies;
 
   const normalizedSearchTerm = normalizeSearchTerm(searchTerm);
@@ -44,10 +51,7 @@ export const filterCompanies = (
 };
 
 // 정렬 함수
-export const sortCompanies = (
-  companies: Array<{ rating_average?: string; views_count?: number }>,
-  sortType: string
-) => {
+export const sortCompanies = (companies: Array<Company>, sortType: string) => {
   const sorted = [...companies];
 
   switch (sortType) {

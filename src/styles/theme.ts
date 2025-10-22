@@ -6,10 +6,16 @@ const theme = {
   typo: typography,
   size: {
     minWidth: '320px',
-    maxWidth: '480px',
+    maxWidth: '1440px',
     appBarHeight: '52px',
     gnbHeight: '60px',
     ctaButtonHeight: '72px',
+  },
+  breakpoints: {
+    mobile: '320px',
+    tablet: '768px',
+    desktop: '1024px',
+    wide: '1200px',
   },
   zIndex: {
     overlay: 5,
