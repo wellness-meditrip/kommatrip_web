@@ -26,11 +26,19 @@ export const button = css`
   cursor: pointer;
 `;
 
+export const wrapper = css`
+  display: flex;
+  align-items: center;
+  position: relative;
+`;
+
 export const scrollContainer = css`
+  flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
 
-  /* 스크롤바 숨기기 */
+  height: 480px;
+
   scrollbar-width: none;
   -ms-overflow-style: none;
 
@@ -45,4 +53,80 @@ export const grid = css`
 
   width: max-content;
   padding: 0 0 8px 0;
+`;
+
+export const leftButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  transform: translateY(-50%);
+  z-index: 30;
+
+  width: 40px;
+  height: 40px;
+  border: 1px solid ${theme.colors.border_default};
+  border-radius: 50%;
+
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  transition: all 0.2s ease;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${theme.colors.white};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+`;
+
+export const rightButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  transform: translateY(-50%);
+  z-index: 30;
+
+  width: 40px;
+  height: 40px;
+  border: 1px solid ${theme.colors.border_default};
+  border-radius: 50%;
+
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  transition: all 0.2s ease;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${theme.colors.white};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+`;
+
+export const scrollButtons = css`
+  display: none;
+  justify-content: center;
+  gap: 12px;
+
+  margin-top: 16px;
+
+  @media (min-width: 1024px) {
+    display: flex;
+  }
 `;
