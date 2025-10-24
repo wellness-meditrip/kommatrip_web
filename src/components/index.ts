@@ -1,4 +1,5 @@
 export * from './app-bar';
+export * from './desktop-app-bar';
 export * from './search-bar';
 export * from './button';
 export * from './image-input';

@@ -1,6 +1,17 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { Layout, AppBar, SearchBar, Text, CompanyCard, GNB, CompanyList } from '@/components';
+import {
+  Layout,
+  AppBar,
+  SearchBar,
+  Text,
+  CompanyCard,
+  GNB,
+  CompanyList,
+  DesktopAppBar,
+} from '@/components';
+import { useMediaQuery } from '@/hooks';
+import { recentlyViewedCompanies } from '@/data/mock-company-data';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -9,58 +20,35 @@ import { css } from '@emotion/react';
 export default function HomePage() {
   const router = useRouter();
   const [inputValue, setInputValue] = useState('');
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
 
   const handleValueChange = (value: string) => {
     setInputValue(value);
   };
+
   return (
     <Layout isAppBarExist={false}>
-      {/* 통합 헤더 영역 */}
-      <div css={headerSection}>
-        <AppBar onBackClick={router.back} showBackButton={false} logo={true} />
-        <div css={heroContent}>
-          <Text typo="title_L" color="white" css={heroTitle}>
-            Discover Authentic Korean Wellness
-          </Text>
+      {isDesktop ? (
+        <DesktopAppBar onSearchChange={handleValueChange} />
+      ) : (
+        <div css={headerSection}>
+          <AppBar onBackClick={router.back} showBackButton={false} logo={true} />
+          <div css={heroContent}>
+            <Text typo="title_L" color="white" css={heroTitle}>
+              Discover Authentic Korean Wellness
+            </Text>
+          </div>
+          <div css={searchBarWrapper}>
+            <SearchBar
+              onValueChange={handleValueChange}
+              placeholder="Search spas, clinics, treatments..."
+            />
+          </div>
         </div>
-        <div css={searchBarWrapper}>
-          <SearchBar
-            onValueChange={handleValueChange}
-            placeholder="Search spas, clinics, treatments..."
-          />
-        </div>
-      </div>
+      )}
 
       <div css={wrapper}>
-        <CompanyList
-          title="Recently Viewed"
-          companies={[
-            {
-              hospital_id: 1,
-              hospital_name: 'Clinic Name',
-              address: 'Clinic Address',
-              rating: 4.5,
-              image_url: 'https://via.placeholder.com/150',
-              departments: ['badge1', 'badge2'],
-            },
-            {
-              hospital_id: 2,
-              hospital_name: 'Clinic Name 2',
-              address: 'Clinic Address 2',
-              rating: 4.5,
-              image_url: 'https://via.placeholder.com/150',
-              departments: ['badge3', 'badge4'],
-            },
-            {
-              hospital_id: 3,
-              hospital_name: 'Clinic Name 3',
-              address: 'Clinic Address 3',
-              rating: 4.5,
-              image_url: 'https://via.placeholder.com/150',
-              departments: ['badge5', 'badge6'],
-            },
-          ]}
-        />
+        <CompanyList title="Recently Viewed" companies={recentlyViewedCompanies} />
         <Text typo="title_M" color="text_primary" css={title}>
           Recommended for You
         </Text>
@@ -104,10 +92,6 @@ export const headerSection = css`
   width: 100%;
 
   background: linear-gradient(135deg, #2d3e36 0%, #476155 50%, #749a88 100%);
-  /* background-image: url('/candle-bg.jpg'); */
-  /* background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat; */
 
   > * {
     position: relative;
@@ -123,7 +107,7 @@ export const heroContent = css`
   flex: 1;
   justify-content: center;
 
-  margin: calc(${theme.size.appBarHeight} + 34px) 0 20px 0;
+  margin: 34px 0 20px 0;
   gap: 16px;
 `;
 
@@ -160,12 +144,12 @@ export const wrapper = css`
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
+  /* overflow-y: auto; */
 
   width: 100%;
-  height: 100%;
+  /* height: 100%; */
 
-  padding: 24px;
+  padding: 26px;
 
   background-color: ${theme.colors.bg_default};
 `;

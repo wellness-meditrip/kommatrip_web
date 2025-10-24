@@ -10,7 +10,6 @@ import {
   profileWrapper,
   DetailsWrapper,
   DetailsWrapperFixedHeight,
-  address,
   tags,
   tagsFixedHeight,
   ratingBadge,
@@ -50,7 +49,6 @@ export function CompanyCard({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
   const imageList = images.length > 0 ? images : [clinicImage];
   const convertedUrl = convertGoogleDriveUrlToImageSrc(imageList[currentImageIndex]);

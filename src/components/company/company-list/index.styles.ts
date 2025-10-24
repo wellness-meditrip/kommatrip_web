@@ -56,6 +56,9 @@ export const grid = css`
 `;
 
 export const leftButton = css`
+  @media (max-width: 1024px) {
+    display: none;
+  }
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,6 +91,9 @@ export const leftButton = css`
 `;
 
 export const rightButton = css`
+  @media (max-width: 1024px) {
+    display: none;
+  }
   display: flex;
   align-items: center;
   justify-content: center;

@@ -183,6 +183,9 @@ export const carouselDotActive = css`
 `;
 
 export const carouselNavButton = css`
+  @media (max-width: 1024px) {
+    display: none;
+  }
   display: flex;
   align-items: center;
   justify-content: center;

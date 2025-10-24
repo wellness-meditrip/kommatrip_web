@@ -2,8 +2,6 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
 export const wrapper = css`
-  position: fixed;
-  top: 0;
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;
@@ -15,8 +13,7 @@ export const wrapper = css`
 `;
 
 export const wrapperWithBackground = css`
-  position: fixed;
-  top: 0;
+  position: relative;
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;

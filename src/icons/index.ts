@@ -20,6 +20,8 @@ export * from './ClinicPrivate';
 export * from './ClinicWifi';
 export * from './Clock';
 export * from './DefaultImage';
+export * from './Exit';
+export * from './Globe';
 export * from './GnbClinicActive';
 export * from './GnbClinicInactive';
 export * from './GnbHomeActive';
