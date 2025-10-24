@@ -23,6 +23,7 @@ interface CompanyListProps {
     address: string;
     rating: number;
     image_url: string;
+    images?: string[];
     departments: string[];
   }>;
 }
@@ -94,6 +95,7 @@ export function CompanyList({ title, companies }: CompanyListProps) {
                 clinicName={company.hospital_name}
                 clinicAddress={company.address}
                 rating={company.rating}
+                images={company.images}
                 fixedHeight={true}
               />
             ))}

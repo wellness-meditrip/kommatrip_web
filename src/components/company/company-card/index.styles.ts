@@ -72,7 +72,7 @@ export const DetailsWrapperFixedHeight = css`
   gap: 8px;
   overflow: hidden;
 
-  height: 120px;
+  /* height: 120px; */
   padding: 16px;
 `;
 
@@ -113,4 +113,105 @@ export const ratingBadge = css`
 
   background-color: ${theme.colors.bg_default};
   color: ${theme.colors.text_secondary};
+`;
+
+export const imageCarousel = css`
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  &:hover button {
+    opacity: 1;
+  }
+`;
+
+export const carouselContainer = css`
+  position: relative;
+  overflow: hidden;
+
+  width: 100%;
+  height: 100%;
+  border-radius: 12px 12px 0 0;
+`;
+
+export const carouselImage = css`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  border-radius: 12px 12px 0 0;
+`;
+
+export const carouselDots = css`
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+`;
+
+export const carouselDot = css`
+  width: 6px;
+  height: 6px;
+  border: none;
+  border-radius: 50%;
+
+  background-color: ${theme.colors.gray300};
+
+  transition: all 0.2s ease;
+
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+`;
+
+export const carouselDotActive = css`
+  width: 6px;
+  height: 6px;
+  border: none;
+  border-radius: 50%;
+
+  background-color: ${theme.colors.primary50};
+
+  transition: all 0.2s ease;
+
+  cursor: pointer;
+`;
+
+export const carouselNavButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  width: 32px;
+  height: 34px;
+
+  transition: opacity 0.3s ease;
+
+  cursor: pointer;
+  opacity: 0;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+`;
+
+export const carouselNavLeft = css`
+  left: 7px;
+`;
+
+export const carouselNavRight = css`
+  right: 7px;
 `;

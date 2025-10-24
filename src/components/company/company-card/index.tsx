@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { Location } from '@/icons';
+import { Location, ChevronWhite } from '@/icons';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -14,6 +14,15 @@ import {
   tags,
   tagsFixedHeight,
   ratingBadge,
+  imageCarousel,
+  carouselContainer,
+  carouselImage,
+  carouselDots,
+  carouselDot,
+  carouselDotActive,
+  carouselNavButton,
+  carouselNavLeft,
+  carouselNavRight,
 } from './index.styles';
 
 interface Props {
@@ -24,6 +33,7 @@ interface Props {
   badges: string[];
   rating?: number;
   fixedHeight?: boolean;
+  images?: string[]; // 여러 이미지 배열 추가
   onClick: (clinicId: number) => void;
 }
 
@@ -35,10 +45,15 @@ export function CompanyCard({
   badges,
   clinicAddress,
   fixedHeight = false,
+  images = [],
   onClick,
 }: Props) {
   const [imageError, setImageError] = useState(false);
-  const convertedUrl = convertGoogleDriveUrlToImageSrc(clinicImage);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
+  const imageList = images.length > 0 ? images : [clinicImage];
+  const convertedUrl = convertGoogleDriveUrlToImageSrc(imageList[currentImageIndex]);
 
   const handleImageError = () => {
     console.log('Image load failed, falling back to default image for:', clinicName);
@@ -49,28 +64,96 @@ export function CompanyCard({
     console.log('Image loaded successfully for:', clinicName);
   };
 
+  const handleDotClick = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
+  };
+
   return (
     <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(clinicId)}>
       <div css={profileWrapper}>
-        {convertedUrl && !imageError ? (
-          <Image
-            src={convertedUrl}
-            alt="프로필 이미지"
-            width={170}
-            height={200}
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-          />
-        ) : (
-          <div css={profileWrapper}>
-            <img
-              src="/default.png"
-              alt="기본 이미지"
-              width={170}
-              height={200}
-              style={{ objectFit: 'cover', borderRadius: '8px' }}
-            />
+        {imageList.length > 1 ? (
+          <div css={imageCarousel}>
+            <div css={carouselContainer}>
+              {convertedUrl && !imageError ? (
+                <Image
+                  src={convertedUrl}
+                  alt="프로필 이미지"
+                  width={170}
+                  height={200}
+                  onError={handleImageError}
+                  onLoad={handleImageLoad}
+                  css={carouselImage}
+                />
+              ) : (
+                <img
+                  src="/default.png"
+                  alt="기본 이미지"
+                  width={170}
+                  height={200}
+                  css={carouselImage}
+                />
+              )}
+              <button
+                css={[carouselNavButton, carouselNavLeft]}
+                onClick={handlePrevImage}
+                aria-label="이전 이미지"
+              >
+                <ChevronWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
+              </button>
+              <button
+                css={[carouselNavButton, carouselNavRight]}
+                onClick={handleNextImage}
+                aria-label="다음 이미지"
+              >
+                <ChevronWhite width={32} height={34} />
+              </button>
+            </div>
+            <div css={carouselDots}>
+              {imageList.map((_, index) => (
+                <button
+                  key={index}
+                  css={index === currentImageIndex ? carouselDotActive : carouselDot}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDotClick(index);
+                  }}
+                />
+              ))}
+            </div>
           </div>
+        ) : (
+          <>
+            {convertedUrl && !imageError ? (
+              <Image
+                src={convertedUrl}
+                alt="프로필 이미지"
+                width={170}
+                height={200}
+                onError={handleImageError}
+                onLoad={handleImageLoad}
+              />
+            ) : (
+              <div css={profileWrapper}>
+                <img
+                  src="/default.png"
+                  alt="기본 이미지"
+                  width={170}
+                  height={200}
+                  style={{ objectFit: 'cover', borderRadius: '8px' }}
+                />
+              </div>
+            )}
+          </>
         )}
         {clinicAddress && (
           <div css={ratingBadge}>
