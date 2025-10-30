@@ -28,5 +28,7 @@ export const menuItem = css`
   align-items: center;
   justify-content: center;
 
-  width: 69px;
+  width: 71px;
+
+  white-space: nowrap;
 `;

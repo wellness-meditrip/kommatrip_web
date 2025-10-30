@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { GNB as DaengleGNB } from '../../../components/gnb';
+import { GNB as ONYUGNB } from '../../gnb';
 // import { useDialog } from '@/hooks';
 import { MENUS } from '@/constants/commons';
 // import { useGetUserValidateQuery } from '~/queries';
@@ -28,5 +28,5 @@ export function GNB() {
     router.push(path);
   };
 
-  return <DaengleGNB menus={MENUS} activePath={router.pathname} onNavigate={handleMenuClick} />;
+  return <ONYUGNB menus={MENUS} activePath={router.pathname} onNavigate={handleMenuClick} />;
 }
