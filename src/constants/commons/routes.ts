@@ -7,8 +7,8 @@ export const ROUTES = {
 
   HOME: '/',
   SEARCH: '/search',
-  SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
-  SEARCH_ADDRESS: '/search-address',
+  SEARCH_RESULTS: '/search/results',
+  // SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
 
   // company
   COMPANY: '/company',
