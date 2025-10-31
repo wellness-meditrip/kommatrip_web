@@ -14,9 +14,10 @@ import Link from 'next/link';
 
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
+  onSearch?: () => void;
 }
 
-export function DesktopAppBar({ onSearchChange }: DesktopAppBarProps) {
+export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) {
   return (
     <div css={wrapper}>
       <div css={logo}>
@@ -26,6 +27,7 @@ export function DesktopAppBar({ onSearchChange }: DesktopAppBarProps) {
       <div css={searchContainer}>
         <SearchBar
           onValueChange={onSearchChange}
+          onSearch={onSearch}
           placeholder="Search spas, clinics, treatments..."
           isLeft={true}
         />

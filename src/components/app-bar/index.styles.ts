@@ -2,6 +2,7 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
 export const wrapper = (props: { backgroundColor: string }) => css`
+  flex-shrink: 0;
   position: relative;
   z-index: ${theme.zIndex.appBar};
 
