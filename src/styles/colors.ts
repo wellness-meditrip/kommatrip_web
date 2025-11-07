@@ -4,6 +4,8 @@ export const colors = {
   black: '#000000',
 
   primary10: '#BCDACC',
+  primary10Opacity20: 'rgba(188, 218, 204, 0.20)',
+  primary10Opacity60: 'rgba(188, 218, 204, 0.60)',
   primary10Opacity40: 'rgba(188, 218, 204, 0.40)',
   primary30: '#749A88',
   primary40: '#5D7E6F',

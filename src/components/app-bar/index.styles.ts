@@ -15,7 +15,9 @@ export const wrapper = (props: { backgroundColor: string }) => css`
     ? theme.colors.white
     : props.backgroundColor === 'green'
       ? theme.colors.primary30
-      : 'transparent'};
+      : props.backgroundColor === 'bg_surface1'
+        ? theme.colors.bg_surface1
+        : 'transparent'};
 `;
 
 export const contents = css`

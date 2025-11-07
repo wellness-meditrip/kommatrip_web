@@ -3,7 +3,7 @@ import { Text } from '../text';
 import { contents, wrapper, center, backButton, rightButton } from './index.styles';
 
 type ButtonType = 'styled' | 'white' | 'dark';
-type BackgroundColor = 'none' | 'white' | 'green';
+type BackgroundColor = 'none' | 'white' | 'green' | 'bg_surface1';
 type RightButtonType = 'share' | 'shareWhite';
 
 interface Props {
@@ -35,6 +35,8 @@ export function AppBar({
         return wrapper({ backgroundColor: 'white' });
       case 'green':
         return wrapper({ backgroundColor: 'green' });
+      case 'bg_surface1':
+        return wrapper({ backgroundColor: 'bg_surface1' });
       default:
         return wrapper({ backgroundColor: 'transparent' });
     }
