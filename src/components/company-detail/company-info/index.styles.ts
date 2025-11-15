@@ -75,3 +75,61 @@ export const item = css`
 export const textWrapper = css`
   white-space: nowrap;
 `;
+
+export const hoursWrapper = css`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  width: 100%;
+`;
+
+export const hoursIcon = css`
+  flex-shrink: 0;
+
+  margin-top: 2px;
+`;
+
+export const hoursContent = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+`;
+
+export const hoursHeader = (isOpen: boolean) => css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: ${isOpen ? '8px' : 0};
+
+  cursor: pointer;
+`;
+
+export const hoursHeaderLeft = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const hoursArrow = (isOpen: boolean) => css`
+  transform: ${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+
+  transition: transform 0.2s ease;
+`;
+
+export const hoursDetailWrapper = css`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const hoursDetailRow = css`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+`;
+
+export const dayLabel = css`
+  min-width: 40px;
+`;

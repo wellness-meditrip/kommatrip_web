@@ -4,8 +4,9 @@ import CompanyDetail from '@/components/company/company-detail';
 import { useRouter } from 'next/router';
 import { CompanyInfo, CompanyReview, CompanyProgram } from '@/components/company-detail';
 import { useEffect, useState, useMemo } from 'react';
-import { Tabs } from '@/components';
+import { Loading, Tabs } from '@/components';
 import { useGetCompanyDetailQuery } from '@/queries/company';
+import { GetCompanyDetailResponse } from '@/models';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
@@ -19,7 +20,10 @@ export default function ClinicDetailPage() {
     companyId: companyIdNumber,
   };
 
-  const { data, error } = useGetCompanyDetailQuery(params);
+  const { data, error } = useGetCompanyDetailQuery(params) as {
+    data: GetCompanyDetailResponse | undefined;
+    error: Error | null;
+  };
   const [activeTab, setActiveTab] = useState<string>('info');
 
   const TABS = useMemo(
@@ -81,10 +85,7 @@ export default function ClinicDetailPage() {
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} />
-        <div>
-          Loading... (router: {router.isReady ? 'ready' : 'not ready'}, companyId: {companyId})
-        </div>
+        <Loading title="데이터를 불러오는 중..." />
       </Layout>
     );
   }
@@ -92,7 +93,6 @@ export default function ClinicDetailPage() {
   if (error) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} />
         <div>Error loading data</div>
       </Layout>
     );
@@ -101,8 +101,7 @@ export default function ClinicDetailPage() {
   if (!data) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} />
-        <div>No data found</div>
+        <Loading title="데이터를 불러오는 중..." />
       </Layout>
     );
   }
@@ -120,23 +119,12 @@ export default function ClinicDetailPage() {
       {data?.data?.company && (
         <CompanyDetail
           badges={data.data.company.tags || []}
-          companyImage="/default.png"
+          companyImage={data.data.company.primary_image_url || '/default.png'}
           companyName={data.data.company.name}
           companyAddress={data.data.company.address}
+          images={data.data.company.image_urls || []}
         />
       )}
-
-      {/* 나중에 이미지 배열이 추가되면 아래 코드로 변경:
-      {data?.company?.images?.map((image, index) => (
-        <ClinicDetail
-          key={image.id || index}
-          badges={data.company.tags || []}
-          clinicImage={image.image_url}
-          clinicName={data.company.name}
-          clinicAddress={data.company.address}
-        />
-      ))}
-      */}
 
       <section css={wrapper}>
         <div css={content}>

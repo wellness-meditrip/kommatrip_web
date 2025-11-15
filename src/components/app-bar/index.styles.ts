@@ -7,9 +7,7 @@ export const wrapper = (props: { backgroundColor: string }) => css`
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;
-  max-width: ${theme.size.maxWidth};
-  height: 52px;
-  margin: 0 auto;
+  height: 54px;
 
   background-color: ${props.backgroundColor === 'white'
     ? theme.colors.white
@@ -26,7 +24,9 @@ export const contents = css`
   position: relative;
 
   width: 100%;
+  max-width: ${theme.size.maxWidth};
   height: 100%;
+  margin: 0 auto;
   padding: 0 16px;
 `;
 
