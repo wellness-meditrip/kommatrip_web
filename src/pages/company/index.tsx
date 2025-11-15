@@ -12,12 +12,11 @@ import {
   FilterBar,
   GNB,
 } from '@/components';
-import { ArrowUpdown } from '@/icons';
 import { useGetCompanySearchQuery } from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
-import { filterCompanies, sortCompanies } from '@/utils/search';
+import { filterCompanies } from '@/utils/search';
 
 const mockRatings = [4.3, 4.1, 3.9, 3.8];
 
@@ -141,8 +140,10 @@ export default function CompanyPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar onBackClick={router.back} leftButton={false} logo={true} />
-      <SearchBar onValueChange={handleValueChange} />
+      <AppBar onBackClick={router.back} logo="light" backgroundColor="green" />
+      <div css={searchBarWrapper}>
+        <SearchBar onValueChange={handleValueChange} />
+      </div>
 
       <FilterBar
         selectedCategories={selectedCategories}
@@ -219,6 +220,9 @@ export const wrapper = css`
   background-color: ${theme.colors.bg_surface1};
 `;
 
+export const searchBarWrapper = css`
+  background-color: ${theme.colors.primary80};
+`;
 export const bottom = css`
   position: absolute;
   bottom: 0;

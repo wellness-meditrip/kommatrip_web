@@ -5,6 +5,7 @@ import { Text } from '@/components/text';
 import { ChevronRight, ChevronRightWhite } from '@/icons';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
+import { ROUTES } from '@/constants';
 
 // 마이페이지
 export default function MyPage() {
@@ -13,14 +14,13 @@ export default function MyPage() {
     email: 'john.doe@example.com',
     image: '/default.png',
   };
+
+  const handleClick = (path: string) => {
+    router.push(path);
+  };
   return (
     <Layout isAppBarExist={false}>
-      <AppBar
-        onBackClick={router.back}
-        leftButton={false}
-        logo={true}
-        backgroundColor="bg_surface1"
-      />
+      <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
       <section css={userSection}>
         <div css={userInfo}>
           <div css={userInfoImage}>
@@ -32,7 +32,7 @@ export default function MyPage() {
                 {user.nickname}
               </Text>
             </div>
-            <div css={userInfoDetail}>
+            <div css={userInfoDetail} onClick={() => handleClick(ROUTES.MYPAGE_USER_INFO)}>
               <Text typo="body_M" color="primary50">
                 My Information
               </Text>
@@ -63,12 +63,12 @@ export default function MyPage() {
           </Text>
         </div>
         <div css={myServiceList}>
-          <div css={myServiceItem}>
+          <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_REVIEWS)}>
             <Text typo="body_S" color="primary50">
               Reviews{' '}
             </Text>
           </div>
-          <div css={myServiceItem}>
+          <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_SETTINGS)}>
             <Text typo="body_S" color="primary50">
               Settings
             </Text>

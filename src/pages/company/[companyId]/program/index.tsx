@@ -31,7 +31,7 @@ export default function ProgramDetailPage() {
   if (!router.isReady || !companyId) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} title="Program" />
+        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
         <div>Loading...</div>
       </Layout>
     );
@@ -39,7 +39,7 @@ export default function ProgramDetailPage() {
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} showBackButton={true} title="Program" />
+      <AppBar onBackClick={router.back} leftButton={true} title="Program" />
 
       {/* 메인 이미지 */}
       <div css={imageSection}>

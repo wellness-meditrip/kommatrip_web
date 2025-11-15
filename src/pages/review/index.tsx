@@ -148,7 +148,7 @@ export default function ReviewPage() {
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} showBackButton={true} title="리뷰 작성" />
+      <AppBar onBackClick={router.back} leftButton={true} title="리뷰 작성" />
       <div css={wrapper}>
         <div css={header}>
           <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />

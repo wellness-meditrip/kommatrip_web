@@ -81,7 +81,7 @@ export default function ClinicDetailPage() {
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} />
+        <AppBar onBackClick={router.back} leftButton={true} />
         <div>
           Loading... (router: {router.isReady ? 'ready' : 'not ready'}, companyId: {companyId})
         </div>
@@ -92,7 +92,7 @@ export default function ClinicDetailPage() {
   if (error) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} />
+        <AppBar onBackClick={router.back} leftButton={true} />
         <div>Error loading data</div>
       </Layout>
     );
@@ -101,7 +101,7 @@ export default function ClinicDetailPage() {
   if (!data) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} showBackButton={true} />
+        <AppBar onBackClick={router.back} leftButton={true} />
         <div>No data found</div>
       </Layout>
     );
@@ -109,7 +109,7 @@ export default function ClinicDetailPage() {
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} showBackButton={true} />
+      <AppBar onBackClick={router.back} leftButton={true} />
       {data?.data?.company && (
         <CompanyDetail
           badges={data.data.company.tags || []}

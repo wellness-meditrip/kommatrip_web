@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { Location, ChevronWhite } from '@/icons';
+import { Location, ChevronLeftWhite } from '@/icons';
 import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -106,14 +106,14 @@ export function CompanyCard({
                 onClick={handlePrevImage}
                 aria-label="이전 이미지"
               >
-                <ChevronWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
+                <ChevronLeftWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
               </button>
               <button
                 css={[carouselNavButton, carouselNavRight]}
                 onClick={handleNextImage}
                 aria-label="다음 이미지"
               >
-                <ChevronWhite width={32} height={34} />
+                <ChevronLeftWhite width={32} height={34} />
               </button>
             </div>
             <div css={carouselDots}>

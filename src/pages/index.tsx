@@ -39,7 +39,7 @@ export default function HomePage() {
         <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
       ) : (
         <div css={headerSection}>
-          <AppBar onBackClick={router.back} leftButton={false} logo={true} />
+          <AppBar onBackClick={router.back} leftButton={false} logo="light" />
           <div css={heroContent}>
             <Text typo="title_L" color="white" css={heroTitle}>
               Discover Authentic Korean Wellness
