@@ -38,7 +38,7 @@ export const center = css`
   white-space: nowrap;
 `;
 
-export const backButton = (props: { buttonType: string }) => css`
+export const leftButtonWrapper = (props: { buttonType: string }) => css`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,16 +60,19 @@ export const backButton = (props: { buttonType: string }) => css`
   }
 `;
 
-export const rightButton = css`
+export const rightButtonWrapper = (props: { buttonType: string }) => css`
   display: flex;
   align-items: center;
   justify-content: center;
 
   width: 24px;
   height: 24px;
+  margin-left: auto;
   border-radius: 50%;
 
-  background-color: transparent;
+  background-color: ${props.buttonType === 'styled'
+    ? theme.colors.primary50Opacity60
+    : 'transparent'};
 
   transition: opacity 0.25s ease;
 

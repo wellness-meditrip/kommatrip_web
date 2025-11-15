@@ -1,6 +1,6 @@
 import { Logo, LogoDark, ChevronLeftWhite, Chevron, Share, ShareWhite } from '@/icons';
 import { Text } from '../text';
-import { contents, wrapper, center, backButton, rightButton } from './index.styles';
+import { contents, wrapper, center, leftButtonWrapper, rightButtonWrapper } from './index.styles';
 
 type ButtonType = 'styled' | 'white' | 'dark';
 type BackgroundColor = 'none' | 'white' | 'green' | 'bg_surface1';
@@ -60,7 +60,7 @@ export function AppBar({
     <header css={wrapper({ backgroundColor: BACKGROUND_COLOR_MAP[backgroundColor] })}>
       <div css={contents}>
         {leftButton && (
-          <button onClick={onBackClick} css={backButton({ buttonType })}>
+          <button onClick={onBackClick} css={leftButtonWrapper({ buttonType })}>
             {BUTTON_ICON_MAP[buttonType]}
           </button>
         )}
@@ -73,7 +73,7 @@ export function AppBar({
           )}
         </div>
         {rightButton && (
-          <button onClick={onRightButtonClick} css={rightButton}>
+          <button onClick={onRightButtonClick} css={rightButtonWrapper({ buttonType })}>
             {RIGHT_BUTTON_ICON_MAP[rightButtonType]}
           </button>
         )}
