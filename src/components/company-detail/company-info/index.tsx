@@ -14,7 +14,6 @@ import {
   hoursDetailRow,
   dayLabel,
 } from './index.styles';
-import { ClinicLocation } from '@/icons/ClinicLocation';
 import { Text } from '@/components/text';
 import {
   ClinicClock,

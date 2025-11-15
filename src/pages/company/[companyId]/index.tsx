@@ -7,7 +7,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { Loading } from '@/components';
 import { Tab } from '@/components/tabs';
 import { useGetCompanyDetailQuery } from '@/queries/company';
-import { GetCompanyDetailResponse } from '@/models';
+import { CompanyDetail as CompanyDetailType } from '@/models';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
@@ -22,7 +22,7 @@ export default function ClinicDetailPage() {
   };
 
   const { data, error } = useGetCompanyDetailQuery(params) as {
-    data: GetCompanyDetailResponse | undefined;
+    data: { company: CompanyDetailType } | undefined;
     error: Error | null;
   };
   const [activeTab, setActiveTab] = useState<string>('info');
@@ -67,7 +67,7 @@ export default function ClinicDetailPage() {
 
   // 스크롤 이벤트를 사용하여 현재 보이는 섹션 감지
   useEffect(() => {
-    if (!data?.data?.company) return;
+    if (!data?.company) return;
 
     // main 엘리먼트 찾기 (실제 스크롤이 발생하는 곳)
     const mainElement = document.querySelector('main');
@@ -90,7 +90,6 @@ export default function ClinicDetailPage() {
           const scrollPosition = mainElement.scrollTop + 150;
 
           // 모든 섹션의 위치 가져오기
-          const infoTop = infoRef.current?.offsetTop || 0;
           const programTop = programRef.current?.offsetTop || 0;
           const reviewTop = reviewRef.current?.offsetTop || 0;
 
@@ -187,13 +186,13 @@ export default function ClinicDetailPage() {
         rightButtonType="share"
         backgroundColor="bg_surface1"
       />
-      {data?.data?.company && (
+      {data?.company && (
         <CompanyDetail
-          badges={data.data.company.tags || []}
-          companyImage={data.data.company.primary_image_url || '/default.png'}
-          companyName={data.data.company.name}
-          companyAddress={data.data.company.address}
-          images={data.data.company.image_urls || []}
+          badges={data.company.tags || []}
+          companyImage={data.company.primary_image_url || '/default.png'}
+          companyName={data.company.name}
+          companyAddress={data.company.address}
+          images={data.company.image_urls || []}
         />
       )}
 
@@ -214,16 +213,16 @@ export default function ClinicDetailPage() {
         {/* 모든 컨텐츠를 한 번에 렌더링 */}
         <div css={content}>
           <div ref={infoRef} data-section="info" css={section}>
-            {data?.data?.company ? (
-              <CompanyInfo data={data.data.company} />
+            {data?.company ? (
+              <CompanyInfo data={data.company} />
             ) : (
               <div>데이터를 불러오는 중...</div>
             )}
           </div>
 
           <div ref={programRef} data-section="program" css={section}>
-            {data?.data?.company ? (
-              <CompanyProgram badges={data.data.company.tags || []} />
+            {data?.company ? (
+              <CompanyProgram badges={data.company.tags || []} />
             ) : (
               <div>데이터를 불러오는 중...</div>
             )}

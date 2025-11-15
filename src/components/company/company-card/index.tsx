@@ -137,7 +137,6 @@ export function CompanyCard({
                 width={170}
                 height={200}
                 onError={handleImageError}
-                onLoad={handleImageLoad}
               />
             ) : (
               <div css={profileWrapper}>

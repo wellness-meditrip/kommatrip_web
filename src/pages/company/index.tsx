@@ -189,14 +189,14 @@ export default function CompanyPage() {
           filterCompanies(data.data.companies, keyword).map((company) => (
             <CompanyCard
               key={company.id}
-              clinicId={company.id}
+              companyId={company.id}
               badges={company.tags || []}
               onClick={(companyId: number) => {
                 router.push(ROUTES.COMPANY_DETAIL(companyId));
               }}
-              clinicImage="/default.png"
-              clinicName={company.name || ''}
-              clinicAddress={company.address || ''}
+              companyImage="/default.png"
+              companyName={company.name || ''}
+              companyAddress={company.address || ''}
             />
           ))}
       </div>

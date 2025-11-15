@@ -43,8 +43,13 @@ export const getCompanySearch = async (params: SearchParams) => {
   });
 };
 
-export const getCompanyDetail = async ({ companyId }: GetCompanyIdRequestParams) => {
-  return await api.get<CompanyDetail>(`/api/companies/${companyId}`);
+export const getCompanyDetail = async ({
+  companyId,
+}: GetCompanyIdRequestParams): Promise<{ company: CompanyDetail }> => {
+  const response: AxiosResponse<{ company: CompanyDetail }> = await api.get(
+    `/api/companies/${companyId}`
+  );
+  return response.data;
 };
 
 export const getCompanyAll = async () => {

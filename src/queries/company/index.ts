@@ -13,10 +13,10 @@ import {
   SearchParams,
   GetCompanySearchResponseParams,
   GetCompanyIdRequestParams,
-  GetCompanyDetailResponse,
   GetCompanyAllResponse,
   GetRecentCompanyResponse,
   GetRecommendedCompanyResponse,
+  CompanyDetail,
 } from '@/models';
 import { PAGE_SIZE } from '@/constants/clinic';
 
@@ -33,16 +33,8 @@ export const useGetClinicInfiniteQuery = (params: GetClinicRequestParams) => {
   });
 };
 
-// export const useGetClinicClinicIdQuery = (params: GetClinicClinicIdRequestParams) => {
-//   return useQuery<Hospital>({
-//     queryKey: [...QUERY_KEYS.GET_CLINIC_CLINICID, params.hospitalId],
-//     queryFn: () => getClinicClinicId(params),
-//     enabled: !!params.hospitalId,
-//   });
-// };
-
 export const useGetCompanyDetailQuery = (params: GetCompanyIdRequestParams) => {
-  return useQuery<GetCompanyDetailResponse>({
+  return useQuery<{ company: CompanyDetail }>({
     queryKey: [...QUERY_KEYS.GET_COMPANY_DETAIL, params.companyId],
     queryFn: () => getCompanyDetail(params),
     enabled: !!params.companyId,

@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { Location, ChevronLeft, ChevronRight } from '@/icons';
+import { Location, ChevronLeft } from '@/icons';
 import Image from 'next/image';
 import { useState } from 'react';
 import {
