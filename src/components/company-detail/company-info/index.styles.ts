@@ -9,7 +9,7 @@ export const container = css`
 
   width: 100%;
   height: 100%;
-  padding: 0 0 calc(${theme.size.ctaButtonHeight}) 0;
+  padding: 0 0 30px;
 `;
 
 export const wrapper = css`

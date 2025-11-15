@@ -3,8 +3,9 @@ import { Layout } from '@/components/layout';
 import CompanyDetail from '@/components/company/company-detail';
 import { useRouter } from 'next/router';
 import { CompanyInfo, CompanyReview, CompanyProgram } from '@/components/company-detail';
-import { useEffect, useState, useMemo } from 'react';
-import { Loading, Tabs } from '@/components';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { Loading } from '@/components';
+import { Tab } from '@/components/tabs';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { GetCompanyDetailResponse } from '@/models';
 import { css } from '@emotion/react';
@@ -26,11 +27,17 @@ export default function ClinicDetailPage() {
   };
   const [activeTab, setActiveTab] = useState<string>('info');
 
+  // 각 섹션에 대한 ref 생성
+  const infoRef = useRef<HTMLDivElement>(null);
+  const programRef = useRef<HTMLDivElement>(null);
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const isScrollingToSection = useRef(false);
+
   const TABS = useMemo(
     () => [
-      { id: 'info', label: 'Information' },
-      { id: 'program', label: 'Programs' },
-      { id: 'review', label: 'Reviews' },
+      { id: 'info', label: 'Information', ref: infoRef },
+      { id: 'program', label: 'Programs', ref: programRef },
+      { id: 'review', label: 'Reviews', ref: reviewRef },
     ],
     []
   );
@@ -39,6 +46,13 @@ export default function ClinicDetailPage() {
     const queryTab = router.query.service as string;
     if (queryTab && TABS.some((tab) => tab.id === queryTab)) {
       setActiveTab(queryTab);
+      // URL에서 탭 정보를 가져오면 해당 섹션으로 스크롤
+      setTimeout(() => {
+        const tab = TABS.find((t) => t.id === queryTab);
+        if (tab?.ref.current) {
+          tab.ref.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   }, [router.query.service, TABS]);
 
@@ -51,35 +65,92 @@ export default function ClinicDetailPage() {
   //   }
   // }, [isSuccess, isValidUser]);
 
-  const renderContent = (activeTabId: string) => {
-    switch (activeTabId) {
-      case 'info':
-        return data?.data?.company ? (
-          <CompanyInfo data={data.data.company} />
-        ) : (
-          <div>데이터를 불러오는 중...</div>
-        );
-      case 'program':
-        return data?.data?.company ? (
-          <CompanyProgram badges={data.data.company.tags || []} />
-        ) : (
-          <div>데이터를 불러오는 중...</div>
-        );
-      case 'review':
-        return <CompanyReview />;
-      default:
-        return data?.data?.company ? (
-          <CompanyInfo data={data.data.company} />
-        ) : (
-          <div>데이터를 불러오는 중...</div>
-        );
-    }
-  };
+  // 스크롤 이벤트를 사용하여 현재 보이는 섹션 감지
+  useEffect(() => {
+    if (!data?.data?.company) return;
 
-  const handleTabClick = (tabId: string) => {
-    router.replace({ query: { ...router.query, service: tabId } }, undefined, { shallow: true });
-    setActiveTab(tabId);
-  };
+    // main 엘리먼트 찾기 (실제 스크롤이 발생하는 곳)
+    const mainElement = document.querySelector('main');
+    if (!mainElement) {
+      console.error('❌ main 엘리먼트를 찾을 수 없습니다');
+      return;
+    }
+
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (isScrollingToSection.current) {
+            ticking = false;
+            return;
+          }
+
+          // main 엘리먼트의 스크롤 위치 사용
+          const scrollPosition = mainElement.scrollTop + 150;
+
+          // 모든 섹션의 위치 가져오기
+          const infoTop = infoRef.current?.offsetTop || 0;
+          const programTop = programRef.current?.offsetTop || 0;
+          const reviewTop = reviewRef.current?.offsetTop || 0;
+
+          let currentTab = 'info';
+
+          if (scrollPosition >= reviewTop) {
+            currentTab = 'review';
+          } else if (scrollPosition >= programTop) {
+            currentTab = 'program';
+          } else {
+            currentTab = 'info';
+          }
+
+          setActiveTab((prev) => {
+            if (prev !== currentTab) {
+              router.replace({ query: { ...router.query, service: currentTab } }, undefined, {
+                shallow: true,
+              });
+              return currentTab;
+            }
+            return prev;
+          });
+
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    mainElement.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // 초기 실행
+
+    return () => mainElement.removeEventListener('scroll', handleScroll);
+  }, [data, router, activeTab]);
+
+  const handleTabClick = useCallback(
+    (tabId: string) => {
+      const tab = TABS.find((t) => t.id === tabId);
+
+      if (tab?.ref.current) {
+        isScrollingToSection.current = true;
+        setActiveTab(tabId);
+        router.replace({ query: { ...router.query, service: tabId } }, undefined, {
+          shallow: true,
+        });
+
+        // scrollIntoView를 사용하여 더 부드러운 스크롤
+        tab.ref.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+
+        // 스크롤이 끝난 후 플래그 해제
+        setTimeout(() => {
+          isScrollingToSection.current = false;
+        }, 600);
+      }
+    },
+    [TABS, router]
+  );
 
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
@@ -127,13 +198,40 @@ export default function ClinicDetailPage() {
       )}
 
       <section css={wrapper}>
+        {/* 고정된 탭 헤더 */}
+        <div css={stickyTabHeader}>
+          {TABS.map((tab) => (
+            <Tab
+              key={tab.id}
+              id={tab.id}
+              label={tab.label}
+              isActive={activeTab === tab.id}
+              onClick={() => handleTabClick(tab.id)}
+            />
+          ))}
+        </div>
+
+        {/* 모든 컨텐츠를 한 번에 렌더링 */}
         <div css={content}>
-          <Tabs
-            tabs={TABS}
-            renderContent={renderContent}
-            activeTabId={activeTab}
-            onTabClick={handleTabClick}
-          />
+          <div ref={infoRef} data-section="info" css={section}>
+            {data?.data?.company ? (
+              <CompanyInfo data={data.data.company} />
+            ) : (
+              <div>데이터를 불러오는 중...</div>
+            )}
+          </div>
+
+          <div ref={programRef} data-section="program" css={section}>
+            {data?.data?.company ? (
+              <CompanyProgram badges={data.data.company.tags || []} />
+            ) : (
+              <div>데이터를 불러오는 중...</div>
+            )}
+          </div>
+
+          <div ref={reviewRef} data-section="review" css={section}>
+            <CompanyReview />
+          </div>
         </div>
       </section>
     </Layout>
@@ -151,8 +249,33 @@ const wrapper = css`
   }
 `;
 
+const stickyTabHeader = css`
+  display: flex;
+  position: sticky;
+  top: 0px;
+  z-index: 10;
+  background: ${theme.colors.white};
+  border-bottom: 1px solid ${theme.colors.border_default};
+  padding: 0;
+  transition: box-shadow 0.2s ease-in-out;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: ${theme.colors.border_default};
+  }
+`;
+
 const content = css`
   width: 100%;
-
   background: ${theme.colors.bg_surface1};
+`;
+
+const section = css`
+  width: 100%;
+  scroll-margin-top: 50px; /* 스크롤 시 탭 헤더 공간 확보 */
 `;

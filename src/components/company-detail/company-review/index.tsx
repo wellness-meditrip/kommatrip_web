@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Empty, Text } from '@/components';
+import { CompanyList, Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 // import { useIntersectionLoad } from '@/hooks/review';
 import { ReviewAi, ReviewTooltip } from '@/icons';
@@ -13,6 +13,7 @@ import {
   list,
   count,
   content,
+  youWillAlsoLikeWrapper,
   bottom,
 } from './index.styles';
 // import { useGetClinicReviewInfiniteQuery } from '@/queries/review';
@@ -112,12 +113,11 @@ export function CompanyReview() {
           <Empty title="아직 받은 리뷰가 없어요" />
         )}
       </div>
-
+      <div css={youWillAlsoLikeWrapper}>
+        <CompanyList title="You will also like" companies={[]} />
+      </div>
       <div ref={loadMoreRef} css={bottom} />
     </section>
   );
 }
-// todo: Card 컴포넌트에 keywordReviewList 수정하기
-//  keywordReviewList={clinicKeywordList
-//                     .map((keyword) => CLINIC_REVIEW_KEYWORDS[keyword])
-//                     .filter((keyword): keyword is string => !!keyword)}
+// todo: 스크롤 할 때 탭바 위치로 끌려가는 현상 수정하기

@@ -48,12 +48,7 @@ export function CompanyProgram({ badges }: CompanyProgramProps) {
           companyId={companyId as string}
         />
       </div>
-      <div css={wrapper}>
-        <Text typo="title_M" color="text_primary">
-          You will also like
-        </Text>
-        {/* <div css={itemWrapper}>업체 카드 리스트</div> */}
-      </div>
+
       <CTAButton onClick={handleReserveClick}>예약하기</CTAButton>
     </div>
   );
