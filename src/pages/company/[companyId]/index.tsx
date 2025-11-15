@@ -108,8 +108,15 @@ export default function ClinicDetailPage() {
   }
 
   return (
-    <Layout>
-      <AppBar onBackClick={router.back} leftButton={true} />
+    <Layout isAppBarExist={false}>
+      <AppBar
+        onBackClick={router.back}
+        leftButton={true}
+        rightButton={true}
+        buttonType="dark"
+        rightButtonType="share"
+        backgroundColor="bg_surface1"
+      />
       {data?.data?.company && (
         <CompanyDetail
           badges={data.data.company.tags || []}

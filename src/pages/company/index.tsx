@@ -195,8 +195,8 @@ export default function CompanyPage() {
                 router.push(ROUTES.COMPANY_DETAIL(companyId));
               }}
               clinicImage="/default.png"
-              clinicName={company.name}
-              clinicAddress={company.address}
+              clinicName={company.name || ''}
+              clinicAddress={company.address || ''}
             />
           ))}
       </div>

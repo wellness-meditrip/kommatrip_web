@@ -81,7 +81,7 @@ export default function SearchPage() {
         <AppBar
           onBackClick={() => router.back()}
           leftButton={true}
-          logo={true}
+          logo="light"
           buttonType="white"
         />
 
