@@ -10,7 +10,7 @@ export const wrapper = css`
   padding: 0 24px;
 
   background: linear-gradient(135deg, #2d3e36 0%, #476155 50%, #749a88 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 `;
 
 export const logo = css`
@@ -91,7 +91,7 @@ export const languageWrapper = css`
     border-radius: 8px;
 
     background-color: ${theme.colors.white};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
     list-style: none;
 
     li {

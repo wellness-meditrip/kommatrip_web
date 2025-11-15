@@ -165,7 +165,7 @@ export const carouselDot = css`
   cursor: pointer;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgb(255 255 255 / 80%);
   }
 `;
 

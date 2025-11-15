@@ -34,8 +34,7 @@ export const wrapper = css`
 
 export const scrollContainer = css`
   flex: 1;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
 
   height: 480px;
 
@@ -52,7 +51,7 @@ export const grid = css`
   gap: 16px;
 
   width: max-content;
-  padding: 0 0 8px 0;
+  padding: 0 0 8px;
 `;
 
 export const leftButton = css`
@@ -73,8 +72,8 @@ export const leftButton = css`
   border: 1px solid ${theme.colors.border_default};
   border-radius: 50%;
 
-  background-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgb(255 255 255 / 90%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 
   transition: all 0.2s ease;
 
@@ -82,7 +81,7 @@ export const leftButton = css`
 
   &:hover {
     background-color: ${theme.colors.white};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
   }
 
   &:active {
@@ -108,8 +107,8 @@ export const rightButton = css`
   border: 1px solid ${theme.colors.border_default};
   border-radius: 50%;
 
-  background-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgb(255 255 255 / 90%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 
   transition: all 0.2s ease;
 
@@ -117,7 +116,7 @@ export const rightButton = css`
 
   &:hover {
     background-color: ${theme.colors.white};
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
   }
 
   &:active {
