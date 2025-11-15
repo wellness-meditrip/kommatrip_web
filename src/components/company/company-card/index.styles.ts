@@ -197,7 +197,7 @@ export const carouselNavButton = css`
   width: 32px;
   height: 34px;
 
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
 
   cursor: pointer;
   opacity: 0;

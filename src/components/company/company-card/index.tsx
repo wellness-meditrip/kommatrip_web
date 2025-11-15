@@ -1,7 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { Location, ChevronLeftWhite } from '@/icons';
-import { convertGoogleDriveUrlToImageSrc } from '@/utils';
 import Image from 'next/image';
 import { useState } from 'react';
 import {
@@ -25,12 +24,11 @@ import {
 } from './index.styles';
 
 interface Props {
-  clinicId: number;
-  clinicImage: string;
-  clinicName: string;
-  clinicAddress: string;
+  companyId: number;
+  companyImage: string;
+  companyName: string;
+  companyAddress: string;
   badges: string[];
-  rating?: number;
   fixedHeight?: boolean;
   images?: string[]; // 여러 이미지 배열 추가
   onClick: (clinicId: number) => void;
@@ -38,29 +36,30 @@ interface Props {
 
 // 병원 카드 컴포넌트
 export function CompanyCard({
-  clinicId,
-  clinicImage,
-  clinicName,
+  companyId,
+  companyImage,
+  companyName,
+  companyAddress,
   badges,
-  clinicAddress,
   fixedHeight = false,
   images = [],
   onClick,
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
-  const imageList = images.length > 0 ? images : [clinicImage];
-  const convertedUrl = convertGoogleDriveUrlToImageSrc(imageList[currentImageIndex]);
+  const imageList = images.length > 0 ? images : [companyImage];
+  const currentImageUrl = imageList[currentImageIndex];
 
   const handleImageError = () => {
-    console.log('Image load failed, falling back to default image for:', clinicName);
+    console.log('Image load failed, falling back to default image for:', companyName);
     setImageError(true);
   };
 
-  const handleImageLoad = () => {
-    console.log('Image loaded successfully for:', clinicName);
-  };
+  // const handleImageLoad = () => {
+  //   console.log('Image loaded successfully for:', companyName);
+  // };
 
   const handleDotClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -77,19 +76,19 @@ export function CompanyCard({
   };
 
   return (
-    <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(clinicId)}>
+    <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(companyId)}>
       <div css={profileWrapper}>
         {imageList.length > 1 ? (
           <div css={imageCarousel}>
             <div css={carouselContainer}>
-              {convertedUrl && !imageError ? (
+              {currentImageUrl && !imageError ? (
                 <Image
-                  src={convertedUrl}
+                  src={currentImageUrl}
                   alt="프로필 이미지"
                   width={170}
                   height={200}
                   onError={handleImageError}
-                  onLoad={handleImageLoad}
+                  // onLoad={handleImageLoad}
                   css={carouselImage}
                 />
               ) : (
@@ -106,14 +105,14 @@ export function CompanyCard({
                 onClick={handlePrevImage}
                 aria-label="이전 이미지"
               >
-                <ChevronLeftWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
+                <ChevronLeftWhite width={32} height={34} />
               </button>
               <button
                 css={[carouselNavButton, carouselNavRight]}
                 onClick={handleNextImage}
                 aria-label="다음 이미지"
               >
-                <ChevronLeftWhite width={32} height={34} />
+                <ChevronLeftWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
               </button>
             </div>
             <div css={carouselDots}>
@@ -131,9 +130,9 @@ export function CompanyCard({
           </div>
         ) : (
           <>
-            {convertedUrl && !imageError ? (
+            {currentImageUrl && !imageError ? (
               <Image
-                src={convertedUrl}
+                src={currentImageUrl}
                 alt="프로필 이미지"
                 width={170}
                 height={200}
@@ -153,18 +152,18 @@ export function CompanyCard({
             )}
           </>
         )}
-        {clinicAddress && (
+        {companyAddress && (
           <div css={ratingBadge}>
             <Location width={16} height={16} />
             <Text typo="body_M" color="text_primary">
-              {clinicAddress}
+              {companyAddress}
             </Text>
           </div>
         )}
       </div>
       <div css={fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper}>
         <Text typo="title_M" color="text_primary">
-          {clinicName}
+          {companyName}
         </Text>
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>

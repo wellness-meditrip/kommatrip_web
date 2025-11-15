@@ -86,15 +86,14 @@ export function CompanyList({ title, companies }: CompanyListProps) {
             {companies.map((company) => (
               <CompanyCard
                 key={company.hospital_id}
-                clinicId={company.hospital_id}
+                companyId={company.hospital_id}
+                companyImage={company.image_url}
+                companyName={company.hospital_name}
+                companyAddress={company.address}
                 badges={company.departments}
                 onClick={(companyId: number) => {
                   router.push(ROUTES.COMPANY_DETAIL(companyId));
                 }}
-                clinicImage={company.image_url}
-                clinicName={company.hospital_name}
-                clinicAddress={company.address}
-                rating={company.rating}
                 images={company.images}
                 fixedHeight={true}
               />

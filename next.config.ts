@@ -54,7 +54,20 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    domains: ['drive.google.com', 'meditrip.s3.ap-northeast-2.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'drive.google.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'meditrip.s3.ap-northeast-2.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'meditripstorage.blob.core.windows.net',
+      },
+    ],
     unoptimized: false,
   },
 };
