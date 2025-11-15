@@ -44,7 +44,7 @@ export const content = css`
   gap: 8px;
 `;
 
-export const sortOption = () => css`
+export const sortOption = (isSelected: boolean) => css`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,9 +52,12 @@ export const sortOption = () => css`
   width: 100%;
   padding: 16px 20px;
   border: none;
+  border-radius: 8px;
 
-  background: none;
+  background: ${isSelected ? theme.colors.bg_surface1 : 'none'};
   text-align: left;
+
+  transition: background-color 0.2s ease;
 
   cursor: pointer;
 
