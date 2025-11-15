@@ -11,6 +11,8 @@ import {
 } from './index.styles';
 import { SearchBar } from '@/components';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/constants';
 
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
@@ -18,6 +20,12 @@ interface DesktopAppBarProps {
 }
 
 export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) {
+  const router = useRouter();
+
+  const handleMenuClick = (path: string) => {
+    router.push(path);
+  };
+
   return (
     <div css={wrapper}>
       <div css={logo}>
@@ -35,9 +43,9 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
 
       <div css={menuWrapper}>
         <ul css={menuList}>
-          <li>메인</li>
-          <li>웰니스 업체</li>
-          <li>마이페이지</li>
+          <li onClick={() => handleMenuClick(ROUTES.HOME)}>메인</li>
+          <li onClick={() => handleMenuClick(ROUTES.COMPANY)}>웰니스 업체</li>
+          <li onClick={() => handleMenuClick(ROUTES.MYPAGE)}>마이페이지</li>
           <li>비지니스 문의</li>
         </ul>
         <div css={logoutWrapper}>
