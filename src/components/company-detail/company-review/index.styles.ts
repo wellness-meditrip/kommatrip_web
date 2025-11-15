@@ -119,6 +119,15 @@ export const count = css`
 
   background: ${theme.colors.white};
 `;
+export const youWillAlsoLikeWrapper = css`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 24px 24px 80px;
+  align-self: stretch;
+`;
 export const bottom = css`
   position: absolute;
   bottom: 0;

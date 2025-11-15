@@ -14,6 +14,10 @@ const typography = {
     font-size: 16px;
     font-weight: 500;
   `,
+  body_L: css`
+    font-size: 18px;
+    font-weight: 400;
+  `,
 
   body_M: css`
     font-size: 14px;

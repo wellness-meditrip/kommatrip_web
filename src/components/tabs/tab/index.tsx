@@ -15,7 +15,13 @@ export function Tab({ label, isActive, onClick }: Props) {
       <Text tag="h2" typo="title_S" color={isActive ? 'primary50' : 'text_disabled'}>
         {label}
       </Text>
-      {isActive && <motion.div layoutId="underline" css={bar} />}
+      {isActive && (
+        <motion.div
+          layoutId="underline"
+          css={bar}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        />
+      )}
     </div>
   );
 }

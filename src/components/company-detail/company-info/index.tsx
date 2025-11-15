@@ -1,7 +1,19 @@
 // import { useUserReservationGroomingListQuery } from '~/queries/reservation';
 import { CompanyDetail } from '@/models';
-import { container, wrapper, infoWrapper } from './index.styles';
-import { ClinicLocation } from '@/icons/ClinicLocation';
+import {
+  container,
+  wrapper,
+  infoWrapper,
+  hoursWrapper,
+  hoursIcon,
+  hoursContent,
+  hoursHeader,
+  hoursHeaderLeft,
+  hoursArrow,
+  hoursDetailWrapper,
+  hoursDetailRow,
+  dayLabel,
+} from './index.styles';
 import { Text } from '@/components/text';
 import {
   ClinicClock,
@@ -14,18 +26,88 @@ import {
   ClinicWifi,
 } from '@/icons';
 import { InfoRow } from '@/components/info-row';
-import { CTAButton } from '@/components/button';
 import { CompanyGoogleMap } from '@/components/map/google-map';
-import { ROUTES } from '@/constants';
-import router from 'next/router';
+import { useState } from 'react';
+import { ArrowDown } from '@/icons';
+
+// Facilities 매핑 (API 데이터 -> 아이콘 + 한글 텍스트)
+const FACILITY_MAP: Record<string, { icon: React.ReactElement; label: string }> = {
+  'Parking lot': {
+    icon: <ClinicParking width={16} height={16} />,
+    label: 'Parking lot',
+  },
+  'Free Wi-Fi': {
+    icon: <ClinicWifi width={16} height={16} />,
+    label: 'Free Wi-Fi',
+  },
+  'Information Desk': {
+    icon: <ClinicLuggage width={16} height={16} />,
+    label: 'Information Desk',
+  },
+  'Private room': {
+    icon: <ClinicPrivate width={16} height={16} />,
+    label: 'Private room',
+  },
+  'Airport pickup': {
+    icon: <ClinicPickup width={16} height={16} />,
+    label: 'Airport pickup',
+  },
+} as const;
+
+// 요일 순서 및 매핑
+const DAYS_ORDER = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const WEEKEND_DAYS = ['Sat', 'Sun'];
 
 interface CompanyInfoProps {
   data: CompanyDetail;
 }
 export function CompanyInfo({ data }: CompanyInfoProps) {
+  const [isHoursOpen, setIsHoursOpen] = useState(false);
+
   if (!data) {
     return <div>데이터를 불러오는 중...</div>;
   }
+
+  // API에서 받은 facilities 필터링
+  const availableFacilities = (data.facilities || [])
+    .filter((facility) => FACILITY_MAP[facility])
+    .map((facility) => ({
+      ...FACILITY_MAP[facility],
+      key: facility,
+    }));
+
+  // 영업일 체크
+  const businessDaysSet = new Set(data.business_days || []);
+  const closedDays = DAYS_ORDER.filter((day) => !businessDaysSet.has(day));
+
+  // 각 요일별 영업시간 생성
+  const weeklyHours = DAYS_ORDER.map((day) => {
+    const isOpen = businessDaysSet.has(day);
+    if (!isOpen) {
+      return { day, hours: '-' };
+    }
+
+    // Weekday or Weekend 구분
+    if (WEEKDAYS.includes(day)) {
+      return {
+        day,
+        hours: `${data.weekday_open_time} - ${data.weekday_close_time}`,
+      };
+    } else if (WEEKEND_DAYS.includes(day)) {
+      return {
+        day,
+        hours: `${data.weekend_open_time} - ${data.weekend_close_time}`,
+      };
+    }
+
+    return { day, hours: '-' };
+  });
+
+  // 현재 영업 여부 및 휴무일 텍스트
+  const isCurrentlyOpen = businessDaysSet.size > 0;
+  const closedText =
+    closedDays.length > 0 ? `Closed every ${closedDays.join(', ')}` : 'Open every day';
   // const urlList = [
   //   { type: 'Instagram', url: data.instagram },
   //   { type: 'Line', url: data.line },
@@ -52,43 +134,6 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   //   router.back();
   // }
 
-  // const reservations = data?.contents || [];
-  // ✅ RN → Web 통신 응답 처리
-  // useEffect(() => {
-  //   const handleMessage = (event: MessageEvent) => {
-  //     try {
-  //       const data = JSON.parse(event.data);
-  //       if (data.type === 'AUTH_STATUS') {
-  //         const isLoggedIn = data.payload?.isLoggedIn;
-
-  //         if (isLoggedIn) {
-  //           router.push(`/reservation?hospital_id=${clinicData.hospital_id}`); // ✅ 예약페이지 이동
-  //         } else {
-  //           window?.ReactNativeWebView?.postMessage(
-  //             JSON.stringify({ type: 'LOGIN_REQUEST' }) // ✅ 로그인 요청
-  //           );
-  //         }
-  //       }
-  //     } catch (e) {
-  //       console.error('Invalid message received:', event.data);
-  //     }
-  //   };
-
-  //   window.addEventListener('message', handleMessage);
-  //   return () => window.removeEventListener('message', handleMessage);
-  // }, [router, clinicData.hospital_id]);
-
-  // ✅ 예약하기 버튼 클릭 시 토큰 여부에 따라 동작
-  const handleReserveClick = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // 로그인된 상태 → 예약페이지로 이동
-      router.push(ROUTES.RESERVATIONS);
-    } else {
-      // 로그인 안 된 상태 → RN에 로그인 요청
-      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
-    }
-  };
   return (
     <div css={container}>
       <div css={wrapper}>
@@ -96,44 +141,41 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           Operation Information
         </Text>
         <div css={infoWrapper}>
-          <InfoRow
-            icon={<ClinicLocation width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                {data.address}
-              </Text>
-            }
-          />
-          <InfoRow
-            icon={<ClinicClock width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                영업중
-              </Text>
-            }
-            expandable
-            showToggleButton
-          >
-            {/* <div css={operatingWrapper}>
-              {detail?.operating_hours?.map((hour) => {
-                const dayName = DAY_KR[hour.day_of_week];
-
-                if (hour.is_closed) {
-                  return (
-                    <Text key={dayName} typo="button_S" color="text_secondary">
-                      {dayName} 휴무
-                    </Text>
-                  );
-                }
-
-                return (
-                  <Text key={dayName} typo="button_S" color="text_secondary">
-                    {dayName} {hour.open_time} ~ {hour.close_time}
+          <div css={hoursWrapper}>
+            <div css={hoursIcon}>
+              <ClinicClock width={16} height={16} />
+            </div>
+            <div css={hoursContent}>
+              <div css={hoursHeader(isHoursOpen)} onClick={() => setIsHoursOpen(!isHoursOpen)}>
+                <div css={hoursHeaderLeft}>
+                  <Text typo="button_S" color={isCurrentlyOpen ? 'primary50' : 'text_secondary'}>
+                    {isCurrentlyOpen ? 'Open' : 'Closed'}
                   </Text>
-                );
-              }) || []}
-            </div> */}
-          </InfoRow>
+                  <Text typo="button_S" color="text_secondary">
+                    {closedText}
+                  </Text>
+                </div>
+                <div css={hoursArrow(isHoursOpen)}>
+                  <ArrowDown width={16} height={16} />
+                </div>
+              </div>
+
+              {isHoursOpen && (
+                <div css={hoursDetailWrapper}>
+                  {weeklyHours.map(({ day, hours }) => (
+                    <div key={day} css={hoursDetailRow}>
+                      <Text typo="button_S" color="text_secondary" css={dayLabel}>
+                        {day}
+                      </Text>
+                      <Text typo="button_S" color="text_primary">
+                        {hours}
+                      </Text>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
           <InfoRow
             icon={<ClinicContact width={16} height={16} />}
@@ -175,59 +217,34 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
       </div>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
-          Facilities
-        </Text>
-        <div css={infoWrapper}>
-          <InfoRow
-            icon={<ClinicParking width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                주차 가능
-              </Text>
-            }
-          />
-          <InfoRow
-            icon={<ClinicWifi width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                무료 Wifi
-              </Text>
-            }
-          />
-          <InfoRow
-            icon={<ClinicLuggage width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                짐 보관
-              </Text>
-            }
-          />
-          <InfoRow
-            icon={<ClinicPrivate width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                프라이빗 진료
-              </Text>
-            }
-          />
-          <InfoRow
-            icon={<ClinicPickup width={16} height={16} />}
-            title={
-              <Text typo="button_S" color="text_primary">
-                공항 픽업
-              </Text>
-            }
-          />
-        </div>
-      </div>
-      <div css={wrapper}>
-        <Text typo="title_M" color="text_primary">
           Location
         </Text>
-        <CompanyGoogleMap address={data.address} />
+        <CompanyGoogleMap
+          address={data.address}
+          latitude={data.latitude}
+          longitude={data.longitude}
+        />
       </div>
-
-      <CTAButton onClick={handleReserveClick}>예약하기</CTAButton>
+      {availableFacilities.length > 0 && (
+        <div css={wrapper}>
+          <Text typo="title_M" color="text_primary">
+            Facilities
+          </Text>
+          <div css={infoWrapper}>
+            {availableFacilities.map((facility) => (
+              <InfoRow
+                key={facility.key}
+                icon={facility.icon}
+                title={
+                  <Text typo="button_S" color="text_primary">
+                    {facility.label}
+                  </Text>
+                }
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,8 +7,8 @@ export const ROUTES = {
 
   HOME: '/',
   SEARCH: '/search',
-  SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
-  SEARCH_ADDRESS: '/search-address',
+  SEARCH_RESULTS: '/search/results',
+  // SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
 
   // company
   COMPANY: '/company',
@@ -24,9 +24,9 @@ export const ROUTES = {
   MYPAGE: '/mypage',
   MYPAGE_REVIEWS: '/mypage/reviews',
   MYPAGE_RESERVATIONS: '/mypage/reservations',
-  MYPAGE_USER_INFO: '/mypage/user-profile',
-  MYPAGE_USER_INFO_EDIT: '/mypage/user-profile/edit',
-  MYPAGE_FAVORITES: '/mypage/favorites',
+  MYPAGE_USER_INFO: '/mypage/user-info',
+  MYPAGE_USER_INFO_EDIT: '/mypage/user-info/edit',
+  MYPAGE_SETTINGS: '/mypage/settings',
   MYPAGE_PAYMENTS: '/mypage/payments',
 
   // REVIEWS
@@ -36,4 +36,5 @@ export const ROUTES = {
   // RESERVATIONS
   RESERVATIONS: '/reservations',
   RESERVATIONS_COMPLETE: '/reservations/complete',
+  BOOKINGS: '/bookings',
 } as const;

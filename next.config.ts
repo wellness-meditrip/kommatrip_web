@@ -3,14 +3,12 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // TurboPack 설정
-  experimental: {
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  // TurboPack 설정 (Next.js 15.4+ stable)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -56,7 +54,20 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    domains: ['drive.google.com', 'meditrip.s3.ap-northeast-2.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'drive.google.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'meditrip.s3.ap-northeast-2.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'meditripstorage.blob.core.windows.net',
+      },
+    ],
     unoptimized: false,
   },
 };

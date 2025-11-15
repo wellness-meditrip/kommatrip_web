@@ -1,18 +1,18 @@
 import {
-  GnbClinicActive,
-  GnbClinicInactive,
   GnbHomeActive,
   GnbHomeInactive,
-  GnbMyActive,
-  GnbMyInactive,
-  GnbPackageActive,
-  GnbPackageInactive,
+  GnbCalendarActive,
+  GnbCalendarInactive,
+  GnbMypageActive,
+  GnbMypageInactive,
+  GnbSearchActive,
+  GnbSearchInactive,
 } from '@/icons';
 import { ROUTES } from './routes';
 
 export const MENUS = [
   {
-    name: '홈',
+    name: 'Home',
     icon: {
       active: <GnbHomeActive width="32px" height="32px" />,
       inactive: <GnbHomeInactive width="32px" height="32px" />,
@@ -21,30 +21,30 @@ export const MENUS = [
     canGuest: true,
   },
   {
-    name: '한의원',
+    name: 'My bookings',
     icon: {
-      active: <GnbClinicActive width="32px" height="32px" />,
-      inactive: <GnbClinicInactive width="32px" height="32px" />,
+      active: <GnbCalendarActive width="32px" height="32px" />,
+      inactive: <GnbCalendarInactive width="32px" height="32px" />,
     },
-    path: ROUTES.COMPANY,
+    path: ROUTES.BOOKINGS,
     canGuest: false,
   },
   {
-    name: '패키지',
+    name: 'Search',
     icon: {
-      active: <GnbPackageActive width="32px" height="32px" />,
-      inactive: <GnbPackageInactive width="32px" height="32px" />,
+      active: <GnbSearchActive width="32px" height="32px" />,
+      inactive: <GnbSearchInactive width="32px" height="32px" />,
     },
-    path: ROUTES.PACKAGES,
-    canGuest: false,
+    path: ROUTES.SEARCH,
+    canGuest: true,
   },
   {
-    name: '마이',
+    name: 'My page',
     icon: {
-      active: <GnbMyActive width="32px" height="32px" />,
-      inactive: <GnbMyInactive width="32px" height="32px" />,
+      active: <GnbMypageActive width="32px" height="32px" />,
+      inactive: <GnbMypageInactive width="32px" height="32px" />,
     },
     path: ROUTES.MYPAGE,
-    canGuest: true,
+    canGuest: false,
   },
 ];

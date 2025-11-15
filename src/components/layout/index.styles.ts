@@ -6,7 +6,6 @@ export const screen = css`
 
   width: 100%;
   min-width: ${theme.size.minWidth};
-  max-width: ${theme.size.maxWidth};
   height: 100dvh;
   margin: 0 auto;
 `;

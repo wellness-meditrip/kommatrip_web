@@ -1,30 +1,21 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
-export const wrapper = css`
-  position: fixed;
-  top: 0;
+export const wrapper = (props: { backgroundColor: string }) => css`
+  flex-shrink: 0;
+  position: relative;
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;
-  max-width: ${theme.size.maxWidth};
-  height: 52px;
-  margin: 0 auto;
+  height: 54px;
 
-  background-color: transparent;
-`;
-
-export const wrapperWithBackground = css`
-  position: fixed;
-  top: 0;
-  z-index: ${theme.zIndex.appBar};
-
-  width: 100%;
-  max-width: ${theme.size.maxWidth};
-  height: 52px;
-  margin: 0 auto;
-
-  background-color: ${theme.colors.bg_default};
+  background-color: ${props.backgroundColor === 'white'
+    ? theme.colors.white
+    : props.backgroundColor === 'green'
+      ? theme.colors.primary80
+      : props.backgroundColor === 'bg_surface1'
+        ? theme.colors.bg_surface1
+        : 'transparent'};
 `;
 
 export const contents = css`
@@ -33,8 +24,10 @@ export const contents = css`
   position: relative;
 
   width: 100%;
+  max-width: ${theme.size.maxWidth};
   height: 100%;
-  padding-left: 16px;
+  margin: 0 auto;
+  padding: 0 16px;
 `;
 
 export const center = css`
@@ -45,16 +38,41 @@ export const center = css`
   white-space: nowrap;
 `;
 
-export const backButton = css`
+export const leftButtonWrapper = (props: { buttonType: string }) => css`
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 34px;
-  height: 34px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
 
-  background-color: ${theme.colors.primary50Opacity60};
+  background-color: ${props.buttonType === 'styled'
+    ? theme.colors.primary50Opacity60
+    : 'transparent'};
+
+  transition: opacity 0.25s ease;
+
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+export const rightButtonWrapper = (props: { buttonType: string }) => css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  border-radius: 50%;
+
+  background-color: ${props.buttonType === 'styled'
+    ? theme.colors.primary50Opacity60
+    : 'transparent'};
 
   transition: opacity 0.25s ease;
 

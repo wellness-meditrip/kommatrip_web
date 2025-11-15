@@ -1,5 +1,6 @@
 // 검색어 정규화 함수
-export const normalizeSearchTerm = (term: string) => {
+export const normalizeSearchTerm = (term?: string) => {
+  if (!term) return '';
   return term
     .trim()
     .replace(/\s+/g, '') // 모든 공백 제거
@@ -23,16 +24,16 @@ export const isFlexibleMatch = (text: string, searchTerm: string) => {
 // 통합된 회사 타입 정의
 type Company = {
   id: number;
-  name: string;
-  address: string;
+  name?: string;
+  address?: string;
   tags?: string[];
   rating_average?: string;
   views_count?: number;
 };
 
 // 클라이언트 사이드 필터링 함수
-export const filterCompanies = (companies: Array<Company>, searchTerm: string) => {
-  if (!searchTerm.trim()) return companies;
+export const filterCompanies = (companies: Array<Company>, searchTerm?: string) => {
+  if (!searchTerm?.trim()) return companies;
 
   const normalizedSearchTerm = normalizeSearchTerm(searchTerm);
 

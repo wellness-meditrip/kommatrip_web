@@ -3,39 +3,60 @@ import debounce from 'lodash.debounce';
 import { useEffect, useState, useMemo } from 'react';
 import { AppBar } from '@/components/app-bar';
 import { Layout } from '@/components/layout';
-import SearchBar from '@/components/search/search-bar';
-import CompanyCard from '@/components/company/company-card';
-import { TextButton } from '@/components/text-button';
-import { Text } from '@/components/text';
-import { ArrowUpdown } from '@/icons';
+import {
+  SearchBar,
+  CompanyCard,
+  CompanyList,
+  Loading,
+  NoResults,
+  FilterBar,
+  GNB,
+} from '@/components';
 import { useGetCompanySearchQuery } from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
-import { Loading, NoResults } from '@/components/common';
-import { SortModal } from '@/components/company/sort-modal';
-import { RecommendedCompanies } from '@/components/company/recommended-companies';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
-import { filterCompanies, sortCompanies } from '@/utils/search';
+import { filterCompanies } from '@/utils/search';
 
 const mockRatings = [4.3, 4.1, 3.9, 3.8];
 
 // 업체 리스트 페이지
-export default function ClinicPage() {
+export default function CompanyPage() {
   const router = useRouter();
+  const { q, categories, date } = router.query;
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
-  const [selectedSort, setSelectedSort] = useState('rating_low');
-  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // URL 쿼리 파라미터에서 필터 정보 읽어오기
+  useEffect(() => {
+    if (q && typeof q === 'string') {
+      setInputValue(q);
+      setKeyword(q);
+    }
+
+    if (categories && typeof categories === 'string') {
+      setSelectedCategories(categories.split(',').filter(Boolean));
+    }
+
+    if (date && typeof date === 'string') {
+      const parsedDate = new Date(date);
+      if (!isNaN(parsedDate.getTime())) {
+        setSelectedDate(parsedDate);
+      }
+    }
+  }, [q, categories, date]);
 
   const searchParams = useMemo(
     () => ({
-      search_term: '',
-      tags: null,
+      search_term: keyword || '',
+      tags: selectedCategories.length > 0 ? selectedCategories : null,
       location: null,
       skip: 0,
       limit: 20,
     }),
-    []
+    [keyword, selectedCategories]
   );
 
   const recommendedSearchParams = useMemo(
@@ -56,25 +77,57 @@ export default function ClinicPage() {
     setInputValue(value);
   };
 
-  const handleSortClick = () => {
-    setIsSortModalOpen(true);
+  const handleDateSelect = () => {
+    router.push(ROUTES.SEARCH);
   };
 
-  const handleSortChange = (sortId: string) => {
-    setSelectedSort(sortId);
-  };
+  const handleToggleCategory = (categoryId: string) => {
+    const updatedCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId];
 
-  const getSortLabel = (sortId: string) => {
-    switch (sortId) {
-      case 'rating_high':
-        return '별점 높은 순';
-      case 'rating_low':
-        return '별점 낮은 순';
-      case 'review_count':
-        return '리뷰 많은 순';
-      default:
-        return '별점 낮은 순';
+    setSelectedCategories(updatedCategories);
+
+    // URL 업데이트
+    const query: Record<string, string> = {
+      q: keyword || '',
+      categories: updatedCategories.join(','),
+    };
+
+    if (selectedDate) {
+      query.date = selectedDate.toISOString().split('T')[0];
     }
+
+    router.push(
+      {
+        pathname: '/company',
+        query,
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
+
+  const handleClearAll = () => {
+    setSelectedCategories([]);
+
+    // URL 업데이트
+    const query: Record<string, string> = {
+      q: keyword || '',
+    };
+
+    if (selectedDate) {
+      query.date = selectedDate.toISOString().split('T')[0];
+    }
+
+    router.push(
+      {
+        pathname: '/company',
+        query,
+      },
+      undefined,
+      { shallow: true }
+    );
   };
 
   useEffect(() => {
@@ -86,22 +139,20 @@ export default function ClinicPage() {
   }, [inputValue]);
 
   return (
-    <Layout isAppBarExist={true}>
-      <AppBar onBackClick={router.back} showBackButton={false} logo={true} />
-      <SearchBar onValueChange={handleValueChange} />
-      <div css={wrapper}>
-        {/* 정렬 버튼 (항상 표시) */}
-        {!isLoading && data?.data?.companies && (
-          <TextButton
-            icons={{ prefix: <ArrowUpdown width={16} height={16} /> }}
-            onClick={handleSortClick}
-          >
-            <Text typo="button_M" color="primary50">
-              {getSortLabel(selectedSort)}
-            </Text>
-          </TextButton>
-        )}
+    <Layout isAppBarExist={false}>
+      <AppBar onBackClick={router.back} logo="light" backgroundColor="green" />
+      <div css={searchBarWrapper}>
+        <SearchBar value={inputValue} onValueChange={handleValueChange} />
+      </div>
 
+      <FilterBar
+        selectedCategories={selectedCategories}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        onToggleCategory={handleToggleCategory}
+        onClearAll={handleClearAll}
+      />
+      <div css={wrapper}>
         {/* 로딩 상태 */}
         {isLoading && <Loading title="병원 내역을 불러오고 있어요" />}
         {error && <p>에러 발생!</p>}
@@ -114,10 +165,11 @@ export default function ClinicPage() {
           keyword.trim() && (
             <>
               <NoResults
-                title="검색하신 한의원이 없어요"
-                subtitle="대신 비슷한 한의원을 찾아봤어요!"
+                title={`No results for "${keyword}"`}
+                subtitle="Oops! We couldn't find what you're looking for."
               />
-              <RecommendedCompanies
+              <CompanyList
+                title="Recommended"
                 companies={
                   recommendedData?.data?.companies?.map((company, index) => ({
                     hospital_id: company.id,
@@ -132,30 +184,23 @@ export default function ClinicPage() {
             </>
           )}
 
-        {/* 업체 리스트 표시 (필터링 + 정렬 적용) */}
+        {/* 업체 리스트 표시 (필터링) */}
         {data?.data?.companies &&
-          sortCompanies(filterCompanies(data.data.companies, keyword), selectedSort).map(
-            (company) => (
-              <CompanyCard
-                key={company.id}
-                clinicId={company.id}
-                badges={company.tags}
-                onClick={(companyId: number) => {
-                  router.push(ROUTES.COMPANY_DETAIL(companyId));
-                }}
-                clinicImage="/default.png"
-                clinicName={company.name}
-                clinicAddress={company.address}
-              />
-            )
-          )}
-        <SortModal
-          isOpen={isSortModalOpen}
-          onClose={() => setIsSortModalOpen(false)}
-          selectedSort={selectedSort}
-          onSortChange={handleSortChange}
-        />
+          filterCompanies(data.data.companies, keyword).map((company) => (
+            <CompanyCard
+              key={company.id}
+              companyId={company.id}
+              badges={company.tags || []}
+              onClick={(companyId: number) => {
+                router.push(ROUTES.COMPANY_DETAIL(companyId));
+              }}
+              companyImage="/default.png"
+              companyName={company.name || ''}
+              companyAddress={company.address || ''}
+            />
+          ))}
       </div>
+      <GNB />
     </Layout>
   );
 }
@@ -163,17 +208,21 @@ export default function ClinicPage() {
 export const wrapper = css`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 24px;
   overflow-y: auto;
+  overflow-x: hidden;
 
   width: 100%;
   height: 100%;
-  padding: 104px 20px 80px;
+  padding: 24px 20px 80px;
 
   background-color: ${theme.colors.bg_surface1};
 `;
 
+export const searchBarWrapper = css`
+  background-color: ${theme.colors.primary80};
+`;
 export const bottom = css`
   position: absolute;
   bottom: 0;

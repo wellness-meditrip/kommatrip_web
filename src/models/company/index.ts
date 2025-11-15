@@ -1,3 +1,22 @@
+export interface GetRecentCompanyResponse {
+  id: number;
+  name: string;
+  simple_place: string;
+  photos: string[];
+  tags: string[];
+  is_exclusive: boolean;
+  viewed_at: string;
+}
+
+export interface GetRecommendedCompanyResponse {
+  id: number;
+  name: string;
+  simpleplace: string;
+  photos: string[];
+  tags: string[];
+  is_exclusive: boolean;
+}
+
 export interface GetClinicRequestParams {
   page?: number;
   size?: number;
@@ -134,22 +153,35 @@ export interface GetCompanySearchResponseParams {
 // 업체 상세 조회 관련 interfaces
 export interface CompanyDetail {
   id: number;
+  company_code: string;
   name: string;
   address: string;
   phone: string;
   description: string;
+  booking_information: string;
+  badge: string[];
+  highlights: string;
+  getting_here: string;
+  latitude: number;
+  longitude: number;
+  is_exclusive: boolean;
   tags: string[];
   business_days: string[];
-  amenities: string[];
-  opening_time: string;
-  closing_time: string;
+  facilities: string[];
+  weekday_open_time: string;
+  weekday_close_time: string;
+  weekend_open_time: string;
+  weekend_close_time: string;
   website_url: string;
+  instagram_url: string;
+  whats_app_url: string;
+  kakao_url: string;
   status: string;
   is_verified: boolean;
   views_count: number;
   rating_average: string;
-  created_at: string;
-  updated_at: string;
+  primary_image_url: string;
+  image_urls: string[];
 }
 
 export interface GetCompanyDetailResponse {
