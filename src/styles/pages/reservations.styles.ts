@@ -5,7 +5,7 @@ export const wrapper = css`
   display: flex;
   flex-direction: column;
 
-  background-color: ${theme.colors.bg_default};
+  background-color: ${theme.colors.bg_surface1};
 `;
 export const image = css`
   border: 1px solid ${theme.colors.gray200};
@@ -31,7 +31,7 @@ export const header = css`
   margin-bottom: 6px;
   padding: 18px;
 
-  background-color: ${theme.colors.white};
+  background-color: ${theme.colors.bg_default};
 `;
 
 export const container = css`

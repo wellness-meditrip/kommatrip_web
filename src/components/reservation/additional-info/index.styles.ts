@@ -9,7 +9,7 @@ export const wrapper = css`
   padding: 20px;
   border-radius: 12px;
 
-  background-color: ${theme.colors.primary10};
+  background-color: ${theme.colors.bg_default};
 `;
 export const textareaContainer = css`
   display: flex;
