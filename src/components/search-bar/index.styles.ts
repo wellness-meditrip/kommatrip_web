@@ -19,7 +19,7 @@ export const searchBar = css`
   margin: 12px 20px;
   padding: 0 16px;
   border: 2px solid ${theme.colors.border_default};
-  border-radius: 20px;
+  border-radius: 32px;
 
   background: ${theme.colors.bg_default};
 `;
@@ -29,6 +29,7 @@ export const input = css`
 
   font-size: ${theme.typo.body_M};
   text-align: left;
+
   ::placeholder {
     color: ${theme.colors.primary30};
   }

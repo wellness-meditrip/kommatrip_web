@@ -1,13 +1,19 @@
-import { Search } from '@/icons';
+import { GnbSearchActive } from '@/icons';
 import { wrapper, searchBar, input, button } from './index.styles';
 
 interface SearchBarProps {
   onValueChange: (value: string) => void;
+  onSearch?: () => void;
   placeholder?: string;
   isLeft?: boolean;
 }
 
-export function SearchBar({ onValueChange, placeholder, isLeft = false }: SearchBarProps) {
+export function SearchBar({
+  onValueChange,
+  onSearch,
+  placeholder,
+  isLeft = false,
+}: SearchBarProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     onValueChange(value);
@@ -15,17 +21,20 @@ export function SearchBar({ onValueChange, placeholder, isLeft = false }: Search
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const value = (e.target as HTMLInputElement).value;
-      onValueChange(value);
+      onSearch?.();
     }
+  };
+
+  const handleButtonClick = () => {
+    onSearch?.();
   };
 
   return (
     <div css={wrapper}>
       <div css={searchBar}>
         {isLeft && (
-          <button type="submit" css={button({ isLeft: true })}>
-            <Search width={24} height={24} />
+          <button type="button" css={button({ isLeft: true })} onClick={handleButtonClick}>
+            <GnbSearchActive width={24} height={24} />
           </button>
         )}
         <input
@@ -36,8 +45,8 @@ export function SearchBar({ onValueChange, placeholder, isLeft = false }: Search
           placeholder={placeholder}
         />
         {!isLeft && (
-          <button type="submit" css={button({ isLeft: false })}>
-            <Search width={24} height={24} />
+          <button type="button" css={button({ isLeft: false })} onClick={handleButtonClick}>
+            <GnbSearchActive width={24} height={24} />
           </button>
         )}
       </div>
