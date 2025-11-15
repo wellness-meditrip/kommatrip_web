@@ -34,11 +34,7 @@ export function SortModal({ isOpen, onClose, selectedSort, onSortChange }: SortM
         <div css={handle} />
         <div css={content}>
           {sortOptions.map((option) => (
-            <button
-              key={option.id}
-              css={sortOption(option.id === selectedSort)}
-              onClick={() => handleSortClick(option.id)}
-            >
+            <button key={option.id} css={sortOption()} onClick={() => handleSortClick(option.id)}>
               <Text typo="body_M" color={option.id === selectedSort ? 'primary50' : 'text_primary'}>
                 {option.label}
               </Text>
