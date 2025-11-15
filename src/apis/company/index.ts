@@ -1,5 +1,8 @@
 import { guestHospitalApi, api } from '@/apis';
+import type { AxiosResponse } from 'axios';
 import {
+  GetRecentCompanyResponse,
+  GetRecommendedCompanyResponse,
   GetClinicRequestParams,
   GetClinicResponse,
   Hospital,
@@ -7,9 +10,24 @@ import {
   GetCompanySearchResponseParams,
   SearchParams,
   GetCompanyIdRequestParams,
-  GetCompanyDetailResponse,
   GetCompanyAllResponse,
+  CompanyDetail,
 } from '@/models/company';
+
+export const getRecentCompany = async () => {
+  return await api.get<GetRecentCompanyResponse>('/api/companies/recent');
+};
+
+export const getRecommendedCompany = async (): Promise<{
+  companies: GetRecommendedCompanyResponse[];
+  total: number;
+}> => {
+  const response: AxiosResponse<{
+    companies: GetRecommendedCompanyResponse[];
+    total: number;
+  }> = await api.get('/api/companies/recommended');
+  return response.data;
+};
 
 export const getClinic = async (params: GetClinicRequestParams) => {
   return await guestHospitalApi.get<GetClinicResponse>('/hospitals/', { params });
@@ -26,7 +44,7 @@ export const getCompanySearch = async (params: SearchParams) => {
 };
 
 export const getCompanyDetail = async ({ companyId }: GetCompanyIdRequestParams) => {
-  return await api.get<GetCompanyDetailResponse>(`/api/companies/${companyId}`);
+  return await api.get<CompanyDetail>(`/api/companies/${companyId}`);
 };
 
 export const getCompanyAll = async () => {

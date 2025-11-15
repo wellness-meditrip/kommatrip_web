@@ -1,6 +1,13 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
-import { getClinic, getCompanySearch, getCompanyDetail, getCompanyAll } from '@/apis';
+import {
+  getClinic,
+  getCompanySearch,
+  getCompanyDetail,
+  getCompanyAll,
+  getRecentCompany,
+  getRecommendedCompany,
+} from '@/apis';
 import {
   GetClinicRequestParams,
   SearchParams,
@@ -8,6 +15,8 @@ import {
   GetCompanyIdRequestParams,
   GetCompanyDetailResponse,
   GetCompanyAllResponse,
+  GetRecentCompanyResponse,
+  GetRecommendedCompanyResponse,
 } from '@/models';
 import { PAGE_SIZE } from '@/constants/clinic';
 
@@ -58,5 +67,33 @@ export const useGetCompanyAllQuery = () => {
   return useQuery<GetCompanyAllResponse>({
     queryKey: [...QUERY_KEYS.GET_COMPANY_ALL],
     queryFn: () => getCompanyAll(),
+  });
+};
+
+export const useGetRecentCompanyQuery = () => {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.GET_RECENT_COMPANY],
+    queryFn: async () => {
+      const response = await getRecentCompany();
+      // API 응답이 배열이 아닌 경우 배열로 변환
+      return Array.isArray(response) ? response : [response];
+    },
+    select: (data): GetRecentCompanyResponse[] => {
+      return Array.isArray(data) ? data : [data];
+    },
+  });
+};
+
+export const useGetRecommendedCompanyQuery = () => {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.GET_RECOMMENDED_COMPANY],
+    queryFn: async () => {
+      const response = await getRecommendedCompany();
+      return response;
+    },
+    select: (data): GetRecommendedCompanyResponse[] => {
+      // data.companies 배열 반환
+      return data?.companies || [];
+    },
   });
 };
