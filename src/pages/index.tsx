@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Layout,
   AppBar,
@@ -9,9 +9,11 @@ import {
   GNB,
   CompanyList,
   DesktopAppBar,
+  Loading,
 } from '@/components';
 import { useMediaQuery } from '@/hooks';
-import { recentlyViewedCompanies } from '@/data/mock-company-data';
+import { useGetRecentCompanyQuery, useGetRecommendedCompanyQuery } from '@/queries/company';
+import { useGetUserValidateQuery } from '@/queries/auth';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -23,14 +25,55 @@ export default function HomePage() {
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
 
+  // 회원 검증
+  const { data: userValidate } = useGetUserValidateQuery();
+  const isValidUser = userValidate?.isValidateMember ?? false;
+
+  // 최근 본 업체 조회 (회원인 경우에만)
+  const { data: recentCompanies, isLoading: isRecentLoading } = useGetRecentCompanyQuery();
+  const { data: recommendedCompanies, isLoading: isRecommendedLoading } =
+    useGetRecommendedCompanyQuery();
+
+  // API 응답을 CompanyList 형식으로 변환
+  const formattedRecentCompanies = useMemo(() => {
+    if (!recentCompanies || recentCompanies.length === 0) return [];
+
+    return recentCompanies.map((company) => ({
+      hospital_id: company.id,
+      hospital_name: company.name,
+      address: company.simple_place,
+      rating: 4.5, // API에 rating이 없으면 기본값 사용
+      image_url: company.photos?.[0] || '/default.png',
+      images: company.photos || [],
+      departments: company.tags || [],
+    }));
+  }, [recentCompanies]);
+
+  // 추천 업체 데이터 변환
+  const formattedRecommendedCompanies = useMemo(() => {
+    if (!recommendedCompanies || recommendedCompanies.length === 0) return [];
+
+    return recommendedCompanies.map((company) => ({
+      id: company.id,
+      name: company.name,
+      address: company.simpleplace,
+      image: company.photos?.[0] || '/default.png',
+      images: company.photos || [], // 이미지 캐러셀용 전체 이미지 배열
+      tags: company.tags || [],
+    }));
+  }, [recommendedCompanies]);
+
   const handleValueChange = (value: string) => {
     setInputValue(value);
   };
 
   const handleSearch = () => {
-    if (inputValue.trim()) {
-      router.push(ROUTES.SEARCH);
-    }
+    const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
+    router.push(`${ROUTES.SEARCH}${query}`);
+  };
+
+  const handleCompanyClick = (companyId: number) => {
+    router.push(`${ROUTES.COMPANY}/${companyId}`);
   };
 
   return (
@@ -39,7 +82,7 @@ export default function HomePage() {
         <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
       ) : (
         <div css={headerSection}>
-          <AppBar onBackClick={router.back} leftButton={false} logo="light" />
+          <AppBar onBackClick={router.back} logo="light" />
           <div css={heroContent}>
             <Text typo="title_L" color="white" css={heroTitle}>
               Discover Authentic Korean Wellness
@@ -56,36 +99,43 @@ export default function HomePage() {
       )}
 
       <div css={wrapper}>
-        <CompanyList title="Recently Viewed" companies={recentlyViewedCompanies} />
+        {isValidUser && (
+          <>
+            {isRecentLoading ? (
+              <Loading title="최근 본 업체를 불러오고 있어요" />
+            ) : formattedRecentCompanies.length > 0 ? (
+              <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
+            ) : null}
+          </>
+        )}
+
         <Text typo="title_M" color="text_primary" css={title}>
           Recommended for You
         </Text>
-        <div css={cardsGrid}>
-          <CompanyCard
-            clinicId={1}
-            clinicImage="https://via.placeholder.com/150"
-            clinicName="Clinic Name"
-            clinicAddress="Clinic Address"
-            badges={['badge1', 'badge2']}
-            onClick={() => {}}
-          />
-          <CompanyCard
-            clinicId={2}
-            clinicImage="https://via.placeholder.com/150"
-            clinicName="Clinic Name 2"
-            clinicAddress="Clinic Address 2"
-            badges={['badge3', 'badge4']}
-            onClick={() => {}}
-          />
-          <CompanyCard
-            clinicId={3}
-            clinicImage="https://via.placeholder.com/150"
-            clinicName="Clinic Name 3"
-            clinicAddress="Clinic Address 3"
-            badges={['badge5', 'badge6']}
-            onClick={() => {}}
-          />
-        </div>
+
+        {isRecommendedLoading ? (
+          <Loading title="추천 업체를 불러오고 있어요" />
+        ) : formattedRecommendedCompanies.length > 0 ? (
+          <div css={cardsGrid}>
+            {formattedRecommendedCompanies.map((company) => (
+              <CompanyCard
+                key={company.id}
+                companyId={company.id}
+                companyImage={company.image}
+                companyName={company.name}
+                companyAddress={company.address}
+                badges={company.tags}
+                images={company.images}
+                fixedHeight={true}
+                onClick={() => handleCompanyClick(company.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Text typo="body_M" color="text_secondary">
+            추천할 업체가 없습니다
+          </Text>
+        )}
       </div>
       <GNB />
     </Layout>
