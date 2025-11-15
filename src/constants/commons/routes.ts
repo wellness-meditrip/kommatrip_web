@@ -36,4 +36,5 @@ export const ROUTES = {
   // RESERVATIONS
   RESERVATIONS: '/reservations',
   RESERVATIONS_COMPLETE: '/reservations/complete',
+  BOOKINGS: '/bookings',
 } as const;

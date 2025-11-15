@@ -26,7 +26,7 @@ export const MENUS = [
       active: <GnbCalendarActive width="32px" height="32px" />,
       inactive: <GnbCalendarInactive width="32px" height="32px" />,
     },
-    path: ROUTES.RESERVATIONS,
+    path: ROUTES.BOOKINGS,
     canGuest: false,
   },
   {
