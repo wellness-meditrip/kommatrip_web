@@ -4,12 +4,13 @@ import CompanyDetail from '@/components/company/company-detail';
 import { useRouter } from 'next/router';
 import { CompanyInfo, CompanyReview, CompanyProgram } from '@/components/company-detail';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Loading } from '@/components';
+import { CTAButton, Loading } from '@/components';
 import { Tab } from '@/components/tabs';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
+import { ROUTES } from '@/constants';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
@@ -151,6 +152,9 @@ export default function ClinicDetailPage() {
     [TABS, router]
   );
 
+  const handleReserveClick = () => {
+    router.push(ROUTES.RESERVATIONS);
+  };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
@@ -233,6 +237,7 @@ export default function ClinicDetailPage() {
           </div>
         </div>
       </section>
+      <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
     </Layout>
   );
 }

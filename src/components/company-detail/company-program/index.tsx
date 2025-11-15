@@ -14,16 +14,6 @@ export function CompanyProgram({ badges }: CompanyProgramProps) {
   const router = useRouter();
   const { companyId } = router.query;
 
-  const handleReserveClick = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // 로그인된 상태 → 예약페이지로 이동
-      router.push(ROUTES.RESERVATIONS);
-    } else {
-      // 로그인 안 된 상태 → RN에 로그인 요청
-      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
-    }
-  };
   return (
     <div css={container}>
       <div css={wrapper}>
@@ -48,8 +38,6 @@ export function CompanyProgram({ badges }: CompanyProgramProps) {
           companyId={companyId as string}
         />
       </div>
-
-      <CTAButton onClick={handleReserveClick}>예약하기</CTAButton>
     </div>
   );
 }

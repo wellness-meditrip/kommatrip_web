@@ -137,40 +137,6 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   //   router.back();
   // }
 
-  // const reservations = data?.contents || [];
-  // ✅ RN → Web 통신 응답 처리
-  // useEffect(() => {
-  //   const handleMessage = (event: MessageEvent) => {
-  //     try {
-  //       const data = JSON.parse(event.data);
-  //       if (data.type === 'AUTH_STATUS') {
-  //         const isLoggedIn = data.payload?.isLoggedIn;
-
-  //         if (isLoggedIn) {
-  //           router.push(`/reservation?hospital_id=${clinicData.hospital_id}`); // ✅ 예약페이지 이동
-  //         } else {
-  //           window?.ReactNativeWebView?.postMessage(
-  //             JSON.stringify({ type: 'LOGIN_REQUEST' }) // ✅ 로그인 요청
-  //           );
-  //         }
-  //       }
-  //     } catch (e) {
-  //       console.error('Invalid message received:', event.data);
-  //     }
-  //   };
-
-  //   window.addEventListener('message', handleMessage);
-  //   return () => window.removeEventListener('message', handleMessage);
-  // }, [router, clinicData.hospital_id]);
-
-  // ✅ 예약하기 버튼 클릭 시 토큰 여부에 따라 동작
-  const handleReserveClick = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // 로그인된 상태 → 예약페이지로 이동
-      router.push(ROUTES.RESERVATIONS);
-    }
-  };
   return (
     <div css={container}>
       <div css={wrapper}>
@@ -282,8 +248,6 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
         </div>
       )}
-
-      <CTAButton onClick={handleReserveClick}>예약하기</CTAButton>
     </div>
   );
 }
