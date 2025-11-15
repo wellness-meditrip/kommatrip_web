@@ -3,8 +3,6 @@ import { ProgramCard } from '../program-card';
 import { useRouter } from 'next/router';
 
 import { container, wrapper } from './index.styles';
-import { CTAButton } from '@/components';
-import { ROUTES } from '@/constants';
 
 interface CompanyProgramProps {
   badges?: string[];

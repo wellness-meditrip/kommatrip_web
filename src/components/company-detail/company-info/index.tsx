@@ -26,10 +26,7 @@ import {
   ClinicWifi,
 } from '@/icons';
 import { InfoRow } from '@/components/info-row';
-import { CTAButton } from '@/components/button';
 import { CompanyGoogleMap } from '@/components/map/google-map';
-import { ROUTES } from '@/constants';
-import router from 'next/router';
 import { useState } from 'react';
 import { ArrowDown } from '@/icons';
 

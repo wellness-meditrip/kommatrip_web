@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Layout, GNB, Text, AppBar } from '@/components';
-import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ArrowDown } from '@/icons';
@@ -73,7 +72,6 @@ const filterOptions: { value: FilterStatus; label: string }[] = [
 ];
 
 export default function MyBookingsPage() {
-  const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -459,11 +457,6 @@ const modalHandle = css`
   background: ${theme.colors.gray300};
   border-radius: 2px;
   margin: 0 auto 24px;
-`;
-
-const modalTitle = css`
-  text-align: center;
-  margin-bottom: 24px;
 `;
 
 const modalOptions = css`
