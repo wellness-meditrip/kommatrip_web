@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { AppBar, SearchBar, CategoryFilter, Calendar, CTAButton } from '@/components';
 import { Layout } from '@/components/layout';
@@ -14,6 +14,13 @@ export default function SearchPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['all-care']);
   const [searchValue, setSearchValue] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // URL 쿼리 파라미터에서 초기 검색어 가져오기
+  useEffect(() => {
+    if (router.isReady && router.query.q) {
+      setSearchValue(router.query.q as string);
+    }
+  }, [router.isReady, router.query.q]);
 
   const handleSearch = () => {
     const query: Record<string, string> = {};
@@ -86,6 +93,7 @@ export default function SearchPage() {
         />
 
         <SearchBar
+          value={searchValue}
           onValueChange={setSearchValue}
           onSearch={handleSearch}
           placeholder="Search for address, location"

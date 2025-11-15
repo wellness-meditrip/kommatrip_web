@@ -142,7 +142,7 @@ export default function CompanyPage() {
     <Layout isAppBarExist={false}>
       <AppBar onBackClick={router.back} logo="light" backgroundColor="green" />
       <div css={searchBarWrapper}>
-        <SearchBar onValueChange={handleValueChange} />
+        <SearchBar value={inputValue} onValueChange={handleValueChange} />
       </div>
 
       <FilterBar

@@ -2,6 +2,7 @@ import { GnbSearchActive } from '@/icons';
 import { wrapper, searchBar, input, button } from './index.styles';
 
 interface SearchBarProps {
+  value?: string;
   onValueChange: (value: string) => void;
   onSearch?: () => void;
   placeholder?: string;
@@ -9,6 +10,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
+  value,
   onValueChange,
   onSearch,
   placeholder,
@@ -39,6 +41,7 @@ export function SearchBar({
         )}
         <input
           type="text"
+          value={value}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           css={input}
