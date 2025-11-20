@@ -62,7 +62,7 @@ export const useGetCompanyAllQuery = () => {
   });
 };
 
-export const useGetRecentCompanyQuery = () => {
+export const useGetRecentCompanyQuery = (enabled: boolean = true) => {
   return useQuery({
     queryKey: [...QUERY_KEYS.GET_RECENT_COMPANY],
     queryFn: async () => {
@@ -73,6 +73,20 @@ export const useGetRecentCompanyQuery = () => {
     select: (data): GetRecentCompanyResponse[] => {
       return Array.isArray(data) ? data : [data];
     },
+    enabled,
+    retry: (failureCount, error: unknown) => {
+      // 404 에러나 403 에러는 재시도하지 않음
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError?.response?.status === 404 || axiosError?.response?.status === 403) {
+        return false;
+      }
+      // 다른 에러는 최대 1번만 재시도
+      return failureCount < 1;
+    },
+    retryDelay: 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -87,5 +101,18 @@ export const useGetRecommendedCompanyQuery = () => {
       // data.companies 배열 반환
       return data?.companies || [];
     },
+    retry: (failureCount, error: unknown) => {
+      // 404 에러나 403 에러는 재시도하지 않음
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError?.response?.status === 404 || axiosError?.response?.status === 403) {
+        return false;
+      }
+      // 다른 에러는 최대 1번만 재시도
+      return failureCount < 1;
+    },
+    retryDelay: 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 };

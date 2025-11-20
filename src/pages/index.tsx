@@ -7,13 +7,14 @@ import {
   Text,
   CompanyCard,
   GNB,
-  CompanyList,
+  // CompanyList,
   DesktopAppBar,
   Loading,
 } from '@/components';
 import { useMediaQuery } from '@/hooks';
-import { useGetRecentCompanyQuery, useGetRecommendedCompanyQuery } from '@/queries/company';
-import { useGetUserValidateQuery } from '@/queries/auth';
+import { useGetRecommendedCompanyQuery } from '@/queries/company';
+// import { useGetRecentCompanyQuery } from '@/queries/company';
+// import { useGetUserValidateQuery } from '@/queries/auth';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -26,28 +27,29 @@ export default function HomePage() {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
 
   // 회원 검증
-  const { data: userValidate } = useGetUserValidateQuery();
-  const isValidUser = userValidate?.isValidateMember ?? false;
+  // const { data: userValidate } = useGetUserValidateQuery();
+  // const isValidUser = userValidate?.isValidateMember ?? false;
 
   // 최근 본 업체 조회 (회원인 경우에만)
-  const { data: recentCompanies, isLoading: isRecentLoading } = useGetRecentCompanyQuery();
+  // const { data: recentCompanies, isLoading: isRecentLoading } =
+  //   useGetRecentCompanyQuery(isValidUser);
   const { data: recommendedCompanies, isLoading: isRecommendedLoading } =
     useGetRecommendedCompanyQuery();
 
   // API 응답을 CompanyList 형식으로 변환
-  const formattedRecentCompanies = useMemo(() => {
-    if (!recentCompanies || recentCompanies.length === 0) return [];
+  // const formattedRecentCompanies = useMemo(() => {
+  //   if (!recentCompanies || recentCompanies.length === 0) return [];
 
-    return recentCompanies.map((company) => ({
-      hospital_id: company.id,
-      hospital_name: company.name,
-      address: company.simple_place,
-      rating: 4.5, // API에 rating이 없으면 기본값 사용
-      image_url: company.photos?.[0] || '/default.png',
-      images: company.photos || [],
-      departments: company.tags || [],
-    }));
-  }, [recentCompanies]);
+  //   return recentCompanies.map((company) => ({
+  //     hospital_id: company.id,
+  //     hospital_name: company.name,
+  //     address: company.simple_place,
+  //     rating: 4.5, // API에 rating이 없으면 기본값 사용
+  //     image_url: company.photos?.[0] || '/default.png',
+  //     images: company.photos || [],
+  //     departments: company.tags || [],
+  //   }));
+  // }, [recentCompanies]);
 
   // 추천 업체 데이터 변환
   const formattedRecommendedCompanies = useMemo(() => {
@@ -99,7 +101,8 @@ export default function HomePage() {
       )}
 
       <div css={wrapper}>
-        {isValidUser && (
+        {/* 최근 본 업체 섹션 (validate 기능 주석 처리로 인해 비활성화) */}
+        {/* {isValidUser && (
           <>
             {isRecentLoading ? (
               <Loading title="최근 본 업체를 불러오고 있어요" />
@@ -107,7 +110,7 @@ export default function HomePage() {
               <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
             ) : null}
           </>
-        )}
+        )} */}
 
         <Text typo="title_M" color="text_primary" css={title}>
           Recommended for You
