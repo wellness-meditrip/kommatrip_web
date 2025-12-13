@@ -1,8 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ERROR_CODES } from '@/constants/error-codes';
 
-type Role = 'user' | 'groomer' | 'vet';
-
+type Role = 'admin' | 'user';
 interface Props {
   baseURL: string;
   role: Role;
