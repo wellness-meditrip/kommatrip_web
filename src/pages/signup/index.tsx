@@ -170,6 +170,16 @@ export default function Signup() {
     );
   };
 
+  // 비밀번호 유효성 검증
+  useEffect(() => {
+    if (password) {
+      const validation = validatePassword(password);
+      setPasswordErrors(validation.errors);
+    } else {
+      setPasswordErrors([]);
+    }
+  }, [password]);
+
   const onSubmit = (data: SignupFormData) => {
     if (!verificationToken) {
       showToast({ title: 'Please verify your email first', icon: 'exclaim' });
