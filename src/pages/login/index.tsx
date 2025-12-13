@@ -122,6 +122,24 @@ export default function Login() {
     );
   };
 
+  // Enter 키로 로그인
+  useEffect(() => {
+    if (!email || !password || isLoading) return;
+
+    const handleEnterKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (validateEmail(email)) {
+          handleLogin();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleEnterKey);
+    return () => window.removeEventListener('keydown', handleEnterKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, password, isLoading]);
+
   const handleGoogleLogin = () => {
     onGoogle();
   };
