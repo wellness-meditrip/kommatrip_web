@@ -1,6 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 // import { getUserValidate } from '@/apis/auth';
+import { postVerifyEmailCode, postConfirmEmail, postSignup } from '@/apis/auth';
+import {
+  PostVerifyEmailCodeResponse,
+  PostConfirmEmailRequest,
+  PostConfirmEmailResponse,
+  PostSignupRequestBody,
+  PostSignupResponse,
+} from '@/models/auth';
 
 export const useGetUserValidateQuery = () => {
   return useQuery({
@@ -23,5 +31,29 @@ export const useGetUserValidateQuery = () => {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+  });
+};
+
+// 이메일 인증 코드 전송
+export const usePostVerifyEmailCodeMutation = () => {
+  return useMutation<PostVerifyEmailCodeResponse, Error, string>({
+    mutationKey: QUERY_KEYS.POST_VERIFY_EMAIL_CODE,
+    mutationFn: postVerifyEmailCode,
+  });
+};
+
+// 이메일 인증 코드 검증
+export const usePostConfirmEmailMutation = () => {
+  return useMutation<PostConfirmEmailResponse, Error, PostConfirmEmailRequest>({
+    mutationKey: QUERY_KEYS.POST_CONFIRM_EMAIL,
+    mutationFn: postConfirmEmail,
+  });
+};
+
+// 회원가입
+export const usePostSignupMutation = () => {
+  return useMutation<PostSignupResponse, Error, PostSignupRequestBody>({
+    mutationKey: QUERY_KEYS.POST_SIGNUP,
+    mutationFn: postSignup,
   });
 };

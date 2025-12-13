@@ -1,5 +1,36 @@
-export interface PostKakaoRequestBody {
-  kakaoAccessToken: string;
+// 회원가입
+export interface PostSignupRequestBody {
+  email: string;
+  verification_token: string;
+  password: string;
+  country: string;
+  marketing_consent: boolean;
+}
+
+export interface PostSignupResponse {
+  accessToken?: string;
+  message?: string;
+}
+
+// 이메일 인증
+export interface PostVerifyEmailCodeRequest {
+  email: string;
+}
+// 이메일 인증 코드 전송 응답
+export interface PostVerifyEmailCodeResponse {
+  message?: string;
+}
+
+// 이메일 인증 코드 검증 요청
+export interface PostConfirmEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface PostConfirmEmailResponse {
+  message?: string;
+  session_token: string;
+  email?: string;
 }
 
 export interface PostKakaoResponse {
