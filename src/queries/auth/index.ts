@@ -1,7 +1,15 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 // import { getUserValidate } from '@/apis/auth';
-import { postVerifyEmailCode, postConfirmEmail, postSignup, postLogin } from '@/apis/auth';
+import {
+  postVerifyEmailCode,
+  postConfirmEmail,
+  postSignup,
+  postLogin,
+  postResetPasswordConfirm,
+  postResetPasswordRequest,
+  postResetPasswordComplete,
+} from '@/apis/auth';
 import {
   PostVerifyEmailCodeResponse,
   PostConfirmEmailRequest,
@@ -10,6 +18,11 @@ import {
   PostSignupResponse,
   PostLoginResponse,
   PostLoginRequestBody,
+  PostResetPasswordRequestResponse,
+  PostResetPasswordConfirmResponse,
+  PostResetPasswordConfirmRequest,
+  PostResetPasswordCompleteResponse,
+  PostResetPasswordCompleteRequest,
 } from '@/models/auth';
 
 export const useGetUserValidateQuery = () => {
@@ -65,5 +78,29 @@ export const usePostLoginMutation = () => {
   return useMutation<PostLoginResponse, Error, PostLoginRequestBody>({
     mutationKey: QUERY_KEYS.POST_LOGIN,
     mutationFn: postLogin,
+  });
+};
+
+// 비밀번호 재설정 요청
+export const usePostResetPasswordRequestMutation = () => {
+  return useMutation<PostResetPasswordRequestResponse, Error, string>({
+    mutationKey: QUERY_KEYS.POST_RESET_PASSWORD,
+    mutationFn: postResetPasswordRequest,
+  });
+};
+
+// 비밀번호 재설정 코드 검증
+export const usePostResetPasswordConfirmMutation = () => {
+  return useMutation<PostResetPasswordConfirmResponse, Error, PostResetPasswordConfirmRequest>({
+    mutationKey: QUERY_KEYS.POST_RESET_PASSWORD_CONFIRM,
+    mutationFn: postResetPasswordConfirm,
+  });
+};
+
+// 비밀번호 재설정
+export const usePostResetPasswordMutation = () => {
+  return useMutation<PostResetPasswordCompleteResponse, Error, PostResetPasswordCompleteRequest>({
+    mutationKey: QUERY_KEYS.POST_RESET_PASSWORD,
+    mutationFn: postResetPasswordComplete,
   });
 };
