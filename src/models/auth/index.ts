@@ -26,11 +26,41 @@ export interface PostConfirmEmailRequest {
   email: string;
   code: string;
 }
-
 export interface PostConfirmEmailResponse {
   message?: string;
   session_token: string;
   email?: string;
+}
+
+// 로그인
+export interface PostLoginRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface PostLoginResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  country: string;
+  role: string;
+  is_email_verified: boolean;
+  marketing_consent: boolean;
+  marketing_consent_at: string | null;
+  last_login_at: string;
+  InterestSetting: boolean;
+}
+
+export interface Token {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'Bearer';
 }
 
 export interface PostKakaoResponse {

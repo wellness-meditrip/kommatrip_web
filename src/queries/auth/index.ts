@@ -1,13 +1,15 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 // import { getUserValidate } from '@/apis/auth';
-import { postVerifyEmailCode, postConfirmEmail, postSignup } from '@/apis/auth';
+import { postVerifyEmailCode, postConfirmEmail, postSignup, postLogin } from '@/apis/auth';
 import {
   PostVerifyEmailCodeResponse,
   PostConfirmEmailRequest,
   PostConfirmEmailResponse,
   PostSignupRequestBody,
   PostSignupResponse,
+  PostLoginResponse,
+  PostLoginRequestBody,
 } from '@/models/auth';
 
 export const useGetUserValidateQuery = () => {
@@ -55,5 +57,13 @@ export const usePostSignupMutation = () => {
   return useMutation<PostSignupResponse, Error, PostSignupRequestBody>({
     mutationKey: QUERY_KEYS.POST_SIGNUP,
     mutationFn: postSignup,
+  });
+};
+
+// 로그인
+export const usePostLoginMutation = () => {
+  return useMutation<PostLoginResponse, Error, PostLoginRequestBody>({
+    mutationKey: QUERY_KEYS.POST_LOGIN,
+    mutationFn: postLogin,
   });
 };

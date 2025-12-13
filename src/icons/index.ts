@@ -1,4 +1,5 @@
 export * from './Wallet';
+export * from './AppleLogo';
 export * from './ArrowDown';
 export * from './ArrowUpdown';
 export * from './BgColor';
@@ -40,6 +41,7 @@ export * from './GnbMypageActive';
 export * from './GnbMypageInactive';
 export * from './GnbSearchActive';
 export * from './GnbSearchInactive';
+export * from './GoogleLogo';
 export * from './ImageUploadPlus';
 export * from './Location';
 export * from './LoginFilled';

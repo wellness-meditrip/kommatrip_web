@@ -2,6 +2,8 @@ import { guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
   PostConfirmEmailResponse,
+  PostLoginRequestBody,
+  PostLoginResponse,
   PostSignupRequestBody,
   PostSignupResponse,
   PostVerifyEmailCodeResponse,
@@ -33,6 +35,15 @@ export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
 // 회원가입
 export const postSignup = async (data: PostSignupRequestBody) => {
   return await guestApi.post<PostSignupResponse>('/api/users/register/customer', data, {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+// 로그인
+export const postLogin = async (data: PostLoginRequestBody) => {
+  return await guestApi.post<PostLoginResponse>('/api/users/login/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
