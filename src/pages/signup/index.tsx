@@ -12,6 +12,12 @@ import {
   usePostConfirmEmailMutation,
   usePostSignupMutation,
 } from '@/queries/auth';
+import { validateEmail, validatePassword } from '@/utils/validation';
+import {
+  getErrorMessage,
+  isSessionExpiredError,
+  getSessionExpiredMessage,
+} from '@/utils/error-handler';
 
 export default function Signup() {
   const router = useRouter();
@@ -28,6 +34,8 @@ export default function Signup() {
   const [emailVerified, setEmailVerified] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [emailError, setEmailError] = useState('');
 
   const verifyEmailCodeMutation = usePostVerifyEmailCodeMutation();
   const confirmEmailMutation = usePostConfirmEmailMutation();
@@ -37,20 +45,26 @@ export default function Signup() {
     verifyEmailCodeMutation.isPending || confirmEmailMutation.isPending || signupMutation.isPending;
 
   const handleSendEmail = () => {
-    // if (!email) {
-    //   showToast({ title: 'Please enter your email address', icon: 'exclaim' });
-    //   return;
-    // }
+    if (!email) {
+      setEmailError('Please enter your email address');
+      showToast({ title: 'Please enter your email address', icon: 'exclaim' });
+      return;
+    }
 
+    if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email address');
+      showToast({ title: 'Please enter a valid email address', icon: 'exclaim' });
+      return;
+    }
+
+    setEmailError('');
     verifyEmailCodeMutation.mutate(email, {
       onSuccess: () => {
         setEmailVerified(true);
         showToast({ title: 'Verification code has been sent to your email', icon: 'check' });
       },
       onError: (error: unknown) => {
-        const axiosError = error as AxiosError<{ error?: { message?: string } }>;
-        const errorMessage =
-          axiosError?.response?.data?.error?.message || 'Failed to send verification code';
+        const errorMessage = getErrorMessage(error, 'Failed to send verification code');
         showToast({ title: errorMessage, icon: 'exclaim' });
       },
     });
@@ -90,37 +104,18 @@ export default function Signup() {
           showToast({ title: 'Email verification completed', icon: 'check' });
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError<{
-            error?: { message?: string };
-            message?: string;
-          }>;
+          const axiosError = error as AxiosError;
           const status = axiosError?.response?.status;
-          const errorData = axiosError?.response?.data;
-          const errorMessage =
-            errorData?.error?.message || errorData?.message || 'Invalid verification code';
+          const errorMessage = getErrorMessage(error, 'Invalid verification code');
 
-          // 400 에러는 세션 만료로 간주
-          if (status === 400) {
-            console.error('[handleConfirmCode] 세션 만료 또는 잘못된 요청:', errorData);
-
+          if (status === 400 && isSessionExpiredError(error)) {
             // 상태 초기화
             setEmailVerified(false);
             setCodeVerified(false);
             setVerificationToken('');
             setVerificationCode('');
-
-            // 세션 만료 메시지 표시
-            const sessionExpiredMessage =
-              errorMessage.includes('만료') ||
-              errorMessage.includes('expired') ||
-              errorMessage.includes('세션')
-                ? '이메일 인증 세션이 만료되었습니다. 다시 인증 코드를 받아주세요.'
-                : errorMessage;
-
-            showToast({ title: sessionExpiredMessage, icon: 'exclaim' });
+            showToast({ title: getSessionExpiredMessage(error), icon: 'exclaim' });
           } else {
-            // 기타 에러
-            console.error('❌ [handleConfirmCode] 에러 발생:', errorData);
             showToast({ title: errorMessage, icon: 'exclaim' });
           }
         },
@@ -128,15 +123,30 @@ export default function Signup() {
     );
   };
 
+  // 비밀번호 유효성 검증
+  useEffect(() => {
+    if (password) {
+      const validation = validatePassword(password);
+      setPasswordErrors(validation.errors);
+    } else {
+      setPasswordErrors([]);
+    }
+  }, [password]);
+
   const handleSignup = () => {
+    // 비밀번호 유효성 검증
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      showToast({ title: passwordValidation.errors[0], icon: 'exclaim' });
+      return;
+    }
+
     if (password !== confirmPassword) {
       showToast({ title: 'Passwords do not match', icon: 'exclaim' });
       return;
     }
 
     if (!verificationToken) {
-      console.error('❌ [handleSignup] verificationToken이 없습니다!');
-      console.error('❌ [handleSignup] verificationToken 값:', verificationToken);
       showToast({ title: 'Please verify your email first', icon: 'exclaim' });
       return;
     }
@@ -159,9 +169,7 @@ export default function Signup() {
           router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError<{ error?: { message?: string } }>;
-          const errorMessage =
-            axiosError?.response?.data?.error?.message || 'Failed to create account';
+          const errorMessage = getErrorMessage(error, 'Failed to create account');
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -205,8 +213,13 @@ export default function Signup() {
                   type="email"
                   placeholder="example@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError('');
+                  }}
                   css={input}
+                  aria-invalid={!!emailError}
+                  aria-describedby={emailError ? 'email-error' : undefined}
                 />
                 <RoundButton
                   size="M"
@@ -219,7 +232,12 @@ export default function Signup() {
                   </Text>
                 </RoundButton>
               </div>
-              {emailVerified && (
+              {emailError && (
+                <Text typo="body_S" color="red200" css={statusMessage} id="email-error">
+                  * {emailError}
+                </Text>
+              )}
+              {emailVerified && !emailError && (
                 <Text typo="body_S" color="primary50" css={statusMessage}>
                   * Email verification has been completed.
                 </Text>
@@ -267,8 +285,11 @@ export default function Signup() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="password"
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   css={passwordInput}
+                  aria-invalid={passwordErrors.length > 0}
+                  aria-describedby={passwordErrors.length > 0 ? 'password-errors' : undefined}
                 />
                 <button
                   type="button"
@@ -292,14 +313,26 @@ export default function Signup() {
                   )}
                 </button>
               </div>
-              <Text typo="body_S" color="primary50" css={passwordHint}>
-                * You can use 8-16 characters, including uppercase and lowercase letters, numbers,
-                and special characters.
-              </Text>
-              <Text typo="body_S" color="primary50" css={passwordHint}>
-                * Available special characters (33): $
-                {`!"#$%&'()*+,-./:;?@[\]^_${'{'}|\${'}'}\${'~'}`}
-              </Text>
+              {passwordErrors.length > 0 ? (
+                <div id="password-errors">
+                  {passwordErrors.map((error, index) => (
+                    <Text key={index} typo="body_S" color="red200" css={passwordHint}>
+                      * {error}
+                    </Text>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <Text typo="body_S" color="primary50" css={passwordHint}>
+                    * You can use 8-16 characters, including uppercase and lowercase letters,
+                    numbers, and special characters.
+                  </Text>
+                  <Text typo="body_S" color="primary50" css={passwordHint}>
+                    * Available special characters (33): $
+                    {`!"#$%&'()*+,-./:;?@[\]^_${'{'}|\${'}'}\${'~'}`}
+                  </Text>
+                </>
+              )}
             </div>
 
             {/* TODO: 유효성 검증 적용 필요 */}
