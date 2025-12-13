@@ -63,6 +63,23 @@ export interface Token {
   token_type: 'Bearer';
 }
 
+// 로그인
+export interface PostLoginRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface PostLoginResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
+export interface Breed {
+  breedName: string;
+  breed: string;
+}
+
 // 비밀번호 재설정 요청
 export interface PostResetPasswordRequestResponse {
   message?: string;
@@ -72,6 +89,10 @@ export interface PostResetPasswordRequestResponse {
 export interface PostResetPasswordConfirmRequest {
   email: string;
   code: string;
+}
+
+export interface PostJoinWithPetResponse {
+  accessToken: string;
 }
 export interface PostResetPasswordConfirmResponse {
   message?: string;
