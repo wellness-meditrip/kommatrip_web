@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
+import { PasswordResetModal } from '@/components/password-reset-modal';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
@@ -10,6 +11,8 @@ import { AxiosError } from 'axios';
 import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
+import { validateEmail } from '@/utils/validation';
+import { getErrorMessage } from '@/utils/error-handler';
 
 export default function Login() {
   const router = useRouter();
@@ -20,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
   const loginMutation = usePostLoginMutation();
   const isLoading = loginMutation.isPending;
 
@@ -29,11 +33,15 @@ export default function Login() {
       return;
     }
 
+    if (!validateEmail(email)) {
+      showToast({ title: 'Please enter a valid email address', icon: 'exclaim' });
+      return;
+    }
+
     loginMutation.mutate(
       { email, password },
       {
         onSuccess: (response) => {
-          // tokens는 객체 형태로 반환됨
           const accessToken = response?.tokens?.access_token;
           const refreshToken = response?.tokens?.refresh_token;
 
@@ -49,19 +57,33 @@ export default function Login() {
           }
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError<{
-            error?: { message?: string };
-            message?: string;
-          }>;
-          const errorMessage =
-            axiosError?.response?.data?.error?.message ||
-            axiosError?.response?.data?.message ||
-            'Login failed. Please check your email and password.';
+          const errorMessage = getErrorMessage(
+            error,
+            'Login failed. Please check your email and password.'
+          );
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
     );
   };
+
+  // Enter 키로 로그인
+  useEffect(() => {
+    if (!email || !password || isLoading) return;
+
+    const handleEnterKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (validateEmail(email)) {
+          handleLogin();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleEnterKey);
+    return () => window.removeEventListener('keydown', handleEnterKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, password, isLoading]);
 
   const handleGoogleLogin = () => {
     // TODO: Google 로그인 처리
@@ -157,7 +179,11 @@ export default function Login() {
                   Remember me
                 </Text>
               </label>
-              <button type="button" css={linkButton} onClick={() => console.log('Find password')}>
+              <button
+                type="button"
+                css={linkButton}
+                onClick={() => setIsPasswordResetModalOpen(true)}
+              >
                 <Text typo="body_S" color="primary50" css={underlineText}>
                   Find password
                 </Text>
@@ -225,6 +251,10 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <PasswordResetModal
+        isOpen={isPasswordResetModalOpen}
+        onClose={() => setIsPasswordResetModalOpen(false)}
+      />
     </Layout>
   );
 }
