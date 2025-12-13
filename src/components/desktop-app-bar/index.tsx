@@ -1,4 +1,4 @@
-import { Logo, Globe, Exit } from '@/icons';
+import { Logo, Globe, GlobeFilled, Login, LoginFilled } from '@/icons';
 import {
   wrapper,
   logo,
@@ -8,6 +8,11 @@ import {
   logoutWrapper,
   languageWrapper,
   languageIcon,
+  iconWrapper,
+  loginIcon,
+  loginFilledIcon,
+  globeIcon,
+  globeFilledIcon,
 } from './index.styles';
 import { SearchBar } from '@/components';
 import Link from 'next/link';
@@ -49,12 +54,26 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
           <li>비지니스 문의</li>
         </ul>
         <div css={logoutWrapper}>
-          <Exit width="20px" height="20px" />
-          Logout
+          <div css={iconWrapper}>
+            <div css={loginIcon}>
+              <Login width="20px" height="20px" />
+            </div>
+            <div css={loginFilledIcon}>
+              <LoginFilled width="20px" height="20px" />
+            </div>
+          </div>
+          <Link href="/login">Login</Link>
         </div>
         <div css={languageWrapper}>
           <div css={languageIcon}>
-            <Globe width="20px" height="20px" />
+            <div css={iconWrapper}>
+              <div css={globeIcon}>
+                <Globe width="20px" height="20px" />
+              </div>
+              <div css={globeFilledIcon}>
+                <GlobeFilled width="20px" height="20px" />
+              </div>
+            </div>
           </div>
           <ul>
             <li>
