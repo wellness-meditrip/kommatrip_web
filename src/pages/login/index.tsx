@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { theme } from '@/styles';
@@ -7,39 +8,50 @@ import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
 import { useMediaQuery, useToast } from '@/hooks';
 import { ROUTES } from '@/constants';
-import { AxiosError } from 'axios';
 import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
-import { validateEmail } from '@/utils/validation';
 import { getErrorMessage } from '@/utils/error-handler';
+import { Input } from '@/components/input';
+import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export default function Login() {
   const router = useRouter();
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
   const loginMutation = usePostLoginMutation();
   const isLoading = loginMutation.isPending;
+  const validation = useValidateAuthForm();
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      showToast({ title: 'Please enter your email and password', icon: 'exclaim' });
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<LoginFormData>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-    if (!validateEmail(email)) {
-      showToast({ title: 'Please enter a valid email address', icon: 'exclaim' });
-      return;
-    }
+  const email = watch('email');
+  const password = watch('password');
 
+  const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(
-      { email, password },
+      { email: data.email, password: data.password },
       {
         onSuccess: (response) => {
           const accessToken = response?.tokens?.access_token;
@@ -66,24 +78,6 @@ export default function Login() {
       }
     );
   };
-
-  // Enter 키로 로그인
-  useEffect(() => {
-    if (!email || !password || isLoading) return;
-
-    const handleEnterKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (validateEmail(email)) {
-          handleLogin();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleEnterKey);
-    return () => window.removeEventListener('keydown', handleEnterKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email, password, isLoading]);
 
   const handleGoogleLogin = () => {
     // TODO: Google 로그인 처리
@@ -120,50 +114,50 @@ export default function Login() {
 
         <div css={content}>
           {/* 로그인 폼 */}
-          <div css={formSection}>
+          <form css={formSection} onSubmit={handleSubmit(onSubmit)}>
             {/* 이메일 입력 */}
             <div css={inputGroup}>
-              <input
+              <Input
+                label="Email"
                 type="email"
-                placeholder="Email"
-                value={email || ''}
-                onChange={(e) => setEmail(e.target.value)}
-                css={input}
+                placeholder="이메일을 입력해주세요."
+                {...register('email', { ...validation.email })}
+                errorMessage={errors.email?.message}
               />
             </div>
 
             {/* 비밀번호 입력 */}
             <div css={inputGroup}>
-              <div css={passwordWrapper}>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  css={passwordInput}
-                />
-                <button
-                  type="button"
-                  css={eyeButton}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="비밀번호를 입력해주세요."
+                {...register('password', { ...validation.password })}
+                errorMessage={errors.password?.message}
+                suffix={
+                  <button
+                    type="button"
+                    css={eyeButton}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
+              />
             </div>
 
             {/* Remember me & Find password */}
@@ -194,8 +188,8 @@ export default function Login() {
             <RoundButton
               size="L"
               fullWidth
-              onClick={handleLogin}
-              disabled={isLoading || !email || !password}
+              type="submit"
+              disabled={isLoading || !isValid}
               css={loginButton}
             >
               <Text typo="button_L" color="white">
@@ -248,7 +242,7 @@ export default function Login() {
                 `}
               </Text>
             </div>
-          </div>
+          </form>
         </div>
       </div>
       <PasswordResetModal
@@ -324,57 +318,7 @@ const inputGroup = css`
   }
 `;
 
-const input = css`
-  width: 100%;
-  padding: 16px;
-  border: 1px solid ${theme.colors.border_default};
-  border-radius: 12px;
-  background-color: ${theme.colors.white};
-  color: ${theme.colors.text_primary};
-  font-size: 16px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
-
-  &::placeholder {
-    color: ${theme.colors.text_tertiary};
-  }
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-const passwordWrapper = css`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const passwordInput = css`
-  width: 100%;
-  padding: 16px 50px 16px 16px;
-  border: 1px solid ${theme.colors.border_default};
-  border-radius: 12px;
-  background-color: ${theme.colors.white};
-  color: ${theme.colors.text_primary};
-  font-size: 16px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
-
-  &::placeholder {
-    color: ${theme.colors.text_tertiary};
-  }
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
 const eyeButton = css`
-  position: absolute;
-  right: 16px;
   background: none;
   border: none;
   padding: 0;
