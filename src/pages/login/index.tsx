@@ -9,7 +9,6 @@ import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
 import { useMediaQuery, useToast } from '@/hooks';
 import { ROUTES } from '@/constants';
-import { AxiosError } from 'axios';
 import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
@@ -121,24 +120,6 @@ export default function Login() {
       }
     );
   };
-
-  // Enter 키로 로그인
-  useEffect(() => {
-    if (!email || !password || isLoading) return;
-
-    const handleEnterKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (validateEmail(email)) {
-          handleLogin();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleEnterKey);
-    return () => window.removeEventListener('keydown', handleEnterKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [email, password, isLoading]);
 
   const handleGoogleLogin = () => {
     onGoogle();
