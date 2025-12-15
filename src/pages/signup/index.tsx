@@ -13,7 +13,12 @@ import {
   usePostConfirmEmailMutation,
   usePostSignupMutation,
 } from '@/queries/auth';
-import { getErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
+
+import {
+  getErrorMessage,
+  isSessionExpiredError,
+  getSessionExpiredMessage,
+} from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -169,16 +174,6 @@ export default function Signup() {
       }
     );
   };
-
-  // 비밀번호 유효성 검증
-  useEffect(() => {
-    if (password) {
-      const validation = validatePassword(password);
-      setPasswordErrors(validation.errors);
-    } else {
-      setPasswordErrors([]);
-    }
-  }, [password]);
 
   const onSubmit = (data: SignupFormData) => {
     if (!verificationToken) {
