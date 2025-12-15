@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -12,30 +13,33 @@ import {
   usePostConfirmEmailMutation,
   usePostSignupMutation,
 } from '@/queries/auth';
-import { validateEmail, validatePassword } from '@/utils/validation';
 import {
   getErrorMessage,
   isSessionExpiredError,
   getSessionExpiredMessage,
 } from '@/utils/error-handler';
+import { Input } from '@/components/input';
+import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
+
+interface SignupFormData {
+  email: string;
+  verificationCode: string;
+  password: string;
+  confirmPassword: string;
+  country: string;
+}
 
 export default function Signup() {
   const router = useRouter();
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const [email, setEmail] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [country, setCountry] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-  const [emailError, setEmailError] = useState('');
+  const validation = useValidateAuthForm();
 
   const verifyEmailCodeMutation = usePostVerifyEmailCodeMutation();
   const confirmEmailMutation = usePostConfirmEmailMutation();
@@ -44,34 +48,69 @@ export default function Signup() {
   const isLoading =
     verifyEmailCodeMutation.isPending || confirmEmailMutation.isPending || signupMutation.isPending;
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    setError,
+    formState: { errors, isValid },
+  } = useForm<SignupFormData>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+    defaultValues: {
+      email: '',
+      verificationCode: '',
+      password: '',
+      confirmPassword: '',
+      country: '',
+    },
+  });
+
+  const email = watch('email');
+  const password = watch('password');
+  const confirmPassword = watch('confirmPassword');
+
   const handleSendEmail = () => {
     if (!email) {
-      setEmailError('Please enter your email address');
-      showToast({ title: 'Please enter your email address', icon: 'exclaim' });
+      setError('email', { message: '이메일을 입력해 주세요' });
       return;
     }
 
-    if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
-      showToast({ title: 'Please enter a valid email address', icon: 'exclaim' });
+    if (errors.email) {
+      showToast({
+        title: errors.email.message || 'Please enter a valid email address',
+        icon: 'exclaim',
+      });
       return;
     }
 
-    setEmailError('');
     verifyEmailCodeMutation.mutate(email, {
       onSuccess: () => {
         setEmailVerified(true);
         showToast({ title: 'Verification code has been sent to your email', icon: 'check' });
       },
       onError: (error: unknown) => {
+        const axiosError = error as AxiosError;
+        const status = axiosError?.response?.status;
         const errorMessage = getErrorMessage(error, 'Failed to send verification code');
-        showToast({ title: errorMessage, icon: 'exclaim' });
+
+        if (status === 400 && (errorMessage.includes('가입') || errorMessage.includes('이미'))) {
+          // 이미 가입된 이메일 에러
+          setError('email', { message: '이미 가입된 이메일입니다.' });
+        } else {
+          // 기타 에러는 토스트만 표시
+          showToast({ title: errorMessage, icon: 'exclaim' });
+        }
       },
     });
   };
 
   const handleConfirmCode = () => {
+    const verificationCode = watch('verificationCode');
+
     if (!verificationCode) {
+      setError('verificationCode', { message: '인증 코드를 입력해 주세요' });
       showToast({ title: 'Please enter the verification code', icon: 'exclaim' });
       return;
     }
@@ -106,16 +145,29 @@ export default function Signup() {
         onError: (error: unknown) => {
           const axiosError = error as AxiosError;
           const status = axiosError?.response?.status;
-          const errorMessage = getErrorMessage(error, 'Invalid verification code');
 
           if (status === 400 && isSessionExpiredError(error)) {
+            // 코드 만료 에러
+            setError('verificationCode', { message: '인증번호가 만료됐어요. 다시 받아 주세요.' });
             // 상태 초기화
             setEmailVerified(false);
             setCodeVerified(false);
             setVerificationToken('');
-            setVerificationCode('');
-            showToast({ title: getSessionExpiredMessage(error), icon: 'exclaim' });
+            setValue('verificationCode', '');
+          } else if (status === 404) {
+            // 인증 요청 없음 에러
+            setError('verificationCode', {
+              message: '해당 이메일에 대한 인증 요청이 없습니다. 다시 요청해주세요.',
+            });
+            // 상태 초기화
+            setEmailVerified(false);
+            setCodeVerified(false);
+            setVerificationToken('');
+            setValue('verificationCode', '');
           } else {
+            // 코드 틀림 에러
+            setError('verificationCode', { message: '인증번호가 올바르지 않아요.' });
+            const errorMessage = getErrorMessage(error, 'Invalid verification code');
             showToast({ title: errorMessage, icon: 'exclaim' });
           }
         },
@@ -123,29 +175,7 @@ export default function Signup() {
     );
   };
 
-  // 비밀번호 유효성 검증
-  useEffect(() => {
-    if (password) {
-      const validation = validatePassword(password);
-      setPasswordErrors(validation.errors);
-    } else {
-      setPasswordErrors([]);
-    }
-  }, [password]);
-
-  const handleSignup = () => {
-    // 비밀번호 유효성 검증
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      showToast({ title: passwordValidation.errors[0], icon: 'exclaim' });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      showToast({ title: 'Passwords do not match', icon: 'exclaim' });
-      return;
-    }
-
+  const onSubmit = (data: SignupFormData) => {
     if (!verificationToken) {
       showToast({ title: 'Please verify your email first', icon: 'exclaim' });
       return;
@@ -153,10 +183,10 @@ export default function Signup() {
 
     signupMutation.mutate(
       {
-        email,
+        email: data.email,
         verification_token: verificationToken,
-        password,
-        country,
+        password: data.password,
+        country: data.country,
         marketing_consent: false, // TODO: 마케팅 동의 체크박스 추가 시 수정
       },
       {
@@ -202,29 +232,22 @@ export default function Signup() {
 
         <div css={content}>
           {/* 회원가입 폼 */}
-          <div css={formSection}>
+          <form css={formSection} onSubmit={handleSubmit(onSubmit)}>
             {/* 이메일 주소 */}
             <div css={inputGroup}>
-              <Text typo="body_M" color="text_primary" css={label}>
-                Email Address
-              </Text>
               <div css={inputWithButton}>
-                <input
+                <Input
+                  label="Email Address"
                   type="email"
                   placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setEmailError('');
-                  }}
-                  css={input}
-                  aria-invalid={!!emailError}
-                  aria-describedby={emailError ? 'email-error' : undefined}
+                  {...register('email', { ...validation.email })}
+                  errorMessage={errors.email?.message}
                 />
                 <RoundButton
                   size="M"
+                  type="button"
                   onClick={handleSendEmail}
-                  disabled={isLoading || !email}
+                  disabled={isLoading || !email || !!errors.email}
                   css={actionButton}
                 >
                   <Text typo="button_M" color="white">
@@ -232,12 +255,7 @@ export default function Signup() {
                   </Text>
                 </RoundButton>
               </div>
-              {emailError && (
-                <Text typo="body_S" color="red200" css={statusMessage} id="email-error">
-                  * {emailError}
-                </Text>
-              )}
-              {emailVerified && !emailError && (
+              {emailVerified && !errors.email && (
                 <Text typo="body_S" color="primary50" css={statusMessage}>
                   * Email verification has been completed.
                 </Text>
@@ -246,21 +264,19 @@ export default function Signup() {
 
             {/* 이메일 인증 코드 */}
             <div css={inputGroup}>
-              <Text typo="body_M" color="text_primary" css={label}>
-                Email Verification Code
-              </Text>
               <div css={inputWithButton}>
-                <input
+                <Input
+                  label="Email Verification Code"
                   type="text"
                   placeholder="Enter the code"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  css={input}
+                  {...register('verificationCode', { ...validation.verificationCode })}
+                  errorMessage={errors.verificationCode?.message}
                 />
                 <RoundButton
                   size="M"
+                  type="button"
                   onClick={handleConfirmCode}
-                  disabled={isLoading || !verificationCode}
+                  disabled={isLoading || !watch('verificationCode')}
                   css={actionButton}
                 >
                   <Text typo="button_M" color="white">
@@ -276,104 +292,78 @@ export default function Signup() {
             </div>
 
             {/* 비밀번호 */}
-            {/* TODO: 유효성 검증 적용 필요 */}
             <div css={inputGroup}>
-              <Text typo="body_M" color="text_primary" css={label}>
-                Password
-              </Text>
-              <div css={passwordWrapper}>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  css={passwordInput}
-                  aria-invalid={passwordErrors.length > 0}
-                  aria-describedby={passwordErrors.length > 0 ? 'password-errors' : undefined}
-                />
-                <button
-                  type="button"
-                  css={eyeButton}
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {passwordErrors.length > 0 ? (
-                <div id="password-errors">
-                  {passwordErrors.map((error, index) => (
-                    <Text key={index} typo="body_S" color="red200" css={passwordHint}>
-                      * {error}
-                    </Text>
-                  ))}
-                </div>
-              ) : (
-                <>
-                  <Text typo="body_S" color="primary50" css={passwordHint}>
-                    * You can use 8-16 characters, including uppercase and lowercase letters,
-                    numbers, and special characters.
-                  </Text>
-                  <Text typo="body_S" color="primary50" css={passwordHint}>
-                    * Available special characters (33): $
-                    {`!"#$%&'()*+,-./:;?@[\]^_${'{'}|\${'}'}\${'~'}`}
-                  </Text>
-                </>
-              )}
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="비밀번호를 입력해주세요."
+                {...register('password', { ...validation.password })}
+                errorMessage={errors.password?.message}
+                suffix={
+                  <button
+                    type="button"
+                    css={eyeButton}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
+              />
             </div>
 
-            {/* TODO: 유효성 검증 적용 필요 */}
             {/* 비밀번호 확인 */}
             <div css={inputGroup}>
-              <Text typo="body_M" color="text_primary" css={label}>
-                Confirm Password
-              </Text>
-              <div css={passwordWrapper}>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  css={passwordInput}
-                />
-                <button
-                  type="button"
-                  css={eyeButton}
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
-                        fill={theme.colors.text_tertiary}
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              <Text typo="body_S" color="primary50" css={statusMessage}>
-                * Please enter the same password.
-              </Text>
+              <Input
+                label="Confirm Password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="비밀번호를 다시 입력해주세요."
+                {...register('confirmPassword', {
+                  required: '비밀번호 확인을 입력해 주세요',
+                  validate: (value) => {
+                    if (!value) return '비밀번호 확인을 입력해 주세요';
+                    if (value !== password) return '비밀번호가 일치하지 않아요';
+                    return true;
+                  },
+                })}
+                errorMessage={errors.confirmPassword?.message}
+                suffix={
+                  <button
+                    type="button"
+                    css={eyeButton}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+                          fill={theme.colors.text_tertiary}
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
+              />
             </div>
 
             {/* 국가 선택 */}
@@ -382,7 +372,11 @@ export default function Signup() {
                 Country
               </Text>
               <div css={selectContainer}>
-                <select css={select} value={country} onChange={(e) => setCountry(e.target.value)}>
+                <select
+                  css={select}
+                  {...register('country', { ...validation.country })}
+                  aria-invalid={!!errors.country}
+                >
                   <option value="">Select the country</option>
                   <option value="KR">South Korea</option>
                   <option value="US">United States</option>
@@ -391,16 +385,19 @@ export default function Signup() {
                   <option value="GB">United Kingdom</option>
                 </select>
               </div>
+              {errors.country && (
+                <Text typo="body_S" color="red200" css={statusMessage}>
+                  * {errors.country.message}
+                </Text>
+              )}
             </div>
 
             {/* 회원가입 버튼 */}
             <RoundButton
               size="L"
               fullWidth
-              onClick={handleSignup}
-              disabled={
-                isLoading || !email || !password || !confirmPassword || !country || !codeVerified
-              }
+              type="submit"
+              disabled={isLoading || !isValid || !codeVerified}
               css={signupButton}
             >
               <Text typo="button_L" color="white">
@@ -419,7 +416,7 @@ export default function Signup() {
                 </Text>
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </Layout>
@@ -503,27 +500,6 @@ const inputWithButton = css`
   align-items: flex-start;
 `;
 
-const input = css`
-  flex: 1;
-  padding: 16px;
-  border: 1px solid ${theme.colors.border_default};
-  border-radius: 12px;
-  background-color: ${theme.colors.white};
-  color: ${theme.colors.text_primary};
-  font-size: 16px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
-
-  &::placeholder {
-    color: ${theme.colors.text_tertiary};
-  }
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
 const actionButton = css`
   flex-shrink: 0;
   min-width: 80px;
@@ -534,42 +510,7 @@ const statusMessage = css`
   display: block;
 `;
 
-const passwordWrapper = css`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const passwordInput = css`
-  width: 100%;
-  padding: 16px 50px 16px 16px;
-  border: 1px solid ${theme.colors.border_default};
-  border-radius: 12px;
-  background-color: ${theme.colors.white};
-  color: ${theme.colors.text_primary};
-  font-size: 16px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s ease;
-
-  &::placeholder {
-    color: ${theme.colors.text_tertiary};
-  }
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-const passwordHint = css`
-  margin-top: 4px;
-  display: block;
-  line-height: 1.4;
-`;
-
 const eyeButton = css`
-  position: absolute;
-  right: 16px;
   background: none;
   border: none;
   padding: 0;

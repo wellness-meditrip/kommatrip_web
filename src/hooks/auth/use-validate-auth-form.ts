@@ -48,6 +48,22 @@ export function useValidateAuthForm() {
           return true;
         },
       },
+
+      verificationCode: {
+        required: '인증 코드를 입력해 주세요',
+        validate: (value: string) => {
+          if (!value) return '인증 코드를 입력해 주세요';
+          return true;
+        },
+      },
+
+      country: {
+        required: '국가를 선택해 주세요',
+        validate: (value: string) => {
+          if (!value) return '국가를 선택해 주세요';
+          return true;
+        },
+      },
     }),
     []
   );
