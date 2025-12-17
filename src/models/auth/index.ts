@@ -89,3 +89,45 @@ export interface PostResetPasswordCompleteRequest {
 export interface PostResetPasswordCompleteResponse {
   message?: string;
 }
+
+// 소셜 로그인(google)
+export interface PostUserAuthGoogleRequest {
+  idToken: string;
+  country: string;
+  marketing_consent: boolean;
+}
+
+export interface PostUserAuthGoogleResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
+type LoginMethod = 'email' | 'google' | 'apple';
+export interface User {
+  id: number;
+  email: string;
+  username: string;
+  country: string;
+  role: string;
+  login_method: LoginMethod;
+  company_code: string | null;
+  is_email_verified: boolean;
+  marketing_consent: boolean;
+  marketing_consent_at: string | null;
+  last_login_at: string;
+  InterestSetting: boolean;
+}
+
+export interface Token {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'Bearer';
+}
+
+// 토큰 재발급
+export interface PostTokenReissueResponse {
+  message: string;
+  user: User;
+  tokens: Token;
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { signIn } from 'next-auth/react';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { theme } from '@/styles';
@@ -31,6 +32,29 @@ export default function Login() {
   const loginMutation = usePostLoginMutation();
   const isLoading = loginMutation.isPending;
   const validation = useValidateAuthForm();
+  const [country, setCountry] = useState('KR');
+  const [marketing, setMarketing] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onGoogle = async () => {
+    setLoading(true);
+
+    // 1) 리다이렉트 전에 메타를 httpOnly 쿠키로 저장
+    const r = await fetch('/api/auth/google-meta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country, marketing_consent: marketing }),
+    });
+
+    if (!r.ok) {
+      setLoading(false);
+      alert('로그인 준비 중 오류가 발생했어요.');
+      return;
+    }
+
+    // 2) 구글 로그인 시작
+    await signIn('google', { callbackUrl: ROUTES.HOME });
+  };
 
   const {
     register,
@@ -80,8 +104,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Google 로그인 처리
-    console.log('Google Login');
+    onGoogle();
   };
 
   const handleAppleLogin = () => {
@@ -209,7 +232,12 @@ export default function Login() {
             {/* 소셜 로그인 버튼 */}
             <div css={socialButtons}>
               {/* Google 로그인 버튼 */}
-              <button type="button" css={socialButton} onClick={handleGoogleLogin}>
+              <button
+                type="button"
+                css={socialButton}
+                onClick={handleGoogleLogin}
+                disabled={loading}
+              >
                 <GoogleLogo width="24px" height="24px" />
               </button>
 
@@ -234,12 +262,26 @@ export default function Login() {
             {/* Terms of Service */}
             <div css={termsSection}>
               <Text typo="body_S" color="text_secondary">
-                $
-                {`
-                By signing up or logging in, you acknowledge and agree to ONYU's
-                <Link href={ROUTES.TERMS_OF_USE}>General Terms of Use</Link>
-                <Link href={ROUTES.TERMS_OF_USE}>Privacy Policy</Link>
-                `}
+                By signing up or logging in, you acknowledge and agree to ONYU&apos;s
+              </Text>
+              <Text typo="body_S" color="primary50" css={underlineText}>
+                <Link
+                  href="https://www.notion.so/English-ONYU-Terms-of-Use-2958bf64ec2180b69375d5abbb8f8869?source=copy_link"
+                  target="_blank"
+                >
+                  General Terms of Use
+                </Link>
+              </Text>
+              <Text typo="body_S" color="text_secondary">
+                and
+              </Text>
+              <Text typo="body_S" color="primary50" css={underlineText}>
+                <Link
+                  href="https://www.notion.so/English-ONYU-Privacy-Policy-2958bf64ec2180b69375d5abbb8f8869?source=copy_link"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </Link>
               </Text>
             </div>
           </form>
@@ -436,6 +478,7 @@ const signupSection = css`
   text-align: center;
   flex-wrap: wrap;
   gap: 4px;
+  margin-bottom: 24px;
 `;
 
 const termsSection = css`

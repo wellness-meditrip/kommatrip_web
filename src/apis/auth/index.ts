@@ -12,6 +12,9 @@ import {
   PostResetPasswordRequestResponse,
   PostResetPasswordCompleteRequest,
   PostResetPasswordCompleteResponse,
+  PostUserAuthGoogleRequest,
+  PostUserAuthGoogleResponse,
+  PostTokenReissueResponse,
 } from '@/models/auth';
 
 // 이메일 인증 코드 전송
@@ -95,4 +98,29 @@ export const postResetPasswordComplete = async (data: PostResetPasswordCompleteR
       },
     }
   );
+};
+
+// 소셜 로그인(google)
+export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
+  return await guestApi.post<PostUserAuthGoogleResponse>(
+    '/api/users/auth/google',
+    {
+      idToken: data.idToken,
+      country: data.country,
+      marketing_consent: data.marketing_consent,
+    },
+    {
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+};
+
+// 토큰 재발급
+export const postTokenReissue = async (refreshToken: string): Promise<PostTokenReissueResponse> => {
+  return guestApi.post<PostTokenReissueResponse>('/token/reissue', {
+    refreshToken, // camelCase OK
+  });
 };
