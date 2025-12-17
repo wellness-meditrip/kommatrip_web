@@ -1,12 +1,8 @@
-import { guestHospitalApi, api } from '@/apis';
+import { api } from '@/apis';
 import type { AxiosResponse } from 'axios';
 import {
   GetRecentCompanyResponse,
   GetRecommendedCompanyResponse,
-  GetClinicRequestParams,
-  GetClinicResponse,
-  Hospital,
-  GetClinicClinicIdRequestParams,
   GetCompanySearchResponseParams,
   SearchParams,
   GetCompanyIdRequestParams,
@@ -27,14 +23,6 @@ export const getRecommendedCompany = async (): Promise<{
     total: number;
   }> = await api.get('/api/companies/recommended');
   return response.data;
-};
-
-export const getClinic = async (params: GetClinicRequestParams) => {
-  return await guestHospitalApi.get<GetClinicResponse>('/hospitals/', { params });
-};
-
-export const getClinicClinicId = async ({ hospitalId }: GetClinicClinicIdRequestParams) => {
-  return await guestHospitalApi.get<Hospital>(`/hospitals/${hospitalId}`);
 };
 
 export const getCompanySearch = async (params: SearchParams) => {
