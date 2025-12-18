@@ -15,6 +15,8 @@ import { usePostLoginMutation } from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
+import { useAuthStore } from '@/store/auth';
+import { setCookie } from '@/utils/cookie';
 
 interface LoginFormData {
   email: string;
@@ -32,8 +34,8 @@ export default function Login() {
   const loginMutation = usePostLoginMutation();
   const isLoading = loginMutation.isPending;
   const validation = useValidateAuthForm();
-  const [country, setCountry] = useState('KR');
-  const [marketing, setMarketing] = useState(false);
+  const [country] = useState('KR');
+  const [marketing] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onGoogle = async () => {
@@ -59,7 +61,6 @@ export default function Login() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isValid },
   } = useForm<LoginFormData>({
     mode: 'onChange',
@@ -70,8 +71,7 @@ export default function Login() {
     },
   });
 
-  const email = watch('email');
-  const password = watch('password');
+  // email과 password는 form validation에서 자동으로 처리됨
 
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(
@@ -82,12 +82,30 @@ export default function Login() {
           const refreshToken = response?.tokens?.refresh_token;
 
           if (accessToken) {
-            localStorage.setItem('accessToken', accessToken);
+            console.log('[Login] Email login success - storing tokens', {
+              hasAccessToken: !!accessToken,
+              accessTokenLength: accessToken.length,
+              hasRefreshToken: !!refreshToken,
+            });
+
+            // accessToken을 zustand store에 저장 (메모리)
+            useAuthStore.getState().setAccessToken(accessToken);
+            console.log('[Login] accessToken stored in zustand store');
+
+            // refreshToken을 쿠키에 저장
             if (refreshToken) {
-              localStorage.setItem('refreshToken', refreshToken);
+              setCookie('refreshToken', refreshToken, 7); // 7일
+              console.log('[Login] refreshToken stored in cookie');
             }
+
             showToast({ title: 'Login successful', icon: 'check' });
-            router.push(ROUTES.HOME);
+
+            // InterestSetting이 false이면 관심사 등록 페이지로 리다이렉트
+            if (response?.user && !response.user.InterestSetting) {
+              router.push(ROUTES.INTEREST);
+            } else {
+              router.push(ROUTES.HOME);
+            }
           } else {
             showToast({ title: 'Failed to get access token', icon: 'exclaim' });
           }

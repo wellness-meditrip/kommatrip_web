@@ -13,11 +13,7 @@ import {
   usePostConfirmEmailMutation,
   usePostSignupMutation,
 } from '@/queries/auth';
-import {
-  getErrorMessage,
-  isSessionExpiredError,
-  getSessionExpiredMessage,
-} from '@/utils/error-handler';
+import { getErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -69,7 +65,6 @@ export default function Signup() {
 
   const email = watch('email');
   const password = watch('password');
-  const confirmPassword = watch('confirmPassword');
 
   const handleSendEmail = () => {
     if (!email) {
@@ -190,11 +185,8 @@ export default function Signup() {
         marketing_consent: false, // TODO: 마케팅 동의 체크박스 추가 시 수정
       },
       {
-        onSuccess: (response) => {
-          if (response.accessToken) {
-            localStorage.setItem('accessToken', response.accessToken);
-          }
-
+        onSuccess: () => {
+          // 회원가입 후에는 accessToken이 제공되지 않을 수 있으므로 로그인 페이지로 이동
           showToast({ title: 'Account created successfully', icon: 'check' });
           router.push(ROUTES.LOGIN);
         },
