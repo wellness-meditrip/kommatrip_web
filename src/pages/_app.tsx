@@ -1,33 +1,20 @@
 import type { AppProps } from 'next/app';
-import { SessionProvider, useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { SessionProvider } from 'next-auth/react';
 
 import { DialogProvider, ToastProvider } from '@/hooks';
 import { GlobalStyle } from '@/styles';
 import { QueryProvider } from '@/providers';
 import '@/styles/normalize.css';
+import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
 
 /**
- * 세션의 accessToken을 localStorage에 동기화하는 컴포넌트
- * 기존 API 클라이언트와의 호환성을 위해 필요합니다.
+ * NextAuth 세션과 zustand auth store 동기화
+ * 토큰 재발급은 API 인터셉터에서 401 + TOKEN_EXPIRED 발생 시 자동 처리
  */
-function SessionSync() {
-  const { data: session } = useSession();
-
-  useEffect(() => {
-    if (session?.accessToken) {
-      // NextAuth 세션의 accessToken을 localStorage에 저장
-      // (기존 API 클라이언트가 localStorage를 사용하므로 호환성 유지)
-      localStorage.setItem('accessToken', session.accessToken);
-    } else if (session === null) {
-      // 세션이 없으면 (로그아웃) localStorage에서 토큰 제거
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
-  }, [session]);
-
+function AuthSync() {
+  useAuthSync();
   return null;
 }
 
@@ -42,7 +29,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         />
       </Head>
       <SessionProvider session={session}>
-        <SessionSync />
+        <AuthSync />
         <QueryProvider>
           <GlobalStyle>
             <DialogProvider>

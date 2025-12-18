@@ -53,9 +53,12 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
             marketing_consent: meta.marketing_consent,
           });
 
-          // 백엔드가 내려준 user/tokens를 JWT에 저장 (refreshToken은 여기(서버)까지만)
+          // 백엔드가 내려준 user/tokens를 JWT에 저장
           token.backendUser = result.user;
           token.backendTokens = result.tokens;
+
+          // refreshToken을 쿠키에 저장하기 위해 별도 처리 필요
+          // (NextAuth 콜백에서는 직접 쿠키를 설정할 수 없으므로 클라이언트에서 처리)
         }
 
         return token;
@@ -66,9 +69,13 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
         session.user = token.backendUser ?? session.user;
 
         // 프론트에서 백엔드 API 호출 시 사용할 accessToken 노출
-        // (기존 API 클라이언트가 localStorage를 사용하므로 호환성 유지)
         if (token.backendTokens?.access_token) {
           session.accessToken = token.backendTokens.access_token;
+        }
+
+        // refreshToken도 세션에 포함 (클라이언트에서 쿠키에 저장하기 위해)
+        if (token.backendTokens?.refresh_token) {
+          session.refreshToken = token.backendTokens.refresh_token;
         }
 
         return session;
