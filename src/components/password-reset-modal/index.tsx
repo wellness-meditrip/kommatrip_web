@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { Text, RoundButton } from '@/components';
 import { theme } from '@/styles';
@@ -30,7 +30,6 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [emailVerified, setEmailVerified] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
   const validation = useValidateAuthForm();
@@ -84,7 +83,6 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
     resetPasswordRequestMutation.mutate(email, {
       onSuccess: () => {
-        setEmailVerified(true);
         showToast({ title: 'Verification code has been sent to your email', icon: 'check' });
       },
       onError: (error: unknown) => {
@@ -135,7 +133,6 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
             errorData?.error?.message || errorData?.message || 'Invalid verification code';
 
           if (status === 400) {
-            setEmailVerified(false);
             setCodeVerified(false);
             setVerificationToken('');
             setValue('verificationCode', '');
@@ -165,7 +162,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
         email: data.email,
         session_token: verificationToken,
         new_password: data.password,
-        confirm_password: data.confirmPassword,
+        confirm_password: confirmPassword,
       },
       {
         onSuccess: (response) => {
@@ -186,14 +183,13 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
     );
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     // 상태 초기화
     reset();
-    setEmailVerified(false);
     setCodeVerified(false);
     setVerificationToken('');
     onClose();
-  };
+  }, [reset, onClose]);
 
   // ESC 키로 모달 닫기
   useEffect(() => {
@@ -207,7 +203,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
 
   // 모달 열릴 때 body 스크롤 방지
   useEffect(() => {
@@ -402,7 +398,7 @@ const overlay = css`
   position: fixed;
   inset: 0;
   z-index: 1000;
-  max-width: 480px;
+  /* max-width: 480px; */
   margin: 0 auto;
   background-color: rgb(0 0 0 / 50%);
 `;

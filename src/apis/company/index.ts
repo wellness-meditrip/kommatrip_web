@@ -1,4 +1,4 @@
-import { api } from '@/apis';
+import { api, guestApi } from '@/apis';
 import type { AxiosResponse } from 'axios';
 import {
   GetRecentCompanyResponse,
@@ -26,7 +26,7 @@ export const getRecommendedCompany = async (): Promise<{
 };
 
 export const getCompanySearch = async (params: SearchParams) => {
-  return await api.get<GetCompanySearchResponseParams>('/api/companies/search', {
+  return await guestApi.get<GetCompanySearchResponseParams>('/api/companies/search', {
     params,
   });
 };
@@ -34,14 +34,14 @@ export const getCompanySearch = async (params: SearchParams) => {
 export const getCompanyDetail = async ({
   companyId,
 }: GetCompanyIdRequestParams): Promise<{ company: CompanyDetail }> => {
-  const response: AxiosResponse<{ company: CompanyDetail }> = await api.get(
+  const response: AxiosResponse<{ company: CompanyDetail }> = await guestApi.get(
     `/api/companies/${companyId}`
   );
   return response.data;
 };
 
 export const getCompanyAll = async () => {
-  return await api.get<GetCompanyAllResponse>('/api/companies/all', {
+  return await guestApi.get<GetCompanyAllResponse>('/api/companies/all', {
     params: { status: 'active' },
   });
 };

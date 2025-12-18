@@ -1,6 +1,5 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
-import { Service } from '../../types';
 
 export const wrapper = css`
   display: flex;

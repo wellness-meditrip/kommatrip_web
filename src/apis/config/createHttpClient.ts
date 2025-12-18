@@ -34,7 +34,7 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
       // 에러 응답 구조 확인
       const daengleError = error.response?.data?.error;
 
-      // 401 Unauthorized + TOKEN_EXPIRED 에러 발생 시 토큰 재발급
+      // 498 Unauthorized + TOKEN_EXPIRED 에러 발생 시 토큰 재발급
       const isUnauthorized = error.response?.status === 498;
       const isTokenExpired = daengleError?.code === ERROR_CODES.TOKEN_EXPIRED;
 
