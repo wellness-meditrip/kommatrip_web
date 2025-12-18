@@ -1,9 +1,5 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
-<<<<<<< HEAD
-=======
-import { Service } from '../../types';
->>>>>>> 63b821f (feat: 유효성 검사를 위한 input 컴포넌트 개발)
 
 export const wrapper = css`
   display: flex;
