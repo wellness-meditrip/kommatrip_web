@@ -9,6 +9,7 @@ import {
   postResetPasswordConfirm,
   postResetPasswordRequest,
   postResetPasswordComplete,
+  postInterest,
 } from '@/apis/auth';
 import {
   PostVerifyEmailCodeResponse,
@@ -23,6 +24,8 @@ import {
   PostResetPasswordConfirmRequest,
   PostResetPasswordCompleteResponse,
   PostResetPasswordCompleteRequest,
+  PostInterestRequestBody,
+  PostInterestResponse,
 } from '@/models/auth';
 
 export const useGetUserValidateQuery = () => {
@@ -102,5 +105,13 @@ export const usePostResetPasswordMutation = () => {
   return useMutation<PostResetPasswordCompleteResponse, Error, PostResetPasswordCompleteRequest>({
     mutationKey: QUERY_KEYS.POST_RESET_PASSWORD,
     mutationFn: postResetPasswordComplete,
+  });
+};
+
+// 관심사 등록
+export const usePostInterestMutation = () => {
+  return useMutation<PostInterestResponse, Error, PostInterestRequestBody>({
+    mutationKey: QUERY_KEYS.POST_INTEREST,
+    mutationFn: postInterest,
   });
 };

@@ -1,4 +1,4 @@
-import { guestApi } from '@/apis/config';
+import { api, guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
   PostConfirmEmailResponse,
@@ -15,6 +15,8 @@ import {
   PostUserAuthGoogleRequest,
   PostUserAuthGoogleResponse,
   PostTokenReissueResponse,
+  PostInterestRequestBody,
+  PostInterestResponse,
 } from '@/models/auth';
 
 // 이메일 인증 코드 전송
@@ -118,9 +120,28 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
   );
 };
 
-// 토큰 재발급
-export const postTokenReissue = async (refreshToken: string): Promise<PostTokenReissueResponse> => {
-  return guestApi.post<PostTokenReissueResponse>('/token/reissue', {
-    refreshToken, // camelCase OK
+// 토큰 재발급 (쿠키에서 refreshToken 자동 전송)
+export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
+  // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
+  // guestApi는 그대로 두고, 이 함수에서만 withCredentials를 명시적으로 설정
+  return api.post<PostTokenReissueResponse>(
+    '/token/reissue',
+    {},
+    {
+      withCredentials: true, // 쿠키 전송을 위해 필요
+    }
+  );
+};
+
+// 관심사 등록
+export const postInterest = async (
+  data: PostInterestRequestBody
+): Promise<PostInterestResponse> => {
+  return await api.post<PostInterestResponse>('/api/users/interest', data, {
+    headers: {
+      accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    withCredentials: false,
   });
 };

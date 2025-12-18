@@ -131,3 +131,23 @@ export interface PostTokenReissueResponse {
   user: User;
   tokens: Token;
 }
+
+// 관심사 등록
+export type Gender = 'male' | 'female' | 'no-select';
+export type AgeGroup = 'Under18' | '18+' | '30+' | '40+' | '50+' | 'Over60';
+
+export interface PostInterestRequestBody {
+  Gender: Gender;
+  AgeGroup: AgeGroup;
+  TopicInterest: string[];
+}
+
+export interface PostInterestResponse {
+  message: string;
+  data: {
+    Gender: Gender;
+    AgeGroup: AgeGroup;
+    TopicInterest: string[];
+    InterestSetting: boolean;
+  };
+}
