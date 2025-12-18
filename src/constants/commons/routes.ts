@@ -38,4 +38,7 @@ export const ROUTES = {
   RESERVATIONS: '/reservations',
   RESERVATIONS_COMPLETE: '/reservations/complete',
   BOOKINGS: '/bookings',
+
+  // INTEREST
+  INTEREST: '/interest',
 } as const;
