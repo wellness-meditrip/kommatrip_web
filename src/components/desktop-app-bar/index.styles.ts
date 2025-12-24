@@ -129,45 +129,45 @@ export const languageWrapper = css`
       opacity: 1;
     }
   }
+`;
 
-  ul {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 10;
+export const languageDropdown = css`
+  display: block;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1000;
 
-    min-width: 120px;
-    margin: 0;
-    padding: 8px 0;
-    border-radius: 8px;
+  min-width: 120px;
+  margin: 0;
+  padding: 8px 0;
+  border-radius: 8px;
 
-    background-color: ${theme.colors.white};
-    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
-    list-style: none;
+  background-color: ${theme.colors.white};
+  box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+  list-style: none;
+`;
 
-    li {
-      padding: 8px 16px;
+export const languageItem = css`
+  padding: 8px 16px;
 
-      color: ${theme.colors.text_primary};
-      font-size: ${theme.typo.body_S};
+  color: ${theme.colors.text_primary};
+  font-size: ${theme.typo.body_S};
 
-      transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 
-      &:hover {
-        background-color: ${theme.colors.bg_surface1};
-      }
+  cursor: pointer;
 
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-    }
+  &:hover {
+    background-color: ${theme.colors.bg_surface1};
   }
+`;
 
-  &:hover ul {
-    display: block;
-  }
+export const languageItemActive = css`
+  ${languageItem};
+  background-color: ${theme.colors.bg_surface1};
+  color: ${theme.colors.primary50};
+  font-weight: 600;
 `;
 
 export const languageIcon = css`

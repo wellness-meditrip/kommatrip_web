@@ -30,6 +30,7 @@ export * from './ClinicPrivate';
 export * from './ClinicWifi';
 export * from './Clock';
 export * from './DefaultImage';
+export * from './DefaultProfile';
 export * from './Exit';
 export * from './GlobeFilled';
 export * from './Globe';

@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Layout,
   AppBar,
@@ -7,14 +8,12 @@ import {
   Text,
   CompanyCard,
   GNB,
-  // CompanyList,
+  CompanyList,
   DesktopAppBar,
   Loading,
 } from '@/components';
 import { useMediaQuery } from '@/hooks';
-import { useGetRecommendedCompanyQuery } from '@/queries/company';
-// import { useGetRecentCompanyQuery } from '@/queries/company';
-// import { useGetUserValidateQuery } from '@/queries/auth';
+import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -23,33 +22,31 @@ import { ROUTES } from '@/constants';
 // 홈 페이지 (루트 경로)
 export default function HomePage() {
   const router = useRouter();
+  const t = useTranslations('common');
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
 
-  // 회원 검증
-  // const { data: userValidate } = useGetUserValidateQuery();
-  // const isValidUser = userValidate?.isValidateMember ?? false;
+  // 최근 본 업체 조회
+  const { data: recentCompanies, isLoading: isRecentLoading } = useGetRecentCompanyQuery(true);
 
-  // 최근 본 업체 조회 (회원인 경우에만)
-  // const { data: recentCompanies, isLoading: isRecentLoading } =
-  //   useGetRecentCompanyQuery(isValidUser);
   const { data: recommendedCompanies, isLoading: isRecommendedLoading } =
     useGetRecommendedCompanyQuery();
 
   // API 응답을 CompanyList 형식으로 변환
-  // const formattedRecentCompanies = useMemo(() => {
-  //   if (!recentCompanies || recentCompanies.length === 0) return [];
+  const formattedRecentCompanies = useMemo(() => {
+    if (!recentCompanies || recentCompanies.length === 0) return [];
 
-  //   return recentCompanies.map((company) => ({
-  //     hospital_id: company.id,
-  //     hospital_name: company.name,
-  //     address: company.simple_place,
-  //     rating: 4.5, // API에 rating이 없으면 기본값 사용
-  //     image_url: company.photos?.[0] || '/default.png',
-  //     images: company.photos || [],
-  //     departments: company.tags || [],
-  //   }));
-  // }, [recentCompanies]);
+    return recentCompanies.map((company) => ({
+      hospital_id: company.id,
+      hospital_name: company.name,
+      address: company.simple_place,
+      rating: 4.5, // API에 rating이 없으면 기본값 사용
+      image_url: company.photos?.[0] || '/default.png',
+      images: company.photos || [],
+      departments: company.tags || [],
+      is_exclusive: company.is_exclusive,
+    }));
+  }, [recentCompanies]);
 
   // 추천 업체 데이터 변환
   const formattedRecommendedCompanies = useMemo(() => {
@@ -58,10 +55,11 @@ export default function HomePage() {
     return recommendedCompanies.map((company) => ({
       id: company.id,
       name: company.name,
-      address: company.simpleplace,
+      address: company.simpleplace ?? company.simple_place ?? '',
       image: company.photos?.[0] || '/default.png',
       images: company.photos || [], // 이미지 캐러셀용 전체 이미지 배열
       tags: company.tags || [],
+      is_exclusive: company.is_exclusive,
     }));
   }, [recommendedCompanies]);
 
@@ -87,37 +85,33 @@ export default function HomePage() {
           <AppBar onBackClick={router.back} logo="light" />
           <div css={heroContent}>
             <Text typo="title_L" color="white" css={heroTitle}>
-              Discover Authentic Korean Wellness
+              {t('home.heroTitle')}
             </Text>
           </div>
           <div css={searchBarWrapper}>
             <SearchBar
               onValueChange={handleValueChange}
               onSearch={handleSearch}
-              placeholder="Search spas, clinics, treatments..."
+              placeholder={t('home.searchPlaceholder')}
             />
           </div>
         </div>
       )}
 
       <div css={wrapper}>
-        {/* 최근 본 업체 섹션 (validate 기능 주석 처리로 인해 비활성화) */}
-        {/* {isValidUser && (
-          <>
-            {isRecentLoading ? (
-              <Loading title="최근 본 업체를 불러오고 있어요" />
-            ) : formattedRecentCompanies.length > 0 ? (
-              <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
-            ) : null}
-          </>
-        )} */}
+        {/* 최근 본 업체 섹션 */}
+        {isRecentLoading ? (
+          <Loading title="최근 본 업체를 불러오고 있어요" />
+        ) : formattedRecentCompanies.length > 0 ? (
+          <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
+        ) : null}
 
         <Text typo="title_M" color="text_primary" css={title}>
-          Recommended for You
+          {t('home.recommendedTitle')}
         </Text>
 
         {isRecommendedLoading ? (
-          <Loading title="추천 업체를 불러오고 있어요" />
+          <Loading title={t('home.loadingRecommended')} />
         ) : formattedRecommendedCompanies.length > 0 ? (
           <div css={cardsGrid}>
             {formattedRecommendedCompanies.map((company) => (
@@ -129,6 +123,7 @@ export default function HomePage() {
                 companyAddress={company.address}
                 badges={company.tags}
                 images={company.images}
+                isExclusive={company.is_exclusive}
                 fixedHeight={true}
                 onClick={() => handleCompanyClick(company.id)}
               />
@@ -136,7 +131,7 @@ export default function HomePage() {
           </div>
         ) : (
           <Text typo="body_M" color="text_secondary">
-            추천할 업체가 없습니다
+            {t('home.noRecommendedCompanies')}
           </Text>
         )}
       </div>

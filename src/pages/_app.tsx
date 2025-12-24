@@ -8,7 +8,6 @@ import { GlobalStyle } from '@/styles';
 import { QueryProvider } from '@/providers';
 import { routing, type Locale } from '@/i18n/routing';
 import '@/styles/normalize.css';
-import 'react-day-picker/dist/style.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
