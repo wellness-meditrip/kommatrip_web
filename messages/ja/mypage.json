@@ -1,0 +1,21 @@
+{
+  "title": "マイページ",
+  "points": {
+    "title": "ポイント",
+    "balance": "残高"
+  },
+  "reservations": {
+    "title": "予約履歴",
+    "upcoming": "今後の予約",
+    "past": "過去の予約"
+  },
+  "reviews": {
+    "title": "レビュー",
+    "myReviews": "マイレビュー"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "notifications": "通知"
+  }
+}
