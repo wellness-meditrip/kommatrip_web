@@ -36,6 +36,10 @@ export const infoWrapper = css`
   align-self: stretch;
 `;
 
+export const titleWrapper = css`
+  margin: 0 0 12px;
+`;
+
 export const operatingWrapper = css`
   display: flex;
   flex-direction: column;
@@ -132,4 +136,19 @@ export const hoursDetailRow = css`
 
 export const dayLabel = css`
   min-width: 40px;
+`;
+
+export const recognitionContent = css`
+  line-height: 1.3;
+  white-space: pre-wrap;
+`;
+
+export const recognitionHeader = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  cursor: pointer;
 `;

@@ -1,17 +1,25 @@
-import { AppBar } from '@/components/app-bar';
-import { Layout } from '@/components/layout';
-import CompanyDetail from '@/components/company/company-detail';
 import { useRouter } from 'next/router';
-import { CompanyInfo, CompanyReview, CompanyProgram } from '@/components/company-detail';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { CTAButton, Loading, LoginModal } from '@/components';
-import { Tab } from '@/components/tabs';
+import { css } from '@emotion/react';
+import { useSession } from 'next-auth/react';
+
+import {
+  AppBar,
+  Layout,
+  Tab,
+  CompanyInfo,
+  CompanyReview,
+  CompanyProgram,
+  CompanyNotice,
+  CTAButton,
+  Loading,
+  LoginModal,
+} from '@/components';
+import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
-import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
-import { useSession } from 'next-auth/react';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
@@ -33,6 +41,7 @@ export default function ClinicDetailPage() {
   const infoRef = useRef<HTMLDivElement>(null);
   const programRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
+  const noticeRef = useRef<HTMLDivElement>(null);
   const isScrollingToSection = useRef(false);
 
   const TABS = useMemo(
@@ -40,6 +49,7 @@ export default function ClinicDetailPage() {
       { id: 'info', label: 'Information', ref: infoRef },
       { id: 'program', label: 'Programs', ref: programRef },
       { id: 'review', label: 'Reviews', ref: reviewRef },
+      { id: 'notice', label: 'Notice', ref: noticeRef },
     ],
     []
   );
@@ -67,65 +77,63 @@ export default function ClinicDetailPage() {
   //   }
   // }, [isSuccess, isValidUser]);
 
-  // 스크롤 이벤트를 사용하여 현재 보이는 섹션 감지
+  // IntersectionObserver로 현재 섹션 감지
   useEffect(() => {
     if (!data?.company) return;
 
-    // main 엘리먼트 찾기 (실제 스크롤이 발생하는 곳)
     const mainElement = document.querySelector('main');
     if (!mainElement) {
       console.error('❌ main 엘리먼트를 찾을 수 없습니다');
       return;
     }
 
-    let ticking = false;
+    const sections = [
+      { id: 'info', ref: infoRef },
+      { id: 'program', ref: programRef },
+      { id: 'review', ref: reviewRef },
+      { id: 'notice', ref: noticeRef },
+    ];
 
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          if (isScrollingToSection.current) {
-            ticking = false;
-            return;
-          }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isScrollingToSection.current) return;
 
-          // main 엘리먼트의 스크롤 위치 사용
-          const scrollPosition = mainElement.scrollTop + 150;
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-          // 모든 섹션의 위치 가져오기
-          const programTop = programRef.current?.offsetTop || 0;
-          const reviewTop = reviewRef.current?.offsetTop || 0;
+        const currentId = visible?.target.getAttribute('data-section');
+        if (!currentId) return;
 
-          let currentTab = 'info';
-
-          if (scrollPosition >= reviewTop) {
-            currentTab = 'review';
-          } else if (scrollPosition >= programTop) {
-            currentTab = 'program';
-          } else {
-            currentTab = 'info';
-          }
-
-          setActiveTab((prev) => {
-            if (prev !== currentTab) {
-              router.replace({ query: { ...router.query, service: currentTab } }, undefined, {
+        setActiveTab((prev) => {
+          if (prev !== currentId) {
+            router.replace(
+              {
+                pathname: ROUTES.COMPANY_DETAIL(companyIdNumber),
+                query: { service: currentId },
+              },
+              undefined,
+              {
                 shallow: true,
-              });
-              return currentTab;
-            }
-            return prev;
-          });
-
-          ticking = false;
+              }
+            );
+            return currentId;
+          }
+          return prev;
         });
-        ticking = true;
+      },
+      {
+        root: mainElement,
+        threshold: [0.25, 0.5, 0.75],
       }
-    };
+    );
 
-    mainElement.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // 초기 실행
+    sections.forEach(({ ref }) => {
+      if (ref.current) observer.observe(ref.current);
+    });
 
-    return () => mainElement.removeEventListener('scroll', handleScroll);
-  }, [data, router, activeTab]);
+    return () => observer.disconnect();
+  }, [data, router, companyIdNumber]);
 
   const handleTabClick = useCallback(
     (tabId: string) => {
@@ -134,9 +142,16 @@ export default function ClinicDetailPage() {
       if (tab?.ref.current) {
         isScrollingToSection.current = true;
         setActiveTab(tabId);
-        router.replace({ query: { ...router.query, service: tabId } }, undefined, {
-          shallow: true,
-        });
+        router.replace(
+          {
+            pathname: ROUTES.COMPANY_DETAIL(companyIdNumber),
+            query: { service: tabId },
+          },
+          undefined,
+          {
+            shallow: true,
+          }
+        );
 
         // scrollIntoView를 사용하여 더 부드러운 스크롤
         tab.ref.current.scrollIntoView({
@@ -147,10 +162,10 @@ export default function ClinicDetailPage() {
         // 스크롤이 끝난 후 플래그 해제
         setTimeout(() => {
           isScrollingToSection.current = false;
-        }, 600);
+        }, 900);
       }
     },
-    [TABS, router]
+    [TABS, router, companyIdNumber]
   );
 
   const { data: session } = useSession();
@@ -236,17 +251,31 @@ export default function ClinicDetailPage() {
 
           <div ref={programRef} data-section="program" css={section}>
             {data?.company ? (
-              <CompanyProgram badges={data.company.tags || []} />
+              <CompanyProgram badges={data.company.tags || []} companyId={companyIdNumber} />
             ) : (
               <div>데이터를 불러오는 중...</div>
             )}
           </div>
 
           <div ref={reviewRef} data-section="review" css={section}>
-            <CompanyReview />
+            <CompanyReview companyId={companyIdNumber} />
           </div>
+
+          <div ref={noticeRef} data-section="notice" css={section}>
+            {data?.company && (
+              <CompanyNotice
+                bookingInformation={data.company.booking_information}
+                refundRegulation={data.company.refund_regulation}
+              />
+            )}
+          </div>
+
+          {/* <div css={youWillAlsoLikeWrapper}>
+            <CompanyList title="You will also like" companies={[]} />
+          </div> */}
         </div>
       </section>
+
       <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
       <LoginModal
         isOpen={showLoginModal}
@@ -261,7 +290,8 @@ const wrapper = css`
   display: flex;
   flex-direction: column;
 
-  background: ${theme.colors.white};
+  background: ${theme.colors.bg_surface1};
+  padding-bottom: 120px;
 
   h1 {
     margin: 0 18px;
@@ -297,4 +327,14 @@ const content = css`
 const section = css`
   width: 100%;
   scroll-margin-top: 50px; /* 스크롤 시 탭 헤더 공간 확보 */
+`;
+
+export const youWillAlsoLikeWrapper = css`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 24px 24px 80px;
+  align-self: stretch;
 `;

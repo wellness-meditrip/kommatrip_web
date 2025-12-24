@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
-import { Rating, Text } from '@/components';
-import { ReviewFold, ReviewUnfold } from '@/icons';
+import { useRouter } from 'next/router';
+import { Text } from '@/components';
+import { DefaultProfile, ReviewFold, ReviewUnfold, Clock, Wallet, ChevronRight } from '@/icons';
+import { ROUTES } from '@/constants';
 import {
   clampText,
   reviewerInfo,
@@ -12,6 +14,13 @@ import {
   wrapper,
   top,
   reviewContent,
+  programCard,
+  programImage,
+  programInfo,
+  programTitle,
+  programMetaRow,
+  programMeta,
+  programArrow,
 } from './index.styles';
 import dayjs from 'dayjs';
 
@@ -20,31 +29,59 @@ interface Props {
   reviewerName: string;
   reviewerImageUrl: string | null;
   keywordReviewList: string[];
-  starRating: 1 | 2 | 3 | 4 | 5;
   content: string | null;
   imageUrlList: string[] | null;
   createdAt: string;
+  programId?: number | null;
+  companyId?: number | null;
+  programName?: string | null;
+  programPrice?: number | null;
+  programDurationMinutes?: number | null;
+  programImageUrl?: string | null;
+  onCardClick?: () => void;
 }
 
 export function Card({
   keywordReviewList,
   reviewerName,
   reviewerImageUrl,
-  starRating,
   content,
   imageUrlList,
   createdAt,
+  programId,
+  companyId,
+  programName,
+  programPrice,
+  programDurationMinutes,
+  programImageUrl,
+  onCardClick,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const router = useRouter();
+
+  const handleProgramClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    if (!companyId) return;
+    const pathname = ROUTES.COMPANY_PROGRAM(companyId);
+    const query = programId ? { programId } : undefined;
+    router.push({ pathname, query });
+  };
+
+  const formattedPrice =
+    programPrice !== null && programPrice !== undefined
+      ? `${new Intl.NumberFormat('en-US').format(programPrice)} KRW`
+      : '';
+  const formattedDuration = programDurationMinutes ? `${programDurationMinutes} mins` : '';
 
   return (
-    <div css={wrapper}>
+    <div css={wrapper} onClick={onCardClick}>
       <div css={top}>
         <div css={reviewerInfo}>
           {reviewerImageUrl ? (
             <Image src={reviewerImageUrl} alt="리뷰 작성자 이미지" width={50} height={50} />
           ) : (
-            <Image src="/default.png" alt="기본 이미지" width={50} height={50} />
+            <DefaultProfile width={50} height={50} />
+            // <Image src="/default.png" alt="기본 이미지" width={50} height={50} />
           )}
         </div>
 
@@ -53,11 +90,42 @@ export function Card({
             {reviewerName}
           </Text>
           <Text typo="body_S" color="text_secondary">
-            {`우주원 원장님 진료 | ${dayjs(createdAt).format('YY.MM.DD')} 방문`}
+            {`First-time visitor | ${dayjs(createdAt).format('YY.MM.DD')} 방문`}
           </Text>
-          <Rating rate={starRating} />
         </div>
       </div>
+
+      {programName && (
+        <div css={programCard} onClick={handleProgramClick}>
+          <img src={programImageUrl || '/default.png'} alt="program" css={programImage} />
+          <div css={programInfo}>
+            <Text typo="title_S" color="text_primary" css={programTitle}>
+              {programName}
+            </Text>
+            <div css={programMetaRow}>
+              {formattedDuration && (
+                <div css={programMeta}>
+                  <Clock width={14} height={14} />
+                  <Text typo="button_S" color="text_secondary">
+                    {formattedDuration}
+                  </Text>
+                </div>
+              )}
+              {formattedPrice && (
+                <div css={programMeta}>
+                  <Wallet width={14} height={14} />
+                  <Text typo="button_S" color="text_secondary">
+                    {formattedPrice}
+                  </Text>
+                </div>
+              )}
+            </div>
+          </div>
+          <div css={programArrow}>
+            <ChevronRight width={16} height={16} />
+          </div>
+        </div>
+      )}
 
       {imageUrlList && !!imageUrlList?.length && (
         <div css={imageWrapper}>
@@ -78,7 +146,12 @@ export function Card({
             {content}
           </Text>
 
-          <button onClick={() => setIsExpanded(!isExpanded)}>
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }}
+          >
             {isExpanded ? <ReviewFold width="6px" /> : <ReviewUnfold width="6px" />}
           </button>
         </>

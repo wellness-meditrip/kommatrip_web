@@ -10,7 +10,7 @@ export const wrapper = css`
 
   height: 100%;
 
-  background: ${theme.colors.bg_default};
+  background: ${theme.colors.bg_surface1};
 
   h1 {
     margin: 0 20px;
@@ -110,24 +110,10 @@ export const content = css`
   width: 100%;
   height: 100%;
   padding: 0 20px 20px;
-  border-top: 1px solid ${theme.colors.gray200};
+
+  /* border-top: 1px solid ${theme.colors.gray200}; */
 `;
 
-export const count = css`
-  padding: 12px 16px;
-  border-radius: 8px;
-
-  background: ${theme.colors.white};
-`;
-export const youWillAlsoLikeWrapper = css`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-
-  padding: 24px 24px 80px;
-  align-self: stretch;
-`;
 export const bottom = css`
   position: absolute;
   bottom: 0;
