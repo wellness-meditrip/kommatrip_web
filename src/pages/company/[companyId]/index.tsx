@@ -4,13 +4,14 @@ import CompanyDetail from '@/components/company/company-detail';
 import { useRouter } from 'next/router';
 import { CompanyInfo, CompanyReview, CompanyProgram } from '@/components/company-detail';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { CTAButton, Loading } from '@/components';
+import { CTAButton, Loading, LoginModal } from '@/components';
 import { Tab } from '@/components/tabs';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
+import { useSession } from 'next-auth/react';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
@@ -152,7 +153,16 @@ export default function ClinicDetailPage() {
     [TABS, router]
   );
 
+  const { data: session } = useSession();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
   const handleReserveClick = () => {
+    // 비회원인 경우 로그인 모달 표시
+    if (!session?.user) {
+      setShowLoginModal(true);
+      return;
+    }
+    // 회원인 경우 예약 페이지로 이동
     router.push(ROUTES.RESERVATIONS);
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
@@ -238,6 +248,11 @@ export default function ClinicDetailPage() {
         </div>
       </section>
       <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onCancel={() => setShowLoginModal(false)}
+      />
     </Layout>
   );
 }

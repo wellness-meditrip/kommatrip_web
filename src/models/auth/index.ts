@@ -1,128 +1,153 @@
-export interface PostKakaoRequestBody {
-  kakaoAccessToken: string;
-}
-
-export interface PostKakaoResponse {
-  isOnboarding: boolean;
-  email: string | null;
-  grantType: 'Bearer' | null;
-  accessToken: string | null;
-}
-
-export interface PostJoinWithoutPetRequestBody {
+// 회원가입
+export interface PostSignupRequestBody {
   email: string;
-  username: string;
-  phoneNumber: string;
-  nickname: string;
-  address: string;
+  verification_token: string;
+  password: string;
+  country: string;
+  marketing_consent: boolean;
 }
 
-export interface PostJoinWithoutPetResponse {
-  accessToken: string;
+export interface PostSignupResponse {
+  accessToken?: string;
+  message?: string;
 }
 
-export interface PostAvailableNicknameRequestBody {
-  nickname: string;
-}
-
-export interface PostAvailableNicknameResponse {
-  isAvailable: boolean;
-}
-
-export interface GetBreedListResponse {
-  breedList: Breed[];
-}
-
-export interface Breed {
-  breedName: string;
-  breed: string;
-}
-
-export interface PostJoinWithPetRequestBody extends PostJoinWithoutPetRequestBody {
-  petName: string;
-  petBirth: number;
-  petGender: string;
-  isNeutered: boolean;
-  breed: string;
-  petWeight: string;
-}
-
-export interface PostJoinWithPetResponse {
-  accessToken: string;
-}
-
-export interface GetUserInfoResponse {
-  image: string | null;
-  nickname: string;
-  username: string;
-  phoneNumber: string;
+// 이메일 인증
+export interface PostVerifyEmailCodeRequest {
   email: string;
 }
-
-export interface PatchUserInfoResponse {
-  requestResult: string;
+// 이메일 인증 코드 전송 응답
+export interface PostVerifyEmailCodeResponse {
+  message?: string;
 }
 
-export interface PatchUserInfoRequestBody {
-  image: string;
-  nickname: string;
+// 이메일 인증 코드 검증 요청
+export interface PostConfirmEmailRequest {
+  email: string;
+  code: string;
+}
+export interface PostConfirmEmailResponse {
+  message?: string;
+  session_token: string;
+  email?: string;
 }
 
-export interface SignificantTag {
-  tagName: string;
-  tag: string;
+// 로그인
+export interface PostLoginRequestBody {
+  email: string;
+  password: string;
 }
 
-export type PostUserPetResponse = string;
+export interface PostLoginResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
 
-export interface PatchUserPetInfoRequestBody {
+export interface User {
   id: number;
-  image: string;
-  name: string;
-  birth: number;
-  gender: 'MALE' | 'FEMALE';
-  breed: string;
-  isNeutered: boolean;
-  weight: 'SMALL' | 'MEDIUM' | 'LARGE';
-  groomingExperience: boolean;
-  isBite: boolean;
-  dislikeParts: string[];
-  significantTags: string[];
-  significant: string;
+  email: string;
+  username: string;
+  country: string;
+  role: string;
+  is_email_verified: boolean;
+  marketing_consent: boolean;
+  marketing_consent_at: string | null;
+  last_login_at: string;
+  InterestSetting: boolean;
 }
 
-export type PatchUserPetInfoResponse = boolean;
-
-export interface DeleteUserPetResponse {
-  requestResult: string;
+export interface Token {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'Bearer';
 }
 
-export interface DeleteUserPetRequestData {
-  petId: number;
-}
-export interface GetUserValidateResponse {
-  isValidateMember: boolean;
+// 비밀번호 재설정 요청
+export interface PostResetPasswordRequestResponse {
+  message?: string;
 }
 
-export interface GetUserMypageResponse {
+// 비밀번호 재설정 코드 검증
+export interface PostResetPasswordConfirmRequest {
+  email: string;
+  code: string;
+}
+export interface PostResetPasswordConfirmResponse {
+  message?: string;
+  session_token: string;
+  email?: string;
+}
+
+// 비밀번호 재설정 완료
+export interface PostResetPasswordCompleteRequest {
+  email: string;
+  session_token: string;
+  new_password: string;
+  confirm_password: string;
+}
+export interface PostResetPasswordCompleteResponse {
+  message?: string;
+}
+
+// 소셜 로그인(google)
+export interface PostUserAuthGoogleRequest {
+  idToken: string;
+  country: string;
+  marketing_consent: boolean;
+}
+
+export interface PostUserAuthGoogleResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
+type LoginMethod = 'email' | 'google' | 'apple';
+export interface User {
   id: number;
-  image: string;
-  nickname: string;
-  reviewCount: number;
-  estimateCount: number;
-  petInfos: PetInfo[];
-}
-export interface PetInfo {
-  petId: number;
-  petImage: string;
-  petName: string;
-}
-
-export interface GetUserWithdrawInfoResponse {
-  waitingForServiceCount: number;
+  email: string;
+  username: string;
+  country: string;
+  role: string;
+  login_method: LoginMethod;
+  company_code: string | null;
+  is_email_verified: boolean;
+  marketing_consent: boolean;
+  marketing_consent_at: string | null;
+  last_login_at: string;
+  InterestSetting: boolean;
 }
 
-export interface DeleteUserInfoResponse {
-  accountId: number;
-  withdrawDate: string;
+export interface Token {
+  access_token: string;
+  refresh_token: string;
+  token_type: 'Bearer';
+}
+
+// 토큰 재발급
+export interface PostTokenReissueResponse {
+  message: string;
+  user: User;
+  tokens: Token;
+}
+
+// 관심사 등록
+export type Gender = 'male' | 'female' | 'no-select';
+export type AgeGroup = 'Under18' | '18+' | '30+' | '40+' | '50+' | 'Over60';
+
+export interface PostInterestRequestBody {
+  Gender: Gender;
+  AgeGroup: AgeGroup;
+  TopicInterest: string[];
+}
+
+export interface PostInterestResponse {
+  message: string;
+  data: {
+    Gender: Gender;
+    AgeGroup: AgeGroup;
+    TopicInterest: string[];
+    InterestSetting: boolean;
+  };
 }

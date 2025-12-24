@@ -1,9 +1,10 @@
 export const ROUTES = {
   LOGIN: '/login',
+  SIGNUP: '/signup',
+  TERMS_OF_USE: '/login/terms',
   ONBOARDING: '/onboarding',
   ONBOARDING_USER_INFO: '/onboarding?step=user-info',
   ONBOARDING_SEARCH_ADDRESS: '/onboarding?step=search-address',
-  TERMS_OF_USE: '/login/terms',
 
   HOME: '/',
   SEARCH: '/search',
@@ -37,4 +38,7 @@ export const ROUTES = {
   RESERVATIONS: '/reservations',
   RESERVATIONS_COMPLETE: '/reservations/complete',
   BOOKINGS: '/bookings',
+
+  // INTEREST
+  INTEREST: '/interest',
 } as const;

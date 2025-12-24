@@ -68,6 +68,48 @@ export const logoutWrapper = css`
   transition: color 0.2s ease;
 
   cursor: pointer;
+
+  &:hover {
+    > div > div:first-of-type {
+      opacity: 0;
+    }
+
+    > div > div:last-of-type {
+      opacity: 1;
+    }
+  }
+`;
+
+export const iconWrapper = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  width: 20px;
+  height: 20px;
+`;
+
+const baseIcon = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+
+  width: 20px;
+  height: 20px;
+
+  transition: opacity 0.2s ease;
+`;
+
+export const loginIcon = css`
+  ${baseIcon};
+  opacity: 1;
+`;
+
+export const loginFilledIcon = css`
+  ${baseIcon};
+  opacity: 0;
 `;
 
 export const languageWrapper = css`
@@ -77,6 +119,16 @@ export const languageWrapper = css`
   position: relative;
 
   cursor: pointer;
+
+  &:hover {
+    > div > div > div:first-of-type {
+      opacity: 0;
+    }
+
+    > div > div > div:last-of-type {
+      opacity: 1;
+    }
+  }
 
   ul {
     display: none;
@@ -123,18 +175,12 @@ export const languageIcon = css`
   font-size: 16px;
 `;
 
-export const menuIcon = css`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+export const globeIcon = css`
+  ${baseIcon};
+  opacity: 1;
+`;
 
-  span {
-    width: 18px;
-    height: 2px;
-    border-radius: 1px;
-
-    background-color: ${theme.colors.white};
-
-    transition: all 0.2s ease;
-  }
+export const globeFilledIcon = css`
+  ${baseIcon};
+  opacity: 0;
 `;

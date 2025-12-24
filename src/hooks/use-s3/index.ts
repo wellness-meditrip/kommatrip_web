@@ -5,10 +5,10 @@ interface Props {
   targetFolderPath: 'user/profile-images' | 'user/review-images' | 'user/reservation-images';
 }
 
-const region = process.env.NEXT_PUBLIC_AWS_REGION;
-const accessKeyId = process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID;
-const secretAccessKey = process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY;
-const bucket = process.env.NEXT_PUBLIC_AWS_BUCKET;
+const region = process.env.AWS_REGION;
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const bucket = process.env.AWS_BUCKET;
 
 if (!region || !accessKeyId || !secretAccessKey || !bucket) {
   console.error('AWS S3 환경변수가 설정되지 않았습니다:', {

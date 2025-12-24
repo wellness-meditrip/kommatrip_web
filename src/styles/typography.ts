@@ -1,6 +1,10 @@
 import { css } from '@emotion/react';
 
 const typography = {
+  title_XL: css`
+    font-size: 32px;
+    font-weight: 600;
+  `,
   title_L: css`
     font-size: 20px;
     font-weight: 600;

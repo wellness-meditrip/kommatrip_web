@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { AppBar, Layout, Text, CTAButton } from '@/components';
+import { AppBar, Layout, Text, CTAButton, LoginModal } from '@/components';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Chevron } from '@/icons';
+import { useRequireAuth } from '@/hooks';
 
 // Mock data
 const mockClinicData = {
@@ -48,6 +49,8 @@ const commonConcerns = [
 
 export default function ReservationPage() {
   const router = useRouter();
+  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
+    useRequireAuth(true);
 
   // Toggle states for sections
   const [isProgramsOpen, setIsProgramsOpen] = useState(false);
@@ -74,6 +77,42 @@ export default function ReservationPage() {
 
   // Time selection visibility toggle for each date
   const [timeSelectionOpen, setTimeSelectionOpen] = useState<{ [key: string]: boolean }>({});
+  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8)); // September 2025
+
+  // 로딩 중이면 대기
+  if (isLoading) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar
+          onBackClick={router.back}
+          leftButton={true}
+          buttonType="dark"
+          title="Reservation"
+          backgroundColor="bg_surface1"
+        />
+      </Layout>
+    );
+  }
+
+  // 비회원인 경우 페이지 내용을 숨기고 모달만 표시
+  if (!isAuthenticated) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar
+          onBackClick={router.back}
+          leftButton={true}
+          buttonType="dark"
+          title="Reservation"
+          backgroundColor="bg_surface1"
+        />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={handleDismissModal}
+        />
+      </Layout>
+    );
+  }
 
   const availableTimes = [
     '10:00',
@@ -89,7 +128,6 @@ export default function ReservationPage() {
   ];
 
   // Calendar logic
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8)); // September 2025
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -525,6 +563,7 @@ export default function ReservationPage() {
           <CTAButton onClick={handleSubmit}>Book Now</CTAButton>
         </div>
       </div>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </Layout>
   );
 }

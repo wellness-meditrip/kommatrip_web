@@ -4,3 +4,5 @@ export * from './use-s3';
 export * from './use-media-query';
 export * from './review';
 export * from './reservation';
+export * from './auth/use-require-auth';
+export * from './auth/use-auth-sync';

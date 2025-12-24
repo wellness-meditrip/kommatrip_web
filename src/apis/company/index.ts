@@ -1,12 +1,8 @@
-import { guestHospitalApi, api } from '@/apis';
+import { api, guestApi } from '@/apis';
 import type { AxiosResponse } from 'axios';
 import {
   GetRecentCompanyResponse,
   GetRecommendedCompanyResponse,
-  GetClinicRequestParams,
-  GetClinicResponse,
-  Hospital,
-  GetClinicClinicIdRequestParams,
   GetCompanySearchResponseParams,
   SearchParams,
   GetCompanyIdRequestParams,
@@ -29,16 +25,8 @@ export const getRecommendedCompany = async (): Promise<{
   return response.data;
 };
 
-export const getClinic = async (params: GetClinicRequestParams) => {
-  return await guestHospitalApi.get<GetClinicResponse>('/hospitals/', { params });
-};
-
-export const getClinicClinicId = async ({ hospitalId }: GetClinicClinicIdRequestParams) => {
-  return await guestHospitalApi.get<Hospital>(`/hospitals/${hospitalId}`);
-};
-
 export const getCompanySearch = async (params: SearchParams) => {
-  return await api.get<GetCompanySearchResponseParams>('/api/companies/search', {
+  return await guestApi.get<GetCompanySearchResponseParams>('/api/companies/search', {
     params,
   });
 };
@@ -46,14 +34,14 @@ export const getCompanySearch = async (params: SearchParams) => {
 export const getCompanyDetail = async ({
   companyId,
 }: GetCompanyIdRequestParams): Promise<{ company: CompanyDetail }> => {
-  const response: AxiosResponse<{ company: CompanyDetail }> = await api.get(
+  const response: AxiosResponse<{ company: CompanyDetail }> = await guestApi.get(
     `/api/companies/${companyId}`
   );
   return response.data;
 };
 
 export const getCompanyAll = async () => {
-  return await api.get<GetCompanyAllResponse>('/api/companies/all', {
+  return await guestApi.get<GetCompanyAllResponse>('/api/companies/all', {
     params: { status: 'active' },
   });
 };

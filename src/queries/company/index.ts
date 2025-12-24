@@ -1,7 +1,6 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 import {
-  getClinic,
   getCompanySearch,
   getCompanyDetail,
   getCompanyAll,
@@ -9,7 +8,6 @@ import {
   getRecommendedCompany,
 } from '@/apis';
 import {
-  GetClinicRequestParams,
   SearchParams,
   GetCompanySearchResponseParams,
   GetCompanyIdRequestParams,
@@ -18,20 +16,6 @@ import {
   GetRecommendedCompanyResponse,
   CompanyDetail,
 } from '@/models';
-import { PAGE_SIZE } from '@/constants/clinic';
-
-export const useGetClinicInfiniteQuery = (params: GetClinicRequestParams) => {
-  return useInfiniteQuery({
-    queryKey: [...QUERY_KEYS.GET_CLINIC, params.keyword, 'all'],
-    initialPageParam: 1,
-    queryFn: ({ pageParam = 1 }) => {
-      return getClinic({ ...params, page: pageParam, size: PAGE_SIZE });
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.hospitals.length === PAGE_SIZE ? allPages.length + 1 : undefined;
-    },
-  });
-};
 
 export const useGetCompanyDetailQuery = (params: GetCompanyIdRequestParams) => {
   return useQuery<{ company: CompanyDetail }>({
