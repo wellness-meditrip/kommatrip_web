@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { Text, RoundButton } from '@/components';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -27,6 +28,8 @@ interface PasswordResetFormData {
 }
 
 export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps) {
+  const t = useTranslations('auth.passwordReset');
+  const tValidation = useTranslations('validation');
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -68,14 +71,14 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
   const handleSendEmail = () => {
     if (!email) {
-      setError('email', { message: '이메일을 입력해 주세요' });
-      showToast({ title: 'Please enter your email address', icon: 'exclaim' });
+      setError('email', { message: tValidation('email.required') });
+      showToast({ title: t('pleaseEnterEmail'), icon: 'exclaim' });
       return;
     }
 
     if (errors.email) {
       showToast({
-        title: errors.email.message || 'Please enter a valid email address',
+        title: errors.email.message || tValidation('email.invalid'),
         icon: 'exclaim',
       });
       return;
@@ -83,10 +86,10 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
     resetPasswordRequestMutation.mutate(email, {
       onSuccess: () => {
-        showToast({ title: 'Verification code has been sent to your email', icon: 'check' });
+        showToast({ title: t('verificationCodeSent'), icon: 'check' });
       },
       onError: (error: unknown) => {
-        const errorMessage = getErrorMessage(error, 'Failed to send verification code');
+        const errorMessage = getErrorMessage(error, t('failedToSendCode'));
         showToast({ title: errorMessage, icon: 'exclaim' });
       },
     });
@@ -96,13 +99,13 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
     const verificationCode = watch('verificationCode');
 
     if (!verificationCode) {
-      setError('verificationCode', { message: '인증 코드를 입력해 주세요' });
-      showToast({ title: 'Please enter the verification code', icon: 'exclaim' });
+      setError('verificationCode', { message: tValidation('verificationCode.required') });
+      showToast({ title: t('pleaseEnterCode'), icon: 'exclaim' });
       return;
     }
 
     if (!email) {
-      showToast({ title: 'Please enter your email address first', icon: 'exclaim' });
+      showToast({ title: t('pleaseEnterEmailFirst'), icon: 'exclaim' });
       return;
     }
 
@@ -115,12 +118,12 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
         onSuccess: (response) => {
           const token = response?.session_token;
           if (!token) {
-            showToast({ title: 'Failed to get verification token', icon: 'exclaim' });
+            showToast({ title: t('failedToGetToken'), icon: 'exclaim' });
             return;
           }
           setVerificationToken(token);
           setCodeVerified(true);
-          showToast({ title: 'Email verification completed', icon: 'check' });
+          showToast({ title: t('emailVerificationCompleted'), icon: 'check' });
         },
         onError: (error: unknown) => {
           const axiosError = error as AxiosError<{
@@ -129,8 +132,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           }>;
           const status = axiosError?.response?.status;
           const errorData = axiosError?.response?.data;
-          const errorMessage =
-            errorData?.error?.message || errorData?.message || 'Invalid verification code';
+          const errorMessage = errorData?.error?.message || errorData?.message || t('invalidCode');
 
           if (status === 400) {
             setCodeVerified(false);
@@ -140,7 +142,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
               errorMessage.includes('만료') ||
               errorMessage.includes('expired') ||
               errorMessage.includes('세션')
-                ? '이메일 인증 세션이 만료되었습니다. 다시 인증 코드를 받아주세요.'
+                ? t('sessionExpired')
                 : errorMessage;
             showToast({ title: sessionExpiredMessage, icon: 'exclaim' });
           } else {
@@ -153,7 +155,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
   const onSubmit = (data: PasswordResetFormData) => {
     if (!verificationToken) {
-      showToast({ title: 'Please verify your email first', icon: 'exclaim' });
+      showToast({ title: t('pleaseVerifyEmail'), icon: 'exclaim' });
       return;
     }
 
@@ -167,16 +169,13 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
       {
         onSuccess: (response) => {
           showToast({
-            title: response?.message || 'Password has been reset successfully',
+            title: response?.message || t('passwordResetSuccess'),
             icon: 'check',
           });
           handleClose();
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(
-            error,
-            'Failed to reset password. Please try again.'
-          );
+          const errorMessage = getErrorMessage(error, t('failedToResetPassword'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -225,7 +224,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
       <div css={modal} role="dialog" aria-modal="true" aria-labelledby="password-reset-title">
         <div css={header}>
           <Text typo="title_L" color="text_primary" id="password-reset-title">
-            Password Change
+            {t('title')}
           </Text>
           <button
             type="button"
@@ -250,9 +249,9 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           <div css={inputGroup}>
             <div css={inputWithButton}>
               <Input
-                label="Email"
+                label={t('email')}
                 type="email"
-                placeholder="example@email.com"
+                placeholder={t('emailPlaceholder')}
                 {...register('email', { ...validation.email })}
                 errorMessage={errors.email?.message}
               />
@@ -264,7 +263,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
                 css={actionButton}
               >
                 <Text typo="button_M" color="white">
-                  Send
+                  {t('send')}
                 </Text>
               </RoundButton>
             </div>
@@ -274,11 +273,11 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           <div css={inputGroup}>
             <div css={inputWithButton}>
               <Input
-                label="Email Verification Code"
+                label={t('emailVerificationCode')}
                 type="text"
-                placeholder="Enter the code..."
+                placeholder={t('codePlaceholder')}
                 {...register('verificationCode', {
-                  required: '인증 코드를 입력해 주세요',
+                  required: tValidation('verificationCode.required'),
                 })}
                 errorMessage={errors.verificationCode?.message}
               />
@@ -290,13 +289,13 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
                 css={actionButton}
               >
                 <Text typo="button_M" color="white">
-                  Confirm
+                  {t('confirm')}
                 </Text>
               </RoundButton>
             </div>
             {codeVerified && (
               <Text typo="body_S" color="primary50" css={statusMessage}>
-                * Verified!
+                * {t('verified')}
               </Text>
             )}
           </div>
@@ -304,9 +303,9 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           {/* 비밀번호 */}
           <div css={inputGroup}>
             <Input
-              label="Password"
+              label={t('password')}
               type={showPassword ? 'text' : 'password'}
-              placeholder="새 비밀번호를 입력해주세요."
+              placeholder={t('passwordPlaceholder')}
               {...register('password', { ...validation.password })}
               errorMessage={errors.password?.message}
               suffix={
@@ -338,14 +337,14 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           {/* 비밀번호 확인 */}
           <div css={inputGroup}>
             <Input
-              label="Password Confirm"
+              label={t('passwordConfirm')}
               type={showConfirmPassword ? 'text' : 'password'}
-              placeholder="비밀번호를 다시 입력해주세요."
+              placeholder={t('confirmPasswordPlaceholder')}
               {...register('confirmPassword', {
-                required: '비밀번호 확인을 입력해 주세요',
+                required: tValidation('confirmPassword.required'),
                 validate: (value) => {
-                  if (!value) return '비밀번호 확인을 입력해 주세요';
-                  if (value !== password) return '비밀번호가 일치하지 않아요';
+                  if (!value) return tValidation('confirmPassword.required');
+                  if (value !== password) return tValidation('confirmPassword.mismatch');
                   return true;
                 },
               })}
@@ -385,7 +384,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
             css={submitButton}
           >
             <Text typo="button_L" color="white">
-              {isLoading ? 'Processing...' : 'Completed'}
+              {isLoading ? t('processing') : t('completed')}
             </Text>
           </RoundButton>
         </form>

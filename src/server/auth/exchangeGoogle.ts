@@ -86,9 +86,28 @@ export async function exchangeGoogle(
     });
 
     return result; // ✅ [MODIFIED]
-  } catch (error) {
-    // ✅ [MODIFIED] 모든 에러를 상위로 전달 (NextAuth가 처리)
-    console.error('[exchangeGoogle] error', error);
-    throw error;
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: {
+        status?: number;
+        statusText?: string;
+        data?: unknown;
+        headers?: unknown;
+      };
+      message?: string;
+    };
+    // ✅ [MODIFIED] 에러 상세 정보 로깅
+    if (axiosError?.response) {
+      console.error('[exchangeGoogle] error response', {
+        status: axiosError.response.status,
+        statusText: axiosError.response.statusText,
+        data: axiosError.response.data,
+        headers: axiosError.response.headers,
+      });
+    } else if (axiosError?.message) {
+      console.error('[exchangeGoogle] error message', axiosError.message);
+    }
+    console.error('[exchangeGoogle] full error', axiosError);
+    throw axiosError;
   }
 }

@@ -1,7 +1,13 @@
-import { ProgramCompanyParams, GetProgramCompanyResponseParams } from '@/models/program';
+import {
+  ProgramCompanyParams,
+  GetProgramCompanyResponseParams,
+  ProgramCompanyListParams,
+  ProgramCompanyListResponse,
+  GetProgramDetailResponse,
+} from '@/models/program';
 import { QUERY_KEYS } from '../query-keys';
 import { useQuery } from '@tanstack/react-query';
-import { getProgramCompany } from '@/apis';
+import { getProgramCompany, getProgramCompanyList, getProgramDetail } from '@/apis';
 
 export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
   return useQuery<GetProgramCompanyResponseParams>({
@@ -13,5 +19,27 @@ export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
       params.limit,
     ],
     queryFn: () => getProgramCompany(params),
+  });
+};
+
+export const useGetProgramCompanyListQuery = (params: ProgramCompanyListParams) => {
+  return useQuery<ProgramCompanyListResponse>({
+    queryKey: [
+      ...QUERY_KEYS.GET_PROGRAM_COMPANY,
+      'list',
+      params.company_id,
+      params.skip,
+      params.limit,
+    ],
+    queryFn: () => getProgramCompanyList(params),
+    enabled: !!params.company_id,
+  });
+};
+
+export const useGetProgramDetailQuery = (programId: number) => {
+  return useQuery<GetProgramDetailResponse>({
+    queryKey: [...QUERY_KEYS.GET_PROGRAM_DETAIL, programId],
+    queryFn: () => getProgramDetail(programId),
+    enabled: !!programId,
   });
 };

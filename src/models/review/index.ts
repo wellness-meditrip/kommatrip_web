@@ -81,3 +81,84 @@ export interface PutReviewResponse {
   message: string;
   data: string;
 }
+
+// 업체 리뷰 조회 파라미터
+export interface GetCompanyReviewsParams {
+  companyId: number; // 필수, path parameter
+  skip?: number;
+  limit?: number;
+  with_photos?: boolean;
+  my_country_only?: boolean;
+  country?: string;
+  tag?: string;
+}
+
+// 가리뷰 조회 파라미터
+export interface GetGuestCompanyReviewsParams {
+  companyId: number; // 필수, path parameter
+  skip?: number;
+  limit?: number;
+  with_photos?: boolean;
+  my_country_only?: boolean;
+  country?: string;
+  tags?: string;
+}
+
+// 업체 리뷰 조회 응답
+export interface GetCompanyReviewsResponse {
+  reviews: CompanyReviewItem[];
+  total: number;
+  skip: number;
+  limit: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
+
+// 업체 리뷰 아이템
+export interface CompanyReviewItem {
+  review_id: number;
+  company_id: number;
+  user_id: number;
+  doctor_id?: number;
+  doctor_name?: string;
+  title?: string;
+  content?: string;
+  rating: number;
+  is_verified: boolean;
+  created_at: string;
+  updated_at?: string;
+  keywords?: keyword[];
+  images?: string[];
+  keyword_count?: number;
+  image_count?: number;
+}
+
+// 가리뷰 조회 응답
+export interface GetGuestCompanyReviewsResponse {
+  total: number;
+  reviews: GuestCompanyReviewItem[];
+}
+
+// 가리뷰 아이템
+export interface GuestCompanyReviewItem {
+  id: number;
+  review_code: string;
+  program_id: number;
+  company_id: number;
+  company_name: string;
+  company_primary_image_url: string;
+  customer_country: string;
+  content: string;
+  tags: string[];
+  created_at: string;
+  primary_image_url: string;
+  image_urls: string[] | null;
+  reviewer_username: string;
+  reviewer_profile_image_url: string | null;
+  visit_date: string;
+  program_name: string;
+  program_price: number;
+  duration_minutes: number;
+  is_first_visit: boolean | null;
+  is_guest: boolean;
+}

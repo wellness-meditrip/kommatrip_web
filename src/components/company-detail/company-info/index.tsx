@@ -13,6 +13,8 @@ import {
   hoursDetailWrapper,
   hoursDetailRow,
   dayLabel,
+  recognitionContent,
+  recognitionHeader,
 } from './index.styles';
 import { Text } from '@/components/text';
 import {
@@ -64,6 +66,9 @@ interface CompanyInfoProps {
 }
 export function CompanyInfo({ data }: CompanyInfoProps) {
   const [isHoursOpen, setIsHoursOpen] = useState(false);
+  const [isRecognitionOpen, setIsRecognitionOpen] = useState(false);
+  const [isGettingHereOpen, setIsGettingHereOpen] = useState(false);
+  const [isHighlightsOpen, setIsHighlightsOpen] = useState(false);
 
   if (!data) {
     return <div>데이터를 불러오는 중...</div>;
@@ -124,6 +129,10 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   // const closedText = closedDays.length > 0 ? `매주 ${closedDays.join('·')} 휴무` : '영업중';
   // const { data, isError } = useUserReservationGroomingListQuery();
 
+  const recognitionText = data.badge?.replace(/\\n/g, '\n').trim() ?? '';
+  const gettingHereText = data.getting_here?.replace(/\\n/g, '\n').trim() ?? '';
+  const highlightsText = data.highlights?.replace(/\\n/g, '\n').trim() ?? '';
+
   // if (isError) {
   //   open({
   //     title: '로그인 후 이용해 주세요',
@@ -136,6 +145,57 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
 
   return (
     <div css={container}>
+      <div css={wrapper}>
+        <Text typo="title_M" color="text_primary">
+          Editor&apos;s Comment
+        </Text>
+
+        <div css={infoWrapper}>
+          <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
+            <Text typo="title_S" color="text_primary">
+              Official Recognition
+            </Text>
+            <div css={hoursArrow(isRecognitionOpen)}>
+              <ArrowDown width={30} height={30} />
+            </div>
+          </div>
+          {isRecognitionOpen && (
+            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+              {recognitionText || '정보 준비 중입니다.'}
+            </Text>
+          )}
+        </div>
+        <div css={infoWrapper}>
+          <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
+            <Text typo="title_S" color="text_primary">
+              Getting Here
+            </Text>
+            <div css={hoursArrow(isGettingHereOpen)}>
+              <ArrowDown width={30} height={30} />
+            </div>
+          </div>
+          {isGettingHereOpen && (
+            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+              {gettingHereText || '정보 준비 중입니다.'}
+            </Text>
+          )}
+        </div>
+        <div css={infoWrapper}>
+          <div css={recognitionHeader} onClick={() => setIsHighlightsOpen((prev) => !prev)}>
+            <Text typo="title_S" color="text_primary">
+              Highlights
+            </Text>
+            <div css={hoursArrow(isHighlightsOpen)}>
+              <ArrowDown width={30} height={30} />
+            </div>
+          </div>
+          {isHighlightsOpen && (
+            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+              {highlightsText || '정보 준비 중입니다.'}
+            </Text>
+          )}
+        </div>
+      </div>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
           Operation Information

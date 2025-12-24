@@ -3,7 +3,7 @@ import { ArrowDown } from '@/icons';
 import { rowHeader, iconWrapper, buttonWrapper, titleWrapper, detailWrapper } from './index.styles';
 
 interface InfoRowProps {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   title: React.ReactNode;
   children?: React.ReactNode;
   expandable?: boolean;

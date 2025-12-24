@@ -44,6 +44,10 @@ const typography = {
     font-size: 12px;
     font-weight: 500;
   `,
+  button_XS: css`
+    font-size: 12px;
+    font-weight: 400;
+  `,
 
   //test
   title1: css`

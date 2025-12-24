@@ -20,6 +20,7 @@ interface ProgramCardProps {
   image: string;
   badges?: string[];
   companyId?: string;
+  programId?: number;
 }
 
 export function ProgramCard({
@@ -29,12 +30,16 @@ export function ProgramCard({
   image,
   badges,
   companyId,
+  programId,
 }: ProgramCardProps) {
   const router = useRouter();
 
   const handleCardClick = () => {
     if (companyId) {
-      router.push(`/company/${companyId}/program`);
+      router.push({
+        pathname: `/company/${companyId}/program`,
+        query: programId ? { programId } : undefined,
+      });
     }
   };
 

@@ -25,6 +25,7 @@ interface CompanyListProps {
     image_url: string;
     images?: string[];
     departments: string[];
+    is_exclusive?: boolean;
   }>;
 }
 
@@ -91,6 +92,7 @@ export function CompanyList({ title, companies }: CompanyListProps) {
                 companyName={company.hospital_name}
                 companyAddress={company.address}
                 badges={company.departments}
+                isExclusive={company.is_exclusive}
                 onClick={(companyId: number) => {
                   router.push(ROUTES.COMPANY_DETAIL(companyId));
                 }}

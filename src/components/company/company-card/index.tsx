@@ -12,6 +12,8 @@ import {
   tags,
   tagsFixedHeight,
   ratingBadge,
+  titleRow,
+  exclusiveBadge,
   imageCarousel,
   carouselContainer,
   carouselImage,
@@ -31,6 +33,7 @@ interface Props {
   badges: string[];
   fixedHeight?: boolean;
   images?: string[]; // 여러 이미지 배열 추가
+  isExclusive?: boolean;
   onClick: (clinicId: number) => void;
 }
 
@@ -43,6 +46,7 @@ export function CompanyCard({
   badges,
   fixedHeight = false,
   images = [],
+  isExclusive = false,
   onClick,
 }: Props) {
   const [imageError, setImageError] = useState(false);
@@ -161,9 +165,12 @@ export function CompanyCard({
         )}
       </div>
       <div css={fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper}>
-        <Text typo="title_M" color="text_primary">
-          {companyName}
-        </Text>
+        <div css={titleRow}>
+          <Text typo="title_M" color="text_primary">
+            {companyName}
+          </Text>
+          {isExclusive && <span css={exclusiveBadge}>Exclusive</span>}
+        </div>
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>
           {badges?.slice(0, fixedHeight ? 2 : badges.length).map((hashTag) => (

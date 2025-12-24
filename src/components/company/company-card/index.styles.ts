@@ -76,6 +76,28 @@ export const DetailsWrapperFixedHeight = css`
   padding: 16px;
 `;
 
+export const titleRow = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+export const exclusiveBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  padding: 2px 8px;
+  border-radius: 999px;
+
+  background-color: ${theme.colors.sub_sub_2};
+  color: ${theme.colors.text_secondary};
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+`;
+
 export const address = css`
   display: flex;
   align-items: center;

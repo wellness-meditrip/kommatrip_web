@@ -35,6 +35,62 @@ export const top = css`
   background-color: #fff;
 `;
 
+export const programCard = css`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  background: ${theme.colors.white};
+  box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
+
+  cursor: pointer;
+`;
+
+export const programImage = css`
+  flex-shrink: 0;
+
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+`;
+
+export const programInfo = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+
+  min-width: 0;
+`;
+
+export const programTitle = css`
+  overflow: hidden;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+export const programMetaRow = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const programMeta = css`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+export const programArrow = css`
+  flex-shrink: 0;
+`;
+
 export const reviewContent = css`
   display: flex;
   flex-direction: column;
@@ -76,7 +132,7 @@ export const tagWrapper = css`
   padding: 4px 8px;
   border-radius: 4px;
 
-  background: ${theme.colors.bg_surface2};
+  background: ${theme.colors.primary10Opacity40};
 `;
 
 export const clampText = css`

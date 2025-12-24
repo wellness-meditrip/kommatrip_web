@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "meditrip",
+    "title": "Traditional Korean Medicine Platform for Global Wellness",
+    "description": "meditrip is a traditional Korean medicine platform for global wellness"
+  },
+  "button": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "reset": "Reset"
+  },
+  "loading": {
+    "text": "Loading...",
+    "pleaseWait": "Please wait"
+  },
+  "error": {
+    "title": "An error occurred",
+    "tryAgain": "Please try again",
+    "notFound": "Page not found",
+    "serverError": "Server error occurred"
+  },
+  "empty": {
+    "noData": "No data",
+    "noResults": "No results"
+  },
+  "success": {
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "updated": "Updated"
+  },
+  "home": {
+    "heroTitle": "Discover Authentic Korean Wellness",
+    "searchPlaceholder": "Search spas, clinics, treatments...",
+    "recommendedTitle": "Recommended for You",
+    "loadingRecommended": "Loading recommended companies...",
+    "noRecommendedCompanies": "No recommended companies available"
+  }
+}

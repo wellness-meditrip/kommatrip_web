@@ -1,0 +1,21 @@
+{
+  "title": "마이페이지",
+  "points": {
+    "title": "포인트",
+    "balance": "잔액"
+  },
+  "reservations": {
+    "title": "예약 내역",
+    "upcoming": "다가오는 예약",
+    "past": "과거 예약"
+  },
+  "reviews": {
+    "title": "리뷰",
+    "myReviews": "내 리뷰"
+  },
+  "settings": {
+    "title": "설정",
+    "language": "언어",
+    "notifications": "알림"
+  }
+}

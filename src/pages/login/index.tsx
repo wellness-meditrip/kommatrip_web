@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { theme } from '@/styles';
@@ -25,6 +26,8 @@ interface LoginFormData {
 
 export default function Login() {
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const t = useTranslations('auth.login');
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -37,6 +40,59 @@ export default function Login() {
   const [country] = useState('KR');
   const [marketing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const hasHandledError = useRef(false);
+  const hasRedirected = useRef(false);
+
+  // NextAuth 에러 처리 및 세션 확인
+  useEffect(() => {
+    // 이미 처리했거나 리다이렉트했으면 무시
+    if (hasRedirected.current) return;
+
+    const { error, callbackUrl } = router.query;
+
+    // 세션이 있고 에러가 없으면 리다이렉트
+    if (status === 'authenticated' && session && !error) {
+      hasRedirected.current = true;
+      const redirectUrl = typeof callbackUrl === 'string' ? callbackUrl : ROUTES.HOME;
+      router.push(redirectUrl);
+      return;
+    }
+
+    // 에러가 있으면 처리 (한 번만)
+    if (error === 'Callback' && !hasHandledError.current) {
+      hasHandledError.current = true;
+
+      // 세션이 있으면 성공으로 간주하고 리다이렉트
+      if (status === 'authenticated' && session?.accessToken) {
+        console.log('[Login] Google login succeeded despite callback error', {
+          hasSession: !!session,
+          hasAccessToken: !!session?.accessToken,
+        });
+        hasRedirected.current = true;
+        const redirectUrl = typeof callbackUrl === 'string' ? callbackUrl : ROUTES.HOME;
+        router.replace(redirectUrl);
+      } else if (status === 'unauthenticated') {
+        // 실제 에러인 경우 (한 번만 로그)
+        console.error('[Login] Google login callback error', { error, status });
+        showToast({
+          title: t('loginFailed'),
+          icon: 'exclaim',
+        });
+        // 에러 쿼리 파라미터 제거
+        const newQuery = { ...router.query };
+        delete newQuery.error;
+        delete newQuery.callbackUrl;
+        router.replace(
+          {
+            pathname: router.pathname,
+            query: newQuery,
+          },
+          undefined,
+          { shallow: true }
+        );
+      }
+    }
+  }, [router, status, session, showToast, t]);
 
   const onGoogle = async () => {
     setLoading(true);
@@ -50,7 +106,7 @@ export default function Login() {
 
     if (!r.ok) {
       setLoading(false);
-      alert('로그인 준비 중 오류가 발생했어요.');
+      showToast({ title: 'An error occurred while preparing login', icon: 'exclaim' });
       return;
     }
 
@@ -98,7 +154,7 @@ export default function Login() {
               console.log('[Login] refreshToken stored in cookie');
             }
 
-            showToast({ title: 'Login successful', icon: 'check' });
+            showToast({ title: t('loginSuccessful'), icon: 'check' });
 
             // InterestSetting이 false이면 관심사 등록 페이지로 리다이렉트
             if (response?.user && !response.user.InterestSetting) {
@@ -107,14 +163,11 @@ export default function Login() {
               router.push(ROUTES.HOME);
             }
           } else {
-            showToast({ title: 'Failed to get access token', icon: 'exclaim' });
+            showToast({ title: t('failedToGetToken'), icon: 'exclaim' });
           }
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(
-            error,
-            'Login failed. Please check your email and password.'
-          );
+          const errorMessage = getErrorMessage(error, t('loginFailed'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -149,7 +202,7 @@ export default function Login() {
         {/* 상단 그라데이션 배경 (모바일) */}
         <div css={gradientHeader}>
           <Text typo="title_XL" color="text_primary">
-            Login
+            {t('title')}
           </Text>
         </div>
 
@@ -159,9 +212,9 @@ export default function Login() {
             {/* 이메일 입력 */}
             <div css={inputGroup}>
               <Input
-                label="Email"
+                label={t('email')}
                 type="email"
-                placeholder="이메일을 입력해주세요."
+                placeholder={t('emailPlaceholder')}
                 {...register('email', { ...validation.email })}
                 errorMessage={errors.email?.message}
               />
@@ -170,9 +223,9 @@ export default function Login() {
             {/* 비밀번호 입력 */}
             <div css={inputGroup}>
               <Input
-                label="Password"
+                label={t('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="비밀번호를 입력해주세요."
+                placeholder={t('passwordPlaceholder')}
                 {...register('password', { ...validation.password })}
                 errorMessage={errors.password?.message}
                 suffix={
@@ -211,7 +264,7 @@ export default function Login() {
                   css={checkbox}
                 />
                 <Text typo="body_S" color="text_secondary">
-                  Remember me
+                  {t('rememberMe')}
                 </Text>
               </label>
               <button
@@ -220,7 +273,7 @@ export default function Login() {
                 onClick={() => setIsPasswordResetModalOpen(true)}
               >
                 <Text typo="body_S" color="primary50" css={underlineText}>
-                  Find password
+                  {t('findPassword')}
                 </Text>
               </button>
             </div>
@@ -234,7 +287,7 @@ export default function Login() {
               css={loginButton}
             >
               <Text typo="button_L" color="white">
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading ? t('loggingIn') : t('loginButton')}
               </Text>
             </RoundButton>
 
@@ -242,7 +295,7 @@ export default function Login() {
             <div css={divider}>
               <div css={dividerLine} />
               <Text typo="body_S" color="text_tertiary" css={dividerText}>
-                Or Continue with
+                {t('orContinueWith')}
               </Text>
               <div css={dividerLine} />
             </div>
@@ -268,11 +321,11 @@ export default function Login() {
             {/* Sign up 링크 */}
             <div css={signupSection}>
               <Text typo="body_M" color="text_secondary">
-                Don&apos;t have an account?
+                {t('noAccount')}
               </Text>
               <Link href={ROUTES.SIGNUP}>
                 <Text typo="body_M" color="primary50" css={underlineText}>
-                  Sign up
+                  {t('signUp')}
                 </Text>
               </Link>
             </div>
@@ -280,27 +333,34 @@ export default function Login() {
             {/* Terms of Service */}
             <div css={termsSection}>
               <Text typo="body_S" color="text_secondary">
-                By signing up or logging in, you acknowledge and agree to ONYU&apos;s
+                {t('termsText')}{' '}
               </Text>
               <Text typo="body_S" color="primary50" css={underlineText}>
                 <Link
                   href="https://www.notion.so/English-ONYU-Terms-of-Use-2958bf64ec2180b69375d5abbb8f8869?source=copy_link"
                   target="_blank"
                 >
-                  General Terms of Use
+                  {t('termsOfUse')}
                 </Link>
               </Text>
               <Text typo="body_S" color="text_secondary">
-                and
+                {' '}
+                {t('and')}{' '}
               </Text>
               <Text typo="body_S" color="primary50" css={underlineText}>
                 <Link
                   href="https://www.notion.so/English-ONYU-Privacy-Policy-2958bf64ec2180b69375d5abbb8f8869?source=copy_link"
                   target="_blank"
                 >
-                  Privacy Policy
+                  {t('privacyPolicy')}
                 </Link>
               </Text>
+              {t('acknowledge') && (
+                <Text typo="body_S" color="text_secondary">
+                  {' '}
+                  {t('acknowledge')}
+                </Text>
+              )}
             </div>
           </form>
         </div>

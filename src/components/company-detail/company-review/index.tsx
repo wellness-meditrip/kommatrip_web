@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { CompanyList, Empty, Text } from '@/components';
+import { useMemo } from 'react';
+import { Empty, Text, Loading } from '@/components';
 import { Card } from '@/components/reviews/card';
-// import { useIntersectionLoad } from '@/hooks/review';
+import { useIntersectionLoad } from '@/hooks/review';
 import { ReviewAi, ReviewTooltip } from '@/icons';
 import {
   wrapper,
@@ -11,46 +11,38 @@ import {
   toolTip,
   toolTipInfo,
   list,
-  count,
   content,
-  youWillAlsoLikeWrapper,
   bottom,
 } from './index.styles';
-// import { useGetClinicReviewInfiniteQuery } from '@/queries/review';
-import { mockReviewData, mockReviewSummary } from '@/data/mock-review-data';
+import { useGetGuestCompanyReviewsInfiniteQuery } from '@/queries/review';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/constants';
 
-export function CompanyReview() {
-  // API 호출 부분 주석처리
-  // const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-  //   useGetCompanyReviewInfiniteQuery(companyId);
+interface CompanyReviewProps {
+  companyId: number;
+}
 
-  // 목업데이터로 교체
-  const reviewCount = mockReviewData.length;
-  const reviewList = mockReviewData;
-  const loadMoreRef = null;
+export function CompanyReview({ companyId }: CompanyReviewProps) {
+  const router = useRouter();
+  // API 호출
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useGetGuestCompanyReviewsInfiniteQuery({
+      companyId,
+      limit: 20,
+    });
 
-  // AI 요약 - 목업데이터로 교체
-  const [aiSummary] = useState<string | null>(mockReviewSummary);
+  // 무한 스크롤을 위한 intersection observer
+  const { loadMoreRef } = useIntersectionLoad({
+    fetchNextPage,
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage: isFetchingNextPage ?? false,
+  });
 
-  // API 호출 부분 주석처리
-  // useEffect(() => {
-  //   const fetchSummary = async () => {
-  //     setIsSummaryLoading(true);
-  //     setSummaryError(false);
-  //     try {
-  //       const res = await fetch('/api/gemini');
-  //       const json = await res.json();
-  //       setAiSummary(json.summary ?? null);
-  //     } catch (err) {
-  //       console.error('AI 요약 호출 실패', err);
-  //       setSummaryError(true);
-  //     } finally {
-  //       setIsSummaryLoading(false);
-  //     }
-  //   };
-
-  //   fetchSummary();
-  // }, []);
+  // 리뷰 데이터 가공
+  const reviewList = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.reviews || []);
+  }, [data]);
 
   return (
     <section css={wrapper}>
@@ -59,7 +51,7 @@ export function CompanyReview() {
           <div css={title}>
             <ReviewAi width="14" height="14" />
             <Text tag="p" typo="button_S" color="primary30">
-              AI 리뷰 요약 불러오기
+              AI Review Summary
             </Text>
           </div>
           <div css={toolTip}>
@@ -80,42 +72,40 @@ export function CompanyReview() {
           </div>
         </div>
 
-        {aiSummary ? (
-          <Text typo="body_M" color="text_secondary">
-            {aiSummary}
-          </Text>
-        ) : (
-          <Text typo="body_M" color="text_secondary">
-            요약이 준비되지 않았습니다.
-          </Text>
-        )}
+        <Text typo="body_M" color="text_secondary">
+          {/* {aiSummary} */}
+          We’re gathering more reviews...
+        </Text>
       </div>
-      <Text tag="h1" typo="body_M" color="text_secondary" css={count}>
-        {`리뷰 ${reviewCount ?? 0}개`}
-      </Text>
 
       <div css={content}>
-        {reviewList.length > 0 ? (
+        {isLoading ? (
+          <Loading title="리뷰를 불러오는 중..." />
+        ) : reviewList.length > 0 ? (
           reviewList.map((review) => (
             <Card
-              key={review.review_id}
+              key={review.id}
               createdAt={review.created_at}
-              reviewId={review.review_id}
-              reviewerImageUrl="/public/images/mock-user.png" // 현재 reviewerImageUrl 정보 없음
-              reviewerName={review.doctor_name} // 현재 reviewerName 정보 없음
-              keywordReviewList={[]} // 현재 keyword 정보 없음
-              starRating={review.rating as 1 | 2 | 3 | 4 | 5}
-              content={review.content ?? ''}
-              imageUrlList={[]} // 현재 imageUrlList 정보 없음
+              reviewId={review.id}
+              reviewerImageUrl={review.reviewer_profile_image_url}
+              reviewerName={review.reviewer_username || '익명'}
+              keywordReviewList={review.tags || []}
+              content={review.content || ''}
+              imageUrlList={review.image_urls || []}
+              programId={review.program_id}
+              companyId={review.company_id}
+              programName={review.program_name}
+              programPrice={review.program_price}
+              programDurationMinutes={review.duration_minutes}
+              programImageUrl={review.primary_image_url}
+              onCardClick={() => router.push(ROUTES.COMPANY_REVIEWS(companyId))}
             />
           ))
         ) : (
           <Empty title="아직 받은 리뷰가 없어요" />
         )}
       </div>
-      <div css={youWillAlsoLikeWrapper}>
-        <CompanyList title="You will also like" companies={[]} />
-      </div>
+
       <div ref={loadMoreRef} css={bottom} />
     </section>
   );

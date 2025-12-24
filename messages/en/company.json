@@ -1,0 +1,15 @@
+{
+  "title": "Clinics",
+  "list": {
+    "title": "Clinic List",
+    "noResults": "No search results"
+  },
+  "detail": {
+    "title": "Clinic Details",
+    "introduction": "Introduction",
+    "programs": "Programs",
+    "reviews": "Reviews",
+    "location": "Location",
+    "contact": "Contact"
+  }
+}

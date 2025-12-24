@@ -1,0 +1,21 @@
+{
+  "title": "My Page",
+  "points": {
+    "title": "Points",
+    "balance": "Balance"
+  },
+  "reservations": {
+    "title": "Reservations",
+    "upcoming": "Upcoming",
+    "past": "Past"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "myReviews": "My Reviews"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "notifications": "Notifications"
+  }
+}

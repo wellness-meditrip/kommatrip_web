@@ -7,7 +7,7 @@ import { GnbCalendarActive } from '@/icons';
 
 interface FilterBarProps {
   selectedCategories: string[];
-  selectedDate?: Date | null;
+  selectedRange?: { start: Date | null; end: Date | null };
   onDateSelect?: () => void;
   onToggleCategory?: (categoryId: string) => void;
   onClearAll: () => void;
@@ -15,21 +15,24 @@ interface FilterBarProps {
 
 export function FilterBar({
   selectedCategories,
-  selectedDate,
+  selectedRange,
   onDateSelect,
   onToggleCategory,
 }: FilterBarProps) {
   const filteredCategories = CATEGORIES.filter((category) => category.id !== 'all-care');
 
   const formatDate = (date: Date | null) => {
-    if (!date) return '09.19 - 09.21'; // 기본값
-
+    if (!date) return '';
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${month}.${day}`;
   };
 
-  const dateText = selectedDate ? formatDate(selectedDate) : '09.19 - 09.21';
+  const dateText = selectedRange?.start
+    ? selectedRange.end
+      ? `${formatDate(selectedRange.start)} - ${formatDate(selectedRange.end)}`
+      : `${formatDate(selectedRange.start)} -`
+    : 'Select dates';
 
   return (
     <div css={filterContainer}>

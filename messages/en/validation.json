@@ -1,0 +1,23 @@
+{
+  "email": {
+    "required": "Please enter your email address",
+    "invalid": "Please enter a valid email address"
+  },
+  "password": {
+    "required": "Please enter your password",
+    "length": "Password must be between 8 and 16 characters",
+    "invalidChar": "Password contains invalid characters",
+    "missingCase": "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+    "missingSpecial": "Password must contain at least one special character (e.g., !, @, #, $, %, &, *, -, _)"
+  },
+  "verificationCode": {
+    "required": "Please enter the verification code"
+  },
+  "confirmPassword": {
+    "required": "Please confirm your password",
+    "mismatch": "Passwords do not match"
+  },
+  "country": {
+    "required": "Please select a country"
+  }
+}

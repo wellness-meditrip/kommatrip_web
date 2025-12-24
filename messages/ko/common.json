@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "meditrip",
+    "title": "글로벌 웰니스를 위한 한의학 플랫폼",
+    "description": "meditrip은 글로벌 웰니스를 위한 한의학 플랫폼입니다"
+  },
+  "button": {
+    "confirm": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "create": "생성",
+    "update": "업데이트",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "search": "검색",
+    "reset": "초기화"
+  },
+  "loading": {
+    "text": "로딩 중...",
+    "pleaseWait": "잠시만 기다려주세요"
+  },
+  "error": {
+    "title": "오류가 발생했습니다",
+    "tryAgain": "다시 시도해주세요",
+    "notFound": "페이지를 찾을 수 없습니다",
+    "serverError": "서버 오류가 발생했습니다"
+  },
+  "empty": {
+    "noData": "데이터가 없습니다",
+    "noResults": "결과가 없습니다"
+  },
+  "success": {
+    "saved": "저장되었습니다",
+    "deleted": "삭제되었습니다",
+    "updated": "업데이트되었습니다"
+  },
+  "home": {
+    "heroTitle": "진정한 한국 웰니스를 발견하세요",
+    "searchPlaceholder": "스파, 클리닉, 치료법 검색...",
+    "recommendedTitle": "추천 업체",
+    "loadingRecommended": "추천 업체를 불러오고 있어요",
+    "noRecommendedCompanies": "추천할 업체가 없습니다"
+  }
+}

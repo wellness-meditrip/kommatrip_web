@@ -6,7 +6,7 @@ import theme from './theme';
 const defaultStyles = css`
   @font-face {
     font-family: Pretendard;
-    src: url('../../fonts/Pretendard-SemiBold.woff2') format('woff2');
+    src: url('/fonts/Pretendard-SemiBold.woff2') format('woff2');
 
     font-weight: 600;
     font-style: normal;
@@ -14,7 +14,7 @@ const defaultStyles = css`
 
   @font-face {
     font-family: Pretendard;
-    src: url('../../fonts/Pretendard-Medium.woff2') format('woff2');
+    src: url('/fonts/Pretendard-Medium.woff2') format('woff2');
 
     font-weight: 500;
     font-style: normal;
@@ -22,7 +22,7 @@ const defaultStyles = css`
 
   @font-face {
     font-family: Pretendard;
-    src: url('../../fonts/Pretendard-Regular.woff2') format('woff2');
+    src: url('/fonts/Pretendard-Regular.woff2') format('woff2');
 
     font-weight: 400;
     font-style: normal;
