@@ -31,14 +31,20 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
     async (error) => {
       const originalRequest = error.config;
 
-      // 에러 응답 구조 확인
-      const daengleError = error.response?.data?.error;
+      // 에러 응답 구조 확인 (백엔드가 detail만 줄 수도 있음)
+      const responseData = error.response?.data;
+      const onyuError = responseData?.error;
+      const backendDetail = responseData?.detail;
+      const backendMessage = onyuError?.message ?? backendDetail;
 
-      // 498 Unauthorized + TOKEN_EXPIRED 에러 발생 시 토큰 재발급
-      const isUnauthorized = error.response?.status === 498;
-      const isTokenExpired = daengleError?.code === ERROR_CODES.TOKEN_EXPIRED;
+      // 498(토큰 만료) 또는 TOKEN_EXPIRED 코드면 재발급 시도
+      const statusCode = error.response?.status;
+      const isTokenExpiredStatus = statusCode === 498;
+      const isTokenExpiredCode = onyuError?.code === ERROR_CODES.TOKEN_EXPIRED;
+      const isTokenExpiredMessage = backendMessage === '토큰이 만료되었습니다.';
+      const shouldRefresh = isTokenExpiredStatus || isTokenExpiredCode || isTokenExpiredMessage;
 
-      if (isUnauthorized && isTokenExpired) {
+      if (shouldRefresh) {
         // 이미 재시도한 요청이면 무한 루프 방지
         if (originalRequest._retry) {
           console.error('[HttpClient] Token refresh already attempted - clearing auth');
@@ -46,7 +52,10 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
           return Promise.reject(error);
         }
 
-        console.log('[HttpClient] 401 + TOKEN_EXPIRED - refreshing token...');
+        console.log('[HttpClient] TOKEN_EXPIRED - refreshing token...', {
+          statusCode,
+          errorCode: onyuError?.code,
+        });
         originalRequest._retry = true;
 
         try {
@@ -69,13 +78,22 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
       }
 
       // 다른 에러 처리
-      if (daengleError && daengleError.code) {
-        if (daengleError.code === 1001) {
+      if (statusCode === 401) {
+        const isInvalidTokenMessage = backendMessage === '유효하지 않은 토큰입니다.';
+        const isMissingUserMessage = backendMessage === '사용자 정보를 확인할 수 없습니다.';
+        if (isInvalidTokenMessage || isMissingUserMessage) {
+          useAuthStore.getState().clearAuth();
+          return Promise.reject(error);
+        }
+      }
+
+      if (onyuError && onyuError.code) {
+        if (onyuError.code === 1001) {
           useAuthStore.getState().clearAuth();
           return Promise.reject(error);
         }
 
-        if (daengleError.code === ERROR_CODES.NO_USER_EXIST) {
+        if (onyuError.code === ERROR_CODES.NO_USER_EXIST) {
           useAuthStore.getState().clearAuth();
           return Promise.reject(error);
         }

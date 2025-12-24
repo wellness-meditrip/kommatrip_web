@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -32,6 +33,8 @@ interface SignupFormData {
 
 export default function Signup() {
   const router = useRouter();
+  const t = useTranslations('auth.signup');
+  const tValidation = useTranslations('validation');
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -73,13 +76,13 @@ export default function Signup() {
 
   const handleSendEmail = () => {
     if (!email) {
-      setError('email', { message: '이메일을 입력해 주세요' });
+      setError('email', { message: tValidation('email.required') });
       return;
     }
 
     if (errors.email) {
       showToast({
-        title: errors.email.message || 'Please enter a valid email address',
+        title: errors.email.message || tValidation('email.invalid'),
         icon: 'exclaim',
       });
       return;
@@ -88,16 +91,16 @@ export default function Signup() {
     verifyEmailCodeMutation.mutate(email, {
       onSuccess: () => {
         setEmailVerified(true);
-        showToast({ title: 'Verification code has been sent to your email', icon: 'check' });
+        showToast({ title: t('verificationCodeSent'), icon: 'check' });
       },
       onError: (error: unknown) => {
         const axiosError = error as AxiosError;
         const status = axiosError?.response?.status;
-        const errorMessage = getErrorMessage(error, 'Failed to send verification code');
+        const errorMessage = getErrorMessage(error, t('failedToSendCode'));
 
         if (status === 400 && (errorMessage.includes('가입') || errorMessage.includes('이미'))) {
           // 이미 가입된 이메일 에러
-          setError('email', { message: '이미 가입된 이메일입니다.' });
+          setError('email', { message: t('emailAlreadyRegistered') });
         } else {
           // 기타 에러는 토스트만 표시
           showToast({ title: errorMessage, icon: 'exclaim' });
@@ -110,13 +113,13 @@ export default function Signup() {
     const verificationCode = watch('verificationCode');
 
     if (!verificationCode) {
-      setError('verificationCode', { message: '인증 코드를 입력해 주세요' });
-      showToast({ title: 'Please enter the verification code', icon: 'exclaim' });
+      setError('verificationCode', { message: tValidation('verificationCode.required') });
+      showToast({ title: t('pleaseEnterCode'), icon: 'exclaim' });
       return;
     }
 
     if (!email) {
-      showToast({ title: 'Please enter your email address first', icon: 'exclaim' });
+      showToast({ title: t('pleaseEnterEmailFirst'), icon: 'exclaim' });
       return;
     }
 
@@ -134,13 +137,13 @@ export default function Signup() {
               '❌ [handleConfirmCode] token을 찾을 수 없습니다. response 구조:',
               JSON.stringify(response, null, 2)
             );
-            showToast({ title: 'Failed to get verification token', icon: 'exclaim' });
+            showToast({ title: t('failedToGetToken'), icon: 'exclaim' });
             return;
           }
 
           setVerificationToken(token);
           setCodeVerified(true);
-          showToast({ title: 'Email verification completed', icon: 'check' });
+          showToast({ title: t('emailVerificationCompleted'), icon: 'check' });
         },
         onError: (error: unknown) => {
           const axiosError = error as AxiosError;
@@ -148,7 +151,7 @@ export default function Signup() {
 
           if (status === 400 && isSessionExpiredError(error)) {
             // 코드 만료 에러
-            setError('verificationCode', { message: '인증번호가 만료됐어요. 다시 받아 주세요.' });
+            setError('verificationCode', { message: t('codeExpired') });
             // 상태 초기화
             setEmailVerified(false);
             setCodeVerified(false);
@@ -157,7 +160,7 @@ export default function Signup() {
           } else if (status === 404) {
             // 인증 요청 없음 에러
             setError('verificationCode', {
-              message: '해당 이메일에 대한 인증 요청이 없습니다. 다시 요청해주세요.',
+              message: t('noVerificationRequest'),
             });
             // 상태 초기화
             setEmailVerified(false);
@@ -166,8 +169,8 @@ export default function Signup() {
             setValue('verificationCode', '');
           } else {
             // 코드 틀림 에러
-            setError('verificationCode', { message: '인증번호가 올바르지 않아요.' });
-            const errorMessage = getErrorMessage(error, 'Invalid verification code');
+            setError('verificationCode', { message: t('invalidCode') });
+            const errorMessage = getErrorMessage(error, t('invalidCode'));
             showToast({ title: errorMessage, icon: 'exclaim' });
           }
         },
@@ -177,7 +180,7 @@ export default function Signup() {
 
   const onSubmit = (data: SignupFormData) => {
     if (!verificationToken) {
-      showToast({ title: 'Please verify your email first', icon: 'exclaim' });
+      showToast({ title: t('pleaseVerifyEmail'), icon: 'exclaim' });
       return;
     }
 
@@ -192,11 +195,11 @@ export default function Signup() {
       {
         onSuccess: () => {
           // 회원가입 후에는 accessToken이 제공되지 않을 수 있으므로 로그인 페이지로 이동
-          showToast({ title: 'Account created successfully', icon: 'check' });
+          showToast({ title: t('accountCreated'), icon: 'check' });
           router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, 'Failed to create account');
+          const errorMessage = getErrorMessage(error, t('failedToCreateAccount'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -223,7 +226,7 @@ export default function Signup() {
         {/* 상단 그라데이션 배경 (모바일) */}
         <div css={gradientHeader}>
           <Text typo="title_XL" color="text_primary">
-            Create Account
+            {t('title')}
           </Text>
         </div>
 
@@ -234,9 +237,9 @@ export default function Signup() {
             <div css={inputGroup}>
               <div css={inputWithButton}>
                 <Input
-                  label="Email Address"
+                  label={t('emailAddress')}
                   type="email"
-                  placeholder="example@email.com"
+                  placeholder={t('emailPlaceholder')}
                   {...register('email', { ...validation.email })}
                   errorMessage={errors.email?.message}
                 />
@@ -248,13 +251,13 @@ export default function Signup() {
                   css={actionButton}
                 >
                   <Text typo="button_M" color="white">
-                    Send
+                    {t('send')}
                   </Text>
                 </RoundButton>
               </div>
               {emailVerified && !errors.email && (
                 <Text typo="body_S" color="primary50" css={statusMessage}>
-                  * Email verification has been completed.
+                  * {t('emailVerified')}
                 </Text>
               )}
             </div>
@@ -263,9 +266,9 @@ export default function Signup() {
             <div css={inputGroup}>
               <div css={inputWithButton}>
                 <Input
-                  label="Email Verification Code"
+                  label={t('emailVerificationCode')}
                   type="text"
-                  placeholder="Enter the code"
+                  placeholder={t('codePlaceholder')}
                   {...register('verificationCode', { ...validation.verificationCode })}
                   errorMessage={errors.verificationCode?.message}
                 />
@@ -277,13 +280,13 @@ export default function Signup() {
                   css={actionButton}
                 >
                   <Text typo="button_M" color="white">
-                    Confirm
+                    {t('confirm')}
                   </Text>
                 </RoundButton>
               </div>
               {codeVerified && (
                 <Text typo="body_S" color="primary50" css={statusMessage}>
-                  * Authentication completed.
+                  * {t('authenticationCompleted')}
                 </Text>
               )}
             </div>
@@ -291,9 +294,9 @@ export default function Signup() {
             {/* 비밀번호 */}
             <div css={inputGroup}>
               <Input
-                label="Password"
+                label={t('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="비밀번호를 입력해주세요."
+                placeholder={t('passwordPlaceholder')}
                 {...register('password', { ...validation.password })}
                 errorMessage={errors.password?.message}
                 suffix={
@@ -325,14 +328,14 @@ export default function Signup() {
             {/* 비밀번호 확인 */}
             <div css={inputGroup}>
               <Input
-                label="Confirm Password"
+                label={t('confirmPassword')}
                 type={showConfirmPassword ? 'text' : 'password'}
-                placeholder="비밀번호를 다시 입력해주세요."
+                placeholder={t('confirmPasswordPlaceholder')}
                 {...register('confirmPassword', {
-                  required: '비밀번호 확인을 입력해 주세요',
+                  required: tValidation('confirmPassword.required'),
                   validate: (value) => {
-                    if (!value) return '비밀번호 확인을 입력해 주세요';
-                    if (value !== password) return '비밀번호가 일치하지 않아요';
+                    if (!value) return tValidation('confirmPassword.required');
+                    if (value !== password) return tValidation('confirmPassword.mismatch');
                     return true;
                   },
                 })}
@@ -366,7 +369,7 @@ export default function Signup() {
             {/* 국가 선택 */}
             <div css={inputGroup}>
               <Text typo="body_M" color="text_primary" css={label}>
-                Country
+                {t('country')}
               </Text>
               <div css={selectContainer}>
                 <select
@@ -374,12 +377,12 @@ export default function Signup() {
                   {...register('country', { ...validation.country })}
                   aria-invalid={!!errors.country}
                 >
-                  <option value="">Select the country</option>
-                  <option value="KR">South Korea</option>
-                  <option value="US">United States</option>
-                  <option value="CN">China</option>
-                  <option value="JP">Japan</option>
-                  <option value="GB">United Kingdom</option>
+                  <option value="">{t('selectCountry')}</option>
+                  <option value="KR">{t('southKorea')}</option>
+                  <option value="US">{t('unitedStates')}</option>
+                  <option value="CN">{t('china')}</option>
+                  <option value="JP">{t('japan')}</option>
+                  <option value="GB">{t('unitedKingdom')}</option>
                 </select>
               </div>
               {errors.country && (
@@ -398,18 +401,18 @@ export default function Signup() {
               css={signupButton}
             >
               <Text typo="button_L" color="white">
-                {isLoading ? 'Processing...' : 'Sign up'}
+                {isLoading ? t('processing') : t('signUpButton')}
               </Text>
             </RoundButton>
 
             {/* 로그인 링크 */}
             <div css={loginSection}>
               <Text typo="body_M" color="text_secondary">
-                Already have an account?{' '}
+                {t('alreadyHaveAccount')}{' '}
               </Text>
               <button type="button" css={linkButton} onClick={() => router.push(ROUTES.LOGIN)}>
                 <Text typo="body_M" color="primary50" css={underlineText}>
-                  Log in
+                  {t('logIn')}
                 </Text>
               </button>
             </div>

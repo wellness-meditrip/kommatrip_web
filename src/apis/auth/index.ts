@@ -22,7 +22,7 @@ import {
 // 이메일 인증 코드 전송
 export const postVerifyEmailCode = async (email: string) => {
   return await guestApi.post<PostVerifyEmailCodeResponse>(
-    '/api/users/email/verify-email',
+    '/user/non/email/verify-email',
     { email },
     {
       headers: {
@@ -35,7 +35,7 @@ export const postVerifyEmailCode = async (email: string) => {
 
 // 이메일 인증 코드 검증
 export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
-  return await guestApi.post<PostConfirmEmailResponse>('/api/users/email/confirm-email', data, {
+  return await guestApi.post<PostConfirmEmailResponse>('/user/non/email/confirm-email', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -44,7 +44,7 @@ export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
 
 // 회원가입
 export const postSignup = async (data: PostSignupRequestBody) => {
-  return await guestApi.post<PostSignupResponse>('/api/users/register/customer', data, {
+  return await guestApi.post<PostSignupResponse>('/user/non/register/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -53,7 +53,7 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
-  return await guestApi.post<PostLoginResponse>('/api/users/login/customer', data, {
+  return await guestApi.post<PostLoginResponse>('/user/non/login/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -63,7 +63,7 @@ export const postLogin = async (data: PostLoginRequestBody) => {
 // 비밀번호 재설정 코드 발송
 export const postResetPasswordRequest = async (email: string) => {
   return await guestApi.post<PostResetPasswordRequestResponse>(
-    '/api/users/password/reset/request',
+    '/user/non/password/reset/request',
     { email },
     {
       headers: {
@@ -77,7 +77,7 @@ export const postResetPasswordRequest = async (email: string) => {
 // 비밀번호 재설정 코드 검증
 export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmRequest) => {
   return await guestApi.post<PostResetPasswordConfirmResponse>(
-    '/api/users/password/reset/confirm-code',
+    '/user/non/password/reset/confirm-code',
     data,
     {
       headers: {
@@ -91,7 +91,7 @@ export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmReq
 // 비밀번호 재설정
 export const postResetPasswordComplete = async (data: PostResetPasswordCompleteRequest) => {
   return await guestApi.post<PostResetPasswordCompleteResponse>(
-    '/api/users/password/reset/complete',
+    '/user/non/password/reset/complete',
     data,
     {
       headers: {
@@ -104,20 +104,77 @@ export const postResetPasswordComplete = async (data: PostResetPasswordCompleteR
 
 // 소셜 로그인(google)
 export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
-  return await guestApi.post<PostUserAuthGoogleResponse>(
-    '/api/users/auth/google',
-    {
-      idToken: data.idToken,
-      country: data.country,
-      marketing_consent: data.marketing_consent,
-    },
-    {
-      headers: {
-        accept: 'application/json',
-        'Content-Type': 'application/json',
+  console.log('[postUserAuthGoogle] Request start', {
+    idTokenLength: data.idToken?.length,
+    country: data.country,
+    marketing_consent: data.marketing_consent,
+    url: '/user/non/auth/google',
+  });
+
+  try {
+    const response = await guestApi.post<PostUserAuthGoogleResponse>(
+      '/user/non/auth/google',
+      {
+        idToken: data.idToken,
+        country: data.country,
+        marketing_consent: data.marketing_consent,
       },
+      {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const isObject = typeof response === 'object' && response !== null;
+    const responseRecord = isObject ? (response as { user?: unknown; tokens?: unknown }) : null;
+    console.log('[postUserAuthGoogle] Response received', {
+      hasResponse: !!response,
+      responseType: typeof response,
+      responseKeys: isObject ? Object.keys(response as object) : [],
+      hasUser: !!responseRecord?.user,
+      hasTokens: !!responseRecord?.tokens,
+    });
+
+    // 백엔드 응답 구조 확인 (response.data.response 형태일 수 있음)
+    if (response && typeof response === 'object' && 'response' in response) {
+      const wrapped = response as { response?: PostUserAuthGoogleResponse };
+      const unwrapped = wrapped.response;
+      console.log('[postUserAuthGoogle] Unwrapped response', {
+        hasUser: !!unwrapped?.user,
+        hasTokens: !!unwrapped?.tokens,
+      });
+      if (unwrapped) {
+        return unwrapped;
+      }
     }
-  );
+
+    console.log('[postUserAuthGoogle] Returning response as-is');
+    return response;
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: {
+        status?: number;
+        statusText?: string;
+        data?: unknown;
+      };
+      message?: string;
+    };
+    // 에러 상세 정보 로깅
+    console.error('[postUserAuthGoogle] error details', {
+      status: axiosError?.response?.status,
+      statusText: axiosError?.response?.statusText,
+      data: axiosError?.response?.data,
+      errorMessage: axiosError?.message,
+      requestData: {
+        idTokenLength: data.idToken?.length,
+        country: data.country,
+        marketing_consent: data.marketing_consent,
+      },
+    });
+    throw axiosError;
+  }
 };
 
 // 토큰 재발급 (쿠키에서 refreshToken 자동 전송)
