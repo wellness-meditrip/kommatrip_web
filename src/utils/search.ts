@@ -21,15 +21,7 @@ export const isFlexibleMatch = (text: string, searchTerm: string) => {
   return searchIndex === searchTerm.length;
 };
 
-// 통합된 회사 타입 정의
-type Company = {
-  id: number;
-  name?: string;
-  address?: string;
-  tags?: string[];
-  rating_average?: string;
-  views_count?: number;
-};
+import type { Company } from '@/models/company';
 
 // 클라이언트 사이드 필터링 함수
 export const filterCompanies = (companies: Array<Company>, searchTerm?: string) => {

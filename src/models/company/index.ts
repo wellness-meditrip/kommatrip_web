@@ -11,7 +11,8 @@ export interface GetRecentCompanyResponse {
 export interface GetRecommendedCompanyResponse {
   id: number;
   name: string;
-  simpleplace: string;
+  simpleplace?: string;
+  simple_place?: string;
   photos: string[];
   tags: string[];
   is_exclusive: boolean;
@@ -108,12 +109,14 @@ export interface Company {
   id: number;
   name: string;
   address: string;
+  photos?: string[];
   tags: string[];
   opening_time: string;
   closing_time: string;
   views_count: number;
   rating_average: string;
   is_verified: boolean;
+  is_exclusive?: boolean;
 }
 
 export interface SearchParams {
@@ -122,6 +125,8 @@ export interface SearchParams {
   location: string | null;
   skip: number;
   limit: number;
+  date?: string;
+  endDate?: string;
 }
 
 export interface GetCompanySearchResponseParams {
@@ -146,7 +151,8 @@ export interface CompanyDetail {
   phone: string;
   description: string;
   booking_information: string;
-  badge: string[];
+  refund_regulation?: string;
+  badge: string;
   highlights: string;
   getting_here: string;
   latitude: number;

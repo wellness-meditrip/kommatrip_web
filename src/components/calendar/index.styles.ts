@@ -1,8 +1,16 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
+const rangeBg = theme.colors.primary10Opacity60;
+const rangeEdge = theme.colors.primary70;
+
 export const calendarContainer = css`
-  margin: 24px 0;
+  margin: 16px 0 24px;
+  padding: 16px;
+  border-radius: 20px;
+
+  background-color: ${theme.colors.white};
+  box-shadow: 0 6px 20px rgb(0 0 0 / 8%);
 `;
 
 export const calendarHeader = css`
@@ -10,24 +18,26 @@ export const calendarHeader = css`
   align-items: center;
   gap: 8px;
 
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 `;
 
 export const calendarContent = css`
-  border-radius: 8px;
+  padding: 8px 8px 12px;
+  border-radius: 16px;
 
-  background-color: ${theme.colors.bg_default};
+  background-color: ${theme.colors.white};
 `;
-export const monthNavigation = css`
-  display: flex;
+
+export const monthHeader = css`
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+
   align-items: center;
-  justify-content: center;
-  gap: 16px;
 
-  padding: 16px;
+  margin: 4px 0 10px;
 `;
 
-export const navigationButton = css`
+export const navButton = css`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,73 +45,130 @@ export const navigationButton = css`
   width: 32px;
   height: 32px;
   border: none;
-  border-radius: 50%;
+  border-radius: 999px;
 
-  background-color: transparent;
-
-  transition: opacity 0.2s ease;
+  background: transparent;
+  color: ${theme.colors.primary90};
 
   cursor: pointer;
+`;
 
-  &:hover {
-    opacity: 0.7;
-  }
+export const monthLabel = css`
+  text-align: center;
+`;
+
+export const dayNamesRow = css`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+
+  margin-bottom: 6px;
+
+  color: ${theme.colors.text_secondary};
+  font-size: 12px;
+  font-weight: 500;
+`;
+
+export const dayName = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 28px;
 `;
 
 export const calendarGrid = css`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 
-  gap: 4px;
-
-  padding: 0 7px 7px;
-`;
-
-export const dayHeader = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 32px;
-  padding: 8px 0;
+  gap: 10px 0;
 `;
 
 export const dayCell = css`
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 
-  height: 40px;
+  height: 44px;
+`;
 
-  transition: background-color 0.2s ease;
+export const dayCellOutside = css`
+  opacity: 0.35;
+`;
+
+export const dayButton = css`
+  position: relative;
+  z-index: 1;
+
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+
+  background: transparent;
+  color: ${theme.colors.primary90};
+  font-size: 14px;
 
   cursor: pointer;
 
-  &:hover {
-    border-radius: 4px;
+  &:disabled {
+    color: ${theme.colors.text_tertiary};
 
-    background-color: ${theme.colors.primary40};
+    cursor: default;
   }
 `;
 
-export const dayNumber = css`
-  color: ${theme.colors.primary90};
-  font-size: 14px;
+export const rangeMiddleCell = css`
+  &::before {
+    position: absolute;
+    inset: 6px 0;
+
+    background: ${rangeBg};
+    content: '';
+  }
 `;
 
-export const selectedDay = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+export const rangeStartCell = css`
+  &::before {
+    position: absolute;
+    inset: 6px 0 6px 50%;
 
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-
-  background-color: ${theme.colors.primary50};
-  color: ${theme.colors.primary90};
+    background: ${rangeBg};
+    content: '';
+    border-top-left-radius: 999px;
+    border-bottom-left-radius: 999px;
+  }
 `;
 
-export const otherMonthDay = css`
-  opacity: 0.3;
+export const rangeEndCell = css`
+  &::before {
+    position: absolute;
+    inset: 6px 50% 6px 0;
+
+    background: ${rangeBg};
+    content: '';
+    border-top-right-radius: 999px;
+    border-bottom-right-radius: 999px;
+  }
+`;
+
+export const rangeSingleCell = css`
+  &::before {
+    display: none;
+  }
+`;
+
+export const rangeStartButton = css`
+  background: ${rangeEdge};
+  color: ${theme.colors.white};
+`;
+
+export const rangeEndButton = css`
+  background: ${rangeEdge};
+  color: ${theme.colors.white};
+`;
+
+export const rangeSingleButton = css`
+  background: ${rangeEdge};
+  color: ${theme.colors.white};
 `;

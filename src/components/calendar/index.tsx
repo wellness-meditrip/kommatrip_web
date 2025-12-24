@@ -1,124 +1,182 @@
 /** @jsxImportSource @emotion/react */
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Text } from '../text';
-import { ChevronLeft, ChevronRight, CalenderWhite } from '@/icons';
+import { CalenderWhite, ChevronLeft, ChevronRight } from '@/icons';
 import {
   calendarContainer,
   calendarHeader,
   calendarContent,
-  monthNavigation,
+  monthHeader,
+  navButton,
+  monthLabel,
+  dayNamesRow,
+  dayName,
   calendarGrid,
-  dayHeader,
   dayCell,
-  dayNumber,
-  selectedDay,
-  otherMonthDay,
-  navigationButton,
+  dayCellOutside,
+  dayButton,
+  rangeMiddleCell,
+  rangeStartCell,
+  rangeEndCell,
+  rangeSingleCell,
+  rangeStartButton,
+  rangeEndButton,
+  rangeSingleButton,
 } from './index.styles';
 
-interface Props {
-  onDateSelect?: (date: Date) => void;
+interface RangeValue {
+  start: Date | null;
+  end: Date | null;
 }
 
-export function Calendar({ onDateSelect }: Props) {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 8, 1)); // September 2025
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+interface Props {
+  selectedRange?: RangeValue;
+  onRangeSelect?: (range: RangeValue) => void;
+}
 
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
-  const handlePreviousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
+
+const addMonths = (date: Date, delta: number) =>
+  new Date(date.getFullYear(), date.getMonth() + delta, 1);
+
+const getCalendarDays = (baseDate: Date) => {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const startOffset = firstDay.getDay();
+  const startDate = new Date(year, month, 1 - startOffset);
+
+  const days = [];
+  const cursor = new Date(startDate);
+
+  for (let i = 0; i < 42; i += 1) {
+    days.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return days;
+};
+
+export function Calendar({ selectedRange, onRangeSelect }: Props) {
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
+
+  const days = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
+
+  const handlePrevMonth = () => {
+    setCurrentMonth((prev) => addMonths(prev, -1));
   };
 
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    setCurrentMonth((prev) => addMonths(prev, 1));
   };
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    onDateSelect?.(date);
-  };
+    const start = selectedRange?.start ?? null;
+    const end = selectedRange?.end ?? null;
 
-  const renderCalendarDays = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    const firstDay = new Date(year, month, 1);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    const days = [];
-    const current = new Date(startDate);
-
-    // 6 weeks * 7 days = 42 days
-    for (let i = 0; i < 42; i++) {
-      const isCurrentMonth = current.getMonth() === month;
-      const isSelected =
-        selectedDate &&
-        current.getDate() === selectedDate.getDate() &&
-        current.getMonth() === selectedDate.getMonth() &&
-        current.getFullYear() === selectedDate.getFullYear();
-
-      days.push(
-        <div
-          key={i}
-          css={[dayCell, !isCurrentMonth && otherMonthDay]}
-          onClick={() => handleDateClick(new Date(current))}
-        >
-          <div css={[dayNumber, isSelected && selectedDay]}>{current.getDate()}</div>
-        </div>
-      );
-
-      current.setDate(current.getDate() + 1);
+    let nextRange: RangeValue;
+    if (!start || (start && end)) {
+      nextRange = { start: date, end: null };
+    } else if (start && !end) {
+      if (date < start) {
+        nextRange = { start: date, end: start };
+      } else if (isSameDay(date, start)) {
+        nextRange = { start: date, end: null };
+      } else {
+        nextRange = { start, end: date };
+      }
+    } else {
+      nextRange = { start: date, end: null };
     }
 
-    return days;
+    onRangeSelect?.(nextRange);
   };
+
+  const monthLabelText = useMemo(
+    () =>
+      currentMonth.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [currentMonth]
+  );
 
   return (
     <div css={calendarContainer}>
       <div css={calendarHeader}>
-        <CalenderWhite width="24px" height="24px" />
-        <Text typo="body_L" color="bg_default">
+        <CalenderWhite width="22px" height="22px" />
+        <Text typo="body_L" color="text_primary">
           Select dates
         </Text>
       </div>
+
       <div css={calendarContent}>
-        <div css={monthNavigation}>
-          <button css={navigationButton} onClick={handlePreviousMonth}>
-            <ChevronLeft width="16px" height="16px" />
+        <div css={monthHeader}>
+          <button type="button" css={navButton} onClick={handlePrevMonth}>
+            <ChevronLeft width="18px" height="18px" />
           </button>
-          <Text typo="body_M" color="primary90">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          <Text typo="title_S" color="text_primary" css={monthLabel}>
+            {monthLabelText}
           </Text>
-          <button css={navigationButton} onClick={handleNextMonth}>
-            <ChevronRight width="16px" height="16px" />
+          <button type="button" css={navButton} onClick={handleNextMonth}>
+            <ChevronRight width="18px" height="18px" />
           </button>
         </div>
-        <div css={calendarGrid}>
-          {dayNames.map((day) => (
-            <div key={day} css={dayHeader}>
-              <Text typo="body_S" color="primary70">
-                {day}
-              </Text>
+
+        <div css={dayNamesRow}>
+          {DAY_LABELS.map((label) => (
+            <div key={label} css={dayName}>
+              {label}
             </div>
           ))}
-          {renderCalendarDays()}
+        </div>
+
+        <div css={calendarGrid}>
+          {days.map((date) => {
+            const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+            const start = selectedRange?.start ?? null;
+            const end = selectedRange?.end ?? null;
+            const hasRange = !!(start && end);
+            const isStart = start ? isSameDay(date, start) : false;
+            const isEnd = end ? isSameDay(date, end) : false;
+            const isSingle = isStart && !end;
+            const isInRange = hasRange && start && end && date > start && date < end;
+
+            return (
+              <div
+                key={date.toISOString()}
+                css={[
+                  dayCell,
+                  !isCurrentMonth && dayCellOutside,
+                  isInRange && rangeMiddleCell,
+                  isStart && !isEnd && rangeStartCell,
+                  isEnd && !isStart && rangeEndCell,
+                  isStart && isEnd && rangeSingleCell,
+                ]}
+              >
+                <button
+                  type="button"
+                  css={[
+                    dayButton,
+                    isStart && !isEnd && rangeStartButton,
+                    isEnd && !isStart && rangeEndButton,
+                    isSingle && rangeSingleButton,
+                  ]}
+                  onClick={() => handleDateClick(date)}
+                  disabled={!isCurrentMonth}
+                >
+                  {date.getDate()}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
