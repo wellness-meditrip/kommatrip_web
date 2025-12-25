@@ -13,6 +13,8 @@ import {
   CompanyProgram,
   CompanyNotice,
   CTAButton,
+  DesktopAppBar,
+  RoundButton,
   Loading,
   LoginModal,
   Empty,
@@ -23,7 +25,6 @@ import { CompanyDetail as CompanyDetailType } from '@/models';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
-import { DesktopAppBar } from '@/components';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
@@ -236,69 +237,83 @@ export default function ClinicDetailPage() {
         />
       )}
       <div css={pageContainer}>
-        {data?.company && (
-          <CompanyDetail
-            badges={data.company.tags || []}
-            companyImage={data.company.primary_image_url || '/default.png'}
-            companyName={data.company.name}
-            companyAddress={data.company.address}
-            images={data.company.image_urls || []}
-          />
-        )}
-
-        <section css={wrapper}>
-          {/* 고정된 탭 헤더 */}
-          <div css={stickyTabHeader}>
-            {TABS.map((tab) => (
-              <Tab
-                key={tab.id}
-                id={tab.id}
-                label={tab.label}
-                isActive={activeTab === tab.id}
-                onClick={() => handleTabClick(tab.id)}
+        <div css={contentLayout}>
+          <div css={mainContent}>
+            {data?.company && (
+              <CompanyDetail
+                badges={data.company.tags || []}
+                companyImage={data.company.primary_image_url || '/default.png'}
+                companyName={data.company.name}
+                companyAddress={data.company.address}
+                images={data.company.image_urls || []}
               />
-            ))}
+            )}
+
+            <section css={wrapper}>
+              {/* 고정된 탭 헤더 */}
+              <div css={stickyTabHeader}>
+                {TABS.map((tab) => (
+                  <Tab
+                    key={tab.id}
+                    id={tab.id}
+                    label={tab.label}
+                    isActive={activeTab === tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                  />
+                ))}
+              </div>
+
+              {/* 모든 컨텐츠를 한 번에 렌더링 */}
+              <div css={content}>
+                <div ref={infoRef} data-section="info" css={section}>
+                  {data?.company ? (
+                    <CompanyInfo data={data.company} />
+                  ) : (
+                    <Loading title={t('loading')} />
+                  )}
+                </div>
+
+                <div ref={programRef} data-section="program" css={section}>
+                  {data?.company ? (
+                    <CompanyProgram badges={data.company.tags || []} companyId={companyIdNumber} />
+                  ) : (
+                    <Loading title={t('loading')} />
+                  )}
+                </div>
+
+                <div ref={reviewRef} data-section="review" css={section}>
+                  <CompanyReview companyId={companyIdNumber} />
+                </div>
+
+                <div ref={noticeRef} data-section="notice" css={section}>
+                  {data?.company && (
+                    <CompanyNotice
+                      bookingInformation={data.company.booking_information}
+                      refundRegulation={data.company.refund_regulation}
+                    />
+                  )}
+                </div>
+
+                {/* <div css={youWillAlsoLikeWrapper}>
+                  <CompanyList title="You will also like" companies={[]} />
+                </div> */}
+              </div>
+            </section>
           </div>
 
-          {/* 모든 컨텐츠를 한 번에 렌더링 */}
-          <div css={content}>
-            <div ref={infoRef} data-section="info" css={section}>
-              {data?.company ? (
-                <CompanyInfo data={data.company} />
-              ) : (
-                <Loading title={t('loading')} />
-              )}
-            </div>
-
-            <div ref={programRef} data-section="program" css={section}>
-              {data?.company ? (
-                <CompanyProgram badges={data.company.tags || []} companyId={companyIdNumber} />
-              ) : (
-                <Loading title={t('loading')} />
-              )}
-            </div>
-
-            <div ref={reviewRef} data-section="review" css={section}>
-              <CompanyReview companyId={companyIdNumber} />
-            </div>
-
-            <div ref={noticeRef} data-section="notice" css={section}>
-              {data?.company && (
-                <CompanyNotice
-                  bookingInformation={data.company.booking_information}
-                  refundRegulation={data.company.refund_regulation}
-                />
-              )}
-            </div>
-
-            {/* <div css={youWillAlsoLikeWrapper}>
-              <CompanyList title="You will also like" companies={[]} />
-            </div> */}
-          </div>
-        </section>
+          {isDesktop && (
+            <aside css={stickySidebar}>
+              <div css={bookingCard}>
+                <RoundButton size="L" fullWidth onClick={handleReserveClick}>
+                  Book Now
+                </RoundButton>
+              </div>
+            </aside>
+          )}
+        </div>
       </div>
 
-      <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
+      {!isDesktop && <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -320,7 +335,7 @@ const wrapper = css`
   }
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    padding-top: 24px;
+    padding-top: 0;
   }
 `;
 
@@ -343,6 +358,11 @@ const stickyTabHeader = css`
     height: 1px;
     background: ${theme.colors.border_default};
   }
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    top: 72px;
+    z-index: ${theme.zIndex.appBar};
+  }
 `;
 
 const content = css`
@@ -358,10 +378,39 @@ const pageContainer = css`
   width: 100%;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    max-width: 1200px;
     margin: 0 auto;
     padding: 0 32px;
   }
+`;
+
+const contentLayout = css`
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 32px;
+    align-items: start;
+  }
+`;
+
+const mainContent = css`
+  display: flex;
+  flex-direction: column;
+`;
+
+const stickySidebar = css`
+  position: sticky;
+  top: 96px;
+  align-self: start;
+`;
+
+const bookingCard = css`
+  /* background: ${theme.colors.bg_default}; */
+  border-radius: 16px;
+  /* padding: 20px; */
+  /* box-shadow: 0 8px 20px 0 rgb(15 23 42 / 8%); */
 `;
 
 export const youWillAlsoLikeWrapper = css`

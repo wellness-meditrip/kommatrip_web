@@ -10,14 +10,11 @@ export const wrapper = css`
   height: fit-content;
   border-radius: 12px;
 
-  background-color: ${theme.colors.bg_default};
-
   cursor: pointer;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     flex-direction: row;
     align-items: center;
-    gap: 24px;
 
     padding: 24px;
   }
@@ -62,7 +59,7 @@ export const carouselNavButton = css`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: 2;
 
   width: 32px;
   height: 32px;
@@ -93,7 +90,7 @@ export const carouselDots = css`
   bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 2;
 `;
 
 export const carouselDot = css`
