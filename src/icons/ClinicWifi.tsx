@@ -3,7 +3,7 @@ import type { SVGProps } from 'react';
 export const ClinicWifi = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 25 24" {...props}>
     <path
-      stroke="#92766A"
+      stroke="#231A00"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={2}
