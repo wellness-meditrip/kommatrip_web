@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { css } from '@emotion/react';
-import { AppBar, Loading, Text } from '@/components';
+import { AppBar, Loading, Text, Empty } from '@/components';
 import { Layout } from '@/components/layout';
 import { Check, ReviewAi } from '@/icons';
 import { theme } from '@/styles';
@@ -10,9 +10,11 @@ import { useIntersectionLoad } from '@/hooks/review';
 import { useGetGuestCompanyReviewsInfiniteQuery } from '@/queries/review';
 import { Card } from '@/components/reviews/card';
 import { TagFilterButton } from '@/components/reviews';
+import { useTranslations } from 'next-intl';
 
 export default function CompanyReviewListPage() {
   const router = useRouter();
+  const t = useTranslations('review-list');
   const { data: session } = useSession();
   const companyId = Number(router.query.companyId);
 
@@ -53,33 +55,38 @@ export default function CompanyReviewListPage() {
   const TAG_CATEGORIES = useMemo(
     () => [
       {
-        title: 'Transport & Location',
+        title: t('tagCategories.transport'),
         tags: [
-          'Near Subway',
-          'Easy to find',
-          'Easy by bus',
-          'Offering Pick-up Service',
-          'Convenient parking',
+          { value: 'Near Subway', label: t('tags.nearSubway') },
+          { value: 'Easy to find', label: t('tags.easyToFind') },
+          { value: 'Easy by bus', label: t('tags.easyByBus') },
+          { value: 'Offering Pick-up Service', label: t('tags.pickupService') },
+          { value: 'Convenient parking', label: t('tags.convenientParking') },
         ],
       },
       {
-        title: 'Service & Price',
+        title: t('tagCategories.service'),
         tags: [
-          'English Support',
-          'Japanese Support',
-          'Chinese Support',
-          'Friendly staff Highly skilled',
-          'No hard sell',
-          'Reasonable price',
-          'Pricey but worth it',
+          { value: 'English Support', label: t('tags.englishSupport') },
+          { value: 'Japanese Support', label: t('tags.japaneseSupport') },
+          { value: 'Chinese Support', label: t('tags.chineseSupport') },
+          { value: 'Friendly staff Highly skilled', label: t('tags.friendlySkilled') },
+          { value: 'No hard sell', label: t('tags.noHardSell') },
+          { value: 'Reasonable price', label: t('tags.reasonablePrice') },
+          { value: 'Pricey but worth it', label: t('tags.priceyWorthIt') },
         ],
       },
       {
-        title: 'Space Features',
-        tags: ['Great atmosphere', 'Very clean', 'Traditional Korean Style', 'Will visit again'],
+        title: t('tagCategories.space'),
+        tags: [
+          { value: 'Great atmosphere', label: t('tags.greatAtmosphere') },
+          { value: 'Very clean', label: t('tags.veryClean') },
+          { value: 'Traditional Korean Style', label: t('tags.traditionalKorean') },
+          { value: 'Will visit again', label: t('tags.willVisitAgain') },
+        ],
       },
     ],
-    []
+    [t]
   );
 
   const filteredReviews = useMemo(() => {
@@ -105,7 +112,7 @@ export default function CompanyReviewListPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar onBackClick={router.back} leftButton={true} buttonType={'dark'} title="Review" />
+      <AppBar onBackClick={router.back} leftButton={true} buttonType={'dark'} title={t('title')} />
 
       <div css={pageWrapper}>
         <div css={summaryCard}>
@@ -113,7 +120,7 @@ export default function CompanyReviewListPage() {
             <div css={summaryTitle}>
               <ReviewAi width={16} height={16} />
               <Text typo="button_S" color="text_primary">
-                AI Review Summary
+                {t('aiSummaryTitle')}
               </Text>
             </div>
             {/* <Text typo="button_S" color="text_secondary">
@@ -121,13 +128,13 @@ export default function CompanyReviewListPage() {
             </Text> */}
           </div>
           <Text typo="body_M" color="text_secondary">
-            We&apos;re gathering more reviews...
+            {t('aiSummaryEmpty')}
           </Text>
         </div>
 
         <div css={filterCard}>
           <Text typo="title_M" color="text_primary">
-            {reviewCount} Reviews
+            {t('reviewCount', { count: reviewCount })}
           </Text>
           <div css={filterRow}>
             <button
@@ -136,7 +143,7 @@ export default function CompanyReviewListPage() {
             >
               <Check width={14} height={14} />
               <Text typo="button_S" color={withPhotos ? 'primary50' : 'text_secondary'}>
-                With photos
+                {t('withPhotos')}
               </Text>
             </button>
             <button
@@ -145,7 +152,7 @@ export default function CompanyReviewListPage() {
             >
               <Check width={14} height={14} />
               <Text typo="button_S" color={myCountryOnly ? 'primary50' : 'text_secondary'}>
-                My Country only
+                {t('myCountryOnly')}
               </Text>
             </button>
           </div>
@@ -160,11 +167,11 @@ export default function CompanyReviewListPage() {
               <div css={tagList}>
                 {category.tags.map((tag) => (
                   <TagFilterButton
-                    key={tag}
-                    isSelected={selectedTags.includes(tag)}
-                    onClick={() => handleTagToggle(tag)}
+                    key={tag.value}
+                    isSelected={selectedTags.includes(tag.value)}
+                    onClick={() => handleTagToggle(tag.value)}
                   >
-                    {tag}
+                    {tag.label}
                   </TagFilterButton>
                 ))}
               </div>
@@ -174,13 +181,13 @@ export default function CompanyReviewListPage() {
 
         <div css={reviewListWrapper}>
           {isLoading ? (
-            <Loading title="리뷰를 불러오는 중..." />
+            <Loading title={t('loading')} />
           ) : filteredReviews.length > 0 ? (
             filteredReviews.map((review) => (
               <Card
                 key={review.id}
                 reviewId={review.id}
-                reviewerName={review.reviewer_username || '익명'}
+                reviewerName={review.reviewer_username || t('anonymous')}
                 reviewerImageUrl={review.reviewer_profile_image_url}
                 keywordReviewList={review.tags || []}
                 content={review.content || ''}
@@ -195,11 +202,7 @@ export default function CompanyReviewListPage() {
               />
             ))
           ) : (
-            <div css={emptyState}>
-              <Text typo="body_M" color="text_secondary">
-                No reviews match your filters.
-              </Text>
-            </div>
+            <Empty title={t('emptyFilter')} css={emptyState} />
           )}
         </div>
 

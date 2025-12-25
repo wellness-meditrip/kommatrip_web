@@ -31,6 +31,8 @@ import { InfoRow } from '@/components/info-row';
 import { CompanyGoogleMap } from '@/components/map/google-map';
 import { useState } from 'react';
 import { ArrowDown } from '@/icons';
+import { useTranslations } from 'next-intl';
+import { Loading } from '@/components/common';
 
 // Facilities 매핑 (API 데이터 -> 아이콘 + 한글 텍스트)
 const FACILITY_MAP: Record<string, { icon: React.ReactElement; label: string }> = {
@@ -65,13 +67,14 @@ interface CompanyInfoProps {
   data: CompanyDetail;
 }
 export function CompanyInfo({ data }: CompanyInfoProps) {
+  const t = useTranslations('company-detail');
   const [isHoursOpen, setIsHoursOpen] = useState(false);
   const [isRecognitionOpen, setIsRecognitionOpen] = useState(false);
   const [isGettingHereOpen, setIsGettingHereOpen] = useState(false);
   const [isHighlightsOpen, setIsHighlightsOpen] = useState(false);
 
   if (!data) {
-    return <div>데이터를 불러오는 중...</div>;
+    return <Loading title={t('loading')} />;
   }
 
   // API에서 받은 facilities 필터링
@@ -161,7 +164,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
           {isRecognitionOpen && (
             <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {recognitionText || '정보 준비 중입니다.'}
+              {recognitionText || t('infoPending')}
             </Text>
           )}
         </div>
@@ -176,7 +179,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
           {isGettingHereOpen && (
             <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {gettingHereText || '정보 준비 중입니다.'}
+              {gettingHereText || t('infoPending')}
             </Text>
           )}
         </div>
@@ -191,7 +194,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
           {isHighlightsOpen && (
             <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {highlightsText || '정보 준비 중입니다.'}
+              {highlightsText || t('infoPending')}
             </Text>
           )}
         </div>

@@ -17,6 +17,7 @@ import {
 import { useGetGuestCompanyReviewsInfiniteQuery } from '@/queries/review';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
+import { useTranslations } from 'next-intl';
 
 interface CompanyReviewProps {
   companyId: number;
@@ -24,6 +25,7 @@ interface CompanyReviewProps {
 
 export function CompanyReview({ companyId }: CompanyReviewProps) {
   const router = useRouter();
+  const t = useTranslations('review');
   // API 호출
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetGuestCompanyReviewsInfiniteQuery({
@@ -57,15 +59,15 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
           <div css={toolTip}>
             <ReviewTooltip width="14" height="14" />
             <Text tag="p" typo="button_S" color="text_tertiary">
-              by Gemini
+              {t('aiSummaryBy')}
             </Text>
             <div css={toolTipInfo}>
               <Text typo="body_S" color="text_secondary">
                 <ul css={list}>
-                  <li>인공지능 GPT-4로 리뷰를 분석해 생성한 리뷰 요약입니다.</li>
-                  <li>개인이 작성한 한 줄 리뷰는 안전하게 관리되며 리뷰 요약 글에만 사용됩니다.</li>
-                  <li>메디트립은 개별 리뷰의 진실성을 보증하지 않습니다.</li>
-                  <li>리뷰 데이터가 충분하지 않을 경우, AI 리뷰가 노출되지 않을 수 있습니다.</li>
+                  <li>{t('aiSummaryTip1')}</li>
+                  <li>{t('aiSummaryTip2')}</li>
+                  <li>{t('aiSummaryTip3')}</li>
+                  <li>{t('aiSummaryTip4')}</li>
                 </ul>
               </Text>
             </div>
@@ -74,13 +76,13 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
 
         <Text typo="body_M" color="text_secondary">
           {/* {aiSummary} */}
-          We’re gathering more reviews...
+          {t('aiSummaryEmpty')}
         </Text>
       </div>
 
       <div css={content}>
         {isLoading ? (
-          <Loading title="리뷰를 불러오는 중..." />
+          <Loading title={t('loading')} />
         ) : reviewList.length > 0 ? (
           reviewList.map((review) => (
             <Card
@@ -88,7 +90,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
               createdAt={review.created_at}
               reviewId={review.id}
               reviewerImageUrl={review.reviewer_profile_image_url}
-              reviewerName={review.reviewer_username || '익명'}
+              reviewerName={review.reviewer_username || t('anonymous')}
               keywordReviewList={review.tags || []}
               content={review.content || ''}
               imageUrlList={review.image_urls || []}
@@ -102,7 +104,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
             />
           ))
         ) : (
-          <Empty title="아직 받은 리뷰가 없어요" />
+          <Empty title={t('empty')} />
         )}
       </div>
 

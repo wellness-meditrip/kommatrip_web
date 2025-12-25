@@ -1,1 +1,34 @@
-{}
+{
+  "title": "리뷰",
+  "aiSummaryTitle": "AI 리뷰 요약",
+  "aiSummaryEmpty": "리뷰를 모으는 중이에요...",
+  "reviewCount": "리뷰 {count}개",
+  "withPhotos": "사진 포함",
+  "myCountryOnly": "내 나라만",
+  "loading": "리뷰를 불러오는 중...",
+  "emptyFilter": "조건에 맞는 리뷰가 없습니다.",
+  "anonymous": "익명",
+  "tagCategories": {
+    "transport": "교통 및 위치",
+    "service": "서비스 및 가격",
+    "space": "공간 특징"
+  },
+  "tags": {
+    "nearSubway": "지하철 인접",
+    "easyToFind": "찾기 쉬움",
+    "easyByBus": "버스 접근",
+    "pickupService": "픽업 서비스",
+    "convenientParking": "주차 편리",
+    "englishSupport": "영어 지원",
+    "japaneseSupport": "일본어 지원",
+    "chineseSupport": "중국어 지원",
+    "friendlySkilled": "친절하고 숙련됨",
+    "noHardSell": "강매 없음",
+    "reasonablePrice": "합리적 가격",
+    "priceyWorthIt": "비싸지만 만족",
+    "greatAtmosphere": "분위기 좋음",
+    "veryClean": "매우 청결",
+    "traditionalKorean": "전통 한국 스타일",
+    "willVisitAgain": "재방문 의사"
+  }
+}

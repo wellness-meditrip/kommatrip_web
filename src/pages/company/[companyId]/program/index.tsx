@@ -5,13 +5,15 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, Loading } from '@/components';
+import { CTAButton, Loading, Empty } from '@/components';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
+import { useTranslations } from 'next-intl';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
+  const t = useTranslations('program-detail');
   const { programId } = router.query;
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
@@ -67,8 +69,8 @@ export default function ProgramDetailPage() {
   if (!router.isReady || !programIdNumber) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <div>Loading...</div>
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -76,8 +78,8 @@ export default function ProgramDetailPage() {
   if (isLoading) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <Loading title="프로그램을 불러오는 중..." />
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -86,8 +88,8 @@ export default function ProgramDetailPage() {
   if (!program) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <div>프로그램 정보를 불러올 수 없습니다.</div>
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Empty title={t('loadFail')} />
       </Layout>
     );
   }
@@ -99,7 +101,7 @@ export default function ProgramDetailPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title="Program" />
+      <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
 
       <div css={imageSection}>
         <img
@@ -116,14 +118,14 @@ export default function ProgramDetailPage() {
       <div css={programSection}>
         <div css={titleWrapper}>
           <Text typo="title_M" color="text_primary" css={infoTitle}>
-            Program Information
+            {t('programInfo')}
           </Text>
         </div>
         <div css={infoCard}>
           <div css={infoRow}>
             <Clock width={16} height={16} />
             <Text typo="button_S" color="text_secondary">
-              {program.duration_minutes} mins
+              {t('duration', { minutes: program.duration_minutes })}
             </Text>
           </div>
           <div css={infoRow}>
@@ -137,7 +139,7 @@ export default function ProgramDetailPage() {
         <div css={processSection}>
           <div css={titleWrapper}>
             <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Process
+              {t('process')}
             </Text>
           </div>
           <div css={processGrid}>
@@ -157,7 +159,7 @@ export default function ProgramDetailPage() {
         <div css={detailsSection}>
           <div css={titleWrapper}>
             <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Details
+              {t('details')}
             </Text>
           </div>
           <div css={detailsCard}>
@@ -170,7 +172,7 @@ export default function ProgramDetailPage() {
               />
             )}
             <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
-              {detailsText || '정보 준비 중입니다.'}
+              {detailsText || t('infoPending')}
             </Text>
           </div>
         </div>
@@ -178,39 +180,39 @@ export default function ProgramDetailPage() {
         <div css={noticeSection}>
           <div css={titleWrapper}>
             <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Notice
+              {t('notice')}
             </Text>
           </div>
           <div css={noticeCard}>
             <button css={noticeHeader} onClick={() => setIsBookingOpen((prev) => !prev)}>
               <Text typo="button_S" color="text_primary">
-                Booking Information
+                {t('bookingInfo')}
               </Text>
               <ArrowDown width={16} height={16} css={noticeArrow(isBookingOpen)} />
             </button>
             {isBookingOpen && (
               <Text typo="body_S" color="text_secondary" css={noticeText}>
-                {bookingInfo || '정보 준비 중입니다.'}
+                {bookingInfo || t('infoPending')}
               </Text>
             )}
           </div>
           <div css={noticeCard}>
             <button css={noticeHeader} onClick={() => setIsRefundOpen((prev) => !prev)}>
               <Text typo="button_S" color="text_primary">
-                Refund Policy
+                {t('refundPolicy')}
               </Text>
               <ArrowDown width={16} height={16} css={noticeArrow(isRefundOpen)} />
             </button>
             {isRefundOpen && (
               <Text typo="body_S" color="text_secondary" css={noticeText}>
-                {refundInfo || '정보 준비 중입니다.'}
+                {refundInfo || t('infoPending')}
               </Text>
             )}
           </div>
         </div>
       </div>
 
-      <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
+      <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>
     </Layout>
   );
 }

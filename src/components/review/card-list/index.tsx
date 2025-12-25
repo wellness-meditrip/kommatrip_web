@@ -1,6 +1,7 @@
 import { Empty } from '@/components';
 import { ReviewCard } from '../card';
 import { wrapper, empty } from './index.styles';
+import { useTranslations } from 'next-intl';
 export interface PartnersReviewListType {
   reviewId: number;
   userId: number;
@@ -27,10 +28,11 @@ export function ReviewCardList<T extends PartnersReviewListType>({
   flagged,
   onReport,
 }: Props<T>) {
+  const t = useTranslations('review');
   if (reviews.length === 0) {
     return (
       <div css={empty}>
-        <Empty title="받은 리뷰가 없습니다" />
+        <Empty title={t('emptyReceived')} />
       </div>
     );
   }

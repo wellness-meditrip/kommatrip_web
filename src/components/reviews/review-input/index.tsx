@@ -1,5 +1,6 @@
 import { Text } from '@/components';
 import { ImageInput } from '@/components/image-input';
+import { useTranslations } from 'next-intl';
 import {
   wrapper,
   reviewImage,
@@ -29,6 +30,7 @@ export function ReviewInputCard({
   selectedImages,
   setSelectedImages,
 }: ReviewInputCardProps) {
+  const t = useTranslations('review-form');
   const handleImageChange = (files: File[]) => {
     setSelectedImages(files);
   };
@@ -42,7 +44,7 @@ export function ReviewInputCard({
 
   return (
     <div css={wrapper}>
-      <Text typo="subtitle1">리뷰를 작성해주세요</Text>
+      <Text typo="subtitle1">{t('title')}</Text>
       <div css={reviewImage}>
         <ImageInput
           maxLength={MAX_IMAGES}
@@ -53,13 +55,13 @@ export function ReviewInputCard({
       <div css={reviewInput}>
         <textarea
           css={textarea}
-          placeholder="리뷰를 작성해주세요"
+          placeholder={t('placeholder')}
           maxLength={MAX_REVIEW_LENGTH}
           value={reviewText}
           onChange={handleTextChange}
         />
         <div css={textContainer}>
-          <div css={errorText}>{showError && '최소 10글자 이상 작성해주세요.'}</div>
+          <div css={errorText}>{showError && t('minLengthError')}</div>
           <div css={textCountContainer}>
             <span css={textCount(isTextValid)}>{reviewText.length}&nbsp;</span>
             <span css={textCountGray}> / {MAX_REVIEW_LENGTH} </span>

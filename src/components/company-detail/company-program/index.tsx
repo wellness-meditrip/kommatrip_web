@@ -1,6 +1,8 @@
 import { Text } from '@/components/text';
 import { ProgramCard } from '../program-card';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
+import { useTranslations } from 'next-intl';
+import { Loading, Empty } from '@/components';
 
 import { container, wrapper } from './index.styles';
 
@@ -12,6 +14,7 @@ interface CompanyProgramProps {
 const formatPrice = (price: number) => `${new Intl.NumberFormat('en-US').format(price)} KRW`;
 
 export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
+  const t = useTranslations('program');
   const { data, isLoading } = useGetProgramCompanyListQuery({
     company_id: companyId,
     skip: 0,
@@ -24,18 +27,16 @@ export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
     <div css={container}>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
-          Programs
+          {t('listTitle')}
         </Text>
         {isLoading ? (
-          <Text typo="body_M" color="text_secondary">
-            프로그램을 불러오는 중...
-          </Text>
+          <Loading title={t('loadingList')} />
         ) : programs.length > 0 ? (
           programs.map((program) => (
             <ProgramCard
               key={program.id}
               title={program.name}
-              duration={`${program.duration_minutes} mins`}
+              duration={t('duration', { minutes: program.duration_minutes })}
               price={formatPrice(program.price)}
               image={program.primary_image_url || program.image_urls?.[0] || '/default.png'}
               badges={badges}
@@ -44,9 +45,7 @@ export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
             />
           ))
         ) : (
-          <Text typo="body_M" color="text_secondary">
-            표시할 프로그램이 없습니다.
-          </Text>
+          <Empty title={t('emptyList')} />
         )}
       </div>
     </div>

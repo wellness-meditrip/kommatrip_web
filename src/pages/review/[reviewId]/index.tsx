@@ -4,6 +4,7 @@ import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import 'dayjs/locale/ko';
+import { useTranslations } from 'next-intl';
 import {
   wrapper,
   header,
@@ -31,6 +32,7 @@ export default function ReviewEditPage() {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const router = useRouter();
+  const t = useTranslations('review');
   const { showToast } = useToast();
   const { open } = useDialog();
 
@@ -67,7 +69,7 @@ export default function ReviewEditPage() {
     if (!reviewData) return;
 
     if (reviewText.length < 10) {
-      alert('리뷰는 최소 10글자 이상 작성해주세요.');
+      alert(t('minLengthAlert'));
       return;
     }
 
@@ -83,16 +85,16 @@ export default function ReviewEditPage() {
       { reviewId, body },
       {
         onSuccess: () => {
-          showToast({ title: '리뷰가 성공적으로 수정되었습니다!' });
+          showToast({ title: t('updateSuccess') });
         },
         onError: (error: unknown) => {
-          let errorMessage = '알 수 없는 오류가 발생했습니다.';
+          let errorMessage = t('unknownError');
 
           if (error && typeof error === 'object' && 'response' in error) {
             const axiosError = error as { response?: { data?: unknown; status?: number } };
 
             if (axiosError.response?.status === 422) {
-              errorMessage = '입력하신 정보를 확인해주세요.';
+              errorMessage = t('invalidInput');
               if (
                 axiosError.response?.data &&
                 typeof axiosError.response.data === 'object' &&
@@ -101,17 +103,17 @@ export default function ReviewEditPage() {
                 errorMessage = String(axiosError.response.data.message);
               }
             } else if (axiosError.response?.status === 401) {
-              errorMessage = '로그인이 필요합니다.';
+              errorMessage = t('loginRequired');
             } else if (axiosError.response?.status === 403) {
-              errorMessage = '접근 권한이 없습니다.';
+              errorMessage = t('forbidden');
             }
           }
 
           open({
             type: 'confirm',
-            title: '리뷰 수정 실패',
+            title: t('updateFail'),
             description: errorMessage,
-            primaryActionLabel: '확인',
+            primaryActionLabel: t('confirm'),
           });
         },
       }
@@ -120,7 +122,7 @@ export default function ReviewEditPage() {
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} leftButton={true} title="리뷰 수정" />
+      <AppBar onBackClick={router.back} leftButton={true} title={t('editTitle')} />
       <div css={wrapper}>
         <div css={header}>
           <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
@@ -129,7 +131,7 @@ export default function ReviewEditPage() {
             <div>
               <div css={item}>
                 <Text typo="body_M" color="text_tertiary">
-                  진료항목
+                  {t('serviceItem')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
                   {mockData.shopName}
@@ -137,7 +139,7 @@ export default function ReviewEditPage() {
               </div>
               <div css={item}>
                 <Text typo="body_M" color="text_tertiary">
-                  방문일자
+                  {t('visitDate')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
                   {mockData.schedule}
@@ -148,7 +150,7 @@ export default function ReviewEditPage() {
         </div>
         <div css={container}>
           {(isLoadingReview || isUpdating) && (
-            <Loading title={isLoadingReview ? '리뷰를 불러오는 중...' : '리뷰를 수정하고 있어요'} />
+            <Loading title={isLoadingReview ? t('loading') : t('updating')} />
           )}
 
           <RatingCard rating={rating} onRatingChange={setRating} />
@@ -178,7 +180,7 @@ export default function ReviewEditPage() {
               !rating || !reviewText || selectedTags.length === 0 || isUpdating || isLoadingReview
             }
           >
-            {isUpdating ? '리뷰 수정 중...' : '리뷰 수정하기'}
+            {isUpdating ? t('updatingButton') : t('updateButton')}
           </RoundButton>
         </div>
       </div>

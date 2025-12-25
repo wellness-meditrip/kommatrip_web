@@ -3,6 +3,7 @@ import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { convertKeywordNamesToRequestPayload } from '@/utils';
 import {
   wrapper,
@@ -44,6 +45,7 @@ export default function ReviewPage() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   const router = useRouter();
+  const t = useTranslations('review');
   const { showToast } = useToast();
   const { open } = useDialog();
   const { mutate, isPending } = usePostClinicReviewMutation();
@@ -61,12 +63,12 @@ export default function ReviewPage() {
 
   const validateForm = () => {
     if (!rating || !reviewText || selectedTags.length === 0) {
-      alert('별점, 키워드, 내용을 모두 입력해주세요.');
+      alert(t('missingFields'));
       return false;
     }
 
     if (reviewText.length < 10) {
-      alert('리뷰는 최소 10글자 이상 작성해주세요.');
+      alert(t('minLengthAlert'));
       return false;
     }
 
@@ -79,7 +81,7 @@ export default function ReviewPage() {
     try {
       return await uploadToS3(selectedImages);
     } catch (error) {
-      alert('이미지 업로드에 실패했습니다.');
+      alert(t('imageUploadFail'));
       throw error;
     }
   };
@@ -96,11 +98,11 @@ export default function ReviewPage() {
         ) {
           return String(axiosError.response.data.message);
         }
-        return '입력하신 정보를 확인해주세요.';
+        return t('invalidInput');
       } else if (axiosError.response?.status === 401) {
-        return '로그인이 필요합니다.';
+        return t('loginRequired');
       } else if (axiosError.response?.status === 403) {
-        return '접근 권한이 없습니다.';
+        return t('forbidden');
       }
     }
     return '알 수 없는 오류가 발생했습니다.';
@@ -127,7 +129,7 @@ export default function ReviewPage() {
 
       mutate(body, {
         onSuccess: () => {
-          showToast({ title: '리뷰가 성공적으로 등록되었습니다!' });
+          showToast({ title: t('createSuccess') });
           // 성공 시 마이페이지로 이동
           router.push('/mypage');
         },
@@ -135,9 +137,9 @@ export default function ReviewPage() {
           const errorMessage = getErrorMessage(error);
           open({
             type: 'confirm',
-            title: '리뷰 등록 실패',
+            title: t('createFail'),
             description: errorMessage,
-            primaryActionLabel: '확인',
+            primaryActionLabel: t('confirm'),
           });
         },
       });
@@ -148,7 +150,7 @@ export default function ReviewPage() {
 
   return (
     <Layout>
-      <AppBar onBackClick={router.back} leftButton={true} title="리뷰 작성" />
+      <AppBar onBackClick={router.back} leftButton={true} title={t('createTitle')} />
       <div css={wrapper}>
         <div css={header}>
           <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
@@ -157,7 +159,7 @@ export default function ReviewPage() {
             <div>
               <div css={item}>
                 <Text typo="body_M" color="text_tertiary">
-                  진료항목
+                  {t('serviceItem')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
                   {MOCK_DATA.shopName}
@@ -165,7 +167,7 @@ export default function ReviewPage() {
               </div>
               <div css={item}>
                 <Text typo="body_M" color="text_tertiary">
-                  방문일자
+                  {t('visitDate')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
                   {MOCK_DATA.schedule}
@@ -176,7 +178,7 @@ export default function ReviewPage() {
         </div>
         {isPending ? (
           <div css={loadingContainer}>
-            <Loading title="리뷰를 등록하고 있어요" fullHeight={true} />
+            <Loading title={t('creating')} fullHeight={true} />
           </div>
         ) : (
           <>
@@ -206,7 +208,7 @@ export default function ReviewPage() {
                 onClick={handleSubmit}
                 disabled={!rating || !reviewText || selectedTags.length === 0}
               >
-                리뷰 등록하기
+                {t('createButton')}
               </RoundButton>
             </div>
           </>

@@ -5,7 +5,7 @@ import { wrapper } from './index.styles';
 import loading from '../../../../public/json/loading.json';
 import Lottie from 'lottie-react';
 interface Props {
-  title: string;
+  title?: string;
   onActionButtonClick?: () => void;
   css?: CSSObject;
   fullHeight?: boolean;

@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { css } from '@emotion/react';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 
 import {
   AppBar,
@@ -14,6 +15,7 @@ import {
   CTAButton,
   Loading,
   LoginModal,
+  Empty,
 } from '@/components';
 import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
@@ -24,6 +26,7 @@ import { ROUTES } from '@/constants';
 export default function ClinicDetailPage() {
   const router = useRouter();
   const { companyId } = router.query;
+  const t = useTranslations('company-detail');
 
   const companyIdNumber = Number(companyId);
 
@@ -184,7 +187,7 @@ export default function ClinicDetailPage() {
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
       <Layout>
-        <Loading title="데이터를 불러오는 중..." />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -192,7 +195,7 @@ export default function ClinicDetailPage() {
   if (error) {
     return (
       <Layout>
-        <div>Error loading data</div>
+        <Empty title={t('loadFail')} />
       </Layout>
     );
   }
@@ -200,7 +203,7 @@ export default function ClinicDetailPage() {
   if (!data) {
     return (
       <Layout>
-        <Loading title="데이터를 불러오는 중..." />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -242,18 +245,14 @@ export default function ClinicDetailPage() {
         {/* 모든 컨텐츠를 한 번에 렌더링 */}
         <div css={content}>
           <div ref={infoRef} data-section="info" css={section}>
-            {data?.company ? (
-              <CompanyInfo data={data.company} />
-            ) : (
-              <div>데이터를 불러오는 중...</div>
-            )}
+            {data?.company ? <CompanyInfo data={data.company} /> : <Loading title={t('loading')} />}
           </div>
 
           <div ref={programRef} data-section="program" css={section}>
             {data?.company ? (
               <CompanyProgram badges={data.company.tags || []} companyId={companyIdNumber} />
             ) : (
-              <div>데이터를 불러오는 중...</div>
+              <Loading title={t('loading')} />
             )}
           </div>
 

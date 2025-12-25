@@ -44,6 +44,8 @@
     "searchPlaceholder": "스파, 클리닉, 치료법 검색...",
     "recommendedTitle": "추천 업체",
     "loadingRecommended": "추천 업체를 불러오고 있어요",
+    "loadingRecent": "최근 본 업체를 불러오는 중...",
+    "recentlyViewed": "최근 본 업체",
     "noRecommendedCompanies": "추천할 업체가 없습니다"
   }
 }

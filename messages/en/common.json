@@ -44,6 +44,8 @@
     "searchPlaceholder": "Search spas, clinics, treatments...",
     "recommendedTitle": "Recommended for You",
     "loadingRecommended": "Loading recommended companies...",
+    "loadingRecent": "Loading recently viewed companies...",
+    "recentlyViewed": "Recently Viewed",
     "noRecommendedCompanies": "No recommended companies available"
   }
 }

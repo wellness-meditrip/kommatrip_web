@@ -101,9 +101,9 @@ export default function HomePage() {
       <div css={wrapper}>
         {/* 최근 본 업체 섹션 */}
         {isRecentLoading ? (
-          <Loading title="최근 본 업체를 불러오고 있어요" />
+          <Loading title={t('home.loadingRecent')} />
         ) : formattedRecentCompanies.length > 0 ? (
-          <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
+          <CompanyList title={t('home.recentlyViewed')} companies={formattedRecentCompanies} />
         ) : null}
 
         <Text typo="title_M" color="text_primary" css={title}>

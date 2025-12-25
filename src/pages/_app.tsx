@@ -11,6 +11,7 @@ import '@/styles/normalize.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
+import { Loading } from '@/components';
 
 /**
  * NextAuth 세션과 zustand auth store 동기화
@@ -32,6 +33,12 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     pathLocale && routing.locales.includes(pathLocale as Locale)
       ? (pathLocale as Locale)
       : routing.defaultLocale;
+
+  const loadingMessageByLocale: Record<Locale, string> = {
+    en: 'Loading...',
+    ko: '로딩 중...',
+    ja: '読み込み中...',
+  };
 
   // 클라이언트 사이드에서 메시지 로드
   useEffect(() => {
@@ -74,17 +81,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
               <DialogProvider>
                 <ToastProvider>
                   {isLoading ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '100vh',
-                        fontSize: '16px',
-                      }}
-                    >
-                      Loading...
-                    </div>
+                    <Loading title={loadingMessageByLocale[locale]} fullHeight={true} />
                   ) : (
                     <Component {...pageProps} />
                   )}

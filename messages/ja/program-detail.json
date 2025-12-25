@@ -1,1 +1,14 @@
-{}
+{
+  "title": "プログラム",
+  "loading": "プログラムを読み込み中...",
+  "loadFail": "プログラム情報を読み込めませんでした。",
+  "programInfo": "プログラム情報",
+  "duration": "{minutes}分",
+  "process": "プロセス",
+  "details": "詳細",
+  "notice": "ご案内",
+  "bookingInfo": "予約案内",
+  "refundPolicy": "返金規定",
+  "infoPending": "情報準備中です。",
+  "bookNow": "今すぐ予約"
+}
