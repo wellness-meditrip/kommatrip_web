@@ -107,7 +107,16 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
           <li onClick={() => handleMenuClick(ROUTES.HOME)}>{t('main')}</li>
           <li onClick={() => handleMenuClick(ROUTES.COMPANY)}>{t('programs')}</li>
           {/* <li onClick={() => handleMenuClick(ROUTES.MYPAGE)}>{t('mypage')}</li> */}
-          <li>{t('business_inquiry')}</li>
+          <li
+            onClick={() =>
+              window.open(
+                'https://docs.google.com/forms/d/e/1FAIpQLSe3ooadODaa3SwoF-ru6lXn82oXGSjBOhWZrcYiPuu8fMbGww/viewform',
+                '_blank'
+              )
+            }
+          >
+            {t('business_inquiry')}
+          </li>
         </ul>
         <div css={logoutWrapper}>
           <div css={iconWrapper}>
