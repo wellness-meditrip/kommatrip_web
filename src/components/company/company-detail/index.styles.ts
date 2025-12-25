@@ -132,8 +132,47 @@ export const DetailsWrapper = css`
 
 export const address = css`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
+
+  svg {
+    flex-shrink: 0;
+
+    width: 16px;
+    height: 16px;
+  }
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    svg {
+      overflow: hidden;
+    }
+  }
+`;
+
+export const addressText = css`
+  flex: 1;
+`;
+
+export const copyButton = css`
+  display: flex;
+
+  width: 28px;
+  height: 28px;
+
+  /* align-items: center; */
+
+  /* justify-content: center; */
+
+  /* flex-shrink: 0; */
+  padding: 0 10px;
+
+  /* border-radius: 8px; */
+
+  /* border: 1px solid ${theme.colors.border_default}; */
+
+  /* background: ${theme.colors.bg_default}; */
+
+  cursor: pointer;
 `;
 
 export const tags = css`
