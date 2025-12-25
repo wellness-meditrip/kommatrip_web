@@ -58,9 +58,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
           </div>
           <div css={toolTip}>
             <ReviewTooltip width="14" height="14" />
-            <Text tag="p" typo="button_S" color="text_tertiary">
-              {t('aiSummaryBy')}
-            </Text>
+
             <div css={toolTipInfo}>
               <Text typo="body_S" color="text_secondary">
                 <ul css={list}>

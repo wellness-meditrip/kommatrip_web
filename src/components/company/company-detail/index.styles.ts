@@ -4,6 +4,7 @@ import { theme } from '@/styles';
 export const wrapper = css`
   display: flex;
   flex-direction: column;
+  gap: 12px;
 
   width: 100%;
   height: fit-content;
@@ -12,6 +13,14 @@ export const wrapper = css`
   background-color: ${theme.colors.bg_default};
 
   cursor: pointer;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+
+    padding: 24px;
+  }
 `;
 
 export const profileWrapper = css`
@@ -28,6 +37,15 @@ export const profileWrapper = css`
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    flex: 0 0 420px;
+    overflow: hidden;
+
+    width: 420px;
+    height: 260px;
+    border-radius: 12px;
   }
 `;
 
@@ -108,6 +126,10 @@ export const DetailsWrapper = css`
   gap: 8px;
 
   padding: 16px 20px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding: 0;
+  }
 `;
 
 export const address = css`
