@@ -108,9 +108,7 @@ export const content = css`
 
   width: 100%;
   height: 100%;
-  padding: 0 20px 20px;
-
-  /* border-top: 1px solid ${theme.colors.gray200}; */
+  padding: 20px;
 `;
 
 export const bottom = css`

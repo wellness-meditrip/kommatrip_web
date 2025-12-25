@@ -15,6 +15,7 @@ export const wrapper = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     flex-direction: row;
     align-items: center;
+    gap: 24px;
 
     padding: 24px;
   }
