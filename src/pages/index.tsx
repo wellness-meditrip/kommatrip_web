@@ -191,7 +191,7 @@ export const cardsGrid = css`
   justify-items: center;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
 `;
@@ -200,6 +200,7 @@ export const wrapper = css`
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
   /* overflow-y: auto; */
 
   width: 100%;
