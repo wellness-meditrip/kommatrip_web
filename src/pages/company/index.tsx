@@ -252,24 +252,26 @@ export default function CompanyPage() {
         )}
 
         {/* 업체 리스트 표시 (필터링된 결과) */}
-        {!isLoading &&
-          !error &&
-          filteredCompanies.length > 0 &&
-          filteredCompanies.map((company) => (
-            <CompanyCard
-              key={company.id}
-              companyId={company.id}
-              badges={company.tags || []}
-              isExclusive={company.is_exclusive}
-              onClick={(companyId: number) => {
-                router.push(ROUTES.COMPANY_DETAIL(companyId));
-              }}
-              companyImage={company.photos?.[0] || '/default.png'}
-              companyName={company.name || ''}
-              companyAddress={company.address || ''}
-              images={company.photos || []}
-            />
-          ))}
+        {!isLoading && !error && filteredCompanies.length > 0 && (
+          <div css={cardsGrid}>
+            {filteredCompanies.map((company) => (
+              <CompanyCard
+                key={company.id}
+                companyId={company.id}
+                badges={company.tags || []}
+                isExclusive={company.is_exclusive}
+                fixedHeight={true}
+                onClick={(companyId: number) => {
+                  router.push(ROUTES.COMPANY_DETAIL(companyId));
+                }}
+                companyImage={company.photos?.[0] || '/default.png'}
+                companyName={company.name || ''}
+                companyAddress={company.address || ''}
+                images={company.photos || []}
+              />
+            ))}
+          </div>
+        )}
 
         {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
         {!isLoading && !error && companies.length === 0 && !keyword.trim() && (
@@ -298,6 +300,19 @@ export const wrapper = css`
 
 export const searchBarWrapper = css`
   background-color: ${theme.colors.primary80};
+`;
+
+export const cardsGrid = css`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  justify-items: center;
+  width: 100%;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    grid-template-columns: repeat(3, minmax(0, 353px));
+    justify-content: center;
+  }
 `;
 export const bottom = css`
   position: absolute;

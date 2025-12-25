@@ -43,6 +43,7 @@ export const profileWrapper = css`
   overflow: hidden;
 
   width: 100%;
+  min-height: 200px;
   border-radius: 12px 12px 0 0;
 
   img {
@@ -50,6 +51,12 @@ export const profileWrapper = css`
     height: 100%;
     object-fit: cover;
   }
+`;
+
+export const profileWrapperFixedHeight = css`
+  ${profileWrapper};
+  height: 356px;
+  min-height: 356px;
 `;
 
 export const profileImage = css`
@@ -81,6 +88,16 @@ export const titleRow = css`
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+`;
+
+export const titleText = css`
+  flex: 1;
+  overflow: hidden;
+
+  min-width: 0;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `;
 
 export const exclusiveBadge = css`

@@ -1,18 +1,20 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { Location, ChevronLeftWhite } from '@/icons';
-import Image from 'next/image';
-import { useState } from 'react';
+import NextImage from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 import {
   wrapper,
   wrapperFixedHeight,
   profileWrapper,
+  profileWrapperFixedHeight,
   DetailsWrapper,
   DetailsWrapperFixedHeight,
   tags,
   tagsFixedHeight,
   ratingBadge,
   titleRow,
+  titleText,
   exclusiveBadge,
   imageCarousel,
   carouselContainer,
@@ -53,8 +55,14 @@ export function CompanyCard({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
-  const imageList = images.length > 0 ? images : [companyImage];
+  const imageList = useMemo(
+    () => (images.length > 0 ? images : [companyImage]),
+    [images, companyImage]
+  );
   const currentImageUrl = imageList[currentImageIndex];
+  const isSasImage = currentImageUrl?.includes('meditripstorage.blob.core.windows.net')
+    ? currentImageUrl.includes('sig=')
+    : false;
 
   const handleImageError = () => {
     console.log('Image load failed, falling back to default image for:', companyName);
@@ -64,6 +72,23 @@ export function CompanyCard({
   // const handleImageLoad = () => {
   //   console.log('Image loaded successfully for:', companyName);
   // };
+
+  useEffect(() => {
+    setImageError(false);
+  }, [currentImageIndex]);
+
+  useEffect(() => {
+    if (imageList.length < 2) return;
+
+    const nextIndex = (currentImageIndex + 1) % imageList.length;
+    const prevIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
+
+    [imageList[nextIndex], imageList[prevIndex]].forEach((url) => {
+      if (!url) return;
+      const preloadImage = new window.Image();
+      preloadImage.src = url;
+    });
+  }, [currentImageIndex, imageList]);
 
   const handleDotClick = (index: number) => {
     setCurrentImageIndex(index);
@@ -81,28 +106,23 @@ export function CompanyCard({
 
   return (
     <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(companyId)}>
-      <div css={profileWrapper}>
+      <div css={fixedHeight ? profileWrapperFixedHeight : profileWrapper}>
         {imageList.length > 1 ? (
           <div css={imageCarousel}>
             <div css={carouselContainer}>
               {currentImageUrl && !imageError ? (
-                <Image
+                <NextImage
                   src={currentImageUrl}
                   alt="프로필 이미지"
-                  width={170}
-                  height={200}
+                  fill
+                  sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
                   onError={handleImageError}
+                  unoptimized={isSasImage}
                   // onLoad={handleImageLoad}
                   css={carouselImage}
                 />
               ) : (
-                <img
-                  src="/default.png"
-                  alt="기본 이미지"
-                  width={170}
-                  height={200}
-                  css={carouselImage}
-                />
+                <img src="/default.png" alt="기본 이미지" css={carouselImage} />
               )}
               <button
                 css={[carouselNavButton, carouselNavLeft]}
@@ -135,23 +155,17 @@ export function CompanyCard({
         ) : (
           <>
             {currentImageUrl && !imageError ? (
-              <Image
+              <NextImage
                 src={currentImageUrl}
                 alt="프로필 이미지"
-                width={170}
-                height={200}
+                fill
+                sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
                 onError={handleImageError}
+                unoptimized={isSasImage}
+                css={carouselImage}
               />
             ) : (
-              <div css={profileWrapper}>
-                <img
-                  src="/default.png"
-                  alt="기본 이미지"
-                  width={170}
-                  height={200}
-                  style={{ objectFit: 'cover', borderRadius: '8px' }}
-                />
-              </div>
+              <img src="/default.png" alt="기본 이미지" css={carouselImage} />
             )}
           </>
         )}
@@ -166,7 +180,7 @@ export function CompanyCard({
       </div>
       <div css={fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper}>
         <div css={titleRow}>
-          <Text typo="title_M" color="text_primary">
+          <Text typo="title_M" color="text_primary" css={titleText}>
             {companyName}
           </Text>
           {isExclusive && <span css={exclusiveBadge}>Exclusive</span>}
