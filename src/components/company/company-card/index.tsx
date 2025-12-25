@@ -116,6 +116,7 @@ export function CompanyCard({
                   alt="프로필 이미지"
                   fill
                   sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
+                  quality={90}
                   onError={handleImageError}
                   unoptimized={isSasImage}
                   // onLoad={handleImageLoad}
@@ -160,6 +161,7 @@ export function CompanyCard({
                 alt="프로필 이미지"
                 fill
                 sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
+                quality={90}
                 onError={handleImageError}
                 unoptimized={isSasImage}
                 css={carouselImage}

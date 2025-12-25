@@ -10,6 +10,7 @@ import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
@@ -57,6 +58,25 @@ export default function ProgramDetailPage() {
 
   const [imageSrc, setImageSrc] = useState('/default.png');
   const [detailImageSrc, setDetailImageSrc] = useState('');
+  const isSasImage = imageSrc?.includes('meditripstorage.blob.core.windows.net')
+    ? imageSrc.includes('sig=')
+    : false;
+  const isOptimizableImage = (url: string) => {
+    if (!url) return false;
+    if (url.startsWith('/')) return true;
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'https:') return false;
+      return [
+        'drive.google.com',
+        'meditrip.s3.ap-northeast-2.amazonaws.com',
+        'meditripstorage.blob.core.windows.net',
+      ].includes(parsedUrl.hostname);
+    } catch (error) {
+      return false;
+    }
+  };
+  const shouldUseNextImage = isOptimizableImage(imageSrc);
 
   useEffect(() => {
     setImageSrc(displayImageUrl);
@@ -104,12 +124,27 @@ export default function ProgramDetailPage() {
       <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
 
       <div css={imageSection}>
-        <img
-          src={imageSrc}
-          alt="program"
-          css={mainImage}
-          onError={() => setImageSrc('/default.png')}
-        />
+        {shouldUseNextImage ? (
+          <Image
+            src={imageSrc}
+            alt="program"
+            width={1200}
+            height={800}
+            sizes="100vw"
+            quality={90}
+            priority
+            unoptimized={isSasImage}
+            css={mainImage}
+            onError={() => setImageSrc('/default.png')}
+          />
+        ) : (
+          <img
+            src={imageSrc}
+            alt="program"
+            css={mainImage}
+            onError={() => setImageSrc('/default.png')}
+          />
+        )}
       </div>
 
       <Text typo="title_L" color="text_primary" css={programTitle}>
@@ -219,7 +254,7 @@ export default function ProgramDetailPage() {
 
 const imageSection = css`
   width: 100%;
-  height: 300px;
+  height: clamp(200px, 45vw, 300px);
 `;
 
 const mainImage = css`
@@ -297,19 +332,31 @@ const detailsCard = css`
   padding: 16px;
   box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: flex-start;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 `;
 
 const detailsImage = css`
-  width: 100%;
+  width: 180px;
+  height: 140px;
   border-radius: 12px;
   object-fit: cover;
+  display: block;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    height: clamp(200px, 55vw, 320px);
+  }
 `;
 
 const detailsTextStyle = css`
   white-space: pre-wrap;
   line-height: 1.4;
+  flex: 1;
 `;
 
 const noticeSection = css`

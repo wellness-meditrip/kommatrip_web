@@ -67,12 +67,13 @@ export default function CompanyDetail({
             <Image
               src={currentImageUrl}
               alt="프로필 이미지"
-              width={170}
-              height={200}
+              fill
+              sizes="100vw"
+              quality={90}
               onError={handleImageError}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" width={170} height={200} />
+            <img src="/default.png" alt="기본 이미지" />
           )}
 
           {/* 캐러셀 네비게이션 버튼 */}
@@ -112,12 +113,13 @@ export default function CompanyDetail({
             <Image
               src={currentImageUrl}
               alt="프로필 이미지"
-              width={170}
-              height={200}
+              fill
+              sizes="100vw"
+              quality={90}
               onError={handleImageError}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" width={170} height={200} />
+            <img src="/default.png" alt="기본 이미지" />
           )}
         </div>
       )}
