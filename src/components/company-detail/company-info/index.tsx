@@ -153,21 +153,23 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           Editor&apos;s Comment
         </Text>
 
-        <div css={infoWrapper}>
-          <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
-            <Text typo="title_S" color="text_primary">
-              Official Recognition
-            </Text>
-            <div css={hoursArrow(isRecognitionOpen)}>
-              <ArrowDown width={30} height={30} />
+        {recognitionText && (
+          <div css={infoWrapper}>
+            <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
+              <Text typo="title_S" color="text_primary">
+                Official Recognition
+              </Text>
+              <div css={hoursArrow(isRecognitionOpen)}>
+                <ArrowDown width={30} height={30} />
+              </div>
             </div>
+            {isRecognitionOpen && (
+              <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+                {recognitionText}
+              </Text>
+            )}
           </div>
-          {isRecognitionOpen && (
-            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {recognitionText || t('infoPending')}
-            </Text>
-          )}
-        </div>
+        )}
         <div css={infoWrapper}>
           <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
             <Text typo="title_S" color="text_primary">
