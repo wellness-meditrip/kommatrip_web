@@ -15,6 +15,9 @@ import {
   dayLabel,
   recognitionContent,
   recognitionHeader,
+  contactList,
+  contactRow,
+  contactLabel,
 } from './index.styles';
 import { Text } from '@/components/text';
 import {
@@ -135,6 +138,25 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   const recognitionText = data.badge?.replace(/\\n/g, '\n').trim() ?? '';
   const gettingHereText = data.getting_here?.replace(/\\n/g, '\n').trim() ?? '';
   const highlightsText = data.highlights?.replace(/\\n/g, '\n').trim() ?? '';
+  const websiteUrl = data.website_url?.trim() ?? '';
+  const instagramUrl = data.instagram_url?.trim() ?? '';
+  const whatsappUrl = data.whats_app_url?.trim() ?? '';
+
+  const handleOpenLink = (value: string, type?: 'instagram') => {
+    if (!value) return;
+    const trimmedValue = value.trim();
+    const url =
+      trimmedValue.startsWith('http://') || trimmedValue.startsWith('https://')
+        ? trimmedValue
+        : trimmedValue.startsWith('www.')
+          ? `https://${trimmedValue}`
+          : type === 'instagram' && trimmedValue.startsWith('@')
+            ? `https://instagram.com/${trimmedValue.slice(1)}`
+            : '';
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
 
   // if (isError) {
   //   open({
@@ -251,33 +273,57 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
             }
           />
 
-          <InfoRow
-            icon={<ClinicGlobe width={16} height={16} />}
-            title={
-              <Text
-                typo="button_S"
-                color="primary50"
-                onClick={() => window.open(data.website_url, '_blank')}
-              >
-                {data.website_url}
-              </Text>
-            }
-            expandable
-            showToggleButton
-          >
-            {/* <div css={urlWrapper}>
-              {urlList.map(({ type, url }) => (
-                <Text
-                  key={type}
-                  typo="button_S"
-                  color="primary50"
-                  onClick={() => window.open(url, '_blank')}
-                >
-                  {type}
-                </Text>
-              ))}
-            </div> */}
-          </InfoRow>
+          {(websiteUrl || instagramUrl || whatsappUrl) && (
+            <InfoRow
+              icon={<ClinicGlobe width={16} height={16} />}
+              title={
+                <div css={contactList}>
+                  {websiteUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        Website
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(websiteUrl)}
+                      >
+                        {websiteUrl}
+                      </Text>
+                    </div>
+                  )}
+                  {instagramUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        Instagram
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(instagramUrl, 'instagram')}
+                      >
+                        {instagramUrl}
+                      </Text>
+                    </div>
+                  )}
+                  {whatsappUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        WhatsApp
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(whatsappUrl)}
+                      >
+                        {whatsappUrl}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              }
+            />
+          )}
         </div>
       </div>
       <div css={wrapper}>
