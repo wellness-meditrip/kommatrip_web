@@ -6,8 +6,8 @@ import {
   GlobeFilled,
   Login,
   LoginFilled,
-  GnbMypageActive,
-  GnbMypageInactive,
+  MypageActive,
+  MypageInactive,
 } from '@/icons';
 import {
   wrapper,
@@ -122,14 +122,14 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
           <div css={iconWrapper}>
             <div css={loginIcon}>
               {isLoggedIn ? (
-                <GnbMypageInactive width="30px" height="30px" />
+                <MypageInactive width="30px" height="30px" />
               ) : (
                 <Login width="20px" height="20px" />
               )}
             </div>
             <div css={loginFilledIcon}>
               {isLoggedIn ? (
-                <GnbMypageActive width="30px" height="30px" />
+                <MypageActive width="30px" height="30px" />
               ) : (
                 <LoginFilled width="20px" height="20px" />
               )}
