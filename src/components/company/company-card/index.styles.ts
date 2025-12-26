@@ -37,6 +37,11 @@ export const wrapperFixedHeight = css`
   }
 `;
 
+export const wrapperCompact = css`
+  min-width: 300px;
+  height: 350px;
+`;
+
 export const profileWrapper = css`
   flex: 1;
   position: relative;
@@ -57,6 +62,11 @@ export const profileWrapperFixedHeight = css`
   ${profileWrapper};
   height: 356px;
   min-height: 356px;
+`;
+
+export const profileWrapperCompact = css`
+  height: 280px;
+  min-height: 280px;
 `;
 
 export const profileImage = css`
@@ -81,6 +91,14 @@ export const DetailsWrapperFixedHeight = css`
 
   /* height: 120px; */
   padding: 16px;
+`;
+
+export const DetailsWrapperCompact = css`
+  padding: 12px;
+`;
+
+export const DetailsWrapperFixedHeightCompact = css`
+  padding: 12px;
 `;
 
 export const titleRow = css`

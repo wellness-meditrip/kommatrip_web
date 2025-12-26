@@ -16,6 +16,10 @@ import {
   titleRow,
   titleText,
   exclusiveBadge,
+  wrapperCompact,
+  profileWrapperCompact,
+  DetailsWrapperCompact,
+  DetailsWrapperFixedHeightCompact,
   imageCarousel,
   carouselContainer,
   carouselImage,
@@ -34,6 +38,7 @@ interface Props {
   companyAddress: string;
   badges: string[];
   fixedHeight?: boolean;
+  size?: 'default' | 'compact';
   images?: string[]; // 여러 이미지 배열 추가
   isExclusive?: boolean;
   onClick: (clinicId: number) => void;
@@ -47,6 +52,7 @@ export function CompanyCard({
   companyAddress,
   badges,
   fixedHeight = false,
+  size = 'default',
   images = [],
   isExclusive = false,
   onClick,
@@ -105,8 +111,16 @@ export function CompanyCard({
   };
 
   return (
-    <div css={fixedHeight ? wrapperFixedHeight : wrapper} onClick={() => onClick(companyId)}>
-      <div css={fixedHeight ? profileWrapperFixedHeight : profileWrapper}>
+    <div
+      css={[fixedHeight ? wrapperFixedHeight : wrapper, size === 'compact' && wrapperCompact]}
+      onClick={() => onClick(companyId)}
+    >
+      <div
+        css={[
+          fixedHeight ? profileWrapperFixedHeight : profileWrapper,
+          size === 'compact' && profileWrapperCompact,
+        ]}
+      >
         {imageList.length > 1 ? (
           <div css={imageCarousel}>
             <div css={carouselContainer}>
@@ -180,7 +194,13 @@ export function CompanyCard({
           </div>
         )}
       </div>
-      <div css={fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper}>
+      <div
+        css={[
+          fixedHeight ? DetailsWrapperFixedHeight : DetailsWrapper,
+          size === 'compact' && DetailsWrapperCompact,
+          size === 'compact' && fixedHeight && DetailsWrapperFixedHeightCompact,
+        ]}
+      >
         <div css={titleRow}>
           <Text typo="title_M" color="text_primary" css={titleText}>
             {companyName}

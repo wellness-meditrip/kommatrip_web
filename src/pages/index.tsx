@@ -39,7 +39,7 @@ export default function HomePage() {
     return recentCompanies.map((company) => ({
       hospital_id: company.id,
       hospital_name: company.name,
-      address: company.simple_place,
+      address: company.simple_place ?? (company as { simpleplace?: string }).simpleplace ?? '',
       rating: 4.5, // API에 rating이 없으면 기본값 사용
       image_url: company.photos?.[0] || '/default.png',
       images: company.photos || [],
@@ -103,7 +103,11 @@ export default function HomePage() {
         {isRecentLoading ? (
           <Loading title={t('home.loadingRecent')} />
         ) : formattedRecentCompanies.length > 0 ? (
-          <CompanyList title={t('home.recentlyViewed')} companies={formattedRecentCompanies} />
+          <CompanyList
+            title={t('home.recentlyViewed')}
+            companies={formattedRecentCompanies}
+            cardSize="compact"
+          />
         ) : null}
 
         <Text typo="title_M" color="text_primary" css={title}>
