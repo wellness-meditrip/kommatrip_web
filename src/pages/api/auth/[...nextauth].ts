@@ -28,6 +28,19 @@ function readMeta(req: NextApiRequest): { country: string; marketing_consent: bo
 
 export function authOptions(req: NextApiRequest): NextAuthOptions {
   const meta = readMeta(req);
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const googleProvider =
+    googleClientId && googleClientSecret
+      ? [
+          GoogleProvider({
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+            // OIDC id_token이 필요하면 스코프를 명시해두는 게 안전
+            authorization: { params: { scope: 'openid email profile' } },
+          }),
+        ]
+      : [];
 
   return {
     secret: requiredEnv('NEXTAUTH_SECRET'),
@@ -35,14 +48,7 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
     jwt: { maxAge: 60 * 60 }, // 1시간
     debug: process.env.NODE_ENV === 'development', // 개발 환경에서 디버그 로그 활성화
 
-    providers: [
-      GoogleProvider({
-        clientId: requiredEnv('GOOGLE_CLIENT_ID'),
-        clientSecret: requiredEnv('GOOGLE_CLIENT_SECRET'),
-        // OIDC id_token이 필요하면 스코프를 명시해두는 게 안전
-        authorization: { params: { scope: 'openid email profile' } },
-      }),
-    ],
+    providers: googleProvider,
 
     pages: { signIn: '/login' },
 
