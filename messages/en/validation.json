@@ -19,5 +19,24 @@
   },
   "country": {
     "required": "Please select a country"
+  },
+  "username": {
+    "required": "Please enter a username",
+    "invalid": "Username must be 2-10 letters or numbers"
+  },
+  "contact": {
+    "required": "Please enter your contact information",
+    "line": {
+      "invalid": "Please enter a valid Line ID"
+    },
+    "kakao": {
+      "invalid": "Please enter a valid Kakao ID"
+    },
+    "phone": {
+      "invalid": "Please enter a valid phone number"
+    },
+    "whatsapp": {
+      "invalid": "Please enter a valid WhatsApp number"
+    }
   }
 }
