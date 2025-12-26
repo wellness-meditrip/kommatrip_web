@@ -15,11 +15,7 @@ import {
   usePostSignupMutation,
 } from '@/queries/auth';
 
-import {
-  getErrorMessage,
-  isSessionExpiredError,
-  getSessionExpiredMessage,
-} from '@/utils/error-handler';
+import { getErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 

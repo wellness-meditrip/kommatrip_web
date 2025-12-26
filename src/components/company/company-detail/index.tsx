@@ -1,6 +1,6 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { Location, ChevronLeft, Copy } from '@/icons';
+import { ChevronLeft, Copy } from '@/icons';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useToast } from '@/hooks';
@@ -153,7 +153,6 @@ export default function CompanyDetail({
           {companyName}
         </Text>
         <div css={address}>
-          {/* <Location width={16} height={16} /> */}
           <Text typo="body_M" color="text_secondary" css={addressText}>
             {companyAddress}
           </Text>

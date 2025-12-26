@@ -84,7 +84,7 @@ export default function ProgramDetailPage() {
         'meditrip.s3.ap-northeast-2.amazonaws.com',
         'meditripstorage.blob.core.windows.net',
       ].includes(parsedUrl.hostname);
-    } catch (error) {
+    } catch {
       return false;
     }
   };
