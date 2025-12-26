@@ -5,18 +5,24 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, Loading } from '@/components';
+import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar } from '@/components';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { useMediaQuery } from '@/hooks';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
+  const t = useTranslations('program-detail');
   const { programId } = router.query;
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const [searchValue, setSearchValue] = useState('');
 
   const handleReserveClick = () => {
     const token = localStorage.getItem('token');
@@ -25,6 +31,15 @@ export default function ProgramDetailPage() {
     } else {
       window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
     }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+  };
+
+  const handleSearch = () => {
+    const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
+    router.push(`${ROUTES.SEARCH}${query}`);
   };
 
   const detailsText = useMemo(() => {
@@ -55,6 +70,25 @@ export default function ProgramDetailPage() {
 
   const [imageSrc, setImageSrc] = useState('/default.png');
   const [detailImageSrc, setDetailImageSrc] = useState('');
+  const isSasImage = imageSrc?.includes('meditripstorage.blob.core.windows.net')
+    ? imageSrc.includes('sig=')
+    : false;
+  const isOptimizableImage = (url: string) => {
+    if (!url) return false;
+    if (url.startsWith('/')) return true;
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'https:') return false;
+      return [
+        'drive.google.com',
+        'meditrip.s3.ap-northeast-2.amazonaws.com',
+        'meditripstorage.blob.core.windows.net',
+      ].includes(parsedUrl.hostname);
+    } catch {
+      return false;
+    }
+  };
+  const shouldUseNextImage = isOptimizableImage(imageSrc);
 
   useEffect(() => {
     setImageSrc(displayImageUrl);
@@ -67,8 +101,8 @@ export default function ProgramDetailPage() {
   if (!router.isReady || !programIdNumber) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <div>Loading...</div>
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -76,8 +110,8 @@ export default function ProgramDetailPage() {
   if (isLoading) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <Loading title="프로그램을 불러오는 중..." />
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Loading title={t('loading')} />
       </Layout>
     );
   }
@@ -86,8 +120,8 @@ export default function ProgramDetailPage() {
   if (!program) {
     return (
       <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title="Program" />
-        <div>프로그램 정보를 불러올 수 없습니다.</div>
+        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        <Empty title={t('loadFail')} />
       </Layout>
     );
   }
@@ -99,125 +133,210 @@ export default function ProgramDetailPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title="Program" />
+      {isDesktop ? (
+        <DesktopAppBar onSearchChange={handleSearchChange} onSearch={handleSearch} />
+      ) : (
+        <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
+      )}
 
-      <div css={imageSection}>
-        <img
-          src={imageSrc}
-          alt="program"
-          css={mainImage}
-          onError={() => setImageSrc('/default.png')}
-        />
-      </div>
+      <div css={pageContainer}>
+        <div css={contentLayout}>
+          <div css={mainContent}>
+            <div css={headerRow}>
+              <div css={imageSection}>
+                {shouldUseNextImage ? (
+                  <Image
+                    src={imageSrc}
+                    alt="program"
+                    width={1200}
+                    height={800}
+                    sizes="100vw"
+                    quality={90}
+                    priority
+                    unoptimized={isSasImage}
+                    css={mainImage}
+                    onError={() => setImageSrc('/default.png')}
+                  />
+                ) : (
+                  <img
+                    src={imageSrc}
+                    alt="program"
+                    css={mainImage}
+                    onError={() => setImageSrc('/default.png')}
+                  />
+                )}
+              </div>
 
-      <Text typo="title_L" color="text_primary" css={programTitle}>
-        {program.name}
-      </Text>
-      <div css={programSection}>
-        <div css={titleWrapper}>
-          <Text typo="title_M" color="text_primary" css={infoTitle}>
-            Program Information
-          </Text>
-        </div>
-        <div css={infoCard}>
-          <div css={infoRow}>
-            <Clock width={16} height={16} />
-            <Text typo="button_S" color="text_secondary">
-              {program.duration_minutes} mins
-            </Text>
-          </div>
-          <div css={infoRow}>
-            <Wallet width={16} height={16} />
-            <Text typo="button_S" color="text_secondary">
-              {formattedPrice}
-            </Text>
-          </div>
-        </div>
-
-        <div css={processSection}>
-          <div css={titleWrapper}>
-            <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Process
-            </Text>
-          </div>
-          <div css={processGrid}>
-            {processItems.map((step, index) => (
-              <div key={`${step}-${index}`} css={processCard}>
-                <Text typo="body_M" color="primary30">
-                  {`Step ${String(index + 1).padStart(2, '0')}`}
-                </Text>
-                <Text typo="body_M" color="text_primary">
-                  {step}
+              <Text typo="title_L" color="text_primary" css={programTitle}>
+                {program.name}
+              </Text>
+            </div>
+            <div css={programSection}>
+              <div css={titleWrapper}>
+                <Text typo="title_M" color="text_primary" css={infoTitle}>
+                  {t('programInfo')}
                 </Text>
               </div>
-            ))}
-          </div>
-        </div>
+              <div css={infoCard}>
+                <div css={infoRow}>
+                  <Clock width={16} height={16} />
+                  <Text typo="button_S" color="text_secondary">
+                    {t('duration', { minutes: program.duration_minutes })}
+                  </Text>
+                </div>
+                <div css={infoRow}>
+                  <Wallet width={16} height={16} />
+                  <Text typo="button_S" color="text_secondary">
+                    {formattedPrice}
+                  </Text>
+                </div>
+              </div>
 
-        <div css={detailsSection}>
-          <div css={titleWrapper}>
-            <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Details
-            </Text>
-          </div>
-          <div css={detailsCard}>
-            {detailImageSrc && (
-              <img
-                src={detailImageSrc}
-                alt="program detail"
-                css={detailsImage}
-                onError={() => setDetailImageSrc('')}
-              />
-            )}
-            <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
-              {detailsText || '정보 준비 중입니다.'}
-            </Text>
-          </div>
-        </div>
+              <div css={processSection}>
+                <div css={titleWrapper}>
+                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                    {t('process')}
+                  </Text>
+                </div>
+                <div css={processGrid}>
+                  {processItems.map((step, index) => (
+                    <div key={`${step}-${index}`} css={processCard}>
+                      <Text typo="body_M" color="primary30">
+                        {`Step ${String(index + 1).padStart(2, '0')}`}
+                      </Text>
+                      <Text typo="body_M" color="text_primary">
+                        {step}
+                      </Text>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        <div css={noticeSection}>
-          <div css={titleWrapper}>
-            <Text typo="title_M" color="text_primary" css={sectionTitle}>
-              Notice
-            </Text>
+              <div css={detailsSection}>
+                <div css={titleWrapper}>
+                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                    {t('details')}
+                  </Text>
+                </div>
+                <div css={detailsCard}>
+                  {detailImageSrc && (
+                    <img
+                      src={detailImageSrc}
+                      alt="program detail"
+                      css={detailsImage}
+                      onError={() => setDetailImageSrc('')}
+                    />
+                  )}
+                  <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
+                    {detailsText || t('infoPending')}
+                  </Text>
+                </div>
+              </div>
+
+              <div css={noticeSection}>
+                <div css={titleWrapper}>
+                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                    {t('notice')}
+                  </Text>
+                </div>
+                <div css={noticeCard}>
+                  <button css={noticeHeader} onClick={() => setIsBookingOpen((prev) => !prev)}>
+                    <Text typo="title_S" color="text_primary">
+                      {t('bookingInfo')}
+                    </Text>
+                    <ArrowDown width={16} height={16} css={noticeArrow(isBookingOpen)} />
+                  </button>
+                  {isBookingOpen && (
+                    <Text typo="body_M" color="text_secondary" css={noticeText}>
+                      {bookingInfo || t('infoPending')}
+                    </Text>
+                  )}
+                </div>
+                <div css={noticeCard}>
+                  <button css={noticeHeader} onClick={() => setIsRefundOpen((prev) => !prev)}>
+                    <Text typo="title_S" color="text_primary">
+                      {t('refundPolicy')}
+                    </Text>
+                    <ArrowDown width={16} height={16} css={noticeArrow(isRefundOpen)} />
+                  </button>
+                  {isRefundOpen && (
+                    <Text typo="body_M" color="text_secondary" css={noticeText}>
+                      {refundInfo || t('infoPending')}
+                    </Text>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-          <div css={noticeCard}>
-            <button css={noticeHeader} onClick={() => setIsBookingOpen((prev) => !prev)}>
-              <Text typo="button_S" color="text_primary">
-                Booking Information
-              </Text>
-              <ArrowDown width={16} height={16} css={noticeArrow(isBookingOpen)} />
-            </button>
-            {isBookingOpen && (
-              <Text typo="body_S" color="text_secondary" css={noticeText}>
-                {bookingInfo || '정보 준비 중입니다.'}
-              </Text>
-            )}
-          </div>
-          <div css={noticeCard}>
-            <button css={noticeHeader} onClick={() => setIsRefundOpen((prev) => !prev)}>
-              <Text typo="button_S" color="text_primary">
-                Refund Policy
-              </Text>
-              <ArrowDown width={16} height={16} css={noticeArrow(isRefundOpen)} />
-            </button>
-            {isRefundOpen && (
-              <Text typo="body_S" color="text_secondary" css={noticeText}>
-                {refundInfo || '정보 준비 중입니다.'}
-              </Text>
-            )}
-          </div>
+
+          {isDesktop && (
+            <aside css={stickySidebar}>
+              <div css={bookingCard}>
+                <RoundButton size="L" fullWidth onClick={handleReserveClick}>
+                  {t('bookNow')}
+                </RoundButton>
+              </div>
+            </aside>
+          )}
         </div>
       </div>
 
-      <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>
+      {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
     </Layout>
   );
 }
 
 const imageSection = css`
   width: 100%;
-  height: 300px;
+  height: clamp(200px, 45vw, 300px);
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    width: 420px;
+    height: 260px;
+    flex: 0 0 420px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+`;
+
+const pageContainer = css`
+  width: 100%;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+`;
+
+const contentLayout = css`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 32px;
+    align-items: start;
+  }
+`;
+
+const mainContent = css`
+  display: flex;
+  flex-direction: column;
+`;
+
+const stickySidebar = css`
+  position: sticky;
+  top: 96px;
+  align-self: start;
+`;
+
+const bookingCard = css`
+  background: ${theme.colors.bg_default};
+  border-radius: 16px;
+
+  box-shadow: 0 8px 20px 0 rgb(15 23 42 / 8%);
 `;
 
 const mainImage = css`
@@ -230,11 +349,27 @@ const programSection = css`
   gap: 12px;
   padding: 24px;
   padding-bottom: 120px;
-  background: ${theme.colors.bg_surface1};
 `;
 
 const programTitle = css`
   padding: 16px 20px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding: 0;
+  }
+`;
+
+const headerRow = css`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+  }
 `;
 
 const infoCard = css`
@@ -295,19 +430,31 @@ const detailsCard = css`
   padding: 16px;
   box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  align-items: flex-start;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 `;
 
 const detailsImage = css`
-  width: 100%;
+  width: 180px;
+  height: 140px;
   border-radius: 12px;
   object-fit: cover;
+  display: block;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    height: clamp(200px, 55vw, 320px);
+  }
 `;
 
 const detailsTextStyle = css`
   white-space: pre-wrap;
   line-height: 1.4;
+  flex: 1;
 `;
 
 const noticeSection = css`

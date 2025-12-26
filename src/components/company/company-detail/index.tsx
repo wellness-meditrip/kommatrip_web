@@ -1,13 +1,16 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
-import { Location, ChevronLeft } from '@/icons';
+import { ChevronLeft, Copy } from '@/icons';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useToast } from '@/hooks';
 import {
   wrapper,
   profileWrapper,
   DetailsWrapper,
   address,
+  addressText,
+  copyButton,
   tags,
   carouselNavButton,
   carouselNavLeft,
@@ -35,6 +38,7 @@ export default function CompanyDetail({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { showToast } = useToast();
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
   const imageList = images.length > 0 ? images : [companyImage];
@@ -59,6 +63,27 @@ export default function CompanyDetail({
     setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
   };
 
+  const handleCopyAddress = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    const value = companyAddress?.trim();
+    if (!value) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(value);
+      showToast({ title: 'Address copied', icon: 'check' });
+      return;
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast({ title: 'Address copied', icon: 'check' });
+  };
+
   return (
     <div css={wrapper}>
       {imageList.length > 1 ? (
@@ -67,12 +92,13 @@ export default function CompanyDetail({
             <Image
               src={currentImageUrl}
               alt="프로필 이미지"
-              width={170}
-              height={200}
+              fill
+              sizes="100vw"
+              quality={90}
               onError={handleImageError}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" width={170} height={200} />
+            <img src="/default.png" alt="기본 이미지" />
           )}
 
           {/* 캐러셀 네비게이션 버튼 */}
@@ -112,12 +138,13 @@ export default function CompanyDetail({
             <Image
               src={currentImageUrl}
               alt="프로필 이미지"
-              width={170}
-              height={200}
+              fill
+              sizes="100vw"
+              quality={90}
               onError={handleImageError}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" width={170} height={200} />
+            <img src="/default.png" alt="기본 이미지" />
           )}
         </div>
       )}
@@ -126,10 +153,12 @@ export default function CompanyDetail({
           {companyName}
         </Text>
         <div css={address}>
-          <Location width={16} height={16} />
-          <Text typo="body_M" color="text_secondary">
+          <Text typo="body_M" color="text_secondary" css={addressText}>
             {companyAddress}
           </Text>
+          <button type="button" css={copyButton} onClick={handleCopyAddress} aria-label="주소 복사">
+            <Copy width={14} height={14} />
+          </button>
         </div>
         <div css={tags}>
           {badges?.map((hashTag) => (

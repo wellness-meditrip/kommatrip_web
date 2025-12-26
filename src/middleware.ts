@@ -26,20 +26,7 @@ function detectLocale(request: NextRequest): Locale {
     return cookieLocale as Locale;
   }
 
-  // 3. Accept-Language 헤더에서 감지 (일본어만)
-  const acceptLanguage = request.headers.get('accept-language');
-  if (acceptLanguage) {
-    // 일본어 감지
-    if (acceptLanguage.includes('ja')) {
-      return 'ja';
-    }
-    // 한국어 감지
-    if (acceptLanguage.includes('ko')) {
-      return 'ko';
-    }
-  }
-
-  // 4. 기본값
+  // 3. 기본값
   return defaultLocale;
 }
 

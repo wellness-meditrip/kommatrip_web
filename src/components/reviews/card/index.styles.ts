@@ -10,7 +10,8 @@ export const wrapper = css`
   padding: 16px;
   border-radius: 8px;
 
-  background: ${theme.colors.white};
+  background: ${theme.colors.bg_default};
+  box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
 `;
 
 export const reviewerInfo = css`
@@ -31,8 +32,6 @@ export const top = css`
   gap: 8px;
 
   border-radius: 12px;
-
-  background-color: #fff;
 `;
 
 export const programCard = css`
@@ -44,7 +43,7 @@ export const programCard = css`
   padding: 10px 12px;
   border-radius: 12px;
 
-  background: ${theme.colors.white};
+  background: ${theme.colors.bg_default};
   box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
 
   cursor: pointer;

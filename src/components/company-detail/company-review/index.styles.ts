@@ -10,8 +10,6 @@ export const wrapper = css`
 
   height: 100%;
 
-  background: ${theme.colors.bg_surface1};
-
   h1 {
     margin: 0 20px;
   }
@@ -26,7 +24,8 @@ export const reviewSummary = css`
   padding: 12px 16px;
   border-radius: 8px;
 
-  background: ${theme.colors.white};
+  background: ${theme.colors.bg_default};
+  box-shadow: 0 0 4px 0 ${theme.colors.shadow_default};
 `;
 
 export const titleWrapper = css`
@@ -109,9 +108,7 @@ export const content = css`
 
   width: 100%;
   height: 100%;
-  padding: 0 20px 20px;
-
-  /* border-top: 1px solid ${theme.colors.gray200}; */
+  padding: 20px;
 `;
 
 export const bottom = css`

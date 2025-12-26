@@ -37,12 +37,18 @@ export const wrapperFixedHeight = css`
   }
 `;
 
+export const wrapperCompact = css`
+  min-width: 300px;
+  height: 350px;
+`;
+
 export const profileWrapper = css`
   flex: 1;
   position: relative;
   overflow: hidden;
 
   width: 100%;
+  min-height: 200px;
   border-radius: 12px 12px 0 0;
 
   img {
@@ -50,6 +56,17 @@ export const profileWrapper = css`
     height: 100%;
     object-fit: cover;
   }
+`;
+
+export const profileWrapperFixedHeight = css`
+  ${profileWrapper};
+  height: 356px;
+  min-height: 356px;
+`;
+
+export const profileWrapperCompact = css`
+  height: 280px;
+  min-height: 280px;
 `;
 
 export const profileImage = css`
@@ -76,11 +93,29 @@ export const DetailsWrapperFixedHeight = css`
   padding: 16px;
 `;
 
+export const DetailsWrapperCompact = css`
+  padding: 12px;
+`;
+
+export const DetailsWrapperFixedHeightCompact = css`
+  padding: 12px;
+`;
+
 export const titleRow = css`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+`;
+
+export const titleText = css`
+  flex: 1;
+  overflow: hidden;
+
+  min-width: 0;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 `;
 
 export const exclusiveBadge = css`

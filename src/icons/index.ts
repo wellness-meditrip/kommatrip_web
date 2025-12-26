@@ -29,6 +29,7 @@ export * from './ClinicPickup';
 export * from './ClinicPrivate';
 export * from './ClinicWifi';
 export * from './Clock';
+export * from './Copy';
 export * from './DefaultImage';
 export * from './DefaultProfile';
 export * from './Exit';

@@ -4,6 +4,9 @@ import { theme } from '@/styles';
 export const wrapper = css`
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: ${theme.zIndex.appBar};
 
   width: 100%;
   height: 76px;

@@ -1,1 +1,6 @@
-{}
+{
+  "listTitle": "Programs",
+  "loadingList": "Loading programs...",
+  "emptyList": "No programs available.",
+  "duration": "{minutes} mins"
+}

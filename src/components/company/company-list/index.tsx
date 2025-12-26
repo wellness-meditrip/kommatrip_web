@@ -7,11 +7,12 @@ import {
   container,
   wrapper,
   header,
-  button,
   scrollContainer,
   grid,
+  gridCompact,
   leftButton,
   rightButton,
+  scrollContainerCompact,
 } from './index.styles';
 import { ChevronRight } from '@/icons';
 
@@ -27,9 +28,10 @@ interface CompanyListProps {
     departments: string[];
     is_exclusive?: boolean;
   }>;
+  cardSize?: 'default' | 'compact';
 }
 
-export function CompanyList({ title, companies }: CompanyListProps) {
+export function CompanyList({ title, companies, cardSize = 'default' }: CompanyListProps) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -72,9 +74,6 @@ export function CompanyList({ title, companies }: CompanyListProps) {
         <Text typo="title_M" color="text_primary" css={title}>
           {title}
         </Text>
-        <button css={button}>
-          <ChevronRight width={24} height={24} />
-        </button>
       </div>
       <div css={wrapper}>
         {canScrollLeft && (
@@ -82,8 +81,11 @@ export function CompanyList({ title, companies }: CompanyListProps) {
             <ChevronRight width={24} height={24} style={{ transform: 'rotate(180deg)' }} />
           </button>
         )}
-        <div css={scrollContainer} ref={scrollRef}>
-          <div css={grid}>
+        <div
+          css={[scrollContainer, cardSize === 'compact' && scrollContainerCompact]}
+          ref={scrollRef}
+        >
+          <div css={[grid, cardSize === 'compact' && gridCompact]}>
             {companies.map((company) => (
               <CompanyCard
                 key={company.hospital_id}
@@ -98,6 +100,7 @@ export function CompanyList({ title, companies }: CompanyListProps) {
                 }}
                 images={company.images}
                 fixedHeight={true}
+                size={cardSize}
               />
             ))}
           </div>

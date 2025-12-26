@@ -44,12 +44,15 @@ export interface PostLoginResponse {
   tokens: Token;
 }
 
+type LoginMethod = 'email' | 'google' | 'apple';
 export interface User {
   id: number;
   email: string;
   username: string;
   country: string;
   role: string;
+  login_method?: LoginMethod;
+  company_code?: string | null;
   is_email_verified: boolean;
   marketing_consent: boolean;
   marketing_consent_at: string | null;
@@ -60,19 +63,7 @@ export interface User {
 export interface Token {
   access_token: string;
   refresh_token: string;
-  token_type: 'Bearer';
-}
-
-// 로그인
-export interface PostLoginRequestBody {
-  email: string;
-  password: string;
-}
-
-export interface PostLoginResponse {
-  message?: string;
-  user: User;
-  tokens: Token;
+  token_type: 'Bearer' | 'bearer';
 }
 
 export interface Breed {
@@ -122,28 +113,6 @@ export interface PostUserAuthGoogleResponse {
   message?: string;
   user: User;
   tokens: Token;
-}
-
-type LoginMethod = 'email' | 'google' | 'apple';
-export interface User {
-  id: number;
-  email: string;
-  username: string;
-  country: string;
-  role: string;
-  login_method: LoginMethod;
-  company_code: string | null;
-  is_email_verified: boolean;
-  marketing_consent: boolean;
-  marketing_consent_at: string | null;
-  last_login_at: string;
-  InterestSetting: boolean;
-}
-
-export interface Token {
-  access_token: string;
-  refresh_token: string;
-  token_type: 'Bearer';
 }
 
 // 토큰 재발급

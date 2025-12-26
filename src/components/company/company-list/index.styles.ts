@@ -46,12 +46,20 @@ export const scrollContainer = css`
   }
 `;
 
+export const scrollContainerCompact = css`
+  height: 400px;
+`;
+
 export const grid = css`
   display: flex;
   gap: 16px;
 
   width: max-content;
   padding: 0 0 8px;
+`;
+
+export const gridCompact = css`
+  gap: 12px;
 `;
 
 export const leftButton = css`

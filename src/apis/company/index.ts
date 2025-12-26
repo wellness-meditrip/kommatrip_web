@@ -11,7 +11,7 @@ import {
 
 export const getRecentCompany = async (): Promise<GetRecentCompanyResponse[]> => {
   try {
-    // 인증이 필요한 API일 수 있으므로 api 사용 (withCredentials: true)
+    // 인증이 필요한 API이므로 api 사용 (Authorization 헤더 포함)
     const response = await api.get<GetRecentCompanyResponse[]>('/non/company/recent');
     // api는 인터셉터에서 response.data?.response를 반환
     // 응답이 배열인지 확인하고 반환
@@ -19,9 +19,19 @@ export const getRecentCompany = async (): Promise<GetRecentCompanyResponse[]> =>
       return response;
     }
     // 응답이 객체로 감싸져 있을 수 있음
-    if (response && typeof response === 'object' && 'data' in response) {
-      const data = (response as { data?: unknown }).data;
-      return Array.isArray(data) ? data : [];
+    if (response && typeof response === 'object') {
+      if ('data' in response) {
+        const data = (response as { data?: unknown }).data;
+        if (Array.isArray(data)) return data;
+        if (data && typeof data === 'object' && 'companies' in data) {
+          const companies = (data as { companies?: unknown }).companies;
+          return Array.isArray(companies) ? companies : [];
+        }
+      }
+      if ('companies' in response) {
+        const companies = (response as { companies?: unknown }).companies;
+        return Array.isArray(companies) ? companies : [];
+      }
     }
     return [];
   } catch (error: unknown) {

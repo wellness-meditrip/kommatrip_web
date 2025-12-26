@@ -8,6 +8,7 @@ import {
   CompanyCard,
   CompanyList,
   Loading,
+  Empty,
   NoResults,
   FilterBar,
   GNB,
@@ -18,10 +19,12 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { filterCompanies } from '@/utils/search';
 import type { Company } from '@/models';
+import { useTranslations } from 'next-intl';
 
 // 업체 리스트 페이지
 export default function CompanyPage() {
   const router = useRouter();
+  const t = useTranslations('company');
   const { q, categories, date, endDate } = router.query;
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -223,16 +226,13 @@ export default function CompanyPage() {
       />
       <div css={wrapper}>
         {/* 로딩 상태 */}
-        {isLoading && <Loading title="병원 내역을 불러오고 있어요" />}
-        {error && <p>에러 발생!</p>}
+        {isLoading && <Loading title={t('loadingList')} />}
+        {error && <Empty title={t('loadFail')} />}
 
         {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
         {!isLoading && !error && filteredCompanies.length === 0 && keyword.trim() && (
           <>
-            <NoResults
-              title={`No results for "${keyword}"`}
-              subtitle="Oops! We couldn't find what you're looking for."
-            />
+            <NoResults title={t('noResultsTitle', { keyword })} subtitle={t('noResultsSubtitle')} />
             <CompanyList
               title="Recommended"
               companies={
@@ -259,21 +259,22 @@ export default function CompanyPage() {
             <CompanyCard
               key={company.id}
               companyId={company.id}
+              companyImage={company.photos?.[0] || '/default.png'}
+              companyName={company.name || ''}
               badges={company.tags || []}
+              companyAddress={company.address || ''}
               isExclusive={company.is_exclusive}
+              fixedHeight={true}
               onClick={(companyId: number) => {
                 router.push(ROUTES.COMPANY_DETAIL(companyId));
               }}
-              companyImage={company.photos?.[0] || '/default.png'}
-              companyName={company.name || ''}
-              companyAddress={company.address || ''}
               images={company.photos || []}
             />
           ))}
 
         {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
         {!isLoading && !error && companies.length === 0 && !keyword.trim() && (
-          <p>업체 목록이 없습니다.</p>
+          <Empty title={t('emptyList')} />
         )}
       </div>
       <GNB />

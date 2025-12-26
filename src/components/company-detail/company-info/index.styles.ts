@@ -152,3 +152,20 @@ export const recognitionHeader = css`
 
   cursor: pointer;
 `;
+
+export const contactList = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const contactRow = css`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const contactLabel = css`
+  min-width: 84px;
+`;

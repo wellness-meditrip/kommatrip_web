@@ -39,7 +39,7 @@ export default function HomePage() {
     return recentCompanies.map((company) => ({
       hospital_id: company.id,
       hospital_name: company.name,
-      address: company.simple_place,
+      address: company.simple_place ?? (company as { simpleplace?: string }).simpleplace ?? '',
       rating: 4.5, // API에 rating이 없으면 기본값 사용
       image_url: company.photos?.[0] || '/default.png',
       images: company.photos || [],
@@ -101,9 +101,13 @@ export default function HomePage() {
       <div css={wrapper}>
         {/* 최근 본 업체 섹션 */}
         {isRecentLoading ? (
-          <Loading title="최근 본 업체를 불러오고 있어요" />
+          <Loading title={t('home.loadingRecent')} />
         ) : formattedRecentCompanies.length > 0 ? (
-          <CompanyList title="Recently Viewed" companies={formattedRecentCompanies} />
+          <CompanyList
+            title={t('home.recentlyViewed')}
+            companies={formattedRecentCompanies}
+            cardSize="compact"
+          />
         ) : null}
 
         <Text typo="title_M" color="text_primary" css={title}>
@@ -191,7 +195,7 @@ export const cardsGrid = css`
   justify-items: center;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
 `;
@@ -200,6 +204,7 @@ export const wrapper = css`
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex: 1;
   /* overflow-y: auto; */
 
   width: 100%;

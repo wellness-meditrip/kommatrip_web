@@ -1,6 +1,8 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ERROR_CODES } from '@/constants/error-codes';
 import { useAuthStore } from '@/store/auth';
+import { getCookie } from '@/utils/cookie';
+import { PostTokenReissueResponse } from '@/models/auth';
 
 type Role = 'admin' | 'user';
 interface Props {
@@ -8,26 +10,80 @@ interface Props {
   role: Role;
 }
 
-export const createHttpClient = ({ baseURL, role }: Props) => {
+export const createHttpClient = ({ baseURL }: Props) => {
   const axiosInstance = axios.create({ baseURL, timeout: 5000, withCredentials: true });
   const api: HttpClient = axiosInstance;
+  let refreshInFlight: Promise<string> | null = null;
 
-  api.interceptors.request.use((config) => {
+  const getNewAccessToken = async (): Promise<string> => {
+    try {
+      // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
+      const response = await axios.post<PostTokenReissueResponse>('/api/users/token/reissue', {});
+      const accessToken = response.data.tokens.access_token;
+
+      if (!accessToken) {
+        console.error('[HttpClient] No access token in response', response.data);
+        throw new Error('No access token in response');
+      }
+
+      // zustand store에 저장
+      useAuthStore.getState().setAccessToken(accessToken);
+      return accessToken;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('[HttpClient] getNewAccessToken error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+        });
+      } else {
+        console.error('[HttpClient] getNewAccessToken error:', error);
+      }
+      throw error;
+    }
+  };
+
+  const refreshAccessToken = async (): Promise<string> => {
+    if (refreshInFlight) return refreshInFlight;
+    refreshInFlight = getNewAccessToken().finally(() => {
+      refreshInFlight = null;
+    });
+    return refreshInFlight;
+  };
+
+  api.interceptors.request.use(async (config) => {
     // zustand store에서 accessToken 가져오기
     const token = useAuthStore.getState().accessToken;
-    console.log('[HttpClient] Request interceptor', {
-      url: config.url,
-      hasToken: !!token,
-      tokenLength: token?.length,
-    });
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    const headers = config.headers ?? {};
+    const authHeader =
+      typeof (headers as { get?: (key: string) => string | null }).get === 'function'
+        ? (headers as { get: (key: string) => string | null }).get('Authorization')
+        : (headers as { Authorization?: string; authorization?: string }).Authorization ||
+          (headers as { Authorization?: string; authorization?: string }).authorization;
+    const hasRefreshToken = !!getCookie('refreshToken');
+    if (!token && !authHeader && hasRefreshToken) {
+      try {
+        const newAccessToken = await refreshAccessToken();
+        useAuthStore.getState().setAccessToken(newAccessToken);
+      } catch (err) {
+        console.error('[HttpClient] Pre-request token refresh failed', err);
+      }
+    }
+
+    const effectiveToken = useAuthStore.getState().accessToken;
+    if (effectiveToken) {
+      const baseHeaders =
+        typeof (config.headers as { toJSON?: () => Record<string, string> }).toJSON === 'function'
+          ? (config.headers as { toJSON: () => Record<string, string> }).toJSON()
+          : (config.headers as Record<string, string> | undefined);
+      const mergedHeaders = { ...(baseHeaders ?? {}), Authorization: `Bearer ${effectiveToken}` };
+      config.headers = AxiosHeaders.from(mergedHeaders);
     }
     return config;
   });
 
   api.interceptors.response.use(
-    (response: AxiosResponse) => response.data?.response,
+    (response: AxiosResponse) => response.data?.response ?? response.data,
     async (error) => {
       const originalRequest = error.config;
 
@@ -42,7 +98,15 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
       const isTokenExpiredStatus = statusCode === 498;
       const isTokenExpiredCode = onyuError?.code === ERROR_CODES.TOKEN_EXPIRED;
       const isTokenExpiredMessage = backendMessage === '토큰이 만료되었습니다.';
-      const shouldRefresh = isTokenExpiredStatus || isTokenExpiredCode || isTokenExpiredMessage;
+      const isInvalidTokenMessage = backendMessage === '유효하지 않은 토큰입니다.';
+      const isNotAuthenticatedMessage = backendMessage === 'Not authenticated';
+      const hasRefreshToken = !!getCookie('refreshToken');
+      const shouldRefresh =
+        isTokenExpiredStatus ||
+        isTokenExpiredCode ||
+        isTokenExpiredMessage ||
+        (statusCode === 401 && isInvalidTokenMessage && hasRefreshToken) ||
+        (statusCode === 403 && isNotAuthenticatedMessage && hasRefreshToken);
 
       if (shouldRefresh) {
         // 이미 재시도한 요청이면 무한 루프 방지
@@ -52,23 +116,23 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
           return Promise.reject(error);
         }
 
-        console.log('[HttpClient] TOKEN_EXPIRED - refreshing token...', {
-          statusCode,
-          errorCode: onyuError?.code,
-        });
         originalRequest._retry = true;
 
         try {
-          const newAccessToken = await getNewAccessToken({ role });
-          console.log('[HttpClient] New accessToken received', {
-            hasToken: !!newAccessToken,
-            tokenLength: newAccessToken.length,
-          });
+          const newAccessToken = await refreshAccessToken();
           useAuthStore.getState().setAccessToken(newAccessToken);
-          console.log('[HttpClient] New accessToken stored in zustand store');
 
           // 원래 요청 재시도
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          const retryHeaders =
+            typeof (originalRequest.headers as { toJSON?: () => Record<string, string> }).toJSON ===
+            'function'
+              ? (originalRequest.headers as { toJSON: () => Record<string, string> }).toJSON()
+              : (originalRequest.headers as Record<string, string> | undefined);
+          const mergedHeaders = {
+            ...(retryHeaders ?? {}),
+            Authorization: `Bearer ${newAccessToken}`,
+          };
+          originalRequest.headers = AxiosHeaders.from(mergedHeaders);
           return api(originalRequest);
         } catch (err) {
           console.error('[HttpClient] Token refresh failed in interceptor:', err);
@@ -102,51 +166,6 @@ export const createHttpClient = ({ baseURL, role }: Props) => {
       return Promise.reject(error);
     }
   );
-
-  const getNewAccessToken = async ({ role }: { role: Role }): Promise<string> => {
-    try {
-      console.log('[HttpClient] getNewAccessToken called', { role });
-      // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
-      const response = await axios.post<
-        { accessToken: string } | { tokens: { access_token: string } }
-      >(
-        '/token/reissue',
-        {},
-        {
-          baseURL: process.env.NEXT_PUBLIC_API_URL,
-          withCredentials: true,
-        }
-      );
-
-      console.log('[HttpClient] Token reissue response received', {
-        hasData: !!response.data,
-        responseKeys: Object.keys(response.data || {}),
-      });
-
-      // 응답 구조에 따라 accessToken 추출
-      type TokenReissueResponse = { accessToken: string } | { tokens: { access_token: string } };
-      const data = response.data as TokenReissueResponse;
-      const accessToken = 'accessToken' in data ? data.accessToken : data.tokens?.access_token;
-
-      if (!accessToken) {
-        console.error('[HttpClient] No access token in response', response.data);
-        throw new Error('No access token in response');
-      }
-
-      console.log('[HttpClient] AccessToken extracted', {
-        hasToken: !!accessToken,
-        tokenLength: accessToken.length,
-      });
-
-      // zustand store에 저장
-      useAuthStore.getState().setAccessToken(accessToken);
-      console.log('[HttpClient] AccessToken stored in zustand store');
-      return accessToken;
-    } catch (error) {
-      console.error('[HttpClient] getNewAccessToken error:', error);
-      throw error;
-    }
-  };
 
   return { api };
 };

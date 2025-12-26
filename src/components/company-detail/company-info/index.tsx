@@ -15,6 +15,9 @@ import {
   dayLabel,
   recognitionContent,
   recognitionHeader,
+  contactList,
+  contactRow,
+  contactLabel,
 } from './index.styles';
 import { Text } from '@/components/text';
 import {
@@ -31,6 +34,8 @@ import { InfoRow } from '@/components/info-row';
 import { CompanyGoogleMap } from '@/components/map/google-map';
 import { useState } from 'react';
 import { ArrowDown } from '@/icons';
+import { useTranslations } from 'next-intl';
+import { Loading } from '@/components/common';
 
 // Facilities 매핑 (API 데이터 -> 아이콘 + 한글 텍스트)
 const FACILITY_MAP: Record<string, { icon: React.ReactElement; label: string }> = {
@@ -65,13 +70,14 @@ interface CompanyInfoProps {
   data: CompanyDetail;
 }
 export function CompanyInfo({ data }: CompanyInfoProps) {
+  const t = useTranslations('company-detail');
   const [isHoursOpen, setIsHoursOpen] = useState(false);
   const [isRecognitionOpen, setIsRecognitionOpen] = useState(false);
   const [isGettingHereOpen, setIsGettingHereOpen] = useState(false);
   const [isHighlightsOpen, setIsHighlightsOpen] = useState(false);
 
   if (!data) {
-    return <div>데이터를 불러오는 중...</div>;
+    return <Loading title={t('loading')} />;
   }
 
   // API에서 받은 facilities 필터링
@@ -132,6 +138,25 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   const recognitionText = data.badge?.replace(/\\n/g, '\n').trim() ?? '';
   const gettingHereText = data.getting_here?.replace(/\\n/g, '\n').trim() ?? '';
   const highlightsText = data.highlights?.replace(/\\n/g, '\n').trim() ?? '';
+  const websiteUrl = data.website_url?.trim() ?? '';
+  const instagramUrl = data.instagram_url?.trim() ?? '';
+  const whatsappUrl = data.whats_app_url?.trim() ?? '';
+
+  const handleOpenLink = (value: string, type?: 'instagram') => {
+    if (!value) return;
+    const trimmedValue = value.trim();
+    const url =
+      trimmedValue.startsWith('http://') || trimmedValue.startsWith('https://')
+        ? trimmedValue
+        : trimmedValue.startsWith('www.')
+          ? `https://${trimmedValue}`
+          : type === 'instagram' && trimmedValue.startsWith('@')
+            ? `https://instagram.com/${trimmedValue.slice(1)}`
+            : '';
+    if (url) {
+      window.open(url, '_blank');
+    }
+  };
 
   // if (isError) {
   //   open({
@@ -150,21 +175,23 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           Editor&apos;s Comment
         </Text>
 
-        <div css={infoWrapper}>
-          <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
-            <Text typo="title_S" color="text_primary">
-              Official Recognition
-            </Text>
-            <div css={hoursArrow(isRecognitionOpen)}>
-              <ArrowDown width={30} height={30} />
+        {recognitionText && (
+          <div css={infoWrapper}>
+            <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
+              <Text typo="title_S" color="text_primary">
+                Official Recognition
+              </Text>
+              <div css={hoursArrow(isRecognitionOpen)}>
+                <ArrowDown width={30} height={30} />
+              </div>
             </div>
+            {isRecognitionOpen && (
+              <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+                {recognitionText}
+              </Text>
+            )}
           </div>
-          {isRecognitionOpen && (
-            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {recognitionText || '정보 준비 중입니다.'}
-            </Text>
-          )}
-        </div>
+        )}
         <div css={infoWrapper}>
           <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
             <Text typo="title_S" color="text_primary">
@@ -176,7 +203,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
           {isGettingHereOpen && (
             <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {gettingHereText || '정보 준비 중입니다.'}
+              {gettingHereText || t('infoPending')}
             </Text>
           )}
         </div>
@@ -191,7 +218,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
           </div>
           {isHighlightsOpen && (
             <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {highlightsText || '정보 준비 중입니다.'}
+              {highlightsText || t('infoPending')}
             </Text>
           )}
         </div>
@@ -246,33 +273,57 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
             }
           />
 
-          <InfoRow
-            icon={<ClinicGlobe width={16} height={16} />}
-            title={
-              <Text
-                typo="button_S"
-                color="primary50"
-                onClick={() => window.open(data.website_url, '_blank')}
-              >
-                {data.website_url}
-              </Text>
-            }
-            expandable
-            showToggleButton
-          >
-            {/* <div css={urlWrapper}>
-              {urlList.map(({ type, url }) => (
-                <Text
-                  key={type}
-                  typo="button_S"
-                  color="primary50"
-                  onClick={() => window.open(url, '_blank')}
-                >
-                  {type}
-                </Text>
-              ))}
-            </div> */}
-          </InfoRow>
+          {(websiteUrl || instagramUrl || whatsappUrl) && (
+            <InfoRow
+              icon={<ClinicGlobe width={16} height={16} />}
+              title={
+                <div css={contactList}>
+                  {websiteUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        Website
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(websiteUrl)}
+                      >
+                        {websiteUrl}
+                      </Text>
+                    </div>
+                  )}
+                  {instagramUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        Instagram
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(instagramUrl, 'instagram')}
+                      >
+                        {instagramUrl}
+                      </Text>
+                    </div>
+                  )}
+                  {whatsappUrl && (
+                    <div css={contactRow}>
+                      <Text typo="button_S" color="text_secondary" css={contactLabel}>
+                        WhatsApp
+                      </Text>
+                      <Text
+                        typo="button_S"
+                        color="primary50"
+                        onClick={() => handleOpenLink(whatsappUrl)}
+                      >
+                        {whatsappUrl}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              }
+            />
+          )}
         </div>
       </div>
       <div css={wrapper}>

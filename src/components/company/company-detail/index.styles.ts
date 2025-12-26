@@ -4,14 +4,21 @@ import { theme } from '@/styles';
 export const wrapper = css`
   display: flex;
   flex-direction: column;
+  gap: 12px;
 
   width: 100%;
   height: fit-content;
   border-radius: 12px;
 
-  background-color: ${theme.colors.bg_default};
-
   cursor: pointer;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+
+    padding: 24px;
+  }
 `;
 
 export const profileWrapper = css`
@@ -29,6 +36,15 @@ export const profileWrapper = css`
     height: 100%;
     object-fit: cover;
   }
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    flex: 0 0 420px;
+    overflow: hidden;
+
+    width: 420px;
+    height: 260px;
+    border-radius: 12px;
+  }
 `;
 
 export const profileImage = css`
@@ -44,7 +60,7 @@ export const carouselNavButton = css`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 10;
+  z-index: 2;
 
   width: 32px;
   height: 32px;
@@ -75,7 +91,7 @@ export const carouselDots = css`
   bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 2;
 `;
 
 export const carouselDot = css`
@@ -108,12 +124,55 @@ export const DetailsWrapper = css`
   gap: 8px;
 
   padding: 16px 20px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding: 0;
+  }
 `;
 
 export const address = css`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
+
+  svg {
+    flex-shrink: 0;
+
+    width: 16px;
+    height: 16px;
+  }
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    svg {
+      overflow: hidden;
+    }
+  }
+`;
+
+export const addressText = css`
+  flex: 1;
+`;
+
+export const copyButton = css`
+  display: flex;
+
+  width: 28px;
+  height: 28px;
+
+  /* align-items: center; */
+
+  /* justify-content: center; */
+
+  /* flex-shrink: 0; */
+  padding: 0 10px;
+
+  /* border-radius: 8px; */
+
+  /* border: 1px solid ${theme.colors.border_default}; */
+
+  /* background: ${theme.colors.bg_default}; */
+
+  cursor: pointer;
 `;
 
 export const tags = css`
