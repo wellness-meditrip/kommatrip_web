@@ -2,6 +2,7 @@ import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosResponse }
 import { ERROR_CODES } from '@/constants/error-codes';
 import { useAuthStore } from '@/store/auth';
 import { getCookie } from '@/utils/cookie';
+import { waitForAuthReady } from '@/utils/auth-refresh';
 import { PostTokenReissueResponse } from '@/models/auth';
 
 type Role = 'admin' | 'user';
@@ -14,6 +15,22 @@ export const createHttpClient = ({ baseURL }: Props) => {
   const axiosInstance = axios.create({ baseURL, timeout: 5000, withCredentials: true });
   const api: HttpClient = axiosInstance;
   let refreshInFlight: Promise<string> | null = null;
+  let isRefreshing = false;
+  let refreshSubscribers: Array<(token: string | null, error?: unknown) => void> = [];
+
+  const subscribeTokenRefresh = (callback: (token: string | null, error?: unknown) => void) => {
+    refreshSubscribers.push(callback);
+  };
+
+  const notifyRefreshSuccess = (token: string) => {
+    refreshSubscribers.forEach((callback) => callback(token));
+    refreshSubscribers = [];
+  };
+
+  const notifyRefreshFailure = (error: unknown) => {
+    refreshSubscribers.forEach((callback) => callback(null, error));
+    refreshSubscribers = [];
+  };
 
   const getNewAccessToken = async (): Promise<string> => {
     try {
@@ -63,10 +80,9 @@ export const createHttpClient = ({ baseURL }: Props) => {
     const hasRefreshToken = !!getCookie('refreshToken');
     if (!token && !authHeader && hasRefreshToken) {
       try {
-        const newAccessToken = await refreshAccessToken();
-        useAuthStore.getState().setAccessToken(newAccessToken);
+        await waitForAuthReady();
       } catch (err) {
-        console.error('[HttpClient] Pre-request token refresh failed', err);
+        console.error('[HttpClient] Waiting for auth refresh failed', err);
       }
     }
 
@@ -117,28 +133,42 @@ export const createHttpClient = ({ baseURL }: Props) => {
         }
 
         originalRequest._retry = true;
+        return new Promise((resolve, reject) => {
+          subscribeTokenRefresh((token, refreshError) => {
+            if (refreshError || !token) {
+              return reject(refreshError ?? error);
+            }
 
-        try {
-          const newAccessToken = await refreshAccessToken();
-          useAuthStore.getState().setAccessToken(newAccessToken);
+            const retryHeaders =
+              typeof (originalRequest.headers as { toJSON?: () => Record<string, string> })
+                .toJSON === 'function'
+                ? (originalRequest.headers as { toJSON: () => Record<string, string> }).toJSON()
+                : (originalRequest.headers as Record<string, string> | undefined);
+            const mergedHeaders = {
+              ...(retryHeaders ?? {}),
+              Authorization: `Bearer ${token}`,
+            };
+            originalRequest.headers = AxiosHeaders.from(mergedHeaders);
+            resolve(api(originalRequest));
+          });
 
-          // 원래 요청 재시도
-          const retryHeaders =
-            typeof (originalRequest.headers as { toJSON?: () => Record<string, string> }).toJSON ===
-            'function'
-              ? (originalRequest.headers as { toJSON: () => Record<string, string> }).toJSON()
-              : (originalRequest.headers as Record<string, string> | undefined);
-          const mergedHeaders = {
-            ...(retryHeaders ?? {}),
-            Authorization: `Bearer ${newAccessToken}`,
-          };
-          originalRequest.headers = AxiosHeaders.from(mergedHeaders);
-          return api(originalRequest);
-        } catch (err) {
-          console.error('[HttpClient] Token refresh failed in interceptor:', err);
-          useAuthStore.getState().clearAuth();
-          return Promise.reject(err);
-        }
+          if (!isRefreshing) {
+            isRefreshing = true;
+            refreshAccessToken()
+              .then((newAccessToken) => {
+                useAuthStore.getState().setAccessToken(newAccessToken);
+                notifyRefreshSuccess(newAccessToken);
+              })
+              .catch((err) => {
+                console.error('[HttpClient] Token refresh failed in interceptor:', err);
+                useAuthStore.getState().clearAuth();
+                notifyRefreshFailure(err);
+              })
+              .finally(() => {
+                isRefreshing = false;
+              });
+          }
+        });
       }
 
       // 다른 에러 처리
