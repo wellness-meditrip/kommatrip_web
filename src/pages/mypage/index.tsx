@@ -20,6 +20,8 @@ export default function MyPage() {
   const [activeMenu, setActiveMenu] = useState('user-info');
   const [searchValue, setSearchValue] = useState('');
   const user = profileData?.user;
+  const tallyImproveUrl = 'https://tally.so/r/wkDMRj';
+  const termsUrl = 'https://linen-sofa-f6f.notion.site/ebd//2958bf64ec2180b69375d5abbb8f8869';
 
   const handleClick = (path: string) => {
     router.push(path);
@@ -30,27 +32,48 @@ export default function MyPage() {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
 
+  const handleOpenTally = () => {
+    if (typeof window !== 'undefined') {
+      window.open(tallyImproveUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleOpenTerms = () => {
+    if (typeof window !== 'undefined') {
+      window.open(termsUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const menuItems = [
     { id: 'user-info', label: '내 정보 관리', route: ROUTES.MYPAGE_USER_INFO },
     { id: 'reservations', label: '예약내역', route: ROUTES.MYPAGE_RESERVATIONS },
-    { id: 'payments', label: '결제수단 관리', route: ROUTES.MYPAGE_PAYMENTS },
-    { id: 'reviews', label: '리뷰', route: ROUTES.MYPAGE_REVIEWS },
+    // { id: 'payments', label: '결제수단 관리', route: ROUTES.MYPAGE_PAYMENTS },
+    { id: 'reviews', label: '내 리뷰', route: ROUTES.MYPAGE_REVIEWS },
     { id: 'settings', label: '설정', route: ROUTES.MYPAGE_SETTINGS },
-    { id: 'logout', label: '로그아웃' },
-    { id: 'withdraw', label: '회원탈퇴' },
-    { id: 'support', label: '계정설정' },
+    // { id: 'logout', label: '로그아웃' },
+    // { id: 'withdraw', label: '회원탈퇴' },
+    // { id: 'support', label: '계정설정' },
     { id: 'privacy', label: '서비스 개선' },
     { id: 'terms', label: '이용약관' },
   ] as const;
 
+  type MenuItem = (typeof menuItems)[number];
+  const hasRoute = (item?: MenuItem): item is MenuItem & { route: string } =>
+    !!item && 'route' in item;
+
+  const activeMenuItem = menuItems.find((item) => item.id === activeMenu);
+  const activeRoute = hasRoute(activeMenuItem) ? activeMenuItem.route : null;
+
   const detailTitleMap: Record<string, string> = {
     'user-info': '내 정보',
     reservations: '예약내역',
-    payments: '결제수단 관리',
-    reviews: '리뷰',
+    // payments: '결제수단 관리',
+    reviews: '내 리뷰',
     settings: '설정',
     logout: '로그아웃',
     withdraw: '회원탈퇴',
+    privacy: '서비스 개선',
+    terms: '이용약관',
   };
 
   useEffect(() => {
@@ -133,20 +156,32 @@ export default function MyPage() {
                   <UserInfoForm variant="embedded" />
                 ) : activeMenu === 'settings' ? (
                   <SettingsForm variant="embedded" />
+                ) : activeMenu === 'privacy' ? (
+                  <div css={detailCard}>
+                    <div css={detailFrameWrap}>
+                      <iframe
+                        title="ONYU service improvement form"
+                        src={tallyImproveUrl}
+                        css={detailFrame}
+                      />
+                    </div>
+                  </div>
+                ) : activeMenu === 'terms' ? (
+                  <div css={detailCard}>
+                    <div css={detailFrameWrap}>
+                      <iframe title="ONYU terms of use" src={termsUrl} css={detailFrame} />
+                    </div>
+                  </div>
                 ) : (
                   <div css={detailCard}>
                     <Text typo="body_M" color="text_secondary">
                       선택한 메뉴의 상세 내용을 확인하세요.
                     </Text>
-                    {menuItems.find((item) => item.id === activeMenu)?.route && (
+                    {activeRoute && (
                       <button
                         type="button"
                         css={detailAction}
-                        onClick={() =>
-                          handleClick(
-                            menuItems.find((item) => item.id === activeMenu)?.route as string
-                          )
-                        }
+                        onClick={() => handleClick(activeRoute)}
                       >
                         <Text typo="body_S" color="primary50">
                           상세 페이지 이동
@@ -189,7 +224,7 @@ export default function MyPage() {
             </div>
           </div>
         </div>
-        <div css={improvement}>
+        <div css={improvement} onClick={handleOpenTally}>
           <div css={improvementTitle}>
             <Text typo="body_L" color="bg_default">
               Help Improve ONYU
@@ -199,7 +234,7 @@ export default function MyPage() {
             </Text>
           </div>
           <div css={improvementButton}>
-            <button>
+            <button type="button">
               <ChevronRightWhite width={12} height={12} />
             </button>
           </div>
@@ -232,7 +267,7 @@ export default function MyPage() {
           </Text>
         </div>
         <div css={myServiceList}>
-          <div css={myServiceItem}>
+          <div css={myServiceItem} onClick={handleOpenTerms}>
             <Text typo="body_S" color="primary50">
               Terms of Use
             </Text>
@@ -433,4 +468,21 @@ const detailAction = css`
   border: none;
   background: transparent;
   cursor: pointer;
+`;
+
+const detailFrameWrap = css`
+  flex: 1;
+  min-height: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid ${theme.colors.gray100};
+`;
+
+const detailFrame = css`
+  width: 111.12%;
+  height: 111.12%;
+  min-height: 611px;
+  border: none;
+  transform: scale(0.9);
+  transform-origin: top left;
 `;
