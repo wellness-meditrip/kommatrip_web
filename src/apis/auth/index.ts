@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api, guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
@@ -179,15 +180,16 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
 
 // 토큰 재발급 (쿠키에서 refreshToken 자동 전송)
 export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
-  // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
-  // guestApi는 그대로 두고, 이 함수에서만 withCredentials를 명시적으로 설정
-  return api.post<PostTokenReissueResponse>(
-    '/token/reissue',
-    {},
-    {
-      withCredentials: true, // 쿠키 전송을 위해 필요
-    }
-  );
+  // refreshToken은 브라우저 쿠키에 저장되므로 same-origin API를 호출해야 전송됨
+  return axios
+    .post<PostTokenReissueResponse>(
+      '/api/users/token/reissue',
+      {},
+      {
+        withCredentials: true,
+      }
+    )
+    .then((response) => response.data);
 };
 
 // 관심사 등록

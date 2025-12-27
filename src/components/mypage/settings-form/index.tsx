@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import { CTAButton, RoundButton, Text } from '@/components';
 import { theme } from '@/styles';
 import { useMediaQuery, useToast } from '@/hooks';
 import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
+import { useAuthStore } from '@/store/auth';
+import { deleteCookie } from '@/utils/cookie';
+import { ROUTES } from '@/constants';
 
 type Variant = 'page' | 'embedded';
 
@@ -15,6 +20,8 @@ interface Props {
 }
 
 export function SettingsForm({ variant = 'page' }: Props) {
+  const router = useRouter();
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { showToast } = useToast();
@@ -48,6 +55,18 @@ export function SettingsForm({ variant = 'page' }: Props) {
     );
   };
 
+  const handleLogout = async () => {
+    useAuthStore.getState().clearAuth();
+    deleteCookie('refreshToken');
+
+    if (session) {
+      await signOut({ callbackUrl: ROUTES.HOME });
+      return;
+    }
+
+    router.replace(ROUTES.HOME);
+  };
+
   return (
     <section css={page(isEmbedded)}>
       {!isEmbedded && (
@@ -79,7 +98,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
           </div>
         </div>
         <div css={card}>
-          <button type="button" css={textButton}>
+          <button type="button" css={textButton} onClick={handleLogout}>
             <Text typo="title_S" color="text_primary">
               Log out
             </Text>

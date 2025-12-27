@@ -2,6 +2,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { ROUTES } from '@/constants';
+import { useAuthStore } from '@/store/auth';
 
 /**
  * 인증이 필요한 페이지에서 사용하는 훅
@@ -13,7 +14,8 @@ export function useRequireAuth(showModal?: boolean) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [hasUserDismissedModal, setHasUserDismissedModal] = useState(false);
 
-  const isAuthenticated = !!session?.user;
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = !!session?.user || !!accessToken;
   const isLoading = status === 'loading';
 
   useEffect(() => {
