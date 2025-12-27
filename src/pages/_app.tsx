@@ -70,7 +70,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     };
 
     loadMessages();
-  }, [locale]);
+  }, [locale, isLocaleReady]);
 
   return (
     <>
@@ -89,7 +89,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
               <DialogProvider>
                 <ToastProvider>
                   {isLoading ? (
-                    <Loading title={loadingMessageByLocale[locale]} fullHeight={true} />
+                    <Loading title={loadingMessageByLocale[locale]} />
                   ) : (
                     <Component {...pageProps} />
                   )}
