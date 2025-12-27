@@ -12,12 +12,42 @@ import { useEffect, useState } from 'react';
 import { UserInfoForm } from '@/components/mypage/user-info-form';
 import { SettingsForm } from '@/components/mypage/settings-form';
 
+const menuItems = [
+  { id: 'user-info', label: '내 정보 관리', route: ROUTES.MYPAGE_USER_INFO },
+  { id: 'reservations', label: '예약내역', route: ROUTES.MYPAGE_RESERVATIONS },
+  // { id: 'payments', label: '결제수단 관리', route: ROUTES.MYPAGE_PAYMENTS },
+  { id: 'reviews', label: '내 리뷰', route: ROUTES.MYPAGE_REVIEWS },
+  { id: 'settings', label: '설정', route: ROUTES.MYPAGE_SETTINGS },
+  // { id: 'logout', label: '로그아웃' },
+  // { id: 'withdraw', label: '회원탈퇴' },
+  // { id: 'support', label: '계정설정' },
+  { id: 'privacy', label: '서비스 개선' },
+  { id: 'terms', label: '이용약관' },
+] as const;
+
+type MenuItem = (typeof menuItems)[number];
+
+const detailTitleMap: Record<MenuItem['id'], string> = {
+  'user-info': '내 정보',
+  reservations: '예약내역',
+  // payments: '결제수단 관리',
+  reviews: '내 리뷰',
+  settings: '설정',
+  // logout: '로그아웃',
+  // withdraw: '회원탈퇴',
+  privacy: '서비스 개선',
+  terms: '이용약관',
+};
+
+const hasRoute = (item?: MenuItem): item is MenuItem & { route: string } =>
+  !!item && 'route' in item;
+
 // 마이페이지
 export default function MyPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { data: profileData } = useGetUserProfileQuery();
-  const [activeMenu, setActiveMenu] = useState('user-info');
+  const [activeMenu, setActiveMenu] = useState<MenuItem['id']>('user-info');
   const [searchValue, setSearchValue] = useState('');
   const user = profileData?.user;
   const tallyImproveUrl = 'https://tally.so/r/wkDMRj';
@@ -44,43 +74,14 @@ export default function MyPage() {
     }
   };
 
-  const menuItems = [
-    { id: 'user-info', label: '내 정보 관리', route: ROUTES.MYPAGE_USER_INFO },
-    { id: 'reservations', label: '예약내역', route: ROUTES.MYPAGE_RESERVATIONS },
-    // { id: 'payments', label: '결제수단 관리', route: ROUTES.MYPAGE_PAYMENTS },
-    { id: 'reviews', label: '내 리뷰', route: ROUTES.MYPAGE_REVIEWS },
-    { id: 'settings', label: '설정', route: ROUTES.MYPAGE_SETTINGS },
-    // { id: 'logout', label: '로그아웃' },
-    // { id: 'withdraw', label: '회원탈퇴' },
-    // { id: 'support', label: '계정설정' },
-    { id: 'privacy', label: '서비스 개선' },
-    { id: 'terms', label: '이용약관' },
-  ] as const;
-
-  type MenuItem = (typeof menuItems)[number];
-  const hasRoute = (item?: MenuItem): item is MenuItem & { route: string } =>
-    !!item && 'route' in item;
-
   const activeMenuItem = menuItems.find((item) => item.id === activeMenu);
   const activeRoute = hasRoute(activeMenuItem) ? activeMenuItem.route : null;
-
-  const detailTitleMap: Record<string, string> = {
-    'user-info': '내 정보',
-    reservations: '예약내역',
-    // payments: '결제수단 관리',
-    reviews: '내 리뷰',
-    settings: '설정',
-    logout: '로그아웃',
-    withdraw: '회원탈퇴',
-    privacy: '서비스 개선',
-    terms: '이용약관',
-  };
 
   useEffect(() => {
     if (!router.isReady) return;
     const tab = router.query.tab;
     if (typeof tab === 'string' && menuItems.some((item) => item.id === tab)) {
-      setActiveMenu(tab);
+      setActiveMenu(tab as MenuItem['id']);
     }
   }, [router.isReady, router.query.tab]);
 

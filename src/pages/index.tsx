@@ -69,7 +69,7 @@ export default function HomePage() {
       departments: company.tags || [],
       is_exclusive: company.is_exclusive,
     }));
-  }, [recentCompanies]);
+  }, [recentCompanies, isLoggedIn]);
 
   // 추천 업체 데이터 변환
   const formattedRecommendedCompanies = useMemo(() => {

@@ -26,7 +26,7 @@ export default function MyPageSettings() {
       undefined,
       { shallow: true }
     );
-  }, [isDesktop, router.isReady]);
+  }, [isDesktop, router]);
 
   return (
     <Layout isAppBarExist={false}>

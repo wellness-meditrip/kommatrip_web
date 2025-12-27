@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { css } from '@emotion/react';
@@ -71,13 +71,16 @@ export function UserInfoForm({ variant = 'page' }: Props) {
   const postImageMutation = usePostUserProfileImageMutation();
   const deleteImageMutation = useDeleteUserProfileImageMutation();
 
-  const validateUsername = (value: string) => {
-    if (!value) return tValidation('username.required');
-    if (!/^[A-Za-z0-9]{2,10}$/.test(value)) {
-      return tValidation('username.invalid');
-    }
-    return '';
-  };
+  const validateUsername = useCallback(
+    (value: string) => {
+      if (!value) return tValidation('username.required');
+      if (!/^[A-Za-z0-9]{2,10}$/.test(value)) {
+        return tValidation('username.invalid');
+      }
+      return '';
+    },
+    [tValidation]
+  );
 
   useEffect(() => {
     if (!profileData?.user || hasInitialized.current) return;
@@ -103,7 +106,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
     });
     setContactMethod(initialMethod ?? 'Line');
     hasInitialized.current = true;
-  }, [profileData]);
+  }, [profileData, validateUsername]);
 
   useEffect(() => {
     return () => {

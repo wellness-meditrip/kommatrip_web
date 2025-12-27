@@ -3,9 +3,9 @@ import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { CTAButton, RoundButton, Text } from '@/components';
+import { Text } from '@/components';
 import { theme } from '@/styles';
-import { useMediaQuery, useToast } from '@/hooks';
+import { useToast } from '@/hooks';
 import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
@@ -23,9 +23,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
   const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { showToast } = useToast();
-  const [isPushEnabled, setIsPushEnabled] = useState(false);
   const [isMarketingEnabled, setIsMarketingEnabled] = useState(true);
   const isEmbedded = variant === 'embedded';
   const { data: profileData } = useGetUserProfileQuery();
@@ -155,12 +153,6 @@ const settingText = css`
   gap: 6px;
 `;
 
-const divider = css`
-  width: 100%;
-  height: 1px;
-  background: ${theme.colors.border_default};
-`;
-
 const toggleWrapper = css`
   position: relative;
   width: 52px;
@@ -216,12 +208,4 @@ const textButtonMuted = css`
   background: none;
   border: none;
   cursor: pointer;
-`;
-
-const desktopActions = (isEmbedded: boolean) => css`
-  display: flex;
-  justify-content: flex-end;
-  margin: ${isEmbedded ? '16px 0 0' : '24px auto 0'};
-  padding: ${isEmbedded ? '0' : '0 40px'};
-  max-width: ${isEmbedded ? '100%' : '640px'};
 `;
