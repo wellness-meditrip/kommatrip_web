@@ -22,7 +22,7 @@ import {
 // 이메일 인증 코드 전송
 export const postVerifyEmailCode = async (email: string) => {
   return await guestApi.post<PostVerifyEmailCodeResponse>(
-    '/non/email/verify-email',
+    'user/non/email/verify-email',
     { email },
     {
       headers: {
@@ -35,7 +35,7 @@ export const postVerifyEmailCode = async (email: string) => {
 
 // 이메일 인증 코드 검증
 export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
-  return await guestApi.post<PostConfirmEmailResponse>('/non/email/confirm-email', data, {
+  return await guestApi.post<PostConfirmEmailResponse>('user/non/email/confirm-email', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -44,7 +44,7 @@ export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
 
 // 회원가입
 export const postSignup = async (data: PostSignupRequestBody) => {
-  return await guestApi.post<PostSignupResponse>('/non/register/customer', data, {
+  return await guestApi.post<PostSignupResponse>('user/non/register/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -53,7 +53,7 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
-  return await guestApi.post<PostLoginResponse>('/non/login/customer', data, {
+  return await guestApi.post<PostLoginResponse>('user/non/login/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -63,7 +63,7 @@ export const postLogin = async (data: PostLoginRequestBody) => {
 // 비밀번호 재설정 코드 발송
 export const postResetPasswordRequest = async (email: string) => {
   return await guestApi.post<PostResetPasswordRequestResponse>(
-    '/non/password/reset/request',
+    'user/non/password/reset/request',
     { email },
     {
       headers: {
@@ -77,7 +77,7 @@ export const postResetPasswordRequest = async (email: string) => {
 // 비밀번호 재설정 코드 검증
 export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmRequest) => {
   return await guestApi.post<PostResetPasswordConfirmResponse>(
-    '/non/password/reset/confirm-code',
+    'user/non/password/reset/confirm-code',
     data,
     {
       headers: {
@@ -91,7 +91,7 @@ export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmReq
 // 비밀번호 재설정
 export const postResetPasswordComplete = async (data: PostResetPasswordCompleteRequest) => {
   return await guestApi.post<PostResetPasswordCompleteResponse>(
-    '/non/password/reset/complete',
+    'user/non/password/reset/complete',
     data,
     {
       headers: {
@@ -108,12 +108,12 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
     idTokenLength: data.idToken?.length,
     country: data.country,
     marketing_consent: data.marketing_consent,
-    url: '/non/auth/google',
+    url: 'user/non/auth/google',
   });
 
   try {
     const response = await guestApi.post<PostUserAuthGoogleResponse>(
-      '/non/auth/google',
+      'user/non/auth/google',
       {
         idToken: data.idToken,
         country: data.country,
