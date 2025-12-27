@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Layout,
   AppBar,
@@ -14,6 +16,8 @@ import {
 } from '@/components';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
+import { useAuthStore } from '@/store/auth';
+import { QUERY_KEYS } from '@/queries/query-keys';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -25,15 +29,34 @@ export default function HomePage() {
   const t = useTranslations('common');
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const { status } = useSession();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const queryClient = useQueryClient();
 
   // 최근 본 업체 조회
-  const { data: recentCompanies, isLoading: isRecentLoading } = useGetRecentCompanyQuery(true);
+  const {
+    data: recentCompanies,
+    isLoading: isRecentLoading,
+    refetch: refetchRecentCompanies,
+  } = useGetRecentCompanyQuery(isLoggedIn);
 
   const { data: recommendedCompanies, isLoading: isRecommendedLoading } =
     useGetRecommendedCompanyQuery();
 
+  useEffect(() => {
+    if (!isLoggedIn || !accessToken) return;
+    refetchRecentCompanies();
+  }, [isLoggedIn, accessToken, refetchRecentCompanies]);
+
+  useEffect(() => {
+    if (isLoggedIn) return;
+    queryClient.removeQueries({ queryKey: QUERY_KEYS.GET_RECENT_COMPANY });
+  }, [isLoggedIn, queryClient]);
+
   // API 응답을 CompanyList 형식으로 변환
   const formattedRecentCompanies = useMemo(() => {
+    if (!isLoggedIn) return [];
     if (!recentCompanies || recentCompanies.length === 0) return [];
 
     return recentCompanies.map((company) => ({
@@ -46,7 +69,7 @@ export default function HomePage() {
       departments: company.tags || [],
       is_exclusive: company.is_exclusive,
     }));
-  }, [recentCompanies]);
+  }, [recentCompanies, isLoggedIn]);
 
   // 추천 업체 데이터 변환
   const formattedRecommendedCompanies = useMemo(() => {

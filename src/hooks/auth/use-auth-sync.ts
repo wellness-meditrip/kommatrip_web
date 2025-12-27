@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/store/auth';
-import { setCookie } from '@/utils/cookie';
+import { deleteCookie, getCookie, setCookie } from '@/utils/cookie';
 import { ROUTES } from '@/constants';
+import { postTokenReissue } from '@/apis/auth';
+import { beginAuthRefresh, rejectAuthRefresh, resolveAuthRefresh } from '@/utils/auth-refresh';
 
 /**
  * NextAuth 세션과 zustand auth store를 동기화하는 훅
@@ -12,6 +14,7 @@ import { ROUTES } from '@/constants';
 export function useAuthSync() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const refreshAttempted = useRef(false);
 
   // Google 로그인 성공 시 토큰 저장
   useEffect(() => {
@@ -26,6 +29,34 @@ export function useAuthSync() {
     if (refreshToken) {
       setCookie('refreshToken', refreshToken, 7); // 7일
     }
+  }, [session, status]);
+
+  // 이메일 로그인: refreshToken 쿠키가 있으면 accessToken 복원
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (session?.accessToken) return;
+    if (refreshAttempted.current) return;
+
+    const hasAccessToken = !!useAuthStore.getState().accessToken;
+    const refreshToken = getCookie('refreshToken');
+    if (hasAccessToken || !refreshToken) return;
+
+    refreshAttempted.current = true;
+    beginAuthRefresh();
+    postTokenReissue()
+      .then((response) => {
+        const newAccessToken = response.tokens.access_token;
+        if (newAccessToken) {
+          useAuthStore.getState().setAccessToken(newAccessToken);
+        }
+        resolveAuthRefresh();
+      })
+      .catch((error) => {
+        console.error('[AuthSync] refresh token reissue failed', error);
+        useAuthStore.getState().clearAuth();
+        deleteCookie('refreshToken');
+        rejectAuthRefresh(error);
+      });
   }, [session, status]);
 
   // InterestSetting 확인 및 리다이렉트

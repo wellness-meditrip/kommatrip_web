@@ -3,15 +3,15 @@ import type { SVGProps } from 'react';
 export const Copy = (props: SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16" {...props}>
     <rect
-      x="5"
-      y="5"
-      width="9"
-      height="9"
-      rx="2"
+      width={9}
+      height={9}
+      x={5}
+      y={5}
       stroke="#231A00"
-      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth={1.5}
+      rx={2}
     />
     <path
       stroke="#231A00"

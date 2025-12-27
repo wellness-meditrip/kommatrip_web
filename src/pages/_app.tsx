@@ -26,13 +26,19 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const router = useRouter();
   const [messages, setMessages] = useState<Record<string, unknown>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [locale, setLocale] = useState<Locale>(routing.defaultLocale);
+  const [isLocaleReady, setIsLocaleReady] = useState(false);
 
-  // URL에서 로케일 추출 (예: /ko/... 또는 /en/...)
-  const pathLocale = router.asPath.split('/')[1];
-  const locale: Locale =
-    pathLocale && routing.locales.includes(pathLocale as Locale)
-      ? (pathLocale as Locale)
-      : routing.defaultLocale;
+  useEffect(() => {
+    if (!router.isReady) return;
+    const pathLocale = router.asPath.split('/')[1];
+    const resolvedLocale =
+      pathLocale && routing.locales.includes(pathLocale as Locale)
+        ? (pathLocale as Locale)
+        : routing.defaultLocale;
+    setLocale(resolvedLocale);
+    setIsLocaleReady(true);
+  }, [router.asPath, router.isReady]);
 
   const loadingMessageByLocale: Record<Locale, string> = {
     en: 'Loading...',
@@ -42,7 +48,9 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
 
   // 클라이언트 사이드에서 메시지 로드
   useEffect(() => {
+    if (!isLocaleReady) return;
     const loadMessages = async () => {
+      setIsLoading(true);
       try {
         // API 라우트를 통해 메시지 로드
         const response = await fetch(`/api/i18n/${locale}`);
@@ -62,7 +70,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     };
 
     loadMessages();
-  }, [locale]);
+  }, [locale, isLocaleReady]);
 
   return (
     <>
@@ -81,7 +89,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
               <DialogProvider>
                 <ToastProvider>
                   {isLoading ? (
-                    <Loading title={loadingMessageByLocale[locale]} fullHeight={true} />
+                    <Loading title={loadingMessageByLocale[locale]} />
                   ) : (
                     <Component {...pageProps} />
                   )}

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api, guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
@@ -22,7 +23,7 @@ import {
 // 이메일 인증 코드 전송
 export const postVerifyEmailCode = async (email: string) => {
   return await guestApi.post<PostVerifyEmailCodeResponse>(
-    '/non/email/verify-email',
+    'user/non/email/verify-email',
     { email },
     {
       headers: {
@@ -35,7 +36,7 @@ export const postVerifyEmailCode = async (email: string) => {
 
 // 이메일 인증 코드 검증
 export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
-  return await guestApi.post<PostConfirmEmailResponse>('/non/email/confirm-email', data, {
+  return await guestApi.post<PostConfirmEmailResponse>('user/non/email/confirm-email', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -44,7 +45,7 @@ export const postConfirmEmail = async (data: PostConfirmEmailRequest) => {
 
 // 회원가입
 export const postSignup = async (data: PostSignupRequestBody) => {
-  return await guestApi.post<PostSignupResponse>('/non/register/customer', data, {
+  return await guestApi.post<PostSignupResponse>('user/non/register/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -53,7 +54,7 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
-  return await guestApi.post<PostLoginResponse>('/non/login/customer', data, {
+  return await guestApi.post<PostLoginResponse>('user/non/login/customer', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -63,7 +64,7 @@ export const postLogin = async (data: PostLoginRequestBody) => {
 // 비밀번호 재설정 코드 발송
 export const postResetPasswordRequest = async (email: string) => {
   return await guestApi.post<PostResetPasswordRequestResponse>(
-    '/non/password/reset/request',
+    'user/non/password/reset/request',
     { email },
     {
       headers: {
@@ -77,7 +78,7 @@ export const postResetPasswordRequest = async (email: string) => {
 // 비밀번호 재설정 코드 검증
 export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmRequest) => {
   return await guestApi.post<PostResetPasswordConfirmResponse>(
-    '/non/password/reset/confirm-code',
+    'user/non/password/reset/confirm-code',
     data,
     {
       headers: {
@@ -91,7 +92,7 @@ export const postResetPasswordConfirm = async (data: PostResetPasswordConfirmReq
 // 비밀번호 재설정
 export const postResetPasswordComplete = async (data: PostResetPasswordCompleteRequest) => {
   return await guestApi.post<PostResetPasswordCompleteResponse>(
-    '/non/password/reset/complete',
+    'user/non/password/reset/complete',
     data,
     {
       headers: {
@@ -108,12 +109,12 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
     idTokenLength: data.idToken?.length,
     country: data.country,
     marketing_consent: data.marketing_consent,
-    url: '/non/auth/google',
+    url: 'user/non/auth/google',
   });
 
   try {
     const response = await guestApi.post<PostUserAuthGoogleResponse>(
-      '/non/auth/google',
+      'user/non/auth/google',
       {
         idToken: data.idToken,
         country: data.country,
@@ -179,15 +180,16 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
 
 // 토큰 재발급 (쿠키에서 refreshToken 자동 전송)
 export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
-  // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
-  // guestApi는 그대로 두고, 이 함수에서만 withCredentials를 명시적으로 설정
-  return api.post<PostTokenReissueResponse>(
-    '/token/reissue',
-    {},
-    {
-      withCredentials: true, // 쿠키 전송을 위해 필요
-    }
-  );
+  // refreshToken은 브라우저 쿠키에 저장되므로 same-origin API를 호출해야 전송됨
+  return axios
+    .post<PostTokenReissueResponse>(
+      '/api/users/token/reissue',
+      {},
+      {
+        withCredentials: true,
+      }
+    )
+    .then((response) => response.data);
 };
 
 // 관심사 등록

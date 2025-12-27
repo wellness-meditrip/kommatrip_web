@@ -6,8 +6,8 @@ import {
   GlobeFilled,
   Login,
   LoginFilled,
-  GnbMypageActive,
-  GnbMypageInactive,
+  MypageActive,
+  MypageInactive,
 } from '@/icons';
 import {
   wrapper,
@@ -27,7 +27,7 @@ import {
   languageItem,
   languageItemActive,
 } from './index.styles';
-import { SearchBar } from '@/components';
+import { LoginModal, SearchBar } from '@/components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
@@ -55,10 +55,12 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
   const router = useRouter();
   const { status } = useSession();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthLoading = status === 'loading';
   const isLoggedIn = status === 'authenticated' || !!accessToken;
   const changeLocale = useChangeLocale();
   const currentLocale = useCurrentLocale();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
 
   const handleMenuClick = (path: string) => {
@@ -86,6 +88,30 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isLanguageMenuOpen]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const guestAccessiblePathnames = new Set([
+      ROUTES.HOME,
+      ROUTES.SEARCH,
+      ROUTES.COMPANY,
+      ROUTES.LOGIN,
+      ROUTES.SIGNUP,
+      ROUTES.TERMS_OF_USE,
+      '/company/[companyId]',
+      '/company/[companyId]/program',
+    ]);
+
+    if (isAuthLoading) return;
+
+    if (isLoggedIn || guestAccessiblePathnames.has(router.pathname)) {
+      setShowLoginModal(false);
+      return;
+    }
+
+    setShowLoginModal(true);
+  }, [isAuthLoading, isLoggedIn, router.isReady, router.pathname]);
 
   return (
     <div css={wrapper}>
@@ -122,14 +148,14 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
           <div css={iconWrapper}>
             <div css={loginIcon}>
               {isLoggedIn ? (
-                <GnbMypageInactive width="30px" height="30px" />
+                <MypageInactive width="30px" height="30px" />
               ) : (
                 <Login width="20px" height="20px" />
               )}
             </div>
             <div css={loginFilledIcon}>
               {isLoggedIn ? (
-                <GnbMypageActive width="30px" height="30px" />
+                <MypageActive width="30px" height="30px" />
               ) : (
                 <LoginFilled width="20px" height="20px" />
               )}
@@ -172,6 +198,7 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
           )}
         </div>
       </div>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </div>
   );
 }

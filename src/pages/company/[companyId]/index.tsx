@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { css } from '@emotion/react';
 import { useSession } from 'next-auth/react';
+import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -185,12 +186,14 @@ export default function ClinicDetailPage() {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
 
-  const { data: session } = useSession();
+  const { status } = useSession();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isLoggedIn = status === 'authenticated' || !!accessToken;
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
     // 비회원인 경우 로그인 모달 표시
-    if (!session?.user) {
+    if (!isLoggedIn) {
       setShowLoginModal(true);
       return;
     }

@@ -19,5 +19,24 @@
   },
   "country": {
     "required": "국가를 선택해 주세요"
+  },
+  "username": {
+    "required": "사용자 이름을 입력해 주세요",
+    "invalid": "사용자 이름은 2-10자의 영문/숫자만 입력해 주세요"
+  },
+  "contact": {
+    "required": "연락처 정보를 입력해 주세요",
+    "line": {
+      "invalid": "Line ID 형식이 올바르지 않아요"
+    },
+    "kakao": {
+      "invalid": "Kakao ID 형식이 올바르지 않아요"
+    },
+    "phone": {
+      "invalid": "전화번호 형식이 올바르지 않아요"
+    },
+    "whatsapp": {
+      "invalid": "WhatsApp 번호 형식이 올바르지 않아요"
+    }
   }
 }

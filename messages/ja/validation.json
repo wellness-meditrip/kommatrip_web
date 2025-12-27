@@ -19,5 +19,24 @@
   },
   "country": {
     "required": "国を選択してください"
+  },
+  "username": {
+    "required": "ユーザー名を入力してください",
+    "invalid": "ユーザー名は2〜10文字の英数字で入力してください"
+  },
+  "contact": {
+    "required": "連絡先情報を入力してください",
+    "line": {
+      "invalid": "Line IDの形式が正しくありません"
+    },
+    "kakao": {
+      "invalid": "Kakao IDの形式が正しくありません"
+    },
+    "phone": {
+      "invalid": "電話番号の形式が正しくありません"
+    },
+    "whatsapp": {
+      "invalid": "WhatsApp番号の形式が正しくありません"
+    }
   }
 }
