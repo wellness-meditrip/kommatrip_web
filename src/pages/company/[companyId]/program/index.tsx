@@ -5,13 +5,15 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar } from '@/components';
+import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar, LoginModal } from '@/components';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useMediaQuery } from '@/hooks';
+import { useSession } from 'next-auth/react';
+import { useAuthStore } from '@/store/auth';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
@@ -23,13 +25,16 @@ export default function ProgramDetailPage() {
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
+  const { status } = useSession();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    if (isLoggedIn) {
       router.push(ROUTES.RESERVATIONS);
     } else {
-      window.ReactNativeWebView?.postMessage(JSON.stringify({ type: 'LOGIN_REQUEST' }));
+      setShowLoginModal(true);
     }
   };
 
@@ -282,6 +287,7 @@ export default function ProgramDetailPage() {
       </div>
 
       {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </Layout>
   );
 }
