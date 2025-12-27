@@ -48,3 +48,13 @@ export interface DeleteUserProfileImageResponse {
   message?: string;
   user?: UserProfile;
 }
+
+export interface PostMarketingConsentRequest {
+  marketing_consent: boolean;
+}
+
+export interface PostMarketingConsentResponse {
+  message: string;
+  marketing_consent: boolean;
+  marketing_consent_at: string;
+}

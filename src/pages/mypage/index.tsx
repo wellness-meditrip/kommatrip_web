@@ -10,6 +10,7 @@ import { useMediaQuery } from '@/hooks';
 import { useGetUserProfileQuery } from '@/queries';
 import { useEffect, useState } from 'react';
 import { UserInfoForm } from '@/components/mypage/user-info-form';
+import { SettingsForm } from '@/components/mypage/settings-form';
 
 // 마이페이지
 export default function MyPage() {
@@ -37,6 +38,9 @@ export default function MyPage() {
     { id: 'settings', label: '설정', route: ROUTES.MYPAGE_SETTINGS },
     { id: 'logout', label: '로그아웃' },
     { id: 'withdraw', label: '회원탈퇴' },
+    { id: 'support', label: '계정설정' },
+    { id: 'privacy', label: '서비스 개선' },
+    { id: 'terms', label: '이용약관' },
   ] as const;
 
   const detailTitleMap: Record<string, string> = {
@@ -127,6 +131,8 @@ export default function MyPage() {
               <div css={detailContent}>
                 {activeMenu === 'user-info' ? (
                   <UserInfoForm variant="embedded" />
+                ) : activeMenu === 'settings' ? (
+                  <SettingsForm variant="embedded" />
                 ) : (
                   <div css={detailCard}>
                     <Text typo="body_M" color="text_secondary">

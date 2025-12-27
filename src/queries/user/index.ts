@@ -4,6 +4,7 @@ import {
   deleteUserProfileImage,
   getUserProfile,
   patchUserProfile,
+  postMarketingConsent,
   postUserProfileImage,
 } from '@/apis/user';
 import {
@@ -11,6 +12,8 @@ import {
   GetUserProfileResponse,
   PatchUserProfileRequest,
   PatchUserProfileResponse,
+  PostMarketingConsentRequest,
+  PostMarketingConsentResponse,
   PostUserProfileImageResponse,
 } from '@/models/user';
 
@@ -42,5 +45,12 @@ export const useDeleteUserProfileImageMutation = () => {
   return useMutation<DeleteUserProfileImageResponse, Error, void>({
     mutationKey: QUERY_KEYS.DELETE_USER_PROFILE_IMAGE,
     mutationFn: deleteUserProfileImage,
+  });
+};
+
+export const usePostMarketingConsentMutation = () => {
+  return useMutation<PostMarketingConsentResponse, Error, PostMarketingConsentRequest>({
+    mutationKey: QUERY_KEYS.POST_MARKETING_CONSENT,
+    mutationFn: postMarketingConsent,
   });
 };
