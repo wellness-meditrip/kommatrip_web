@@ -1,181 +1,170 @@
-import { AppBar } from '@/components/app-bar';
-import { Layout } from '@/components/layout';
-import { RoundButton } from '@/components/button/round-button';
-import { Text } from '@/components/text';
-import { Check } from '@/icons';
+import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
+import { Layout, RoundButton, Text, Empty, AppBar } from '@/components';
+import { Check, LogoDark } from '@/icons';
 import { theme } from '@/styles';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/constants';
+import { useCurrentLocale } from '@/i18n/navigation';
+
+interface ReservationCompleteData {
+  company_name: string;
+  program_name: string;
+  program_duration_minutes: number;
+  date: string;
+  time: string;
+}
+
+const formatConfirmationDate = (date: string, time: string) => {
+  if (!date || !time) return '';
+  const dateTime = new Date(`${date}T${time}`);
+  if (Number.isNaN(dateTime.getTime())) return '';
+  const day = new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+  }).format(dateTime);
+  const timeText = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(dateTime);
+  return `${day} at ${timeText}`;
+};
 
 export default function ReservationCompletePage() {
-  const handleGoToReservations = () => {
-    alert('예약 목록으로 이동');
-  };
+  const router = useRouter();
+  const currentLocale = useCurrentLocale();
+  const [data, setData] = useState<ReservationCompleteData | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.sessionStorage.getItem('reservation_complete');
+    if (!stored) return;
+    try {
+      setData(JSON.parse(stored));
+    } catch {
+      window.sessionStorage.removeItem('reservation_complete');
+    }
+  }, []);
+
+  const confirmationDate = useMemo(() => {
+    if (!data) return '';
+    return formatConfirmationDate(data.date, data.time);
+  }, [data]);
 
   return (
-    <Layout>
-      <AppBar title="예약 완료" />
-
-      <div css={container}>
-        {/* 상단 섹션 - 예약 확정 정보 */}
+    <Layout isAppBarExist={false}>
+      <AppBar logo="dark" />
+      <div css={completeWrapper}>
         <div css={successSection}>
           <div css={checkIconWrapper}>
             <Check width={72} height={72} />
           </div>
-
           <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
-            예약이 확정되었어요!
+            Your reservation request has been submitted!
           </Text>
-
-          <div css={reservationCard}>
-            <Text tag="p" typo="button_M" color="text_primary" css={clinicName}>
-              우주연 한의원
-            </Text>
-            <Text tag="p" typo="button_M" color="primary50" css={reservationDateTime}>
-              2025.08.02 (토) 14:00
-            </Text>
-            <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
-              다이어트 패키지
-            </Text>
-          </div>
+          <Text tag="p" typo="body_M" color="text_tertiary">
+            We will confirm it after review.
+          </Text>
         </div>
 
-        <section css={section}>
-          {/* 중간 섹션 - 취소 및 예약금 규정 안내 */}
-          <div css={policyCard}>
-            <Text tag="h2" typo="title_S" color="text_primary" css={policyTitle}>
-              취소 및 예약금 규정 안내
+        {data ? (
+          <div css={reservationCard}>
+            <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
+              {data.company_name}
             </Text>
-
-            <div css={policyContent}>
-              <Text tag="p" typo="body_M" color="text_primary" css={policyText}>
-                진료 예정일(진료 확정 날짜) 7일 전 (168시간) 예약 취소 시, 100% 환불됩니다.
-              </Text>
-              <Text tag="p" typo="body_M" color="text_primary" css={policyText}>
-                진료 예정일(진료 확정 날짜) 7일이 남지 않은 경우, 예약 취소 시 보증금은 반환되지
-                않습니다.
-              </Text>
-              <Text tag="p" typo="body_M" color="text_primary" css={policyText}>
-                당일 진료를 위한 당일 예약은 취소가 불가하며, 노쇼(No show)시 예약금 규정 동일하게
-                적용됩니다.
-              </Text>
-            </div>
+            <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
+              {confirmationDate || '-'}
+            </Text>
+            <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
+              {data.program_name} ({data.program_duration_minutes}min)
+            </Text>
           </div>
-
-          {/* 하단 섹션 - 버튼 */}
-          <div css={buttonSection}>
-            <RoundButton onClick={handleGoToReservations} size="L" fullWidth>
-              <Text typo="button_L" color="white">
-                내 예약 목록으로 이동
-              </Text>
-            </RoundButton>
+        ) : (
+          <div css={emptyWrapper}>
+            <Empty title="예약 정보를 찾을 수 없습니다." />
           </div>
-        </section>
+        )}
+      </div>
+
+      <div css={buttonSection}>
+        <RoundButton
+          onClick={() => router.push(`/${currentLocale}${ROUTES.BOOKINGS}`)}
+          size="L"
+          fullWidth
+        >
+          <Text typo="button_L" color="white">
+            My Bookings
+          </Text>
+        </RoundButton>
       </div>
     </Layout>
   );
 }
 
-const container = css`
+const completeWrapper = css`
   display: flex;
   flex-direction: column;
-  flex: 1;
+  align-items: center;
+  padding: 120px 24px 40px;
   gap: 24px;
+  background: ${theme.colors.bg_surface1};
+  min-height: calc(100vh - 120px);
 `;
 
 const successSection = css`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-
-  padding: 100px 0 32px;
+  gap: 12px;
+  text-align: center;
 `;
 
 const checkIconWrapper = css`
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin-bottom: 8px;
 `;
 
 const successMessage = css`
-  margin-bottom: 32px;
-
   text-align: center;
+  line-height: 1.4;
 `;
 
 const reservationCard = css`
+  width: 100%;
+  max-width: 340px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 8px;
-
-  width: 100%;
-  max-width: 320px;
-  padding: 20px;
-  border: 1px solid ${theme.colors.primary50};
-  border-radius: 12px;
-
-  background-color: ${theme.colors.primary10};
+  text-align: center;
 `;
 
 const clinicName = css`
   margin: 0;
-
-  text-align: center;
 `;
 
 const reservationDateTime = css`
   margin: 0;
-
-  text-align: center;
 `;
 
 const packageName = css`
   margin: 0;
-
-  text-align: center;
-`;
-
-const section = css`
-  display: flex;
-  flex-direction: column;
-
-  height: 100%;
-
-  background-color: ${theme.colors.bg_default};
-`;
-
-const policyCard = css`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  margin: 16px 20px;
-  padding: 20px;
-  border-radius: 12px;
-
-  background-color: ${theme.colors.white};
-`;
-
-const policyTitle = css`
-  margin: 0;
-`;
-
-const policyContent = css`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const policyText = css`
-  margin: 0;
-
-  line-height: 1.5;
 `;
 
 const buttonSection = css`
-  margin-top: auto;
-  padding-bottom: 20px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 18px 24px;
+  background: ${theme.colors.bg_surface1};
+`;
+
+const emptyWrapper = css`
+  width: 100%;
 `;

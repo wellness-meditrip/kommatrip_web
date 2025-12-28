@@ -1,17 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AppBar, Layout, Text, CTAButton, LoginModal, Loading, Empty } from '@/components';
+import {
+  AppBar,
+  Layout,
+  Text,
+  CTAButton,
+  LoginModal,
+  Loading,
+  Empty,
+  CompanyInfoCard,
+} from '@/components';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
-import { Chevron } from '@/icons';
+import { Chevron, PaymentLocation } from '@/icons';
 import { useRequireAuth, useToast } from '@/hooks';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
-import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { ROUTES } from '@/constants';
 import { CompanyDetail } from '@/models';
-import { useAuthStore } from '@/store/auth';
-import { postTokenReissue } from '@/apis/auth';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 const contactMethods = ['Line', 'Whats App', 'Kakao', 'Phone'];
 
@@ -28,6 +35,7 @@ export default function ReservationPage() {
   const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const { showToast } = useToast();
+  const currentLocale = useCurrentLocale();
   const companyIdQuery = Array.isArray(router.query.companyId)
     ? router.query.companyId[0]
     : router.query.companyId;
@@ -47,8 +55,6 @@ export default function ReservationPage() {
   });
   const company = companyData?.company ?? prefetchedCompany;
   const programs = programList?.programs ?? [];
-  const { mutateAsync: createReservation, isLoading: isSubmitting } =
-    usePostCreateReservationMutation();
 
   // Toggle states for sections
   const [isProgramsOpen, setIsProgramsOpen] = useState(true);
@@ -271,59 +277,7 @@ export default function ReservationPage() {
     return 'korean';
   };
 
-  const parseJwtPayload = (token: string) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
-          .join('')
-      );
-      return JSON.parse(jsonPayload) as {
-        exp?: number;
-        type?: string;
-        role?: string;
-        sub?: string;
-      };
-    } catch {
-      return null;
-    }
-  };
-
-  const ensureValidAccessToken = async () => {
-    const currentToken = useAuthStore.getState().accessToken;
-    const payload = currentToken ? parseJwtPayload(currentToken) : null;
-    console.log('[createReservation] token payload:', payload);
-    const nowInSeconds = Math.floor(Date.now() / 1000);
-    const isExpired = payload?.exp ? payload.exp <= nowInSeconds + 10 : true;
-    const isAccessToken = payload?.type === 'access';
-
-    if (!currentToken || !payload || isExpired || !isAccessToken) {
-      try {
-        const response = await postTokenReissue();
-        const newAccessToken = response?.tokens?.access_token;
-        if (newAccessToken) {
-          useAuthStore.getState().setAccessToken(newAccessToken);
-          return true;
-        }
-      } catch {
-        return false;
-      }
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async () => {
-    const hasValidToken = await ensureValidAccessToken();
-    if (!hasValidToken) {
-      showToast({ title: '로그인이 만료되었습니다. 다시 로그인해 주세요.', icon: 'exclaim' });
-      return;
-    }
-
     if (!selectedProgramId) {
       showToast({ title: '프로그램을 선택해 주세요.', icon: 'exclaim' });
       return;
@@ -385,8 +339,25 @@ export default function ReservationPage() {
     }
 
     const normalizedContact = normalizeContactMethod(selectedContactMethod);
-    const payload = {
-      program_id: selectedProgramId,
+    const selectedProgram = programs.find((program) => program.id === selectedProgramId);
+    if (!selectedProgram) {
+      showToast({ title: '선택한 프로그램 정보를 찾을 수 없습니다.', icon: 'exclaim' });
+      return;
+    }
+    if (!company) {
+      showToast({ title: '업체 정보를 불러오지 못했습니다.', icon: 'exclaim' });
+      return;
+    }
+
+    const draft = {
+      company_id: company.id,
+      company_name: company.name,
+      company_address: company.address,
+      company_tags: company.tags ?? [],
+      program_id: selectedProgram.id,
+      program_name: selectedProgram.name,
+      program_duration_minutes: selectedProgram.duration_minutes,
+      program_price: selectedProgram.price,
       preferred_contact: normalizedContact,
       language_preference: normalizeLanguage(language),
       availability_options: availabilityOptions,
@@ -397,22 +368,14 @@ export default function ReservationPage() {
       contact_phone: normalizedContact === 'phone' ? contactPhone : '',
     };
 
-    try {
-      console.log(
-        '[createReservation] token:',
-        useAuthStore.getState().accessToken ? 'present' : 'missing'
-      );
-      await createReservation(payload);
-      showToast({ title: '예약이 접수되었습니다.', icon: 'check' });
-      router.push(ROUTES.RESERVATIONS_COMPLETE);
-    } catch (error) {
-      console.error('[createReservation] error:', {
-        status: (error as { response?: { status?: number } })?.response?.status,
-        data: (error as { response?: { data?: unknown } })?.response?.data,
-        message: (error as { message?: string })?.message,
-      });
-      showToast({ title: '예약 요청에 실패했습니다. 다시 시도해 주세요.', icon: 'exclaim' });
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
     }
+
+    router.push({
+      pathname: `/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT}`,
+      query: { companyId: company.id, programId: selectedProgram.id },
+    });
   };
 
   return (
@@ -435,25 +398,15 @@ export default function ReservationPage() {
             <Loading title="Loading..." />
           </div>
         )}
-        {/* Clinic Info */}
+        {/* Company Info */}
         {hasValidCompanyId && company && (
-          <div css={clinicInfo}>
-            <Text typo="title_L" color="text_primary">
-              {company.name}
-            </Text>
-            <Text typo="body_M" color="text_tertiary" css={addressText}>
-              📍 {company.address}
-            </Text>
-            <div css={tagsContainer}>
-              {company.tags?.map((tagText, index) => (
-                <div key={`${tagText}-${index}`} css={tag}>
-                  <Text typo="body_S" color="text_secondary">
-                    {tagText}
-                  </Text>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CompanyInfoCard
+            name={company.name}
+            address={company.address}
+            tags={company.tags ?? []}
+            addressIconNode={<PaymentLocation width={16} height={16} />}
+            variant="payment"
+          />
         )}
 
         {/* Programs Section */}
@@ -776,9 +729,7 @@ export default function ReservationPage() {
         {/* Submit Button */}
         {hasValidCompanyId && (
           <div css={submitButtonWrapper}>
-            <CTAButton onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? 'Booking...' : 'Book Now'}
-            </CTAButton>
+            <CTAButton onClick={handleSubmit}>결제하기</CTAButton>
           </div>
         )}
       </div>
@@ -789,33 +740,8 @@ export default function ReservationPage() {
 
 // Styles
 const pageWrapper = css`
-  padding: 12px 0 120px 0;
+  padding: 0 0 120px 0;
   background: ${theme.colors.bg_surface1};
-`;
-
-const clinicInfo = css`
-  padding: 24px 18px;
-  background: ${theme.colors.white};
-  margin: 12px 16px 8px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
-`;
-
-const addressText = css`
-  margin-top: 8px;
-`;
-
-const tagsContainer = css`
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-`;
-
-const tag = css`
-  padding: 6px 12px;
-  background: ${theme.colors.primary10Opacity40};
-  border-radius: 16px;
 `;
 
 const section = css`
@@ -835,8 +761,8 @@ const sectionHeader = css`
 `;
 
 const chevronIcon = (isOpen: boolean) => css`
-  transform: ${isOpen ? 'rotate(180deg)' : 'rotate(90deg)'};
-  transition: transform 0.3s ease;
+  transform: ${isOpen ? 'rotate(90deg)' : 'rotate(-90deg)'};
+  transition: transform 0.1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -850,15 +776,15 @@ const programCard = (isSelected: boolean) => css`
   display: flex;
   gap: 12px;
   padding: 12px;
-  border: 1px solid ${isSelected ? theme.colors.primary50 : theme.colors.divider_2};
+  border: 1px solid ${isSelected ? theme.colors.divider_2 : theme.colors.bg_surface2};
   border-radius: 8px;
   margin-bottom: 12px;
   cursor: pointer;
-  background: ${isSelected ? theme.colors.sub_sub_2 : theme.colors.bg_surface2};
+  background: ${isSelected ? theme.colors.sub_sub_3 : theme.colors.bg_surface2};
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${theme.colors.primary50};
+    border-color: ${theme.colors.divider_2};
   }
 
   &:last-child {

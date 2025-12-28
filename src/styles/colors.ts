@@ -23,6 +23,7 @@ export const colors = {
   border_default: '#F0EDE6',
 
   sub_sub_2: '#FDE79C',
+  sub_sub_3: '#FFF3CC',
 
   divider_subtle: '##E7E3DA',
   divider_2: '#E0DACE',
