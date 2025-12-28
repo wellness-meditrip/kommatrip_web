@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { Layout, GNB, Text, AppBar } from '@/components';
+import { useEffect, useMemo, useState } from 'react';
+import { Layout, GNB, Text, AppBar, Loading, Empty, LoginModal } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ArrowDown } from '@/icons';
 import Image from 'next/image';
+import { useGetReservationsQuery } from '@/queries/reservation';
+import { useRequireAuth } from '@/hooks';
+import { ReservationListItem } from '@/models/reservation';
+import { useAuthStore } from '@/store/auth';
 
 type ReservationStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 type FilterStatus = 'total' | 'request' | 'confirmed' | 'canceled' | 'completed';
 
-interface Reservation {
+interface ReservationCard {
   id: number;
   image: string;
   title: string;
@@ -17,51 +21,6 @@ interface Reservation {
   status: ReservationStatus;
   hasReview?: boolean;
 }
-
-const mockReservations: Reservation[] = [
-  {
-    id: 1,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'request',
-  },
-  {
-    id: 2,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 19, 2025 (Sun) 10:00 AM',
-    status: 'canceled',
-  },
-  {
-    id: 3,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 15, 2025 (Wed) 10:00 AM',
-    status: 'confirmed',
-  },
-  {
-    id: 4,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'completed',
-    hasReview: false,
-  },
-  {
-    id: 5,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'completed',
-    hasReview: true,
-  },
-];
 
 const filterOptions: { value: FilterStatus; label: string }[] = [
   { value: 'total', label: 'Total' },
@@ -74,14 +33,80 @@ const filterOptions: { value: FilterStatus; label: string }[] = [
 export default function MyBookingsPage() {
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
+    useRequireAuth(true);
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const filteredReservations = mockReservations.filter((reservation) => {
-    if (selectedFilter === 'total') return true;
-    return reservation.status === selectedFilter;
-  });
+  const statusParam = selectedFilter === 'total' ? undefined : selectedFilter;
+  const { data, isLoading: isReservationsLoading } = useGetReservationsQuery(
+    {
+      skip: 0,
+      limit: 20,
+      status: statusParam,
+    },
+    !!accessToken
+  );
 
-  const upcomingReservations = filteredReservations.filter((r) => r.status !== 'completed');
-  const completedReservations = filteredReservations.filter((r) => r.status === 'completed');
+  useEffect(() => {
+    if (isAuthenticated && !accessToken) {
+      setShowLoginModal(true);
+    }
+  }, [isAuthenticated, accessToken, setShowLoginModal]);
+
+  const formatReservationDate = (date?: string, time?: string) => {
+    if (!date) return '-';
+    const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
+    if (Number.isNaN(dateTime.getTime())) return date;
+    const dateText = new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(dateTime);
+    const dayText = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(dateTime);
+    if (!time) return `${dateText} (${dayText})`;
+    const timeText = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(dateTime);
+    return `${dateText} (${dayText}) ${timeText}`;
+  };
+
+  const normalizeStatus = (status?: string): ReservationStatus => {
+    const value = (status ?? '').toLowerCase();
+    if (value.includes('confirm')) return 'confirmed';
+    if (value.includes('cancel')) return 'canceled';
+    if (value.includes('complete') || value.includes('done')) return 'completed';
+    if (value.includes('pending') || value.includes('wait')) return 'request';
+    if (value.includes('request')) return 'request';
+    return 'request';
+  };
+
+  const mapReservation = (reservation: ReservationListItem): ReservationCard => {
+    const status = normalizeStatus(reservation.status);
+    return {
+      id: reservation.id,
+      image:
+        reservation.program_image_url ||
+        reservation.company_primary_image_url ||
+        reservation.company_image_url ||
+        '/default.png',
+      title: reservation.program_name || 'Program',
+      clinicName: reservation.company_name || 'Clinic',
+      date: formatReservationDate(
+        reservation.visit_date || reservation.date,
+        reservation.visit_time || reservation.time
+      ),
+      status,
+      hasReview: reservation.has_review ?? reservation.review_written ?? false,
+    };
+  };
+
+  const reservations = useMemo(() => {
+    return (data?.reservations ?? []).map(mapReservation);
+  }, [data]);
+
+  const upcomingReservations = reservations.filter((r) => r.status !== 'completed');
+  const completedReservations = reservations.filter((r) => r.status === 'completed');
 
   const getStatusButton = (status: ReservationStatus) => {
     switch (status) {
@@ -96,10 +121,36 @@ export default function MyBookingsPage() {
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar logo="light" backgroundColor="green" />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={handleDismissModal}
+        />
+      </Layout>
+    );
+  }
+
+  if (!accessToken) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar logo="light" backgroundColor="green" />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={handleDismissModal}
+        />
+      </Layout>
+    );
+  }
+
   return (
     <Layout isAppBarExist={false}>
       <AppBar logo="light" backgroundColor="green" />
-      <div css={header}>
+      <div css={headerBar}>
         <button css={filterButton} onClick={() => setIsFilterModalOpen(true)}>
           <Text typo="body_M" color="white">
             {filterOptions.find((f) => f.value === selectedFilter)?.label}
@@ -109,13 +160,23 @@ export default function MyBookingsPage() {
       </div>
 
       {/* Content */}
-      <div css={content}>
+      <div css={contentContainer}>
+        {isReservationsLoading && (
+          <div css={stateContainer}>
+            <Loading title="Loading..." fullHeight />
+          </div>
+        )}
+        {!isReservationsLoading && reservations.length === 0 && (
+          <div css={stateContainer}>
+            <Empty title="예약 내역이 없습니다." />
+          </div>
+        )}
         {/* Upcoming Reservations */}
         {upcomingReservations.map((reservation) => {
           const statusButton = getStatusButton(reservation.status);
           return (
             <div key={reservation.id} css={reservationCard}>
-              <div css={cardContent}>
+              <div css={cardRow}>
                 <Image
                   src={reservation.image}
                   alt={reservation.title}
@@ -171,7 +232,7 @@ export default function MyBookingsPage() {
                     Completed
                   </Text>
                 </div>
-                <div css={cardContent}>
+                <div css={cardRow}>
                   <Image
                     src={reservation.image}
                     alt={reservation.title}
@@ -191,7 +252,7 @@ export default function MyBookingsPage() {
                     </Text>
                   </div>
                 </div>
-                <div css={completedActions}>
+                <div css={actionRow}>
                   <button css={bookAgainButton}>
                     <Text typo="body_M" color="text_secondary">
                       Book Again
@@ -224,11 +285,11 @@ export default function MyBookingsPage() {
           <div css={modalSheet}>
             <div css={modalHandle} />
 
-            <div css={modalOptions}>
+            <div css={modalList}>
               {filterOptions.map((option) => (
                 <button
                   key={option.value}
-                  css={modalOption}
+                  css={modalItem}
                   onClick={() => {
                     setSelectedFilter(option.value);
                     setIsFilterModalOpen(false);
@@ -252,7 +313,7 @@ export default function MyBookingsPage() {
   );
 }
 
-const header = css`
+const headerBar = css`
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -271,20 +332,22 @@ const filterButton = css`
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
   svg path {
     stroke: white;
   }
 `;
 
-const content = css`
+const contentContainer = css`
   padding: 16px;
+  padding-bottom: calc(${theme.size.gnbHeight});
   background: ${theme.colors.bg_surface1};
-  min-height: calc(100vh - 120px);
-  padding-bottom: 80px;
+`;
+
+const stateContainer = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - ${theme.size.appBarHeight});
 `;
 
 const reservationCard = css`
@@ -295,7 +358,7 @@ const reservationCard = css`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 `;
 
-const cardContent = css`
+const cardRow = css`
   display: flex;
   gap: 16px;
   margin-bottom: 12px;
@@ -319,12 +382,7 @@ const requestButton = css`
   border: 1px solid ${theme.colors.border_default};
   border-radius: 8px;
   background: ${theme.colors.white};
-  cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.primary50};
-  }
 `;
 
 const confirmedButton = css`
@@ -372,7 +430,7 @@ const completedBadge = css`
   border-radius: 12px;
 `;
 
-const completedActions = css`
+const actionRow = css`
   display: flex;
   gap: 12px;
   margin-top: 12px;
@@ -459,13 +517,13 @@ const modalHandle = css`
   margin: 0 auto 24px;
 `;
 
-const modalOptions = css`
+const modalList = css`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
 
-const modalOption = css`
+const modalItem = css`
   padding: 16px;
   border: none;
   background: none;
@@ -477,4 +535,8 @@ const modalOption = css`
   &:hover {
     background: ${theme.colors.bg_surface1};
   }
+`;
+
+const bottomSpacer = css`
+  height: calc(${theme.size.gnbHeight} + 24px);
 `;
