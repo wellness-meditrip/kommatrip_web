@@ -55,7 +55,7 @@ export default function ReservationCompletePage() {
   return (
     <Layout isAppBarExist={false}>
       <AppBar logo="dark" />
-      <div css={completeWrapper}>
+      <div css={pageWrapper}>
         <div css={successSection}>
           <div css={checkIconWrapper}>
             <Check width={72} height={72} />
@@ -81,13 +81,13 @@ export default function ReservationCompletePage() {
             </Text>
           </div>
         ) : (
-          <div css={emptyWrapper}>
+          <div css={emptyContainer}>
             <Empty title="예약 정보를 찾을 수 없습니다." />
           </div>
         )}
       </div>
 
-      <div css={buttonSection}>
+      <div css={actionBar}>
         <RoundButton
           onClick={() => router.push(`/${currentLocale}${ROUTES.BOOKINGS}`)}
           size="L"
@@ -102,7 +102,7 @@ export default function ReservationCompletePage() {
   );
 }
 
-const completeWrapper = css`
+const pageWrapper = css`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -156,7 +156,7 @@ const packageName = css`
   margin: 0;
 `;
 
-const buttonSection = css`
+const actionBar = css`
   position: fixed;
   left: 0;
   right: 0;
@@ -165,6 +165,6 @@ const buttonSection = css`
   background: ${theme.colors.bg_surface1};
 `;
 
-const emptyWrapper = css`
+const emptyContainer = css`
   width: 100%;
 `;

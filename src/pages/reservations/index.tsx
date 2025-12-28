@@ -2,17 +2,20 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   AppBar,
   Layout,
-  Text,
   CTAButton,
   LoginModal,
   Loading,
   Empty,
   CompanyInfoCard,
+  ProgramSection,
+  ContactSection,
+  InquiriesSection,
+  ScheduleSection,
 } from '@/components';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
-import { Chevron, PaymentLocation } from '@/icons';
+import { PaymentLocation } from '@/icons';
 import { useRequireAuth, useToast } from '@/hooks';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
@@ -389,12 +392,12 @@ export default function ReservationPage() {
       />
       <div css={pageWrapper}>
         {!hasValidCompanyId && (
-          <div css={emptyWrapper}>
+          <div css={emptyContainer}>
             <Empty title="예약할 업체 정보가 없습니다." />
           </div>
         )}
         {hasValidCompanyId && (isCompanyLoading || isProgramLoading) && (
-          <div css={loadingWrapper}>
+          <div css={loadingContainer}>
             <Loading title="Loading..." />
           </div>
         )}
@@ -411,319 +414,68 @@ export default function ReservationPage() {
 
         {/* Programs Section */}
         {hasValidCompanyId && (
-          <div css={section}>
-            <div css={sectionHeader} onClick={() => setIsProgramsOpen(!isProgramsOpen)}>
-              <Text typo="title_M" color="text_primary">
-                Programs
-              </Text>
-              <div css={chevronIcon(isProgramsOpen)}>
-                <Chevron width={24} height={24} />
-              </div>
-            </div>
-            {isProgramsOpen && (
-              <div css={sectionContent}>
-                {programs.length === 0 && (
-                  <Text typo="body_S" color="text_tertiary">
-                    표시할 프로그램이 없습니다.
-                  </Text>
-                )}
-                {programs.map((program) => (
-                  <div
-                    key={program.id}
-                    css={programCard(selectedProgramId === program.id)}
-                    onClick={() => {
-                      setSelectedProgramId((prev) => (prev === program.id ? null : program.id));
-                    }}
-                  >
-                    <img
-                      src={program.primary_image_url || '/default.png'}
-                      alt={program.name}
-                      css={programImage}
-                    />
-                    <div css={programInfo}>
-                      <Text typo="title_S" color="text_primary">
-                        {program.name}
-                      </Text>
-                      <Text typo="body_S" color="text_tertiary">
-                        ⏱ {formatDuration(program.duration_minutes)} | {formatPrice(program.price)}
-                      </Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProgramSection
+            isOpen={isProgramsOpen}
+            onToggle={() => setIsProgramsOpen((prev) => !prev)}
+            programs={programs}
+            selectedProgramId={selectedProgramId}
+            onSelectProgram={(programId) =>
+              setSelectedProgramId((prev) => (prev === programId ? null : programId))
+            }
+            formatDuration={formatDuration}
+            formatPrice={formatPrice}
+          />
         )}
 
         {/* Contact Information Section */}
         {hasValidCompanyId && (
-          <div css={section}>
-            <div css={sectionHeader} onClick={() => setIsContactOpen(!isContactOpen)}>
-              <Text typo="title_M" color="text_primary">
-                Contact Information
-              </Text>
-              <div css={chevronIcon(isContactOpen)}>
-                <Chevron width={24} height={24} />
-              </div>
-            </div>
-            {isContactOpen && (
-              <div css={sectionContent}>
-                <div css={inputGroup}>
-                  <Text typo="body_M" color="text_primary">
-                    Email
-                  </Text>
-                  <input
-                    type="email"
-                    placeholder="Elena123@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    css={input}
-                  />
-                </div>
-
-                <div css={inputGroup}>
-                  <Text typo="body_M" color="text_primary">
-                    Preferred Contact Method
-                  </Text>
-                  <div css={contactMethodsContainer}>
-                    {contactMethods.map((method) => (
-                      <div
-                        key={method}
-                        css={contactMethodChip(selectedContactMethod === method)}
-                        onClick={() => setSelectedContactMethod(method)}
-                      >
-                        <Text
-                          typo="body_S"
-                          color={selectedContactMethod === method ? 'white' : 'text_secondary'}
-                        >
-                          {method}
-                        </Text>
-                      </div>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Elena122"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    css={input}
-                  />
-                </div>
-
-                <div css={inputGroup}>
-                  <Text typo="body_M" color="text_primary">
-                    Language Preference
-                  </Text>
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    css={select}
-                  >
-                    <option value="한국어">한국어</option>
-                    <option value="English">English</option>
-                    <option value="中文">中文</option>
-                    <option value="日本語">日本語</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </div>
+          <ContactSection
+            isOpen={isContactOpen}
+            onToggle={() => setIsContactOpen((prev) => !prev)}
+            contactMethods={contactMethods}
+            selectedContactMethod={selectedContactMethod}
+            onSelectMethod={setSelectedContactMethod}
+            email={email}
+            onEmailChange={setEmail}
+            contactPhone={contactPhone}
+            onPhoneChange={setContactPhone}
+            language={language}
+            onLanguageChange={setLanguage}
+          />
         )}
 
         {/* Inquiries Section */}
         {hasValidCompanyId && (
-          <div css={section}>
-            <div css={sectionHeader} onClick={() => setIsInquiriesOpen(!isInquiriesOpen)}>
-              <Text typo="title_M" color="text_primary">
-                Inquiries
-              </Text>
-              <div css={chevronIcon(isInquiriesOpen)}>
-                <Chevron width={24} height={24} />
-              </div>
-            </div>
-            {isInquiriesOpen && (
-              <div css={sectionContent}>
-                <Text typo="body_M" color="text_primary" css={inquiryTitle}>
-                  Tell us about your needs (Optional)
-                </Text>
-                <div css={concernsBox}>
-                  <Text typo="body_S" color="text_secondary" css={concernsTitle}>
-                    Common concerns for international visitors :
-                  </Text>
-                  <ul css={concernsList}>
-                    {commonConcerns.map((concern, index) => (
-                      <li key={index}>
-                        <Text typo="body_S" color="text_secondary">
-                          {concern}
-                        </Text>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <textarea
-                  placeholder="Write about your needs"
-                  value={inquiryText}
-                  onChange={(e) => setInquiryText(e.target.value)}
-                  css={textarea}
-                />
-              </div>
-            )}
-          </div>
+          <InquiriesSection
+            isOpen={isInquiriesOpen}
+            onToggle={() => setIsInquiriesOpen((prev) => !prev)}
+            commonConcerns={commonConcerns}
+            inquiryText={inquiryText}
+            onInquiryChange={setInquiryText}
+          />
         )}
 
         {/* Reservation Section */}
         {hasValidCompanyId && (
-          <div css={reservationSection}>
-            <Text typo="title_L" color="text_primary">
-              Reservation
-            </Text>
-
-            <div css={dateSelectionSection}>
-              <Text typo="body_M" color="text_primary">
-                01. Select up to 2 preferred dates
-              </Text>
-
-              {/* Calendar */}
-              <div css={calendarContainer}>
-                <div css={calendarHeader}>
-                  <button onClick={prevMonth} css={arrowButton}>
-                    &lt;
-                  </button>
-                  <Text typo="title_S" color="text_primary">
-                    {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </Text>
-                  <button onClick={nextMonth} css={arrowButton}>
-                    &gt;
-                  </button>
-                </div>
-
-                <div css={calendarGrid}>
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} css={dayHeader}>
-                      <Text typo="body_S" color="text_tertiary">
-                        {day}
-                      </Text>
-                    </div>
-                  ))}
-
-                  {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-                    <div key={`empty-${index}`} css={emptyDay} />
-                  ))}
-
-                  {Array.from({ length: daysInMonth }).map((_, index) => {
-                    const day = index + 1;
-                    return (
-                      <div
-                        key={day}
-                        css={calendarDay(isDateSelected(day))}
-                        onClick={() => handleDateClick(day)}
-                      >
-                        <Text typo="body_M" color={isDateSelected(day) ? 'white' : 'text_primary'}>
-                          {day}
-                        </Text>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Time Selection */}
-            <div css={timeSelectionSection}>
-              <Text typo="body_M" color="text_primary">
-                02. Select up to 3 available times
-              </Text>
-
-              {selectedDates.length === 0 && (
-                <Text typo="body_S" color="text_tertiary" css={placeholderText}>
-                  Please select your first preferred date.
-                </Text>
-              )}
-
-              {selectedDates.map((date) => {
-                const dateString = formatDateForRequest(date);
-                const hasSelectedTime =
-                  selectedTimes[dateString] && selectedTimes[dateString].length > 0;
-                const isOpen = timeSelectionOpen[dateString] || false;
-
-                return (
-                  <div key={dateString} css={timeSelectionGroup}>
-                    <Text typo="body_S" color="text_secondary">
-                      {formatDateForDisplay(date)}
-                    </Text>
-
-                    {hasSelectedTime ? (
-                      <>
-                        {/* Selected times display box */}
-                        <div
-                          css={selectedTimesBox()}
-                          onClick={() =>
-                            setTimeSelectionOpen({
-                              ...timeSelectionOpen,
-                              [dateString]: !isOpen,
-                            })
-                          }
-                        >
-                          <Text typo="body_M" color="text_primary">
-                            {selectedTimes[dateString].join(' / ')}
-                          </Text>
-                          <div css={timeBoxChevron(isOpen)}>
-                            <Chevron width={20} height={20} />
-                          </div>
-                        </div>
-
-                        {/* Time chips - show when open */}
-                        {isOpen && (
-                          <div css={timeChipsContainer}>
-                            {availableTimes.map((time) => (
-                              <div
-                                key={time}
-                                css={timeChip(selectedTimes[dateString]?.includes(time) || false)}
-                                onClick={() => handleTimeSelect(dateString, time)}
-                              >
-                                <Text
-                                  typo="body_S"
-                                  color={
-                                    selectedTimes[dateString]?.includes(time)
-                                      ? 'white'
-                                      : 'text_secondary'
-                                  }
-                                >
-                                  {time}
-                                </Text>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <select
-                        css={select}
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleTimeSelect(dateString, e.target.value);
-                            // Auto-open the time chips after first selection
-                            setTimeSelectionOpen({
-                              ...timeSelectionOpen,
-                              [dateString]: true,
-                            });
-                          }
-                        }}
-                      >
-                        <option value="">Select times</option>
-                        {availableTimes.map((time) => (
-                          <option key={time} value={time}>
-                            {time}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <ScheduleSection
+            currentMonth={currentMonth}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+            daysInMonth={daysInMonth}
+            startingDayOfWeek={startingDayOfWeek}
+            isDateSelected={isDateSelected}
+            onDateClick={handleDateClick}
+            selectedDates={selectedDates}
+            selectedTimes={selectedTimes}
+            timeSelectionOpen={timeSelectionOpen}
+            onToggleTimeSelection={(dateString) =>
+              setTimeSelectionOpen((prev) => ({ ...prev, [dateString]: !prev[dateString] }))
+            }
+            onTimeSelect={handleTimeSelect}
+            availableTimes={availableTimes}
+            formatDateForDisplay={formatDateForDisplay}
+            formatDateKey={formatDateForRequest}
+          />
         )}
 
         {/* Submit Button */}
@@ -744,303 +496,6 @@ const pageWrapper = css`
   background: ${theme.colors.bg_surface1};
 `;
 
-const section = css`
-  background: ${theme.colors.white};
-  margin: 12px 16px 8px;
-  padding: 20px 18px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
-`;
-
-const sectionHeader = css`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-`;
-
-const chevronIcon = (isOpen: boolean) => css`
-  transform: ${isOpen ? 'rotate(90deg)' : 'rotate(-90deg)'};
-  transition: transform 0.1s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const sectionContent = css`
-  margin-top: 16px;
-`;
-
-const programCard = (isSelected: boolean) => css`
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid ${isSelected ? theme.colors.divider_2 : theme.colors.bg_surface2};
-  border-radius: 8px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  background: ${isSelected ? theme.colors.sub_sub_3 : theme.colors.bg_surface2};
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.divider_2};
-  }
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const programImage = css`
-  width: 72px;
-  height: 72px;
-  border-radius: 8px;
-  object-fit: cover;
-`;
-
-const programInfo = css`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-`;
-
-const inputGroup = css`
-  margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const input = css`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
-  font-size: 14px;
-  margin-top: 8px;
-  outline: none;
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-
-  &::placeholder {
-    color: ${theme.colors.text_disabled};
-  }
-`;
-
-const contactMethodsContainer = css`
-  display: flex;
-  gap: 8px;
-  margin: 8px 0;
-  flex-wrap: wrap;
-`;
-
-const contactMethodChip = (isSelected: boolean) => css`
-  padding: 8px 16px;
-  border-radius: 18px;
-  border: 1px solid ${isSelected ? theme.colors.primary50 : theme.colors.divider_2};
-  background: ${isSelected ? theme.colors.primary50 : theme.colors.bg_surface2};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-const select = css`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
-  font-size: 14px;
-  margin-top: 8px;
-  outline: none;
-  background: ${theme.colors.white};
-  cursor: pointer;
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-const inquiryTitle = css`
-  margin-bottom: 12px;
-`;
-
-const concernsBox = css`
-  background: ${theme.colors.primary10Opacity40};
-  padding: 16px;
-  border-radius: 12px;
-  margin: 12px 0;
-`;
-
-const concernsTitle = css`
-  margin-bottom: 8px;
-  font-weight: 600;
-`;
-
-const concernsList = css`
-  margin: 0;
-  padding-left: 20px;
-
-  li {
-    margin-bottom: 4px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-`;
-
-const textarea = css`
-  width: 100%;
-  min-height: 120px;
-  padding: 12px 16px;
-  border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
-  font-size: 14px;
-  outline: none;
-  resize: vertical;
-  font-family: inherit;
-
-  &:focus {
-    border-color: ${theme.colors.primary50};
-  }
-
-  &::placeholder {
-    color: ${theme.colors.text_disabled};
-  }
-`;
-
-const reservationSection = css`
-  background: ${theme.colors.white};
-  padding: 24px 18px;
-  margin: 12px 16px 80px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
-`;
-
-const dateSelectionSection = css`
-  margin-top: 20px;
-`;
-
-const calendarContainer = css`
-  margin-top: 16px;
-`;
-
-const calendarHeader = css`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const arrowButton = css`
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 8px 12px;
-  color: ${theme.colors.text_primary};
-
-  &:hover {
-    background: ${theme.colors.bg_surface1};
-    border-radius: 4px;
-  }
-`;
-
-const calendarGrid = css`
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-`;
-
-const dayHeader = css`
-  text-align: center;
-  padding: 8px 0;
-`;
-
-const emptyDay = css`
-  padding: 12px 0;
-`;
-
-const calendarDay = (isSelected: boolean) => css`
-  width: 43px;
-  height: 43px;
-  text-align: center;
-  padding: 12px 0;
-  border-radius: 50%;
-  cursor: pointer;
-  background: ${isSelected ? theme.colors.primary50 : 'transparent'};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${isSelected ? theme.colors.primary50 : theme.colors.bg_surface1};
-  }
-`;
-
-const timeSelectionSection = css`
-  margin-top: 32px;
-`;
-
-const placeholderText = css`
-  margin-top: 12px;
-`;
-
-const timeSelectionGroup = css`
-  margin-top: 16px;
-`;
-
-const selectedTimesBox = () => css`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  margin-top: 12px;
-  border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
-  background: ${theme.colors.white};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-const timeBoxChevron = (isOpen: boolean) => css`
-  transform: ${isOpen ? 'rotate(90deg)' : 'rotate(270deg)'};
-  transition: transform 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const timeChipsContainer = css`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
-`;
-
-const timeChip = (isSelected: boolean) => css`
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid ${isSelected ? theme.colors.primary50 : theme.colors.divider_2};
-  background: ${isSelected ? theme.colors.primary50 : theme.colors.bg_surface2};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
 const submitButtonWrapper = css`
   position: fixed;
   bottom: 0;
@@ -1051,10 +506,10 @@ const submitButtonWrapper = css`
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 `;
 
-const loadingWrapper = css`
+const loadingContainer = css`
   margin: 24px 16px;
 `;
 
-const emptyWrapper = css`
+const emptyContainer = css`
   margin: 24px 16px;
 `;

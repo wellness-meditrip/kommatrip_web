@@ -123,7 +123,7 @@ export default function ReservationPaymentPage() {
           title="Payment"
           backgroundColor="bg_surface1"
         />
-        <div css={emptyWrapper}>
+        <div css={emptyContainer}>
           <Empty title="결제 정보를 찾을 수 없습니다." />
         </div>
       </Layout>
@@ -148,7 +148,7 @@ export default function ReservationPaymentPage() {
           variant="payment"
         />
 
-        <div css={card}>
+        <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
             Booking Info
           </Text>
@@ -178,7 +178,7 @@ export default function ReservationPaymentPage() {
           </div>
         </div>
 
-        <div css={card}>
+        <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
             Payment Method
           </Text>
@@ -190,7 +190,7 @@ export default function ReservationPaymentPage() {
           </div>
         </div>
 
-        <div css={card}>
+        <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
             Payment Amount
           </Text>
@@ -214,7 +214,7 @@ export default function ReservationPaymentPage() {
         </div>
       </div>
 
-      <div css={submitButtonWrapper}>
+      <div css={actionBar}>
         <CTAButton onClick={() => setIsModalOpen(true)} disabled={isLoading}>
           Book Now
         </CTAButton>
@@ -223,7 +223,7 @@ export default function ReservationPaymentPage() {
       {isModalOpen && (
         <>
           <Dim fullScreen onClick={() => setIsModalOpen(false)} />
-          <div css={modalWrapper}>
+          <div css={modalCard}>
             <div css={modalText}>
               <Text typo="title_M" color="text_primary">
                 Submit Your Reservation?
@@ -233,7 +233,7 @@ export default function ReservationPaymentPage() {
                 will be sent to the provider.
               </Text>
             </div>
-            <div css={modalButtons}>
+            <div css={modalButtonRow}>
               <button css={modalCancel} onClick={() => setIsModalOpen(false)}>
                 <Text typo="body_M" color="text_primary">
                   Cancel
@@ -257,7 +257,7 @@ const pageWrapper = css`
   background: ${theme.colors.bg_surface1};
 `;
 
-const card = css`
+const infoCard = css`
   background: ${theme.colors.white};
   margin: 12px 16px 8px;
   padding: 20px 18px;
@@ -317,7 +317,7 @@ const divider = css`
   background: ${theme.colors.border_default};
 `;
 
-const submitButtonWrapper = css`
+const actionBar = css`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -327,7 +327,7 @@ const submitButtonWrapper = css`
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 `;
 
-const modalWrapper = css`
+const modalCard = css`
   position: fixed;
   top: 50%;
   left: 50%;
@@ -353,7 +353,7 @@ const modalDescription = css`
   line-height: 1.5;
 `;
 
-const modalButtons = css`
+const modalButtonRow = css`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -377,6 +377,6 @@ const modalSubmit = css`
   background: ${theme.colors.primary50};
 `;
 
-const emptyWrapper = css`
+const emptyContainer = css`
   padding: 40px 16px;
 `;
