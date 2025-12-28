@@ -26,12 +26,14 @@ import { CompanyDetail as CompanyDetailType } from '@/models';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 export default function ClinicDetailPage() {
   const router = useRouter();
   const { companyId } = router.query;
   const t = useTranslations('company-detail');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const currentLocale = useCurrentLocale();
   const [searchValue, setSearchValue] = useState('');
 
   const companyIdNumber = Number(companyId);
@@ -197,8 +199,14 @@ export default function ClinicDetailPage() {
       setShowLoginModal(true);
       return;
     }
+    if (typeof window !== 'undefined' && data?.company) {
+      window.sessionStorage.setItem('reservation_company', JSON.stringify(data.company));
+    }
     // 회원인 경우 예약 페이지로 이동
-    router.push(ROUTES.RESERVATIONS);
+    router.push({
+      pathname: `/${currentLocale}${ROUTES.RESERVATIONS}`,
+      query: { companyId: companyIdNumber },
+    });
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
