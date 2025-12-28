@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
 import { Chevron } from '@/icons';
+import { useCurrentLocale } from '@/i18n/navigation';
 import {
   arrowButton,
   calendarContainer,
@@ -55,15 +58,26 @@ export function ScheduleSection({
   formatDateForDisplay,
   formatDateKey,
 }: Props) {
+  const t = useTranslations('reservation');
+  const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const weekdayLabels = useMemo(() => {
+    const base = new Date(2024, 0, 7);
+    return Array.from({ length: 7 }).map((_, index) => {
+      const date = new Date(base.getFullYear(), base.getMonth(), base.getDate() + index);
+      return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+    });
+  }, [locale]);
+
   return (
     <div css={sectionCard}>
       <Text typo="title_L" color="text_primary">
-        Reservation
+        {t('form.schedule.title')}
       </Text>
 
       <div css={dateSection}>
         <Text typo="body_M" color="text_primary">
-          01. Select up to 2 preferred dates
+          {t('form.schedule.selectDates')}
         </Text>
 
         <div css={calendarContainer}>
@@ -72,7 +86,9 @@ export function ScheduleSection({
               &lt;
             </button>
             <Text typo="title_S" color="text_primary">
-              {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(
+                currentMonth
+              )}
             </Text>
             <button onClick={onNextMonth} css={arrowButton}>
               &gt;
@@ -80,7 +96,7 @@ export function ScheduleSection({
           </div>
 
           <div css={calendarGrid}>
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+            {weekdayLabels.map((day) => (
               <div key={day} css={dayHeader}>
                 <Text typo="body_S" color="text_tertiary">
                   {day}
@@ -112,12 +128,12 @@ export function ScheduleSection({
 
       <div css={timeSection}>
         <Text typo="body_M" color="text_primary">
-          02. Select up to 3 available times
+          {t('form.schedule.selectTimes')}
         </Text>
 
         {selectedDates.length === 0 && (
           <Text typo="body_S" color="text_tertiary" css={placeholderText}>
-            Please select your first preferred date.
+            {t('form.schedule.emptyDatePrompt')}
           </Text>
         )}
 
@@ -175,7 +191,7 @@ export function ScheduleSection({
                     }
                   }}
                 >
-                  <option value="">Select times</option>
+                  <option value="">{t('form.schedule.selectTimesPlaceholder')}</option>
                   {availableTimes.map((time) => (
                     <option key={time} value={time}>
                       {time}

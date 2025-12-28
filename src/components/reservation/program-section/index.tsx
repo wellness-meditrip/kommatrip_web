@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
 import { Chevron } from '@/icons';
 import {
@@ -37,11 +38,13 @@ export function ProgramSection({
   formatDuration,
   formatPrice,
 }: Props) {
+  const t = useTranslations('reservation');
+
   return (
     <div css={sectionCard}>
       <div css={sectionHeader} onClick={onToggle}>
         <Text typo="title_M" color="text_primary">
-          Programs
+          {t('form.programs.title')}
         </Text>
         <div css={chevronIcon(isOpen)}>
           <Chevron width={24} height={24} />
@@ -51,7 +54,7 @@ export function ProgramSection({
         <div css={sectionContent}>
           {programs.length === 0 && (
             <Text typo="body_S" color="text_tertiary">
-              표시할 프로그램이 없습니다.
+              {t('form.programs.empty')}
             </Text>
           )}
           {programs.map((program) => (

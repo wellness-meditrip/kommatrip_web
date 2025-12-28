@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
 import { Chevron } from '@/icons';
 import {
@@ -27,11 +28,13 @@ export function InquiriesSection({
   inquiryText,
   onInquiryChange,
 }: Props) {
+  const t = useTranslations('reservation');
+
   return (
     <div css={sectionCard}>
       <div css={sectionHeader} onClick={onToggle}>
         <Text typo="title_M" color="text_primary">
-          Inquiries
+          {t('form.inquiries.title')}
         </Text>
         <div css={chevronIcon(isOpen)}>
           <Chevron width={24} height={24} />
@@ -40,11 +43,11 @@ export function InquiriesSection({
       {isOpen && (
         <div css={sectionContent}>
           <Text typo="body_M" color="text_primary" css={inquiryTitle}>
-            Tell us about your needs (Optional)
+            {t('form.inquiries.subtitle')}
           </Text>
           <div css={concernsBox}>
             <Text typo="body_S" color="text_secondary" css={concernsTitle}>
-              Common concerns for international visitors :
+              {t('form.inquiries.concernsTitle')}
             </Text>
             <ul css={concernsList}>
               {commonConcerns.map((concern, index) => (
@@ -57,7 +60,7 @@ export function InquiriesSection({
             </ul>
           </div>
           <textarea
-            placeholder="Write about your needs"
+            placeholder={t('form.inquiries.placeholder')}
             value={inquiryText}
             onChange={(e) => onInquiryChange(e.target.value)}
             css={textarea}

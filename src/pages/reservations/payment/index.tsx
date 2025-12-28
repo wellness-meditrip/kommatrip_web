@@ -9,6 +9,7 @@ import { useToast } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { Dim } from '@/components/dim';
 import { PaymentLocation } from '@/icons';
+import { useTranslations } from 'next-intl';
 
 interface ReservationDraft {
   company_id: number;
@@ -32,25 +33,33 @@ interface ReservationDraft {
   contact_phone: string;
 }
 
-const formatDateDisplay = (dateString: string) => {
-  const [year, month, day] = dateString.split('-');
-  return `${year}.${month}.${day}`;
-};
-
 const formatTimeDisplay = (timeString: string) => {
   if (!timeString) return '';
   return timeString.slice(0, 5);
 };
 
-const formatPrice = (price: number) => new Intl.NumberFormat('ko-KR').format(price);
-
 export default function ReservationPaymentPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const t = useTranslations('reservation');
   const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { mutateAsync: createReservation, isPending } = usePostCreateReservationMutation();
+
+  const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(`${dateString}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return dateString;
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  };
+
+  const formatPrice = (price: number) => new Intl.NumberFormat(locale).format(price);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -73,7 +82,7 @@ export default function ReservationPaymentPage() {
 
   const handleSubmit = async () => {
     if (!draft) {
-      showToast({ title: '예약 정보를 찾을 수 없습니다.', icon: 'exclaim' });
+      showToast({ title: t('payment.toastMissingDraft'), icon: 'exclaim' });
       return;
     }
 
@@ -109,7 +118,7 @@ export default function ReservationPaymentPage() {
 
       router.push(`/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`);
     } catch {
-      showToast({ title: '예약 요청에 실패했습니다. 다시 시도해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
     }
   };
 
@@ -120,11 +129,11 @@ export default function ReservationPaymentPage() {
           onBackClick={router.back}
           leftButton={true}
           buttonType="dark"
-          title="Payment"
+          title={t('payment.title')}
           backgroundColor="bg_surface1"
         />
         <div css={emptyContainer}>
-          <Empty title="결제 정보를 찾을 수 없습니다." />
+          <Empty title={t('payment.missingDraft')} />
         </div>
       </Layout>
     );
@@ -136,7 +145,7 @@ export default function ReservationPaymentPage() {
         onBackClick={router.back}
         leftButton={true}
         buttonType="dark"
-        title="Payment"
+        title={t('payment.title')}
         backgroundColor="bg_surface1"
       />
       <div css={pageWrapper}>
@@ -150,11 +159,11 @@ export default function ReservationPaymentPage() {
 
         <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
-            Booking Info
+            {t('payment.bookingInfo')}
           </Text>
           <div css={infoRow}>
             <Text typo="body_M" color="text_secondary">
-              Date
+              {t('payment.date')}
             </Text>
             <Text typo="body_M" color="text_primary">
               {primaryOption ? formatDateDisplay(primaryOption.date) : '-'}
@@ -162,7 +171,7 @@ export default function ReservationPaymentPage() {
           </div>
           <div css={infoRow}>
             <Text typo="body_M" color="text_secondary">
-              Time
+              {t('payment.time')}
             </Text>
             <Text typo="body_M" color="text_primary">
               {primaryOption ? formatTimeDisplay(primaryOption.time) : '-'}
@@ -170,45 +179,46 @@ export default function ReservationPaymentPage() {
           </div>
           <div css={infoRow}>
             <Text typo="body_M" color="text_secondary">
-              Program
+              {t('payment.program')}
             </Text>
             <Text typo="body_M" color="text_primary" css={programText}>
-              {draft.program_name} ({draft.program_duration_minutes}min)
+              {draft.program_name} ({draft.program_duration_minutes}
+              {t('payment.minutes')})
             </Text>
           </div>
         </div>
 
         <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
-            Payment Method
+            {t('payment.paymentMethod')}
           </Text>
           <div css={paymentMethod}>
             <div css={radioSelected} />
             <Text typo="body_M" color="text_primary">
-              Pay on site
+              {t('payment.payOnSite')}
             </Text>
           </div>
         </div>
 
         <div css={infoCard}>
           <Text typo="title_M" color="text_primary">
-            Payment Amount
+            {t('payment.paymentAmount')}
           </Text>
           <div css={amountRow}>
             <Text typo="body_M" color="text_secondary">
-              Payment Amount
+              {t('payment.paymentAmountLabel')}
             </Text>
             <Text typo="body_M" color="text_primary">
-              {formatPrice(draft.program_price)} KRW
+              {formatPrice(draft.program_price)} {t('payment.currency')}
             </Text>
           </div>
           <div css={divider} />
           <div css={amountRow}>
             <Text typo="body_M" color="text_primary">
-              Final Payment Amount
+              {t('payment.finalPaymentAmount')}
             </Text>
             <Text typo="title_S" color="primary50">
-              {formatPrice(draft.program_price)} KRW
+              {formatPrice(draft.program_price)} {t('payment.currency')}
             </Text>
           </div>
         </div>
@@ -216,7 +226,7 @@ export default function ReservationPaymentPage() {
 
       <div css={actionBar}>
         <CTAButton onClick={() => setIsModalOpen(true)} disabled={isPending}>
-          Book Now
+          {t('payment.bookNow')}
         </CTAButton>
       </div>
 
@@ -226,22 +236,21 @@ export default function ReservationPaymentPage() {
           <div css={modalCard}>
             <div css={modalText}>
               <Text typo="title_M" color="text_primary">
-                Submit Your Reservation?
+                {t('payment.submitTitle')}
               </Text>
               <Text typo="body_M" color="text_tertiary" css={modalDescription}>
-                Please make sure your reservation details are correct. Once submitted, the request
-                will be sent to the provider.
+                {t('payment.submitDescription')}
               </Text>
             </div>
             <div css={modalButtonRow}>
               <button css={modalCancel} onClick={() => setIsModalOpen(false)}>
                 <Text typo="body_M" color="text_primary">
-                  Cancel
+                  {t('payment.cancel')}
                 </Text>
               </button>
               <button css={modalSubmit} onClick={handleSubmit}>
                 <Text typo="body_M" color="white">
-                  Submit
+                  {t('payment.submit')}
                 </Text>
               </button>
             </div>

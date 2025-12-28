@@ -6,6 +6,7 @@ import { theme } from '@/styles';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -15,25 +16,32 @@ interface ReservationCompleteData {
   time: string;
 }
 
-const formatConfirmationDate = (date: string, time: string) => {
+const formatConfirmationDate = (
+  date: string,
+  time: string,
+  locale: string,
+  formatDateTime: (values: { date: string; time: string }) => string
+) => {
   if (!date || !time) return '';
   const dateTime = new Date(`${date}T${time}`);
   if (Number.isNaN(dateTime.getTime())) return '';
-  const day = new Intl.DateTimeFormat('en-US', {
+  const dateText = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     month: 'short',
     day: 'numeric',
   }).format(dateTime);
-  const timeText = new Intl.DateTimeFormat('en-US', {
+  const timeText = new Intl.DateTimeFormat(locale, {
     hour: 'numeric',
     minute: '2-digit',
   }).format(dateTime);
-  return `${day} at ${timeText}`;
+  return formatDateTime({ date: dateText, time: timeText });
 };
 
 export default function ReservationCompletePage() {
   const router = useRouter();
+  const t = useTranslations('reservation');
   const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const [data, setData] = useState<ReservationCompleteData | null>(null);
 
   useEffect(() => {
@@ -49,8 +57,10 @@ export default function ReservationCompletePage() {
 
   const confirmationDate = useMemo(() => {
     if (!data) return '';
-    return formatConfirmationDate(data.date, data.time);
-  }, [data]);
+    return formatConfirmationDate(data.date, data.time, locale, (values) =>
+      t('complete.dateTime', values)
+    );
+  }, [data, locale, t]);
 
   return (
     <Layout isAppBarExist={false}>
@@ -61,10 +71,10 @@ export default function ReservationCompletePage() {
             <Check width={72} height={72} />
           </div>
           <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
-            Your reservation request has been submitted!
+            {t('complete.title')}
           </Text>
           <Text tag="p" typo="body_M" color="text_tertiary">
-            We will confirm it after review.
+            {t('complete.subtitle')}
           </Text>
         </div>
 
@@ -82,7 +92,7 @@ export default function ReservationCompletePage() {
           </div>
         ) : (
           <div css={emptyContainer}>
-            <Empty title="예약 정보를 찾을 수 없습니다." />
+            <Empty title={t('complete.missingData')} />
           </div>
         )}
       </div>
@@ -94,7 +104,7 @@ export default function ReservationCompletePage() {
           fullWidth
         >
           <Text typo="button_L" color="white">
-            My Bookings
+            {t('complete.cta')}
           </Text>
         </RoundButton>
       </div>

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
 import { Chevron } from '@/icons';
 import {
@@ -12,10 +13,15 @@ import {
   select,
 } from './index.styles';
 
+interface OptionItem {
+  value: string;
+  label: string;
+}
+
 interface Props {
   isOpen: boolean;
   onToggle: () => void;
-  contactMethods: string[];
+  contactMethods: OptionItem[];
   selectedContactMethod: string;
   onSelectMethod: (method: string) => void;
   email: string;
@@ -24,6 +30,7 @@ interface Props {
   onPhoneChange: (value: string) => void;
   language: string;
   onLanguageChange: (value: string) => void;
+  languageOptions: OptionItem[];
 }
 
 export function ContactSection({
@@ -38,12 +45,15 @@ export function ContactSection({
   onPhoneChange,
   language,
   onLanguageChange,
+  languageOptions,
 }: Props) {
+  const t = useTranslations('reservation');
+
   return (
     <div css={sectionCard}>
       <div css={sectionHeader} onClick={onToggle}>
         <Text typo="title_M" color="text_primary">
-          Contact Information
+          {t('form.contact.title')}
         </Text>
         <div css={chevronIcon(isOpen)}>
           <Chevron width={24} height={24} />
@@ -53,11 +63,11 @@ export function ContactSection({
         <div css={sectionContent}>
           <div css={fieldGroup}>
             <Text typo="body_M" color="text_primary">
-              Email
+              {t('form.contact.email')}
             </Text>
             <input
               type="email"
-              placeholder="Elena123@email.com"
+              placeholder={t('form.contact.emailPlaceholder')}
               value={email}
               onChange={(e) => onEmailChange(e.target.value)}
               css={input}
@@ -66,27 +76,27 @@ export function ContactSection({
 
           <div css={fieldGroup}>
             <Text typo="body_M" color="text_primary">
-              Preferred Contact Method
+              {t('form.contact.preferredMethod')}
             </Text>
             <div css={contactMethodList}>
               {contactMethods.map((method) => (
                 <div
-                  key={method}
-                  css={contactMethodChip(selectedContactMethod === method)}
-                  onClick={() => onSelectMethod(method)}
+                  key={method.value}
+                  css={contactMethodChip(selectedContactMethod === method.value)}
+                  onClick={() => onSelectMethod(method.value)}
                 >
                   <Text
                     typo="body_S"
-                    color={selectedContactMethod === method ? 'white' : 'text_secondary'}
+                    color={selectedContactMethod === method.value ? 'white' : 'text_secondary'}
                   >
-                    {method}
+                    {method.label}
                   </Text>
                 </div>
               ))}
             </div>
             <input
               type="text"
-              placeholder="Elena122"
+              placeholder={t('form.contact.contactPlaceholder')}
               value={contactPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
               css={input}
@@ -95,17 +105,18 @@ export function ContactSection({
 
           <div css={fieldGroup}>
             <Text typo="body_M" color="text_primary">
-              Language Preference
+              {t('form.contact.language')}
             </Text>
             <select
               value={language}
               onChange={(e) => onLanguageChange(e.target.value)}
               css={select}
             >
-              <option value="한국어">한국어</option>
-              <option value="English">English</option>
-              <option value="中文">中文</option>
-              <option value="日本語">日本語</option>
+              {languageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>

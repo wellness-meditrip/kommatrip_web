@@ -22,23 +22,16 @@ import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { ROUTES } from '@/constants';
 import { CompanyDetail } from '@/models';
 import { useCurrentLocale } from '@/i18n/navigation';
-
-const contactMethods = ['Line', 'Whats App', 'Kakao', 'Phone'];
-
-const commonConcerns = [
-  'This is my first time at a Korean clinic',
-  'I have sensitive skin/allergies',
-  'I need English explanation during treatment',
-  'I prefer gentle pressure during massage',
-  'I have specific areas of concern',
-];
+import { useTranslations } from 'next-intl';
 
 export default function ReservationPage() {
   const router = useRouter();
+  const t = useTranslations('reservation');
   const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const { showToast } = useToast();
   const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const companyIdQuery = Array.isArray(router.query.companyId)
     ? router.query.companyId[0]
     : router.query.companyId;
@@ -58,6 +51,34 @@ export default function ReservationPage() {
   });
   const company = companyData?.company ?? prefetchedCompany;
   const programs = programList?.programs ?? [];
+  const contactMethods = useMemo(
+    () => [
+      { value: 'line', label: t('form.contact.methods.line') },
+      { value: 'whatsapp', label: t('form.contact.methods.whatsapp') },
+      { value: 'kakao', label: t('form.contact.methods.kakao') },
+      { value: 'phone', label: t('form.contact.methods.phone') },
+    ],
+    [t]
+  );
+  const languageOptions = useMemo(
+    () => [
+      { value: 'korean', label: t('form.contact.languages.korean') },
+      { value: 'english', label: t('form.contact.languages.english') },
+      { value: 'chinese', label: t('form.contact.languages.chinese') },
+      { value: 'japanese', label: t('form.contact.languages.japanese') },
+    ],
+    [t]
+  );
+  const commonConcerns = useMemo(
+    () => [
+      t('form.inquiries.concerns.firstTime'),
+      t('form.inquiries.concerns.sensitiveSkin'),
+      t('form.inquiries.concerns.needEnglish'),
+      t('form.inquiries.concerns.gentlePressure'),
+      t('form.inquiries.concerns.specificAreas'),
+    ],
+    [t]
+  );
 
   // Toggle states for sections
   const [isProgramsOpen, setIsProgramsOpen] = useState(true);
@@ -71,7 +92,7 @@ export default function ReservationPage() {
   const [email, setEmail] = useState('');
   const [selectedContactMethod, setSelectedContactMethod] = useState('');
   const [contactPhone, setContactPhone] = useState('');
-  const [language, setLanguage] = useState('한국어');
+  const [language, setLanguage] = useState('korean');
 
   // Inquiries
   const [inquiryText, setInquiryText] = useState('');
@@ -106,7 +127,7 @@ export default function ReservationPage() {
           onBackClick={router.back}
           leftButton={true}
           buttonType="dark"
-          title="Reservation"
+          title={t('title')}
           backgroundColor="bg_surface1"
         />
       </Layout>
@@ -121,7 +142,7 @@ export default function ReservationPage() {
           onBackClick={router.back}
           leftButton={true}
           buttonType="dark"
-          title="Reservation"
+          title={t('title')}
           backgroundColor="bg_surface1"
         />
         <LoginModal
@@ -224,22 +245,22 @@ export default function ReservationPage() {
   };
 
   const formatDateForDisplay = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayOfWeek = days[date.getDay()];
-    return `${year}. ${month}. ${day} (${dayOfWeek})`;
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+    }).format(date);
   };
 
   const formatDuration = (minutes?: number) => {
     if (!minutes) return '';
-    return `${minutes} mins`;
+    return `${minutes} ${t('form.programs.minutes')}`;
   };
 
   const formatPrice = (price?: number) => {
     if (!price && price !== 0) return '';
-    return `${new Intl.NumberFormat('ko-KR').format(price)} KRW`;
+    return `${new Intl.NumberFormat(locale).format(price)} ${t('payment.currency')}`;
   };
 
   const formatDateForRequest = (date: Date) => {
@@ -265,44 +286,44 @@ export default function ReservationPage() {
   };
 
   const normalizeContactMethod = (method: string) => {
-    if (method === 'Line') return 'line';
-    if (method === 'Whats App') return 'whatsapp';
-    if (method === 'Kakao') return 'kakao';
-    if (method === 'Phone') return 'phone';
+    if (method === 'line') return 'line';
+    if (method === 'whatsapp') return 'whatsapp';
+    if (method === 'kakao') return 'kakao';
+    if (method === 'phone') return 'phone';
     return method.toLowerCase();
   };
 
   const normalizeLanguage = (value: string) => {
-    if (value === '한국어') return 'korean';
-    if (value === 'English') return 'english';
-    if (value === '中文') return 'chinese';
-    if (value === '日本語') return 'japanese';
+    if (value === 'korean') return 'korean';
+    if (value === 'english') return 'english';
+    if (value === 'chinese') return 'chinese';
+    if (value === 'japanese') return 'japanese';
     return 'korean';
   };
 
   const handleSubmit = async () => {
     if (!selectedProgramId) {
-      showToast({ title: '프로그램을 선택해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.selectProgram'), icon: 'exclaim' });
       return;
     }
 
     if (!selectedContactMethod) {
-      showToast({ title: '연락 방법을 선택해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.selectContact'), icon: 'exclaim' });
       return;
     }
 
     if (!contactPhone.trim()) {
-      showToast({ title: '연락처 정보를 입력해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.enterContact'), icon: 'exclaim' });
       return;
     }
 
     if (selectedDates.length === 0) {
-      showToast({ title: '방문 날짜를 선택해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.selectDate'), icon: 'exclaim' });
       return;
     }
 
     if (selectedDates.some((date) => isPastDate(date))) {
-      showToast({ title: '지난 날짜는 선택할 수 없습니다.', icon: 'exclaim' });
+      showToast({ title: t('validation.pastDate'), icon: 'exclaim' });
       return;
     }
 
@@ -311,7 +332,7 @@ export default function ReservationPage() {
     );
 
     if (hasEmptyTimes) {
-      showToast({ title: '선택한 날짜마다 시간을 선택해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.selectTimesPerDate'), icon: 'exclaim' });
       return;
     }
 
@@ -327,7 +348,7 @@ export default function ReservationPage() {
       .filter((option) => option.times.length > 0);
 
     if (availabilityOptions.length === 0) {
-      showToast({ title: '방문 시간대를 선택해 주세요.', icon: 'exclaim' });
+      showToast({ title: t('validation.selectTimeSlot'), icon: 'exclaim' });
       return;
     }
 
@@ -337,18 +358,18 @@ export default function ReservationPage() {
     });
 
     if (hasDuplicateTimes) {
-      showToast({ title: '중복된 시간대를 선택할 수 없습니다.', icon: 'exclaim' });
+      showToast({ title: t('validation.duplicateTimes'), icon: 'exclaim' });
       return;
     }
 
     const normalizedContact = normalizeContactMethod(selectedContactMethod);
     const selectedProgram = programs.find((program) => program.id === selectedProgramId);
     if (!selectedProgram) {
-      showToast({ title: '선택한 프로그램 정보를 찾을 수 없습니다.', icon: 'exclaim' });
+      showToast({ title: t('validation.programNotFound'), icon: 'exclaim' });
       return;
     }
     if (!company) {
-      showToast({ title: '업체 정보를 불러오지 못했습니다.', icon: 'exclaim' });
+      showToast({ title: t('validation.companyNotFound'), icon: 'exclaim' });
       return;
     }
 
@@ -387,18 +408,18 @@ export default function ReservationPage() {
         onBackClick={router.back}
         leftButton={true}
         buttonType="dark"
-        title="Reservation"
+        title={t('title')}
         backgroundColor="bg_surface1"
       />
       <div css={pageWrapper}>
         {!hasValidCompanyId && (
           <div css={emptyContainer}>
-            <Empty title="예약할 업체 정보가 없습니다." />
+            <Empty title={t('emptyCompany')} />
           </div>
         )}
         {hasValidCompanyId && (isCompanyLoading || isProgramLoading) && (
           <div css={loadingContainer}>
-            <Loading title="Loading..." />
+            <Loading title={t('loading')} />
           </div>
         )}
         {/* Company Info */}
@@ -441,6 +462,7 @@ export default function ReservationPage() {
             onPhoneChange={setContactPhone}
             language={language}
             onLanguageChange={setLanguage}
+            languageOptions={languageOptions}
           />
         )}
 
@@ -481,7 +503,7 @@ export default function ReservationPage() {
         {/* Submit Button */}
         {hasValidCompanyId && (
           <div css={submitButtonWrapper}>
-            <CTAButton onClick={handleSubmit}>결제하기</CTAButton>
+            <CTAButton onClick={handleSubmit}>{t('submitPayment')}</CTAButton>
           </div>
         )}
       </div>
