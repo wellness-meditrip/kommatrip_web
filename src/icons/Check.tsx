@@ -1,20 +1,20 @@
 import * as React from 'react';
 import type { SVGProps } from 'react';
 export const Check = (props: SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 73 72" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 40 40" {...props}>
     <path
-      stroke="#FF8E66"
+      stroke="#476155"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={4}
-      d="M65.902 30a30 30 0 1 1-14.403-19.995"
+      strokeWidth={2}
+      d="M36.335 16.667A16.667 16.667 0 1 1 28.333 5.56"
     />
     <path
-      stroke="#FF8E66"
+      stroke="#476155"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={4}
-      d="m27.5 33 9 9 30-30"
+      strokeWidth={2}
+      d="m15 18.335 5 5L36.667 6.668"
     />
   </svg>
 );

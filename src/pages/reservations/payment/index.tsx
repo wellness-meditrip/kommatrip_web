@@ -50,7 +50,7 @@ export default function ReservationPaymentPage() {
   const currentLocale = useCurrentLocale();
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { mutateAsync: createReservation, isLoading } = usePostCreateReservationMutation();
+  const { mutateAsync: createReservation, isPending } = usePostCreateReservationMutation();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -215,7 +215,7 @@ export default function ReservationPaymentPage() {
       </div>
 
       <div css={actionBar}>
-        <CTAButton onClick={() => setIsModalOpen(true)} disabled={isLoading}>
+        <CTAButton onClick={() => setIsModalOpen(true)} disabled={isPending}>
           Book Now
         </CTAButton>
       </div>

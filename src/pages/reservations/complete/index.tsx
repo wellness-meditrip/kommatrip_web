@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { Layout, RoundButton, Text, Empty, AppBar } from '@/components';
-import { Check, LogoDark } from '@/icons';
+import { Check } from '@/icons';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
