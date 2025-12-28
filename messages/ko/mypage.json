@@ -7,7 +7,29 @@
   "reservations": {
     "title": "예약 내역",
     "upcoming": "다가오는 예약",
-    "past": "과거 예약"
+    "past": "과거 예약",
+    "filters": {
+      "total": "전체",
+      "request": "요청",
+      "confirmed": "확정",
+      "canceled": "취소",
+      "completed": "완료"
+    },
+    "status": {
+      "request": "요청",
+      "confirmed": "확정",
+      "canceled": "취소",
+      "completed": "완료"
+    },
+    "loading": "예약 내역을 불러오는 중...",
+    "empty": "예약 내역이 없습니다.",
+    "bookAgain": "다시 예약",
+    "viewReview": "내 리뷰 보기",
+    "writeReview": "리뷰 작성",
+    "fallback": {
+      "program": "프로그램",
+      "clinic": "클리닉"
+    }
   },
   "reviews": {
     "title": "리뷰",

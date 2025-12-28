@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layout, GNB, Text, AppBar, Loading, Empty, LoginModal } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ArrowDown } from '@/icons';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useGetReservationsQuery } from '@/queries/reservation';
 import { useRequireAuth } from '@/hooks';
 import { ReservationListItem } from '@/models/reservation';
 import { useAuthStore } from '@/store/auth';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 type ReservationStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 type FilterStatus = 'total' | 'request' | 'confirmed' | 'canceled' | 'completed';
@@ -22,20 +24,26 @@ interface ReservationCard {
   hasReview?: boolean;
 }
 
-const filterOptions: { value: FilterStatus; label: string }[] = [
-  { value: 'total', label: 'Total' },
-  { value: 'request', label: 'Request' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'canceled', label: 'Canceled' },
-  { value: 'completed', label: 'Completed' },
-];
-
 export default function MyBookingsPage() {
+  const t = useTranslations('mypage.reservations');
+  const currentLocale = useCurrentLocale();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
+  const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
     useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+
+  const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
+    () => [
+      { value: 'total', label: t('filters.total') },
+      { value: 'request', label: t('filters.request') },
+      { value: 'confirmed', label: t('filters.confirmed') },
+      { value: 'canceled', label: t('filters.canceled') },
+      { value: 'completed', label: t('filters.completed') },
+    ],
+    [t]
+  );
 
   const statusParam = selectedFilter === 'total' ? undefined : selectedFilter;
   const { data, isLoading: isReservationsLoading } = useGetReservationsQuery(
@@ -53,25 +61,28 @@ export default function MyBookingsPage() {
     }
   }, [isAuthenticated, accessToken, setShowLoginModal]);
 
-  const formatReservationDate = (date?: string, time?: string) => {
-    if (!date) return '-';
-    const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
-    if (Number.isNaN(dateTime.getTime())) return date;
-    const dateText = new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(dateTime);
-    const dayText = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(dateTime);
-    if (!time) return `${dateText} (${dayText})`;
-    const timeText = new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(dateTime);
-    return `${dateText} (${dayText}) ${timeText}`;
-  };
+  const formatReservationDate = useCallback(
+    (date?: string, time?: string) => {
+      if (!date) return '-';
+      const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
+      if (Number.isNaN(dateTime.getTime())) return date;
+      const dateText = new Intl.DateTimeFormat(locale, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(dateTime);
+      const dayText = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dateTime);
+      if (!time) return `${dateText} (${dayText})`;
+      const timeText = new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(dateTime);
+      return `${dateText} (${dayText}) ${timeText}`;
+    },
+    [locale]
+  );
 
-  const normalizeStatus = (status?: string): ReservationStatus => {
+  const normalizeStatus = useCallback((status?: string): ReservationStatus => {
     const value = (status ?? '').toLowerCase();
     if (value.includes('confirm')) return 'confirmed';
     if (value.includes('cancel')) return 'canceled';
@@ -79,31 +90,34 @@ export default function MyBookingsPage() {
     if (value.includes('pending') || value.includes('wait')) return 'request';
     if (value.includes('request')) return 'request';
     return 'request';
-  };
+  }, []);
 
-  const mapReservation = (reservation: ReservationListItem): ReservationCard => {
-    const status = normalizeStatus(reservation.status);
-    return {
-      id: reservation.id,
-      image:
-        reservation.program_image_url ||
-        reservation.company_primary_image_url ||
-        reservation.company_image_url ||
-        '/default.png',
-      title: reservation.program_name || 'Program',
-      clinicName: reservation.company_name || 'Clinic',
-      date: formatReservationDate(
-        reservation.visit_date || reservation.date,
-        reservation.visit_time || reservation.time
-      ),
-      status,
-      hasReview: reservation.has_review ?? reservation.review_written ?? false,
-    };
-  };
+  const mapReservation = useCallback(
+    (reservation: ReservationListItem): ReservationCard => {
+      const status = normalizeStatus(reservation.status);
+      return {
+        id: reservation.id,
+        image:
+          reservation.program_image_url ||
+          reservation.company_primary_image_url ||
+          reservation.company_image_url ||
+          '/default.png',
+        title: reservation.program_name || t('fallback.program'),
+        clinicName: reservation.company_name || t('fallback.clinic'),
+        date: formatReservationDate(
+          reservation.visit_date || reservation.date,
+          reservation.visit_time || reservation.time
+        ),
+        status,
+        hasReview: reservation.has_review ?? reservation.review_written ?? false,
+      };
+    },
+    [formatReservationDate, normalizeStatus, t]
+  );
 
   const reservations = useMemo(() => {
     return (data?.reservations ?? []).map(mapReservation);
-  }, [data]);
+  }, [data, mapReservation]);
 
   const upcomingReservations = reservations.filter((r) => r.status !== 'completed');
   const completedReservations = reservations.filter((r) => r.status === 'completed');
@@ -111,11 +125,11 @@ export default function MyBookingsPage() {
   const getStatusButton = (status: ReservationStatus) => {
     switch (status) {
       case 'request':
-        return { text: 'Request', style: requestButton };
+        return { text: t('status.request'), style: requestButton };
       case 'confirmed':
-        return { text: 'Confirmed', style: confirmedButton };
+        return { text: t('status.confirmed'), style: confirmedButton };
       case 'canceled':
-        return { text: 'Canceled', style: canceledButton };
+        return { text: t('status.canceled'), style: canceledButton };
       default:
         return null;
     }
@@ -163,12 +177,12 @@ export default function MyBookingsPage() {
       <div css={contentContainer}>
         {isReservationsLoading && (
           <div css={stateContainer}>
-            <Loading title="Loading..." fullHeight />
+            <Loading title={t('loading')} fullHeight />
           </div>
         )}
         {!isReservationsLoading && reservations.length === 0 && (
           <div css={stateContainer}>
-            <Empty title="예약 내역이 없습니다." />
+            <Empty title={t('empty')} />
           </div>
         )}
         {/* Upcoming Reservations */}
@@ -221,7 +235,7 @@ export default function MyBookingsPage() {
           <>
             <div css={sectionTitle}>
               <Text typo="title_L" color="text_primary">
-                Completed
+                {t('status.completed')}
               </Text>
             </div>
 
@@ -229,7 +243,7 @@ export default function MyBookingsPage() {
               <div key={reservation.id} css={completedCard}>
                 <div css={completedBadge}>
                   <Text typo="body_S" color="white">
-                    Completed
+                    {t('status.completed')}
                   </Text>
                 </div>
                 <div css={cardRow}>
@@ -255,19 +269,19 @@ export default function MyBookingsPage() {
                 <div css={actionRow}>
                   <button css={bookAgainButton}>
                     <Text typo="body_M" color="text_secondary">
-                      Book Again
+                      {t('bookAgain')}
                     </Text>
                   </button>
                   {reservation.hasReview ? (
                     <button css={viewReviewButton}>
                       <Text typo="body_M" color="white">
-                        View My Review
+                        {t('viewReview')}
                       </Text>
                     </button>
                   ) : (
                     <button css={writeReviewButton}>
                       <Text typo="body_M" color="white">
-                        Write a Review
+                        {t('writeReview')}
                       </Text>
                     </button>
                   )}
@@ -535,8 +549,4 @@ const modalItem = css`
   &:hover {
     background: ${theme.colors.bg_surface1};
   }
-`;
-
-const bottomSpacer = css`
-  height: calc(${theme.size.gnbHeight} + 24px);
 `;
