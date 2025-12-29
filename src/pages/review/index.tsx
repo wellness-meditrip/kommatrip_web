@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
@@ -37,12 +37,21 @@ const MOCK_RESERVATION_DATA = {
   schedule: '2025-08-02T14:00:00',
 } as const;
 
+interface ReviewDraft {
+  companyId?: number;
+  programId?: number;
+  companyName?: string;
+  programName?: string;
+  schedule?: string;
+}
+
 export default function ReviewPage() {
   const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
 
   const router = useRouter();
   const t = useTranslations('review');
@@ -52,6 +61,9 @@ export default function ReviewPage() {
   const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
 
   const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
+  const displayRecipient = reviewDraft?.companyName ?? MOCK_DATA.recipientName;
+  const displayShop = reviewDraft?.programName ?? MOCK_DATA.shopName;
+  const displaySchedule = reviewDraft?.schedule ?? MOCK_DATA.schedule;
 
   const toggleExpand = () => setIsExpanded((prev) => !prev);
 
@@ -85,6 +97,17 @@ export default function ReviewPage() {
       throw error;
     }
   };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.sessionStorage.getItem('review_draft');
+    if (!stored) return;
+    try {
+      setReviewDraft(JSON.parse(stored));
+    } catch {
+      window.sessionStorage.removeItem('review_draft');
+    }
+  }, []);
 
   const getErrorMessage = (error: unknown): string => {
     if (error && typeof error === 'object' && 'response' in error) {
@@ -120,7 +143,7 @@ export default function ReviewPage() {
         user_id: MOCK_RESERVATION_DATA.user_id,
         doctor_id: MOCK_RESERVATION_DATA.doctor_id,
         doctor_name: MOCK_RESERVATION_DATA.doctor_name,
-        title: `${MOCK_RESERVATION_DATA.shopName} 후기`,
+        title: `${displayShop} 후기`,
         content: reviewText,
         rating,
         keywords: mappedKeywords,
@@ -155,14 +178,14 @@ export default function ReviewPage() {
         <div css={header}>
           <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
           <div css={content}>
-            <Text typo="title_M">{MOCK_DATA.recipientName}</Text>
+            <Text typo="title_M">{displayRecipient}</Text>
             <div>
               <div css={item}>
                 <Text typo="body_M" color="text_tertiary">
                   {t('serviceItem')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
-                  {MOCK_DATA.shopName}
+                  {displayShop}
                 </Text>
               </div>
               <div css={item}>
@@ -170,7 +193,7 @@ export default function ReviewPage() {
                   {t('visitDate')}
                 </Text>
                 <Text typo="button_M" color="text_secondary">
-                  {MOCK_DATA.schedule}
+                  {displaySchedule}
                 </Text>
               </div>
             </div>
