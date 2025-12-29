@@ -119,6 +119,16 @@ export default function ReservationPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const programIdQuery = router.query.programId;
+    if (!programIdQuery || selectedProgramId) return;
+    const parsed =
+      typeof programIdQuery === 'string' ? Number(programIdQuery) : Number(programIdQuery[0]);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      setSelectedProgramId(parsed);
+    }
+  }, [router.query.programId, selectedProgramId]);
+
   // 로딩 중이면 대기
   if (isLoading) {
     return (
