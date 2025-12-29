@@ -118,12 +118,13 @@ export default function ClinicDetailPage() {
 
         setActiveTab((prev) => {
           if (prev !== currentId) {
+            const localizedPath = `/${currentLocale}${ROUTES.COMPANY_DETAIL(companyIdNumber)}`;
             router.replace(
               {
-                pathname: ROUTES.COMPANY_DETAIL(companyIdNumber),
-                query: { service: currentId },
+                pathname: '/company/[companyId]',
+                query: { companyId: companyIdNumber, service: currentId },
               },
-              undefined,
+              `${localizedPath}?service=${currentId}`,
               {
                 shallow: true,
               }
@@ -144,7 +145,7 @@ export default function ClinicDetailPage() {
     });
 
     return () => observer.disconnect();
-  }, [data, router, companyIdNumber]);
+  }, [data, router, companyIdNumber, currentLocale]);
 
   const handleTabClick = useCallback(
     (tabId: string) => {
@@ -153,12 +154,13 @@ export default function ClinicDetailPage() {
       if (tab?.ref.current) {
         isScrollingToSection.current = true;
         setActiveTab(tabId);
+        const localizedPath = `/${currentLocale}${ROUTES.COMPANY_DETAIL(companyIdNumber)}`;
         router.replace(
           {
-            pathname: ROUTES.COMPANY_DETAIL(companyIdNumber),
-            query: { service: tabId },
+            pathname: '/company/[companyId]',
+            query: { companyId: companyIdNumber, service: tabId },
           },
-          undefined,
+          `${localizedPath}?service=${tabId}`,
           {
             shallow: true,
           }
@@ -176,7 +178,7 @@ export default function ClinicDetailPage() {
         }, 900);
       }
     },
-    [TABS, router, companyIdNumber]
+    [TABS, router, companyIdNumber, currentLocale]
   );
 
   const handleSearchChange = (value: string) => {
@@ -185,7 +187,7 @@ export default function ClinicDetailPage() {
 
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    router.push(`/${currentLocale}${ROUTES.SEARCH}${query}`);
   };
 
   const { status } = useSession();

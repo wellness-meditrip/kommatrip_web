@@ -2,6 +2,7 @@ import { Text } from '@/components/text';
 import { Clock } from '@/icons';
 import { Tag } from '@/components';
 import { useRouter } from 'next/router';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 import {
   infoWrapper,
@@ -33,11 +34,12 @@ export function ProgramCard({
   programId,
 }: ProgramCardProps) {
   const router = useRouter();
+  const currentLocale = useCurrentLocale();
 
   const handleCardClick = () => {
     if (companyId) {
       router.push({
-        pathname: `/company/${companyId}/program`,
+        pathname: `/${currentLocale}/company/${companyId}/program`,
         query: programId ? { programId } : undefined,
       });
     }

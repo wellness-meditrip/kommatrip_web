@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { useMediaQuery } from '@/hooks';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function ProgramDetailPage() {
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
+  const currentLocale = useCurrentLocale();
   const { status } = useSession();
   const accessToken = useAuthStore((state) => state.accessToken);
   const isLoggedIn = status === 'authenticated' || !!accessToken;
@@ -32,7 +34,7 @@ export default function ProgramDetailPage() {
 
   const handleReserveClick = () => {
     if (isLoggedIn) {
-      router.push(ROUTES.RESERVATIONS);
+      router.push(`/${currentLocale}${ROUTES.RESERVATIONS}`);
     } else {
       setShowLoginModal(true);
     }
@@ -44,7 +46,7 @@ export default function ProgramDetailPage() {
 
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    router.push(`/${currentLocale}${ROUTES.SEARCH}${query}`);
   };
 
   const detailsText = useMemo(() => {

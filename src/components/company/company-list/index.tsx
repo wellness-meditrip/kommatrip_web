@@ -3,6 +3,7 @@ import { Text } from '@/components/text';
 import { CompanyCard } from '@/components';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants/commons/routes';
+import { useCurrentLocale } from '@/i18n/navigation';
 import {
   container,
   wrapper,
@@ -33,6 +34,7 @@ interface CompanyListProps {
 
 export function CompanyList({ title, companies, cardSize = 'default' }: CompanyListProps) {
   const router = useRouter();
+  const currentLocale = useCurrentLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -96,7 +98,7 @@ export function CompanyList({ title, companies, cardSize = 'default' }: CompanyL
                 badges={company.departments}
                 isExclusive={company.is_exclusive}
                 onClick={(companyId: number) => {
-                  router.push(ROUTES.COMPANY_DETAIL(companyId));
+                  router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
                 }}
                 images={company.images}
                 fixedHeight={true}

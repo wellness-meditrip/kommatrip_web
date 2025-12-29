@@ -22,6 +22,7 @@ import { ROUTES } from '@/constants';
 import { useTranslations } from 'next-intl';
 import { useReportGuestReviewMutation, useReportReviewMutation } from '@/queries';
 import { AxiosError } from 'axios';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 interface CompanyReviewProps {
   companyId: number;
@@ -31,6 +32,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
   const router = useRouter();
   const t = useTranslations('review');
   const { showToast } = useToast();
+  const currentLocale = useCurrentLocale();
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [activeReviewId, setActiveReviewId] = useState<number | null>(null);
   const [activeIsGuestReview, setActiveIsGuestReview] = useState(true);
@@ -114,7 +116,9 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
                 programPrice={review.program_price}
                 programDurationMinutes={review.duration_minutes}
                 programImageUrl={review.primary_image_url}
-                onCardClick={() => router.push(ROUTES.COMPANY_REVIEWS(companyId))}
+                onCardClick={() =>
+                  router.push(`/${currentLocale}${ROUTES.COMPANY_REVIEWS(companyId)}`)
+                }
                 onReportClick={(targetReviewId) => {
                   setActiveReviewId(targetReviewId);
                   setActiveIsGuestReview(isGuestReview);
