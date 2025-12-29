@@ -10,6 +10,8 @@ import { useRequireAuth } from '@/hooks';
 import { ReservationListItem } from '@/models/reservation';
 import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/constants';
 
 type ReservationStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 type FilterStatus = 'total' | 'request' | 'confirmed' | 'canceled' | 'completed';
@@ -19,13 +21,19 @@ interface ReservationCard {
   image: string;
   title: string;
   clinicName: string;
+  companyId?: number;
+  providerAddress?: string;
+  programId?: number;
   date: string;
+  visitDate?: string;
+  visitTime?: string;
   status: ReservationStatus;
   hasReview?: boolean;
 }
 
 export default function MyBookingsPage() {
   const t = useTranslations('mypage.reservations');
+  const router = useRouter();
   const currentLocale = useCurrentLocale();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -104,10 +112,15 @@ export default function MyBookingsPage() {
           '/default.png',
         title: reservation.program_name || t('fallback.program'),
         clinicName: reservation.company_name || t('fallback.clinic'),
+        companyId: reservation.company_id,
+        programId: reservation.program_id,
+        providerAddress: reservation.company_address,
         date: formatReservationDate(
           reservation.visit_date || reservation.date,
           reservation.visit_time || reservation.time
         ),
+        visitDate: reservation.visit_date || reservation.date,
+        visitTime: reservation.visit_time || reservation.time,
         status,
         hasReview: reservation.has_review ?? reservation.review_written ?? false,
       };
@@ -121,6 +134,40 @@ export default function MyBookingsPage() {
 
   const upcomingReservations = reservations.filter((r) => r.status !== 'completed');
   const completedReservations = reservations.filter((r) => r.status === 'completed');
+
+  const handleReservationClick = useCallback(
+    (reservation: ReservationCard) => {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(
+          `booking_detail_${reservation.id}`,
+          JSON.stringify({
+            id: reservation.id,
+            status: reservation.status,
+            title: reservation.title,
+            image: reservation.image,
+            clinicName: reservation.clinicName,
+            requestDate: reservation.date,
+            bookingDates: [
+              {
+                date: reservation.visitDate,
+                time: reservation.visitTime,
+              },
+            ],
+            programId: reservation.programId,
+            providerInfo: {
+              name: reservation.clinicName,
+              address: reservation.providerAddress,
+              image: reservation.image,
+              id: reservation.companyId,
+            },
+            hasReview: reservation.hasReview ?? false,
+          })
+        );
+      }
+      router.push(`/${currentLocale}${ROUTES.BOOKINGS_DETAIL(reservation.id)}`);
+    },
+    [currentLocale, router]
+  );
 
   const getStatusButton = (status: ReservationStatus) => {
     switch (status) {
@@ -189,7 +236,22 @@ export default function MyBookingsPage() {
         {upcomingReservations.map((reservation) => {
           const statusButton = getStatusButton(reservation.status);
           return (
-            <div key={reservation.id} css={reservationCard}>
+            <div
+              key={reservation.id}
+              css={reservationCard}
+              role="button"
+              tabIndex={0}
+              onClick={() => handleReservationClick(reservation)}
+              onKeyDown={(event) => {
+                if (event.key === ' ') {
+                  event.preventDefault();
+                  handleReservationClick(reservation);
+                }
+                if (event.key === 'Enter') {
+                  handleReservationClick(reservation);
+                }
+              }}
+            >
               <div css={cardRow}>
                 <Image
                   src={reservation.image}
@@ -240,7 +302,22 @@ export default function MyBookingsPage() {
             </div>
 
             {completedReservations.map((reservation) => (
-              <div key={reservation.id} css={completedCard}>
+              <div
+                key={reservation.id}
+                css={completedCard}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleReservationClick(reservation)}
+                onKeyDown={(event) => {
+                  if (event.key === ' ') {
+                    event.preventDefault();
+                    handleReservationClick(reservation);
+                  }
+                  if (event.key === 'Enter') {
+                    handleReservationClick(reservation);
+                  }
+                }}
+              >
                 <div css={completedBadge}>
                   <Text typo="body_S" color="white">
                     {t('status.completed')}
@@ -370,6 +447,12 @@ const reservationCard = css`
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.primary50};
+    outline-offset: 2px;
+  }
 `;
 
 const cardRow = css`
@@ -433,6 +516,12 @@ const completedCard = css`
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.primary50};
+    outline-offset: 2px;
+  }
 `;
 
 const completedBadge = css`

@@ -1,1 +1,32 @@
-{}
+{
+  "title": "Details",
+  "status": {
+    "request": "Request",
+    "confirmed": "Confirmed",
+    "canceled": "Canceled",
+    "completed": "Completed"
+  },
+  "meta": {
+    "requestDate": "Request date"
+  },
+  "sections": {
+    "bookingInfo": "Booking Information",
+    "guestInfo": "Guest Information",
+    "provider": "Provider",
+    "paymentInfo": "Payment Information"
+  },
+  "labels": {
+    "date": "Date",
+    "time": "Time",
+    "name": "Name",
+    "contact": "Contact",
+    "language": "Language",
+    "paymentAmount": "Payment Amount",
+    "finalPaymentAmount": "Final Payment Amount"
+  },
+  "cta": {
+    "cancel": "Cancel",
+    "bookAgain": "Book Again",
+    "writeReview": "Write a Review"
+  }
+}

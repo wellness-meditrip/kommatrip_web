@@ -1,1 +1,32 @@
-{}
+{
+  "title": "詳細",
+  "status": {
+    "request": "リクエスト",
+    "confirmed": "確定",
+    "canceled": "キャンセル",
+    "completed": "完了"
+  },
+  "meta": {
+    "requestDate": "申請日時"
+  },
+  "sections": {
+    "bookingInfo": "予約情報",
+    "guestInfo": "予約者情報",
+    "provider": "提供先",
+    "paymentInfo": "決済情報"
+  },
+  "labels": {
+    "date": "日付",
+    "time": "時間",
+    "name": "名前",
+    "contact": "連絡先",
+    "language": "言語",
+    "paymentAmount": "決済金額",
+    "finalPaymentAmount": "最終決済金額"
+  },
+  "cta": {
+    "cancel": "キャンセル",
+    "bookAgain": "もう一度予約",
+    "writeReview": "レビューを書く"
+  }
+}

@@ -1,1 +1,32 @@
-{}
+{
+  "title": "예약 상세",
+  "status": {
+    "request": "요청",
+    "confirmed": "확정",
+    "canceled": "취소",
+    "completed": "완료"
+  },
+  "meta": {
+    "requestDate": "요청 일시"
+  },
+  "sections": {
+    "bookingInfo": "예약 정보",
+    "guestInfo": "예약자 정보",
+    "provider": "제공자",
+    "paymentInfo": "결제 정보"
+  },
+  "labels": {
+    "date": "날짜",
+    "time": "시간",
+    "name": "이름",
+    "contact": "연락처",
+    "language": "언어",
+    "paymentAmount": "결제 금액",
+    "finalPaymentAmount": "최종 결제 금액"
+  },
+  "cta": {
+    "cancel": "취소",
+    "bookAgain": "다시 예약",
+    "writeReview": "리뷰 작성"
+  }
+}
