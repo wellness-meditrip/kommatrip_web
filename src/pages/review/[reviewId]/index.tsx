@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
@@ -6,58 +6,79 @@ import Image from 'next/image';
 import 'dayjs/locale/ko';
 import { useTranslations } from 'next-intl';
 import {
-  wrapper,
-  header,
-  content,
-  item,
-  image,
-  container,
-  submitButton,
+  pageWrapper,
+  contentContainer,
+  submitButtonContainer,
+  programInfoCard,
+  programInfoRow,
+  programInfoCol,
+  programInfoMetaGroup,
+  programInfoMetaRow,
+  programImageWrapper,
+  programImage,
+  keywordCard,
+  keywordHeaderGroup,
+  keywordTitleRow,
+  keywordGroup,
+  tagList,
+  tagChip,
+  requiredMark,
+  aiConsentCard,
+  aiConsentHeaderRow,
+  aiConsentDescription,
+  aiConsentRow,
+  aiConsentCheckbox,
+  aiConsentLabel,
 } from '@/styles/pages/review.styles';
-import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
-import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
-import { useGetReviewDetailQuery, usePutReviewMutation } from '@/queries';
+import { ReviewInputCard } from '@/components/reviews';
+import {
+  useGetMyReviewsQuery,
+  useReplaceReviewImagesMutation,
+  useUpdateMyReviewMutation,
+} from '@/queries';
 import { Loading } from '@/components/common';
-
-const mockData = {
-  recipientName: '우주연 한의원',
-  shopName: '다이어트 패키지',
-  schedule: '2025-08-02T14:00:00',
-};
+import { useCurrentLocale } from '@/i18n/navigation';
+import { ROUTES } from '@/constants';
 
 export default function ReviewEditPage() {
-  const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [aiConsentChecked, setAiConsentChecked] = useState(false);
   const router = useRouter();
   const t = useTranslations('review');
+  const tTags = useTranslations('review-list');
+  const tCommon = useTranslations('common');
   const { showToast } = useToast();
   const { open } = useDialog();
+  const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
 
   // URL에서 review_id 가져오기
   const reviewId = Number(router.query.reviewId);
 
-  // 리뷰 상세 조회
-  const { data: reviewData, isLoading: isLoadingReview } = useGetReviewDetailQuery(reviewId);
+  const { data: myReviewsResponse, isLoading: isLoadingReview } = useGetMyReviewsQuery({
+    skip: 0,
+    limit: 50,
+  });
+  const reviewData = useMemo(
+    () => myReviewsResponse?.reviews?.find((review) => review.id === reviewId),
+    [myReviewsResponse, reviewId]
+  );
 
   // 리뷰 수정 mutation
-  const { mutate: putReview, isPending: isUpdating } = usePutReviewMutation();
-
-  const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
-  // const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const { mutateAsync: updateReview, isPending: isUpdating } = useUpdateMyReviewMutation();
+  const { mutateAsync: replaceImages, isPending: isReplacingImages } =
+    useReplaceReviewImagesMutation();
 
   // 리뷰 데이터가 로드되면 폼에 설정
   useEffect(() => {
     if (reviewData) {
-      setRating(reviewData.rating);
       setReviewText(reviewData.content);
-      setSelectedTags(reviewData.keywords.map((k) => k.keyword_name));
+      setSelectedTags(reviewData.tags || []);
+      setAiConsentChecked(Boolean(reviewData.ai_consent));
     }
   }, [reviewData]);
-
-  const toggleExpand = () => setIsExpanded((prev) => !prev);
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) =>
@@ -73,95 +94,200 @@ export default function ReviewEditPage() {
       return;
     }
 
-    const body = {
-      title: reviewData.title,
-      content: reviewText,
-      rating,
-      doctor_id: reviewData.doctor_id,
-      doctor_name: reviewData.doctor_name,
-    };
+    if (!aiConsentChecked) {
+      alert(t('aiConsent.requiredAlert'));
+      return;
+    }
 
-    putReview(
-      { reviewId, body },
-      {
-        onSuccess: () => {
-          showToast({ title: t('updateSuccess') });
+    try {
+      await updateReview({
+        reviewId,
+        body: {
+          content: reviewText,
+          ai_consent: aiConsentChecked,
+          tags: selectedTags,
         },
-        onError: (error: unknown) => {
-          let errorMessage = t('unknownError');
+      });
 
-          if (error && typeof error === 'object' && 'response' in error) {
-            const axiosError = error as { response?: { data?: unknown; status?: number } };
-
-            if (axiosError.response?.status === 422) {
-              errorMessage = t('invalidInput');
-              if (
-                axiosError.response?.data &&
-                typeof axiosError.response.data === 'object' &&
-                'message' in axiosError.response.data
-              ) {
-                errorMessage = String(axiosError.response.data.message);
-              }
-            } else if (axiosError.response?.status === 401) {
-              errorMessage = t('loginRequired');
-            } else if (axiosError.response?.status === 403) {
-              errorMessage = t('forbidden');
-            }
-          }
-
-          open({
-            type: 'confirm',
-            title: t('updateFail'),
-            description: errorMessage,
-            primaryActionLabel: t('confirm'),
-          });
-        },
+      if (selectedImages.length > 0) {
+        const formData = new FormData();
+        selectedImages.forEach((file) => formData.append('image_files', file));
+        await replaceImages({ reviewId, body: formData });
       }
-    );
+
+      showToast({ title: t('updateSuccess') });
+      router.push(ROUTES.MYPAGE_REVIEWS);
+    } catch (error: unknown) {
+      open({
+        type: 'confirm',
+        title: t('updateFail'),
+        description: String(error),
+        primaryActionLabel: tCommon('button.confirm'),
+      });
+    }
   };
 
+  const displayRecipient = reviewData?.company_name || reviewData?.company_code || '-';
+  const displayShop = reviewData?.program_name ?? '-';
+  const displaySchedule = reviewData?.visit_date ?? '-';
+  const displayImage = reviewData?.primary_image_url || '/default.png';
+  const formattedSchedule = useMemo(() => {
+    if (!displaySchedule || displaySchedule === '-') return '-';
+    const parsed = new Date(displaySchedule);
+    if (Number.isNaN(parsed.getTime())) return displaySchedule;
+    const dateParts = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+    }).formatToParts(parsed);
+    const getPart = (type: string) => dateParts.find((part) => part.type === type)?.value ?? '';
+    const year = getPart('year');
+    const month = getPart('month');
+    const day = getPart('day');
+    const weekday = getPart('weekday');
+    const timeText = new Intl.DateTimeFormat(locale, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(parsed);
+    return `${year}.${month}.${day} (${weekday}) ${timeText}`;
+  }, [displaySchedule, locale]);
+
+  const tagCategories = useMemo(
+    () => [
+      {
+        title: tTags('tagCategories.transport'),
+        tags: [
+          { value: 'Near Subway', label: tTags('tags.nearSubway') },
+          { value: 'Easy to find', label: tTags('tags.easyToFind') },
+          { value: 'Easy by bus', label: tTags('tags.easyByBus') },
+          { value: 'Offering Pick-up Service', label: tTags('tags.pickupService') },
+          { value: 'Convenient parking', label: tTags('tags.convenientParking') },
+        ],
+      },
+      {
+        title: tTags('tagCategories.service'),
+        tags: [
+          { value: 'English Support', label: tTags('tags.englishSupport') },
+          { value: 'Japanese Support', label: tTags('tags.japaneseSupport') },
+          { value: 'Chinese Support', label: tTags('tags.chineseSupport') },
+          { value: 'Friendly staff Highly skilled', label: tTags('tags.friendlySkilled') },
+          { value: 'No hard sell', label: tTags('tags.noHardSell') },
+          { value: 'Reasonable price', label: tTags('tags.reasonablePrice') },
+          { value: 'Pricey but worth it', label: tTags('tags.priceyWorthIt') },
+        ],
+      },
+      {
+        title: tTags('tagCategories.space'),
+        tags: [
+          { value: 'Great atmosphere', label: tTags('tags.greatAtmosphere') },
+          { value: 'Very clean', label: tTags('tags.veryClean') },
+          { value: 'Traditional Korean Style', label: tTags('tags.traditionalKorean') },
+        ],
+      },
+      {
+        title: t('keywords.other'),
+        tags: [{ value: 'Will visit again', label: tTags('tags.willVisitAgain') }],
+      },
+    ],
+    [t, tTags]
+  );
+
   return (
-    <Layout>
-      <AppBar onBackClick={router.back} leftButton={true} title={t('editTitle')} />
-      <div css={wrapper}>
-        <div css={header}>
-          <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
-          <div css={content}>
-            <Text typo="title_M">{mockData.recipientName}</Text>
-            <div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  {t('serviceItem')}
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {mockData.shopName}
-                </Text>
-              </div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  {t('visitDate')}
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {mockData.schedule}
-                </Text>
+    <Layout isAppBarExist={false}>
+      <AppBar
+        onBackClick={router.back}
+        leftButton={true}
+        buttonType="dark"
+        title={t('editTitle')}
+      />
+      <div css={pageWrapper}>
+        <section css={programInfoCard}>
+          <div css={programInfoRow}>
+            <div css={programImageWrapper}>
+              <Image
+                src={displayImage}
+                alt={displayShop}
+                width={72}
+                height={72}
+                css={programImage}
+              />
+            </div>
+            <div css={programInfoCol}>
+              <Text typo="title_M" color="text_primary">
+                {displayShop}
+              </Text>
+              <div css={programInfoMetaGroup}>
+                <div css={programInfoMetaRow}>
+                  <Text typo="body_S" color="text_tertiary">
+                    {t('programInfo.visitedDate')}
+                  </Text>
+                  <Text typo="body_S" color="text_secondary">
+                    {formattedSchedule}
+                  </Text>
+                </div>
+                <div css={programInfoMetaRow}>
+                  <Text typo="body_S" color="text_tertiary">
+                    {t('programInfo.location')}
+                  </Text>
+                  <Text typo="body_S" color="text_secondary">
+                    {displayRecipient}
+                  </Text>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div css={container}>
-          {(isLoadingReview || isUpdating) && (
-            <Loading title={isLoadingReview ? t('loading') : t('updating')} />
+        </section>
+        <div css={contentContainer}>
+          {(isLoadingReview || isUpdating || isReplacingImages) && (
+            <Loading
+              title={
+                isLoadingReview
+                  ? t('loading')
+                  : isUpdating || isReplacingImages
+                    ? t('updating')
+                    : ''
+              }
+            />
           )}
 
-          <RatingCard rating={rating} onRatingChange={setRating} />
-
-          <KeywordCard
-            tags={keywordNames}
-            selectedTags={selectedTags}
-            onTagToggle={handleTagToggle}
-            isExpanded={isExpanded}
-            toggleExpand={toggleExpand}
-          />
+          <section css={keywordCard}>
+            <div css={keywordHeaderGroup}>
+              <div css={keywordTitleRow}>
+                <Text typo="title_S" color="text_primary">
+                  {t('keywords.title')}
+                </Text>
+                <span css={requiredMark}>*</span>
+              </div>
+              <Text typo="body_S" color="text_secondary">
+                {t('keywords.subtitle')}
+              </Text>
+            </div>
+            {tagCategories.map((category) => (
+              <div key={category.title} css={keywordGroup}>
+                <Text typo="body_M" color="text_primary">
+                  {category.title}
+                </Text>
+                <div css={tagList}>
+                  {category.tags.map((tag) => {
+                    const isSelected = selectedTags.includes(tag.value);
+                    return (
+                      <button
+                        key={tag.value}
+                        type="button"
+                        css={tagChip(isSelected)}
+                        onClick={() => handleTagToggle(tag.value)}
+                      >
+                        <Text typo="button_XS" color={isSelected ? 'primary60' : 'text_secondary'}>
+                          {tag.label}
+                        </Text>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </section>
 
           <ReviewInputCard
             reviewText={reviewText}
@@ -169,15 +295,43 @@ export default function ReviewEditPage() {
             selectedImages={selectedImages}
             setSelectedImages={setSelectedImages}
           />
+
+          <section css={aiConsentCard}>
+            <div css={aiConsentHeaderRow}>
+              <Text typo="title_S" color="text_primary">
+                {t('aiConsent.title')}
+              </Text>
+              <span css={requiredMark}>*</span>
+            </div>
+            <Text typo="body_S" color="text_secondary" css={aiConsentDescription}>
+              {t('aiConsent.description')}
+            </Text>
+            <label css={aiConsentRow}>
+              <input
+                type="checkbox"
+                checked={aiConsentChecked}
+                onChange={(event) => setAiConsentChecked(event.target.checked)}
+                css={aiConsentCheckbox}
+              />
+              <Text typo="body_S" color="text_secondary" css={aiConsentLabel}>
+                {t('aiConsent.agreement')}
+              </Text>
+            </label>
+          </section>
         </div>
-        <div css={submitButton}>
+        <div css={submitButtonContainer}>
           <RoundButton
             service="daengle"
             size="L"
             fullWidth
             onClick={handleSubmit}
             disabled={
-              !rating || !reviewText || selectedTags.length === 0 || isUpdating || isLoadingReview
+              !reviewText ||
+              selectedTags.length === 0 ||
+              !aiConsentChecked ||
+              isUpdating ||
+              isReplacingImages ||
+              isLoadingReview
             }
           >
             {isUpdating ? t('updatingButton') : t('updateButton')}
