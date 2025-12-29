@@ -119,12 +119,14 @@ export default function BookingDetailPage() {
     [formatDateWithWeekday, formatTimeFromDate]
   );
 
+  const currencyLabel = tReservation('payment.currency');
+
   const formatAmount = useCallback(
     (value?: number | null) => {
       if (typeof value !== 'number') return '-';
-      return `${value.toLocaleString(locale)} KRW`;
+      return `${value.toLocaleString(locale)} ${currencyLabel}`;
     },
-    [locale]
+    [currencyLabel, locale]
   );
 
   const languageLabelMap = useMemo<Record<LanguagePreference, string>>(
