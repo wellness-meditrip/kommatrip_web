@@ -40,6 +40,10 @@
     "other": "その他",
     "maxAlert": "キーワードは最大5つまで選択できます。"
   },
+  "firstTimeVisitorMeta": "初回訪問 | {date} 訪問",
+  "reviewerImageAlt": "レビュー作成者のプロフィール画像",
+  "reviewImageAlt": "レビュー画像 {index}",
+  "moreOptions": "その他のオプション",
   "aiConsent": {
     "title": "AIレビュー同意",
     "description": "レビューは技術、研究、カスタマーサポートの改善に利用される場合があります。",

@@ -99,6 +99,30 @@ export const reviewContent = css`
   min-width: 0;
 `;
 
+export const menuButton = css`
+  margin-left: auto;
+  padding: 4px;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+`;
+
+export const menuDots = css`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const menuDot = css`
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+
+  background: ${theme.colors.gray400};
+`;
+
 export const imageWrapper = css`
   display: flex;
   gap: 6px;

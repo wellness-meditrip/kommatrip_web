@@ -40,6 +40,10 @@
     "other": "기타",
     "maxAlert": "키워드는 최대 5개까지만 선택할 수 있습니다."
   },
+  "firstTimeVisitorMeta": "첫 방문 | {date} 방문",
+  "reviewerImageAlt": "리뷰 작성자 이미지",
+  "reviewImageAlt": "리뷰 이미지 {index}",
+  "moreOptions": "더보기",
   "aiConsent": {
     "title": "AI 리뷰 동의",
     "description": "리뷰는 기술, 연구, 고객 지원 개선을 위해 활용될 수 있습니다.",

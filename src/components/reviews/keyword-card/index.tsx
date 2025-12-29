@@ -2,6 +2,7 @@ import { Text } from '@/components';
 import { ChipToggleButton } from '@/components/chips';
 import { SelectUnfoldActive, SelectUnfoldInactive } from '@/icons';
 import { wrapper, keyword, unroll } from './index.styles';
+import { useTranslations } from 'next-intl';
 
 interface KeywordCardProps {
   tags: string[];
@@ -21,13 +22,14 @@ export function KeywordCard({
   isExpanded,
   toggleExpand,
 }: KeywordCardProps) {
+  const t = useTranslations('review');
   const handleTagToggle = (tag: string) => {
     if (selectedTags.includes(tag)) {
       onTagToggle(tag);
     } else if (selectedTags.length < MAX_SELECTABLE_TAGS) {
       onTagToggle(tag);
     } else {
-      alert('키워드는 최대 5개까지만 선택할 수 있습니다.');
+      alert(t('keywords.maxAlert'));
     }
   };
 
@@ -35,9 +37,9 @@ export function KeywordCard({
 
   return (
     <div css={wrapper}>
-      <Text typo="subtitle1">어떤 점이 좋았나요?</Text>
+      <Text typo="subtitle1">{t('keywords.title')}</Text>
       <Text typo="body11" color="gray500">
-        이 곳에 어울리는 키워드를 골라주세요(최대 5개)
+        {t('keywords.subtitle')}
       </Text>
       <div css={keyword}>
         {visibleTags.map((tag) => (
