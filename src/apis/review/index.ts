@@ -13,7 +13,9 @@ import { GetClinicReviewsParams, GetReviewResponse } from '@/models/review';
 import { api, guestApi } from '@/apis/config';
 
 export const postClinicReview = async (body: PostClinicReviewRequestBody) => {
-  return await api.post<PostClinicReviewResponse>('/api/v1/reviews', body);
+  return await api.post<PostClinicReviewResponse>('/api/reviews/', body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 };
 
 export const getClinicReviews = async (params: GetClinicReviewsParams) => {

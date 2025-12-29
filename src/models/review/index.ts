@@ -1,14 +1,4 @@
-export interface PostClinicReviewRequestBody {
-  hospital_id: number;
-  user_id: number;
-  doctor_id: number;
-  doctor_name: string;
-  title: string;
-  content: string;
-  rating: number;
-  keywords: keyword[];
-  images: string[];
-}
+export type PostClinicReviewRequestBody = FormData;
 export interface keyword {
   category: string;
   keyword_code: string;
