@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { defaultLocale, locales, type Locale } from './i18n/routing';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
@@ -60,7 +61,21 @@ function hasLocalePrefix(pathname: string): boolean {
   return segments.length > 0 && locales.includes(segments[0] as Locale);
 }
 
-export function middleware(request: NextRequest) {
+const PROTECTED_PATH_PREFIXES = ['/bookings', '/reservations', '/review', '/mypage/reviews'];
+
+function isProtectedPath(pathname: string): boolean {
+  if (
+    PROTECTED_PATH_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    )
+  ) {
+    return true;
+  }
+
+  return /^\/company\/[^/]+\/reviews(?:\/|$)/.test(pathname);
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 다국어 처리 제외 경로
@@ -68,14 +83,32 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const hasPrefix = hasLocalePrefix(pathname);
+  const locale = hasPrefix ? (pathname.split('/')[1] as Locale) : detectLocale(request);
+  const pathWithoutLocale = hasPrefix ? `/${pathname.split('/').slice(2).join('/')}` : pathname;
+  const actualPath = pathWithoutLocale === '' ? '/' : pathWithoutLocale;
+
+  if (isProtectedPath(actualPath)) {
+    let token = null;
+    try {
+      token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    } catch {
+      token = null;
+    }
+    const refreshToken = request.cookies.get('refreshToken')?.value;
+    const isAuthenticated = Boolean(token || refreshToken);
+
+    if (!isAuthenticated) {
+      const loginUrl = new URL(`/${locale}/login`, request.url);
+      const callbackPath = hasPrefix ? pathname : `/${locale}${pathname}`;
+      const callbackUrl = `${callbackPath}${request.nextUrl.search}`;
+      loginUrl.searchParams.set('callbackUrl', callbackUrl);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   // 이미 로케일 프리픽스가 있는 경우
-  if (hasLocalePrefix(pathname)) {
-    const locale = pathname.split('/')[1] as Locale;
-
-    // 로케일 프리픽스를 제거한 실제 경로 생성
-    const pathWithoutLocale = '/' + pathname.split('/').slice(2).join('/');
-    const actualPath = pathWithoutLocale === '/' ? '/' : pathWithoutLocale;
-
+  if (hasPrefix) {
     // 내부적으로 경로를 변환 (rewrite)
     const url = request.nextUrl.clone();
     url.pathname = actualPath;
@@ -94,9 +127,6 @@ export function middleware(request: NextRequest) {
 
     return response;
   }
-
-  // 로케일 감지
-  const locale = detectLocale(request);
 
   // 로케일 프리픽스 추가하여 리다이렉트
   const newUrl = new URL(`/${locale}${pathname}`, request.url);
