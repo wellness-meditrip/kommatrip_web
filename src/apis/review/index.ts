@@ -11,6 +11,8 @@ import {
   ReplaceReviewImagesRequestBody,
   ReplaceReviewImagesResponse,
   DeleteReviewResponse,
+  ReportReviewRequestBody,
+  ReportReviewResponse,
   GetCompanyReviewsParams,
   GetCompanyReviewsResponse,
   GetGuestCompanyReviewsParams,
@@ -56,6 +58,17 @@ export const replaceReviewImages = async (
 
 export const deleteReview = async (reviewId: number) => {
   return await api.delete<DeleteReviewResponse>(`/api/reviews/${reviewId}`);
+};
+
+export const reportReview = async (reviewId: number, body: ReportReviewRequestBody) => {
+  return await api.post<ReportReviewResponse>(`/api/reviews/${reviewId}/report`, body);
+};
+
+export const reportGuestReview = async (guestReviewId: number, body: ReportReviewRequestBody) => {
+  return await api.post<ReportReviewResponse>(
+    `/api/reviews/guest-reviews/${guestReviewId}/report`,
+    body
+  );
 };
 
 // 업체 리뷰 조회

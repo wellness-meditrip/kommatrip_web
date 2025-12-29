@@ -137,6 +137,29 @@ export interface DeleteReviewResponse {
   message: string;
 }
 
+export type ReportReviewReason =
+  | 'commercial_promotional'
+  | 'pornographic_harmful'
+  | 'personal_attack_offensive'
+  | 'personal_information_exposure'
+  | 'other';
+
+export interface ReportReviewRequestBody {
+  reason: ReportReviewReason;
+  detail?: string | null;
+}
+
+export interface ReportReviewResponse {
+  message: string;
+  report: {
+    id: number;
+    review_id: number;
+    reason: ReportReviewReason;
+    detail: string | null;
+    created_at: string;
+  };
+}
+
 // 업체 리뷰 조회 파라미터
 export interface GetCompanyReviewsParams {
   companyId: number; // 필수, path parameter

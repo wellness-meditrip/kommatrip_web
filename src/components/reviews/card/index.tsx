@@ -25,6 +25,8 @@ import {
   menuButton,
   menuDots,
   menuDot,
+  actionArea,
+  reportButton,
 } from './index.styles';
 import dayjs from 'dayjs';
 
@@ -44,6 +46,7 @@ interface Props {
   programImageUrl?: string | null;
   onCardClick?: () => void;
   onMenuClick?: (reviewId: number) => void;
+  onReportClick?: (reviewId: number) => void;
 }
 
 export function Card({
@@ -62,6 +65,7 @@ export function Card({
   programImageUrl,
   onCardClick,
   onMenuClick,
+  onReportClick,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const router = useRouter();
@@ -102,21 +106,38 @@ export function Card({
           </Text>
         </div>
 
-        {onMenuClick && (
-          <button
-            css={menuButton}
-            aria-label={t('moreOptions')}
-            onClick={(event) => {
-              event.stopPropagation();
-              onMenuClick(reviewId);
-            }}
-          >
-            <span css={menuDots}>
-              <span css={menuDot} />
-              <span css={menuDot} />
-              <span css={menuDot} />
-            </span>
-          </button>
+        {(onMenuClick || onReportClick) && (
+          <div css={actionArea}>
+            {onReportClick && (
+              <button
+                css={reportButton}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onReportClick(reviewId);
+                }}
+              >
+                <Text typo="body_S" color="text_tertiary">
+                  {t('report.action')}
+                </Text>
+              </button>
+            )}
+            {onMenuClick && (
+              <button
+                css={menuButton}
+                aria-label={t('moreOptions')}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMenuClick(reviewId);
+                }}
+              >
+                <span css={menuDots}>
+                  <span css={menuDot} />
+                  <span css={menuDot} />
+                  <span css={menuDot} />
+                </span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 

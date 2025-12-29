@@ -44,6 +44,27 @@
   "reviewerImageAlt": "Reviewer profile image",
   "reviewImageAlt": "Review image {index}",
   "moreOptions": "More options",
+  "report": {
+    "action": "Report",
+    "title": "Reason for Report",
+    "placeholder": "Please enter the details of your report.",
+    "submit": "Submit Report",
+    "close": "Close",
+    "errors": {
+      "unauthorized": "Login is required to report.",
+      "forbidden": "You cannot report your own review.",
+      "notFound": "Review not found.",
+      "duplicate": "You have already reported this review.",
+      "failed": "Failed to submit report."
+    },
+    "reasons": {
+      "commercial": "Commercial / Promotional",
+      "harmful": "Pornographic / Harmful Content",
+      "offensive": "Personal Attack / Offensive Language",
+      "privacy": "Personal Information Exposure",
+      "other": "Other"
+    }
+  },
   "aiConsent": {
     "title": "AI Review Consent",
     "description": "Your review may be used to help improve our technology, research, and customer support.",

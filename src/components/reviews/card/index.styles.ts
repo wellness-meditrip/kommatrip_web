@@ -109,6 +109,25 @@ export const menuButton = css`
   cursor: pointer;
 `;
 
+export const actionArea = css`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-left: auto;
+`;
+
+export const reportButton = css`
+  padding: 4px 6px;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+`;
+
 export const menuDots = css`
   display: flex;
   flex-direction: column;

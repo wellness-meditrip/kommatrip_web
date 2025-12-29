@@ -10,6 +10,8 @@ import {
   GetMyReviewsResponse,
   UpdateMyReviewRequestBody,
   ReplaceReviewImagesRequestBody,
+  ReportReviewRequestBody,
+  ReportReviewResponse,
 } from '@/models';
 import { postClinicReview, getReviewDetail, putReview } from '@/apis';
 import {
@@ -20,6 +22,8 @@ import {
   updateMyReview,
   replaceReviewImages,
   deleteReview,
+  reportReview,
+  reportGuestReview,
 } from '@/apis/review';
 import { AxiosError } from 'axios';
 
@@ -109,6 +113,28 @@ export const useDeleteReviewMutation = () => {
   return useMutation({
     mutationKey: QUERY_KEYS.DELETE_REVIEW,
     mutationFn: ({ reviewId }: { reviewId: number }) => deleteReview(reviewId),
+  });
+};
+
+export const useReportReviewMutation = () => {
+  return useMutation<
+    ReportReviewResponse,
+    unknown,
+    { reviewId: number; body: ReportReviewRequestBody }
+  >({
+    mutationKey: QUERY_KEYS.REPORT_REVIEW,
+    mutationFn: ({ reviewId, body }) => reportReview(reviewId, body),
+  });
+};
+
+export const useReportGuestReviewMutation = () => {
+  return useMutation<
+    ReportReviewResponse,
+    unknown,
+    { reviewId: number; body: ReportReviewRequestBody }
+  >({
+    mutationKey: QUERY_KEYS.REPORT_GUEST_REVIEW,
+    mutationFn: ({ reviewId, body }) => reportGuestReview(reviewId, body),
   });
 };
 

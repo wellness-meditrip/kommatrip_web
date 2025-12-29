@@ -44,6 +44,27 @@
   "reviewerImageAlt": "レビュー作成者のプロフィール画像",
   "reviewImageAlt": "レビュー画像 {index}",
   "moreOptions": "その他のオプション",
+  "report": {
+    "action": "通報する",
+    "title": "通報理由",
+    "placeholder": "通報内容を入力してください。",
+    "submit": "通報を送信",
+    "close": "閉じる",
+    "errors": {
+      "unauthorized": "通報にはログインが必要です。",
+      "forbidden": "自分のレビューは通報できません。",
+      "notFound": "レビューが見つかりません。",
+      "duplicate": "すでに通報済みです。",
+      "failed": "通報の送信に失敗しました。"
+    },
+    "reasons": {
+      "commercial": "広告・宣伝",
+      "harmful": "有害・わいせつな内容",
+      "offensive": "誹謗中傷・攻撃的な言葉",
+      "privacy": "個人情報の露出",
+      "other": "その他"
+    }
+  },
   "aiConsent": {
     "title": "AIレビュー同意",
     "description": "レビューは技術、研究、カスタマーサポートの改善に利用される場合があります。",
