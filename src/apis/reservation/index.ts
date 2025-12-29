@@ -2,6 +2,9 @@ import axios from 'axios';
 import {
   GetReservationsParams,
   GetReservationsResponse,
+  GetReservationDetailResponse,
+  DeleteReservationRequest,
+  DeleteReservationResponse,
   PostCreateReservationRequest,
   PostCreateReservationResponse,
 } from '@/models/reservation';
@@ -31,5 +34,22 @@ export const getReservations = async (params: GetReservationsParams) => {
   return await api.get<GetReservationsResponse>('/api/reservations', {
     params,
     baseURL: '',
+  });
+};
+
+// 예약 상세 조회
+export const getReservationDetail = async (reservationId: number | string) => {
+  return await api.get<GetReservationDetailResponse>(`/api/reservations/${reservationId}`, {
+    baseURL: '',
+  });
+};
+
+// 예약 취소
+export const deleteReservation = async ({ reservationId, reason }: DeleteReservationRequest) => {
+  return await api.delete<DeleteReservationResponse>(`/api/reservations/${reservationId}`, {
+    baseURL: '',
+    data: {
+      reason: reason ?? null,
+    },
   });
 };
