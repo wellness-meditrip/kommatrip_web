@@ -72,6 +72,71 @@ export interface PutReviewResponse {
   data: string;
 }
 
+export interface GetMyReviewsParams {
+  skip?: number;
+  limit?: number;
+}
+
+export interface MyReviewItem {
+  id: number;
+  program_id: number;
+  company_code: string;
+  company_id: number;
+  company_name: string;
+  company_primary_image_url: string | null;
+  content: string;
+  ai_consent?: boolean;
+  tags: string[];
+  created_at: string;
+  primary_image_url: string | null;
+  image_urls: string[] | null;
+  reviewer_username: string;
+  reviewer_profile_image_url: string | null;
+  visit_date: string | null;
+  program_name: string;
+  program_price: number;
+  duration_minutes: number;
+  is_first_visit: boolean | null;
+}
+
+export interface GetMyReviewsResponse {
+  total: number;
+  reviews: MyReviewItem[];
+}
+
+export interface UpdateMyReviewRequestBody {
+  content?: string;
+  ai_consent?: boolean;
+  tags?: string[];
+}
+
+export interface UpdateMyReviewResponse {
+  message: string;
+  review: {
+    id: number;
+    content: string;
+    ai_consent: boolean;
+    tags: string[];
+    primary_image_url: string | null;
+    image_urls: string[] | null;
+  };
+}
+
+export type ReplaceReviewImagesRequestBody = FormData;
+
+export interface ReplaceReviewImagesResponse {
+  message: string;
+  review: {
+    id: number;
+    primary_image_url: string | null;
+    image_urls: string[] | null;
+  };
+}
+
+export interface DeleteReviewResponse {
+  message: string;
+}
+
 // 업체 리뷰 조회 파라미터
 export interface GetCompanyReviewsParams {
   companyId: number; // 필수, path parameter

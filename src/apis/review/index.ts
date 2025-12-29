@@ -4,6 +4,13 @@ import {
   GetReviewDetailResponse,
   PutReviewRequestBody,
   PutReviewResponse,
+  GetMyReviewsParams,
+  GetMyReviewsResponse,
+  UpdateMyReviewRequestBody,
+  UpdateMyReviewResponse,
+  ReplaceReviewImagesRequestBody,
+  ReplaceReviewImagesResponse,
+  DeleteReviewResponse,
   GetCompanyReviewsParams,
   GetCompanyReviewsResponse,
   GetGuestCompanyReviewsParams,
@@ -28,6 +35,27 @@ export const getReviewDetail = async (reviewId: number) => {
 
 export const putReview = async (reviewId: number, body: PutReviewRequestBody) => {
   return await api.put<PutReviewResponse>(`/api/v1/reviews/${reviewId}`, body);
+};
+
+export const getMyReviews = async (params: GetMyReviewsParams) => {
+  return await api.get<GetMyReviewsResponse>('/api/reviews/me', { params });
+};
+
+export const updateMyReview = async (reviewId: number, body: UpdateMyReviewRequestBody) => {
+  return await api.put<UpdateMyReviewResponse>(`/api/reviews/${reviewId}`, body);
+};
+
+export const replaceReviewImages = async (
+  reviewId: number,
+  body: ReplaceReviewImagesRequestBody
+) => {
+  return await api.put<ReplaceReviewImagesResponse>(`/api/reviews/${reviewId}/images`, body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const deleteReview = async (reviewId: number) => {
+  return await api.delete<DeleteReviewResponse>(`/api/reviews/${reviewId}`);
 };
 
 // 업체 리뷰 조회
