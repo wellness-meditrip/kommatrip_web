@@ -23,11 +23,28 @@
   "updating": "Updating review...",
   "updatingButton": "Updating...",
   "updateButton": "Update Review",
-  "missingFields": "Please fill in rating, keywords, and content.",
+  "missingFields": "Please select keywords and write your review.",
   "imageUploadFail": "Failed to upload images.",
   "createSuccess": "Review submitted successfully!",
   "createFail": "Failed to submit review",
-  "createTitle": "Write Review",
+  "createTitle": "Write a Review",
   "creating": "Submitting review...",
-  "createButton": "Submit Review"
+  "createButton": "Submit Review",
+  "programInfo": {
+    "visitedDate": "Visited Date",
+    "location": "Location"
+  },
+  "keywords": {
+    "title": "What did you like about it?",
+    "subtitle": "Choose the keywords that best describe your experience.",
+    "other": "Other",
+    "maxAlert": "You can select up to 5 keywords."
+  },
+  "aiConsent": {
+    "title": "AI Review Consent",
+    "description": "Your review may be used to help improve our technology, research, and customer support.",
+    "agreement": "I agree to the collection and use of my review.",
+    "requiredAlert": "Please agree to the AI review consent."
+  },
+  "missingReservation": "Reservation information is missing."
 }

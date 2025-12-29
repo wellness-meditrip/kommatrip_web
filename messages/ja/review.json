@@ -23,11 +23,28 @@
   "updating": "レビューを更新中...",
   "updatingButton": "更新中...",
   "updateButton": "レビューを更新",
-  "missingFields": "評価・キーワード・内容をすべて入力してください。",
+  "missingFields": "キーワードとレビュー内容を入力してください。",
   "imageUploadFail": "画像のアップロードに失敗しました。",
   "createSuccess": "レビューを投稿しました！",
   "createFail": "レビュー投稿に失敗しました",
   "createTitle": "レビュー作成",
   "creating": "レビューを投稿中...",
-  "createButton": "レビューを投稿"
+  "createButton": "レビューを投稿",
+  "programInfo": {
+    "visitedDate": "来訪日",
+    "location": "場所"
+  },
+  "keywords": {
+    "title": "良かった点は？",
+    "subtitle": "当てはまるキーワードを選んでください。",
+    "other": "その他",
+    "maxAlert": "キーワードは最大5つまで選択できます。"
+  },
+  "aiConsent": {
+    "title": "AIレビュー同意",
+    "description": "レビューは技術、研究、カスタマーサポートの改善に利用される場合があります。",
+    "agreement": "レビューの収集と利用に同意します。",
+    "requiredAlert": "AIレビュー同意にチェックしてください。"
+  },
+  "missingReservation": "予約情報が見つかりません。"
 }
