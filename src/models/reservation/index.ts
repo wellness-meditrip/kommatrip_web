@@ -35,14 +35,10 @@ export interface ReservationListItem {
   company_name?: string;
   company_address?: string;
   program_image_url?: string;
-  company_image_url?: string;
   company_primary_image_url?: string;
   visit_date?: string;
   visit_time?: string;
-  date?: string;
-  time?: string;
-  has_review?: boolean;
-  review_written?: boolean;
+  can_write_review?: boolean;
 }
 
 export interface GetReservationsParams {

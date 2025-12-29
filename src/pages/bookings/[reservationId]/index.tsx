@@ -491,11 +491,13 @@ export default function BookingDetailPage() {
                     window.sessionStorage.setItem(
                       'review_draft',
                       JSON.stringify({
+                        reservationId: Number(reservationId),
                         companyId,
                         programId,
                         companyName: providerName,
                         programName: programTitle,
                         schedule,
+                        programImage: heroImage,
                       })
                     );
                   }

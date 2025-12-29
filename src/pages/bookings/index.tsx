@@ -106,23 +106,18 @@ export default function MyBookingsPage() {
       return {
         id: reservation.id,
         image:
-          reservation.program_image_url ||
-          reservation.company_primary_image_url ||
-          reservation.company_image_url ||
-          '/default.png',
+          reservation.program_image_url || reservation.company_primary_image_url || '/default.png',
         title: reservation.program_name || t('fallback.program'),
         clinicName: reservation.company_name || t('fallback.clinic'),
         companyId: reservation.company_id,
         programId: reservation.program_id,
         providerAddress: reservation.company_address,
-        date: formatReservationDate(
-          reservation.visit_date || reservation.date,
-          reservation.visit_time || reservation.time
-        ),
-        visitDate: reservation.visit_date || reservation.date,
-        visitTime: reservation.visit_time || reservation.time,
+        date: formatReservationDate(reservation.visit_date, reservation.visit_time),
+        visitDate: reservation.visit_date,
+        visitTime: reservation.visit_time,
         status,
-        hasReview: reservation.has_review ?? reservation.review_written ?? false,
+        hasReview:
+          reservation.can_write_review !== undefined ? !reservation.can_write_review : false,
       };
     },
     [formatReservationDate, normalizeStatus, t]
@@ -344,19 +339,59 @@ export default function MyBookingsPage() {
                   </div>
                 </div>
                 <div css={actionRow}>
-                  <button css={bookAgainButton}>
+                  <button
+                    css={bookAgainButton}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (!reservation.companyId || !reservation.programId) return;
+                      router.push({
+                        pathname: `/${currentLocale}${ROUTES.RESERVATIONS}`,
+                        query: {
+                          companyId: reservation.companyId,
+                          programId: reservation.programId,
+                        },
+                      });
+                    }}
+                  >
                     <Text typo="body_M" color="text_secondary">
                       {t('bookAgain')}
                     </Text>
                   </button>
                   {reservation.hasReview ? (
-                    <button css={viewReviewButton}>
+                    <button
+                      css={viewReviewButton}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        router.push(`/${currentLocale}${ROUTES.MYPAGE_REVIEWS}`);
+                      }}
+                    >
                       <Text typo="body_M" color="white">
                         {t('viewReview')}
                       </Text>
                     </button>
                   ) : (
-                    <button css={writeReviewButton}>
+                    <button
+                      css={writeReviewButton}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        const schedule = reservation.date || '-';
+                        if (typeof window !== 'undefined') {
+                          window.sessionStorage.setItem(
+                            'review_draft',
+                            JSON.stringify({
+                              reservationId: reservation.id,
+                              companyId: reservation.companyId,
+                              programId: reservation.programId,
+                              companyName: reservation.clinicName,
+                              programName: reservation.title,
+                              schedule,
+                              programImage: reservation.image,
+                            })
+                          );
+                        }
+                        router.push(`/${currentLocale}${ROUTES.REVIEW}`);
+                      }}
+                    >
                       <Text typo="body_M" color="white">
                         {t('writeReview')}
                       </Text>
