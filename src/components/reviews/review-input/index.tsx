@@ -22,7 +22,7 @@ interface ReviewInputCardProps {
 
 const MIN_REVIEW_LENGTH = 10;
 const MAX_REVIEW_LENGTH = 400;
-const MAX_IMAGES = 10;
+const MAX_IMAGES = 5;
 
 export function ReviewInputCard({
   reviewText,
@@ -49,6 +49,9 @@ export function ReviewInputCard({
         <ImageInput
           maxLength={MAX_IMAGES}
           onChange={handleImageChange}
+          onExceedMaxLength={(maxLength) => {
+            alert(t('imageLimit', { count: maxLength }));
+          }}
           defaultValue={selectedImages}
         />
       </div>
