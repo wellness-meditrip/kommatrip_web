@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { DefaultProfile, ReviewFold, ReviewUnfold, Clock, Wallet, ChevronRight } from '@/icons';
 import { ROUTES } from '@/constants';
+import { useTranslations } from 'next-intl';
 import {
   clampText,
   reviewerInfo,
@@ -21,6 +22,11 @@ import {
   programMetaRow,
   programMeta,
   programArrow,
+  menuButton,
+  menuDots,
+  menuDot,
+  actionArea,
+  reportButton,
 } from './index.styles';
 import dayjs from 'dayjs';
 
@@ -39,9 +45,12 @@ interface Props {
   programDurationMinutes?: number | null;
   programImageUrl?: string | null;
   onCardClick?: () => void;
+  onMenuClick?: (reviewId: number) => void;
+  onReportClick?: (reviewId: number) => void;
 }
 
 export function Card({
+  reviewId,
   keywordReviewList,
   reviewerName,
   reviewerImageUrl,
@@ -55,9 +64,12 @@ export function Card({
   programDurationMinutes,
   programImageUrl,
   onCardClick,
+  onMenuClick,
+  onReportClick,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const router = useRouter();
+  const t = useTranslations('review');
 
   const handleProgramClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -78,7 +90,7 @@ export function Card({
       <div css={top}>
         <div css={reviewerInfo}>
           {reviewerImageUrl ? (
-            <Image src={reviewerImageUrl} alt="리뷰 작성자 이미지" width={50} height={50} />
+            <Image src={reviewerImageUrl} alt={t('reviewerImageAlt')} width={50} height={50} />
           ) : (
             <DefaultProfile width={50} height={50} />
             // <Image src="/default.png" alt="기본 이미지" width={50} height={50} />
@@ -90,9 +102,43 @@ export function Card({
             {reviewerName}
           </Text>
           <Text typo="body_S" color="text_secondary">
-            {`First-time visitor | ${dayjs(createdAt).format('YY.MM.DD')} 방문`}
+            {t('firstTimeVisitorMeta', { date: dayjs(createdAt).format('YY.MM.DD') })}
           </Text>
         </div>
+
+        {(onMenuClick || onReportClick) && (
+          <div css={actionArea}>
+            {onReportClick && (
+              <button
+                css={reportButton}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onReportClick(reviewId);
+                }}
+              >
+                <Text typo="body_S" color="text_tertiary">
+                  {t('report.action')}
+                </Text>
+              </button>
+            )}
+            {onMenuClick && (
+              <button
+                css={menuButton}
+                aria-label={t('moreOptions')}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onMenuClick(reviewId);
+                }}
+              >
+                <span css={menuDots}>
+                  <span css={menuDot} />
+                  <span css={menuDot} />
+                  <span css={menuDot} />
+                </span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {programName && (
@@ -129,8 +175,14 @@ export function Card({
 
       {imageUrlList && !!imageUrlList?.length && (
         <div css={imageWrapper}>
-          {imageUrlList?.map((url) => (
-            <Image key={url} src={url} alt="리뷰 이미지" width={120} height={120} />
+          {imageUrlList?.map((url, index) => (
+            <Image
+              key={url}
+              src={url}
+              alt={t('reviewImageAlt', { index: index + 1 })}
+              width={120}
+              height={120}
+            />
           ))}
         </div>
       )}

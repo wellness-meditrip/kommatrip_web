@@ -1,1 +1,94 @@
-{}
+{
+  "title": "予約",
+  "loading": "読み込み中...",
+  "emptyCompany": "予約できる店舗情報がありません。",
+  "submitPayment": "お支払いへ",
+  "form": {
+    "programs": {
+      "title": "プログラム",
+      "empty": "表示できるプログラムがありません。",
+      "minutes": "分"
+    },
+    "contact": {
+      "title": "連絡先情報",
+      "email": "メール",
+      "emailPlaceholder": "Elena123@email.com",
+      "preferredMethod": "連絡方法",
+      "contactPlaceholder": "Elena122",
+      "language": "言語",
+      "languages": {
+        "korean": "韓国語",
+        "english": "英語",
+        "chinese": "中国語",
+        "japanese": "日本語"
+      },
+      "methods": {
+        "line": "Line",
+        "whatsapp": "Whats App",
+        "kakao": "Kakao",
+        "phone": "電話"
+      }
+    },
+    "inquiries": {
+      "title": "お問い合わせ",
+      "subtitle": "ご要望を教えてください（任意）",
+      "concernsTitle": "海外のお客様から多いご相談:",
+      "placeholder": "ご要望を入力してください",
+      "concerns": {
+        "firstTime": "韓国のクリニックは初めてです",
+        "sensitiveSkin": "敏感肌/アレルギーがあります",
+        "needEnglish": "施術中に英語の説明が必要です",
+        "gentlePressure": "マッサージはやさしめ希望です",
+        "specificAreas": "特定の部位が気になります"
+      }
+    },
+    "schedule": {
+      "title": "予約",
+      "selectDates": "01. 希望日を最大2つ選択してください",
+      "selectTimes": "02. 可能な時間を最大3つ選択してください",
+      "emptyDatePrompt": "まず希望日を選択してください。",
+      "selectTimesPlaceholder": "時間を選択"
+    }
+  },
+  "validation": {
+    "selectProgram": "プログラムを選択してください。",
+    "selectContact": "連絡方法を選択してください。",
+    "enterContact": "連絡先情報を入力してください。",
+    "selectDate": "訪問日を選択してください。",
+    "pastDate": "過去の日付は選択できません。",
+    "selectTimesPerDate": "選択した日ごとに時間を選択してください。",
+    "selectTimeSlot": "訪問時間帯を選択してください。",
+    "duplicateTimes": "同じ時間帯は選択できません。",
+    "programNotFound": "選択したプログラムが見つかりません。",
+    "companyNotFound": "店舗情報を読み込めませんでした。"
+  },
+  "payment": {
+    "title": "お支払い",
+    "missingDraft": "お支払い情報が見つかりません。",
+    "bookingInfo": "予約情報",
+    "date": "日付",
+    "time": "時間",
+    "program": "プログラム",
+    "paymentMethod": "支払い方法",
+    "payOnSite": "現地で支払い",
+    "paymentAmount": "支払い金額",
+    "paymentAmountLabel": "支払い金額",
+    "finalPaymentAmount": "最終支払い金額",
+    "bookNow": "予約する",
+    "submitTitle": "予約を送信しますか？",
+    "submitDescription": "予約内容を確認してください。送信後、提供先にリクエストが送られます。",
+    "cancel": "キャンセル",
+    "submit": "送信",
+    "toastMissingDraft": "予約情報が見つかりません。",
+    "toastFailed": "予約の送信に失敗しました。もう一度お試しください。",
+    "currency": "KRW",
+    "minutes": "分"
+  },
+  "complete": {
+    "title": "予約リクエストを送信しました！",
+    "subtitle": "確認後にご連絡します。",
+    "missingData": "予約情報が見つかりません。",
+    "cta": "予約履歴",
+    "dateTime": "{date} {time}"
+  }
+}

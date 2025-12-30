@@ -54,6 +54,7 @@ export * from './Logo';
 export * from './LogoDark';
 export * from './MypageActive';
 export * from './MypageInactive';
+export * from './PaymentLocation';
 export * from './ReviewAi';
 export * from './ReviewFold';
 export * from './ReviewStarFilled';

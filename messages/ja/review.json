@@ -23,11 +23,53 @@
   "updating": "レビューを更新中...",
   "updatingButton": "更新中...",
   "updateButton": "レビューを更新",
-  "missingFields": "評価・キーワード・内容をすべて入力してください。",
+  "missingFields": "キーワードとレビュー内容を入力してください。",
   "imageUploadFail": "画像のアップロードに失敗しました。",
   "createSuccess": "レビューを投稿しました！",
   "createFail": "レビュー投稿に失敗しました",
   "createTitle": "レビュー作成",
   "creating": "レビューを投稿中...",
-  "createButton": "レビューを投稿"
+  "createButton": "レビューを投稿",
+  "programInfo": {
+    "visitedDate": "来訪日",
+    "location": "場所"
+  },
+  "keywords": {
+    "title": "良かった点は？",
+    "subtitle": "当てはまるキーワードを選んでください。",
+    "other": "その他",
+    "maxAlert": "キーワードは最大5つまで選択できます。"
+  },
+  "firstTimeVisitorMeta": "初回訪問 | {date} 訪問",
+  "reviewerImageAlt": "レビュー作成者のプロフィール画像",
+  "reviewImageAlt": "レビュー画像 {index}",
+  "moreOptions": "その他のオプション",
+  "report": {
+    "action": "通報する",
+    "title": "通報理由",
+    "placeholder": "通報内容を入力してください。",
+    "submit": "通報を送信",
+    "close": "閉じる",
+    "errors": {
+      "unauthorized": "通報にはログインが必要です。",
+      "forbidden": "自分のレビューは通報できません。",
+      "notFound": "レビューが見つかりません。",
+      "duplicate": "すでに通報済みです。",
+      "failed": "通報の送信に失敗しました。"
+    },
+    "reasons": {
+      "commercial": "広告・宣伝",
+      "harmful": "有害・わいせつな内容",
+      "offensive": "誹謗中傷・攻撃的な言葉",
+      "privacy": "個人情報の露出",
+      "other": "その他"
+    }
+  },
+  "aiConsent": {
+    "title": "AIレビュー同意",
+    "description": "レビューは技術、研究、カスタマーサポートの改善に利用される場合があります。",
+    "agreement": "レビューの収集と利用に同意します。",
+    "requiredAlert": "AIレビュー同意にチェックしてください。"
+  },
+  "missingReservation": "予約情報が見つかりません。"
 }

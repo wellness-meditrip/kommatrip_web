@@ -1,1 +1,94 @@
-{}
+{
+  "title": "예약",
+  "loading": "로딩 중...",
+  "emptyCompany": "예약할 업체 정보가 없습니다.",
+  "submitPayment": "결제하기",
+  "form": {
+    "programs": {
+      "title": "프로그램",
+      "empty": "표시할 프로그램이 없습니다.",
+      "minutes": "분"
+    },
+    "contact": {
+      "title": "연락처 정보",
+      "email": "이메일",
+      "emailPlaceholder": "Elena123@email.com",
+      "preferredMethod": "연락 방법",
+      "contactPlaceholder": "Elena122",
+      "language": "언어 선택",
+      "languages": {
+        "korean": "한국어",
+        "english": "English",
+        "chinese": "中文",
+        "japanese": "日本語"
+      },
+      "methods": {
+        "line": "Line",
+        "whatsapp": "Whats App",
+        "kakao": "Kakao",
+        "phone": "전화"
+      }
+    },
+    "inquiries": {
+      "title": "문의사항",
+      "subtitle": "요청사항이 있으면 알려주세요 (선택)",
+      "concernsTitle": "해외 방문객이 자주 묻는 질문:",
+      "placeholder": "요청사항을 입력해 주세요",
+      "concerns": {
+        "firstTime": "한국 클리닉이 처음이에요",
+        "sensitiveSkin": "민감한 피부/알레르기가 있어요",
+        "needEnglish": "시술 중 영어 안내가 필요해요",
+        "gentlePressure": "마사지 압은 부드럽게 받고 싶어요",
+        "specificAreas": "특정 부위가 고민이에요"
+      }
+    },
+    "schedule": {
+      "title": "예약",
+      "selectDates": "01. 선호 날짜를 최대 2개 선택해 주세요",
+      "selectTimes": "02. 가능한 시간을 최대 3개 선택해 주세요",
+      "emptyDatePrompt": "먼저 선호 날짜를 선택해 주세요.",
+      "selectTimesPlaceholder": "시간 선택"
+    }
+  },
+  "validation": {
+    "selectProgram": "프로그램을 선택해 주세요.",
+    "selectContact": "연락 방법을 선택해 주세요.",
+    "enterContact": "연락처 정보를 입력해 주세요.",
+    "selectDate": "방문 날짜를 선택해 주세요.",
+    "pastDate": "지난 날짜는 선택할 수 없습니다.",
+    "selectTimesPerDate": "선택한 날짜마다 시간을 선택해 주세요.",
+    "selectTimeSlot": "방문 시간대를 선택해 주세요.",
+    "duplicateTimes": "중복된 시간대를 선택할 수 없습니다.",
+    "programNotFound": "선택한 프로그램 정보를 찾을 수 없습니다.",
+    "companyNotFound": "업체 정보를 불러오지 못했습니다."
+  },
+  "payment": {
+    "title": "결제",
+    "missingDraft": "결제 정보를 찾을 수 없습니다.",
+    "bookingInfo": "예약 정보",
+    "date": "날짜",
+    "time": "시간",
+    "program": "프로그램",
+    "paymentMethod": "결제 방법",
+    "payOnSite": "현장 결제",
+    "paymentAmount": "결제 금액",
+    "paymentAmountLabel": "결제 금액",
+    "finalPaymentAmount": "최종 결제 금액",
+    "bookNow": "예약하기",
+    "submitTitle": "예약을 접수할까요?",
+    "submitDescription": "입력한 예약 정보가 맞는지 확인해 주세요. 접수 후 업체로 전달됩니다.",
+    "cancel": "취소",
+    "submit": "접수",
+    "toastMissingDraft": "예약 정보를 찾을 수 없습니다.",
+    "toastFailed": "예약 요청에 실패했습니다. 다시 시도해 주세요.",
+    "currency": "KRW",
+    "minutes": "분"
+  },
+  "complete": {
+    "title": "예약 요청이 접수되었습니다!",
+    "subtitle": "검토 후 확정 안내를 드릴게요.",
+    "missingData": "예약 정보를 찾을 수 없습니다.",
+    "cta": "예약 내역",
+    "dateTime": "{date} {time}"
+  }
+}

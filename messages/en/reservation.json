@@ -1,1 +1,94 @@
-{}
+{
+  "title": "Reservation",
+  "loading": "Loading...",
+  "emptyCompany": "No company information available for reservation.",
+  "submitPayment": "Proceed to Payment",
+  "form": {
+    "programs": {
+      "title": "Programs",
+      "empty": "No programs available.",
+      "minutes": "min"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "email": "Email",
+      "emailPlaceholder": "Elena123@email.com",
+      "preferredMethod": "Preferred Contact Method",
+      "contactPlaceholder": "Elena122",
+      "language": "Language Preference",
+      "languages": {
+        "korean": "Korean",
+        "english": "English",
+        "chinese": "Chinese",
+        "japanese": "Japanese"
+      },
+      "methods": {
+        "line": "Line",
+        "whatsapp": "Whats App",
+        "kakao": "Kakao",
+        "phone": "Phone"
+      }
+    },
+    "inquiries": {
+      "title": "Inquiries",
+      "subtitle": "Tell us about your needs (Optional)",
+      "concernsTitle": "Common concerns for international visitors:",
+      "placeholder": "Write about your needs",
+      "concerns": {
+        "firstTime": "This is my first time at a Korean clinic",
+        "sensitiveSkin": "I have sensitive skin/allergies",
+        "needEnglish": "I need English explanation during treatment",
+        "gentlePressure": "I prefer gentle pressure during massage",
+        "specificAreas": "I have specific areas of concern"
+      }
+    },
+    "schedule": {
+      "title": "Reservation",
+      "selectDates": "01. Select up to 2 preferred dates",
+      "selectTimes": "02. Select up to 3 available times",
+      "emptyDatePrompt": "Please select your first preferred date.",
+      "selectTimesPlaceholder": "Select times"
+    }
+  },
+  "validation": {
+    "selectProgram": "Please select a program.",
+    "selectContact": "Please choose a contact method.",
+    "enterContact": "Please enter your contact info.",
+    "selectDate": "Please select a visit date.",
+    "pastDate": "You can't select past dates.",
+    "selectTimesPerDate": "Please select times for each chosen date.",
+    "selectTimeSlot": "Please select visit time slots.",
+    "duplicateTimes": "You can't select duplicate time slots.",
+    "programNotFound": "Unable to find the selected program.",
+    "companyNotFound": "Unable to load company information."
+  },
+  "payment": {
+    "title": "Payment",
+    "missingDraft": "Payment information not found.",
+    "bookingInfo": "Booking Info",
+    "date": "Date",
+    "time": "Time",
+    "program": "Program",
+    "paymentMethod": "Payment Method",
+    "payOnSite": "Pay on site",
+    "paymentAmount": "Payment Amount",
+    "paymentAmountLabel": "Payment Amount",
+    "finalPaymentAmount": "Final Payment Amount",
+    "bookNow": "Book Now",
+    "submitTitle": "Submit Your Reservation?",
+    "submitDescription": "Please make sure your reservation details are correct. Once submitted, the request will be sent to the provider.",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "toastMissingDraft": "Reservation details not found.",
+    "toastFailed": "Failed to submit reservation. Please try again.",
+    "currency": "KRW",
+    "minutes": "min"
+  },
+  "complete": {
+    "title": "Your reservation request has been submitted!",
+    "subtitle": "We will confirm it after review.",
+    "missingData": "Reservation details not found.",
+    "cta": "My Bookings",
+    "dateTime": "{date} at {time}"
+  }
+}

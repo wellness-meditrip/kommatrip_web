@@ -20,11 +20,13 @@ import { css } from '@emotion/react';
 import { filterCompanies } from '@/utils/search';
 import type { Company } from '@/models';
 import { useTranslations } from 'next-intl';
+import { useCurrentLocale } from '@/i18n/navigation';
 
 // 업체 리스트 페이지
 export default function CompanyPage() {
   const router = useRouter();
   const t = useTranslations('company');
+  const currentLocale = useCurrentLocale();
   const { q, categories, date, endDate } = router.query;
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
@@ -138,7 +140,7 @@ export default function CompanyPage() {
   };
 
   const handleDateSelect = () => {
-    router.push(ROUTES.SEARCH);
+    router.push(`/${currentLocale}${ROUTES.SEARCH}`);
   };
 
   const handleToggleCategory = (categoryId: string) => {
@@ -163,7 +165,7 @@ export default function CompanyPage() {
 
     router.push(
       {
-        pathname: '/company',
+        pathname: `/${currentLocale}/company`,
         query,
       },
       undefined,
@@ -188,7 +190,7 @@ export default function CompanyPage() {
 
     router.push(
       {
-        pathname: '/company',
+        pathname: `/${currentLocale}/company`,
         query,
       },
       undefined,
@@ -266,7 +268,7 @@ export default function CompanyPage() {
               isExclusive={company.is_exclusive}
               fixedHeight={true}
               onClick={(companyId: number) => {
-                router.push(ROUTES.COMPANY_DETAIL(companyId));
+                router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
               }}
               images={company.photos || []}
             />

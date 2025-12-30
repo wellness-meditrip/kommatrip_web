@@ -1,68 +1,159 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useDialog } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { convertKeywordNamesToRequestPayload } from '@/utils';
 import {
-  wrapper,
-  header,
-  content,
-  item,
-  image,
-  container,
+  pageWrapper,
+  contentContainer,
   loadingContainer,
-  submitButton,
+  submitButtonContainer,
+  programInfoCard,
+  programInfoRow,
+  programInfoCol,
+  programInfoMetaGroup,
+  programInfoMetaRow,
+  programImageWrapper,
+  programImage,
+  keywordCard,
+  keywordHeaderGroup,
+  keywordTitleRow,
+  keywordGroup,
+  tagList,
+  tagChip,
+  requiredMark,
+  aiConsentCard,
+  aiConsentHeaderRow,
+  aiConsentDescription,
+  aiConsentRow,
+  aiConsentCheckbox,
+  aiConsentLabel,
 } from '@/styles/pages/review.styles';
-import { KeywordCard, RatingCard, ReviewInputCard } from '@/components/reviews';
-import { CLINIC_REVIEW_KEYWORDS } from '@/constants/review';
+import { ReviewInputCard } from '@/components/reviews';
 import { usePostClinicReviewMutation } from '@/queries';
 import { Loading } from '@/components/common';
-import { useS3 } from '@/hooks/use-s3';
+import { useCurrentLocale } from '@/i18n/navigation';
+import { useAuthStore } from '@/store/auth';
+import { useGetReservationDetailQuery } from '@/queries/reservation';
 
-const MOCK_DATA = {
-  recipientName: '우주연 한의원',
-  shopName: '다이어트 패키지',
-  schedule: '2025-08-02T14:00:00',
-} as const;
-
-const MOCK_RESERVATION_DATA = {
-  hospital_id: 1,
-  user_id: 1,
-  doctor_id: 1,
-  doctor_name: '홍길동',
-  partnerName: '우주연 한의원',
-  shopName: '다이어트 패키지',
-  schedule: '2025-08-02T14:00:00',
-} as const;
+interface ReviewDraft {
+  reservationId?: number;
+  companyId?: number;
+  programId?: number;
+  companyName?: string;
+  programName?: string;
+  schedule?: string;
+  programImage?: string;
+}
 
 export default function ReviewPage() {
-  const [rating, setRating] = useState<number>(0);
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
+  const [aiConsentChecked, setAiConsentChecked] = useState(false);
 
   const router = useRouter();
   const t = useTranslations('review');
+  const tTags = useTranslations('review-list');
   const { showToast } = useToast();
   const { open } = useDialog();
   const { mutate, isPending } = usePostClinicReviewMutation();
-  const { uploadToS3 } = useS3({ targetFolderPath: 'user/review-images' });
+  const currentLocale = useCurrentLocale();
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const accessToken = useAuthStore((state) => state.accessToken);
 
-  const keywordNames = CLINIC_REVIEW_KEYWORDS.map((k) => k.keyword_name);
+  const reservationId = reviewDraft?.reservationId;
+  const programId = reviewDraft?.programId;
+  const parsedReservationId =
+    typeof reservationId === 'number' ? reservationId : Number(reservationId);
+  const { data: reservationDetailResponse } = useGetReservationDetailQuery(
+    parsedReservationId,
+    Boolean(parsedReservationId && accessToken)
+  );
+  const reservationDetail = reservationDetailResponse?.reservation;
+  const resolvedReservationId = parsedReservationId || reservationDetail?.id;
+  const resolvedProgramId = programId ?? reservationDetail?.program_id;
 
-  const toggleExpand = () => setIsExpanded((prev) => !prev);
+  const displayRecipient = reviewDraft?.companyName ?? reservationDetail?.company_address ?? '-';
+  const displayShop = reservationDetail?.program_info?.name ?? reviewDraft?.programName ?? '-';
+  const displaySchedule = reservationDetail?.visit_date ?? reviewDraft?.schedule ?? '-';
+  const programImageFromApi =
+    reservationDetail?.program_info?.primary_image_url ||
+    reservationDetail?.program_info?.image_urls?.[0];
+  const displayImage = programImageFromApi || reviewDraft?.programImage || '/default.png';
+
+  const formattedSchedule = useMemo(() => {
+    if (!displaySchedule || displaySchedule === '-') return '-';
+    const parsed = new Date(displaySchedule);
+    if (Number.isNaN(parsed.getTime())) return displaySchedule;
+    const dateParts = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      weekday: 'short',
+    }).formatToParts(parsed);
+    const getPart = (type: string) => dateParts.find((part) => part.type === type)?.value ?? '';
+    const year = getPart('year');
+    const month = getPart('month');
+    const day = getPart('day');
+    const weekday = getPart('weekday');
+    const timeText = new Intl.DateTimeFormat(locale, {
+      hour: 'numeric',
+      minute: '2-digit',
+    }).format(parsed);
+    return `${year}.${month}.${day} (${weekday}) ${timeText}`;
+  }, [displaySchedule, locale]);
+
+  const tagCategories = useMemo(
+    () => [
+      {
+        title: tTags('tagCategories.transport'),
+        tags: [
+          { value: 'Near Subway', label: tTags('tags.nearSubway') },
+          { value: 'Easy to find', label: tTags('tags.easyToFind') },
+          { value: 'Easy by bus', label: tTags('tags.easyByBus') },
+          { value: 'Offering Pick-up Service', label: tTags('tags.pickupService') },
+          { value: 'Convenient parking', label: tTags('tags.convenientParking') },
+        ],
+      },
+      {
+        title: tTags('tagCategories.service'),
+        tags: [
+          { value: 'English Support', label: tTags('tags.englishSupport') },
+          { value: 'Japanese Support', label: tTags('tags.japaneseSupport') },
+          { value: 'Chinese Support', label: tTags('tags.chineseSupport') },
+          { value: 'Friendly staff Highly skilled', label: tTags('tags.friendlySkilled') },
+          { value: 'No hard sell', label: tTags('tags.noHardSell') },
+          { value: 'Reasonable price', label: tTags('tags.reasonablePrice') },
+          { value: 'Pricey but worth it', label: tTags('tags.priceyWorthIt') },
+        ],
+      },
+      {
+        title: tTags('tagCategories.space'),
+        tags: [
+          { value: 'Great atmosphere', label: tTags('tags.greatAtmosphere') },
+          { value: 'Very clean', label: tTags('tags.veryClean') },
+          { value: 'Traditional Korean Style', label: tTags('tags.traditionalKorean') },
+        ],
+      },
+      {
+        title: t('keywords.other'),
+        tags: [{ value: 'Will visit again', label: tTags('tags.willVisitAgain') }],
+      },
+    ],
+    [t, tTags]
+  );
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+      prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]
     );
   };
 
   const validateForm = () => {
-    if (!rating || !reviewText || selectedTags.length === 0) {
+    if (!reviewText || selectedTags.length === 0) {
       alert(t('missingFields'));
       return false;
     }
@@ -72,21 +163,34 @@ export default function ReviewPage() {
       return false;
     }
 
+    if (!resolvedReservationId || !resolvedProgramId) {
+      alert(t('missingReservation'));
+      return false;
+    }
+
+    if (!aiConsentChecked) {
+      alert(t('aiConsent.requiredAlert'));
+      return false;
+    }
+
     return true;
   };
 
-  const uploadImages = async (): Promise<string[]> => {
-    if (selectedImages.length === 0) return [];
-
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.sessionStorage.getItem('review_draft');
+    if (!stored) return;
     try {
-      return await uploadToS3(selectedImages);
-    } catch (error) {
-      alert(t('imageUploadFail'));
-      throw error;
+      setReviewDraft(JSON.parse(stored));
+    } catch {
+      window.sessionStorage.removeItem('review_draft');
     }
-  };
+  }, []);
 
   const getErrorMessage = (error: unknown): string => {
+    if (typeof error === 'string') {
+      return error;
+    }
     if (error && typeof error === 'object' && 'response' in error) {
       const axiosError = error as { response?: { data?: unknown; status?: number } };
 
@@ -105,33 +209,51 @@ export default function ReviewPage() {
         return t('forbidden');
       }
     }
-    return '알 수 없는 오류가 발생했습니다.';
+    if (error && typeof error === 'object') {
+      if ('message' in error && typeof error.message === 'string') {
+        return error.message;
+      }
+      if ('detail' in error && typeof error.detail === 'string') {
+        return error.detail;
+      }
+      if ('error' in error && error.error && typeof error.error === 'object') {
+        const nested = error.error as { message?: unknown; detail?: unknown };
+        if (typeof nested.message === 'string') {
+          return nested.message;
+        }
+        if (typeof nested.detail === 'string') {
+          return nested.detail;
+        }
+      }
+    }
+    return t('unknownError');
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     try {
-      const imageUrls = await uploadImages();
-      const mappedKeywords = convertKeywordNamesToRequestPayload(selectedTags);
-
-      const body = {
-        hospital_id: MOCK_RESERVATION_DATA.hospital_id,
-        user_id: MOCK_RESERVATION_DATA.user_id,
-        doctor_id: MOCK_RESERVATION_DATA.doctor_id,
-        doctor_name: MOCK_RESERVATION_DATA.doctor_name,
-        title: `${MOCK_RESERVATION_DATA.shopName} 후기`,
-        content: reviewText,
-        rating,
-        keywords: mappedKeywords,
-        images: imageUrls,
-      };
+      const body = new FormData();
+      body.append('reservation_id', String(resolvedReservationId));
+      body.append('program_id', String(resolvedProgramId));
+      body.append('ai_consent', String(aiConsentChecked));
+      body.append('content', reviewText);
+      if (selectedTags.length > 0) {
+        body.append('tags', selectedTags.join(','));
+      }
+      selectedImages.slice(0, 5).forEach((file) => {
+        body.append('image_files', file);
+      });
 
       mutate(body, {
-        onSuccess: () => {
-          showToast({ title: t('createSuccess') });
-          // 성공 시 마이페이지로 이동
-          router.push('/mypage');
+        onSuccess: (response) => {
+          const successMessage =
+            response && typeof response === 'object' && 'message' in response
+              ? String(response.message)
+              : t('createSuccess');
+          showToast({ title: successMessage });
+          // 성공 시 메인 페이지로 이동
+          router.push(`/${currentLocale}`);
         },
         onError: (error: unknown) => {
           const errorMessage = getErrorMessage(error);
@@ -144,54 +266,97 @@ export default function ReviewPage() {
         },
       });
     } catch {
-      // 이미지 업로드 실패 시 여기서 처리됨
+      // 요청 실패 시 여기서 처리됨
     }
   };
 
   return (
-    <Layout>
-      <AppBar onBackClick={router.back} leftButton={true} title={t('createTitle')} />
-      <div css={wrapper}>
-        <div css={header}>
-          <Image src="/default.png" alt="기본 이미지" width={72} height={72} css={image} />
-          <div css={content}>
-            <Text typo="title_M">{MOCK_DATA.recipientName}</Text>
-            <div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  {t('serviceItem')}
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {MOCK_DATA.shopName}
-                </Text>
-              </div>
-              <div css={item}>
-                <Text typo="body_M" color="text_tertiary">
-                  {t('visitDate')}
-                </Text>
-                <Text typo="button_M" color="text_secondary">
-                  {MOCK_DATA.schedule}
-                </Text>
-              </div>
-            </div>
-          </div>
-        </div>
+    <Layout isAppBarExist={false}>
+      <AppBar
+        onBackClick={router.back}
+        leftButton={true}
+        buttonType="dark"
+        title={t('createTitle')}
+      />
+      <div css={pageWrapper}>
         {isPending ? (
           <div css={loadingContainer}>
             <Loading title={t('creating')} fullHeight={true} />
           </div>
         ) : (
           <>
-            <div css={container}>
-              <RatingCard rating={rating} onRatingChange={setRating} />
+            <div css={contentContainer}>
+              <section css={programInfoCard}>
+                <div css={programInfoRow}>
+                  <div css={programImageWrapper}>
+                    <Image src={displayImage} alt={displayShop} fill css={programImage} />
+                  </div>
+                  <div css={programInfoCol}>
+                    <Text typo="title_M" color="text_primary">
+                      {displayShop}
+                    </Text>
+                    <div css={programInfoMetaGroup}>
+                      <div css={programInfoMetaRow}>
+                        <Text typo="body_S" color="text_tertiary">
+                          {t('programInfo.visitedDate')}
+                        </Text>
+                        <Text typo="body_S" color="text_secondary">
+                          {formattedSchedule}
+                        </Text>
+                      </div>
+                      <div css={programInfoMetaRow}>
+                        <Text typo="body_S" color="text_tertiary">
+                          {t('programInfo.location')}
+                        </Text>
+                        <Text typo="body_S" color="text_secondary">
+                          {displayRecipient}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
-              <KeywordCard
-                tags={keywordNames}
-                selectedTags={selectedTags}
-                onTagToggle={handleTagToggle}
-                isExpanded={isExpanded}
-                toggleExpand={toggleExpand}
-              />
+              <section css={keywordCard}>
+                <div css={keywordHeaderGroup}>
+                  <div css={keywordTitleRow}>
+                    <Text typo="title_S" color="text_primary">
+                      {t('keywords.title')}
+                    </Text>
+                    <span css={requiredMark}>*</span>
+                  </div>
+                  <Text typo="body_S" color="text_secondary">
+                    {t('keywords.subtitle')}
+                  </Text>
+                </div>
+                {tagCategories.map((category) => (
+                  <div key={category.title} css={keywordGroup}>
+                    <Text typo="body_M" color="text_primary">
+                      {category.title}
+                    </Text>
+                    <div css={tagList}>
+                      {category.tags.map((tag) => {
+                        const isSelected = selectedTags.includes(tag.value);
+                        return (
+                          <button
+                            key={tag.value}
+                            type="button"
+                            css={tagChip(isSelected)}
+                            onClick={() => handleTagToggle(tag.value)}
+                          >
+                            <Text
+                              typo="button_XS"
+                              color={isSelected ? 'primary60' : 'text_secondary'}
+                            >
+                              {tag.label}
+                            </Text>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </section>
 
               <ReviewInputCard
                 reviewText={reviewText}
@@ -199,14 +364,37 @@ export default function ReviewPage() {
                 selectedImages={selectedImages}
                 setSelectedImages={setSelectedImages}
               />
+
+              <section css={aiConsentCard}>
+                <div css={aiConsentHeaderRow}>
+                  <Text typo="title_S" color="text_primary">
+                    {t('aiConsent.title')}
+                  </Text>
+                  <span css={requiredMark}>*</span>
+                </div>
+                <Text typo="body_S" color="text_secondary" css={aiConsentDescription}>
+                  {t('aiConsent.description')}
+                </Text>
+                <label css={aiConsentRow}>
+                  <input
+                    type="checkbox"
+                    checked={aiConsentChecked}
+                    onChange={(event) => setAiConsentChecked(event.target.checked)}
+                    css={aiConsentCheckbox}
+                  />
+                  <Text typo="body_S" color="text_secondary" css={aiConsentLabel}>
+                    {t('aiConsent.agreement')}
+                  </Text>
+                </label>
+              </section>
             </div>
-            <div css={submitButton}>
+            <div css={submitButtonContainer}>
               <RoundButton
                 service="daengle"
                 size="L"
                 fullWidth
                 onClick={handleSubmit}
-                disabled={!rating || !reviewText || selectedTags.length === 0}
+                disabled={!reviewText || selectedTags.length === 0 || !aiConsentChecked}
               >
                 {t('createButton')}
               </RoundButton>

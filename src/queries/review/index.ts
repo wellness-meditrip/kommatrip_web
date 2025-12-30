@@ -6,9 +6,25 @@ import {
   GetCompanyReviewsParams,
   GetGuestCompanyReviewsParams,
   GetGuestCompanyReviewsResponse,
+  GetMyReviewsParams,
+  GetMyReviewsResponse,
+  UpdateMyReviewRequestBody,
+  ReplaceReviewImagesRequestBody,
+  ReportReviewRequestBody,
+  ReportReviewResponse,
 } from '@/models';
 import { postClinicReview, getReviewDetail, putReview } from '@/apis';
-import { getClinicReviews, getCompanyReviews, getGuestCompanyReviews } from '@/apis/review';
+import {
+  getClinicReviews,
+  getCompanyReviews,
+  getGuestCompanyReviews,
+  getMyReviews,
+  updateMyReview,
+  replaceReviewImages,
+  deleteReview,
+  reportReview,
+  reportGuestReview,
+} from '@/apis/review';
 import { AxiosError } from 'axios';
 
 export const usePostClinicReviewMutation = () => {
@@ -66,6 +82,59 @@ export const usePutReviewMutation = () => {
     mutationFn: ({ reviewId, body }: { reviewId: number; body: PutReviewRequestBody }) =>
       putReview(reviewId, body),
     mutationKey: QUERY_KEYS.PUT_REVIEW,
+  });
+};
+
+export const useGetMyReviewsQuery = (params: GetMyReviewsParams, enabled: boolean = true) => {
+  return useQuery<GetMyReviewsResponse>({
+    queryKey: [...QUERY_KEYS.GET_MY_REVIEWS, params.skip, params.limit],
+    queryFn: () => getMyReviews(params),
+    enabled,
+  });
+};
+
+export const useUpdateMyReviewMutation = () => {
+  return useMutation({
+    mutationKey: QUERY_KEYS.UPDATE_MY_REVIEW,
+    mutationFn: ({ reviewId, body }: { reviewId: number; body: UpdateMyReviewRequestBody }) =>
+      updateMyReview(reviewId, body),
+  });
+};
+
+export const useReplaceReviewImagesMutation = () => {
+  return useMutation({
+    mutationKey: QUERY_KEYS.REPLACE_REVIEW_IMAGES,
+    mutationFn: ({ reviewId, body }: { reviewId: number; body: ReplaceReviewImagesRequestBody }) =>
+      replaceReviewImages(reviewId, body),
+  });
+};
+
+export const useDeleteReviewMutation = () => {
+  return useMutation({
+    mutationKey: QUERY_KEYS.DELETE_REVIEW,
+    mutationFn: ({ reviewId }: { reviewId: number }) => deleteReview(reviewId),
+  });
+};
+
+export const useReportReviewMutation = () => {
+  return useMutation<
+    ReportReviewResponse,
+    unknown,
+    { reviewId: number; body: ReportReviewRequestBody }
+  >({
+    mutationKey: QUERY_KEYS.REPORT_REVIEW,
+    mutationFn: ({ reviewId, body }) => reportReview(reviewId, body),
+  });
+};
+
+export const useReportGuestReviewMutation = () => {
+  return useMutation<
+    ReportReviewResponse,
+    unknown,
+    { reviewId: number; body: ReportReviewRequestBody }
+  >({
+    mutationKey: QUERY_KEYS.REPORT_GUEST_REVIEW,
+    mutationFn: ({ reviewId, body }) => reportGuestReview(reviewId, body),
   });
 };
 

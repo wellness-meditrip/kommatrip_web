@@ -1,5 +1,6 @@
 {
   "title": "レビューを書いてください",
   "placeholder": "レビューを書いてください",
-  "minLengthError": "10文字以上入力してください。"
+  "minLengthError": "10文字以上入力してください。",
+  "imageLimit": "画像は最大{count}枚までアップロードできます。"
 }

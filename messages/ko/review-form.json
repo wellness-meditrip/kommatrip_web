@@ -1,5 +1,6 @@
 {
   "title": "리뷰를 작성해주세요",
   "placeholder": "리뷰를 작성해주세요",
-  "minLengthError": "최소 10글자 이상 작성해주세요."
+  "minLengthError": "최소 10글자 이상 작성해주세요.",
+  "imageLimit": "이미지는 최대 {count}장까지 업로드할 수 있어요."
 }

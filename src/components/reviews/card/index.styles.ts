@@ -99,6 +99,49 @@ export const reviewContent = css`
   min-width: 0;
 `;
 
+export const menuButton = css`
+  margin-left: auto;
+  padding: 4px;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+`;
+
+export const actionArea = css`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-left: auto;
+`;
+
+export const reportButton = css`
+  padding: 4px 6px;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+`;
+
+export const menuDots = css`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+export const menuDot = css`
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+
+  background: ${theme.colors.gray400};
+`;
+
 export const imageWrapper = css`
   display: flex;
   gap: 6px;

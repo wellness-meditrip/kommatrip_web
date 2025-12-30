@@ -4,6 +4,15 @@ import {
   GetReviewDetailResponse,
   PutReviewRequestBody,
   PutReviewResponse,
+  GetMyReviewsParams,
+  GetMyReviewsResponse,
+  UpdateMyReviewRequestBody,
+  UpdateMyReviewResponse,
+  ReplaceReviewImagesRequestBody,
+  ReplaceReviewImagesResponse,
+  DeleteReviewResponse,
+  ReportReviewRequestBody,
+  ReportReviewResponse,
   GetCompanyReviewsParams,
   GetCompanyReviewsResponse,
   GetGuestCompanyReviewsParams,
@@ -13,7 +22,9 @@ import { GetClinicReviewsParams, GetReviewResponse } from '@/models/review';
 import { api, guestApi } from '@/apis/config';
 
 export const postClinicReview = async (body: PostClinicReviewRequestBody) => {
-  return await api.post<PostClinicReviewResponse>('/api/v1/reviews', body);
+  return await api.post<PostClinicReviewResponse>('/api/reviews/', body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 };
 
 export const getClinicReviews = async (params: GetClinicReviewsParams) => {
@@ -26,6 +37,38 @@ export const getReviewDetail = async (reviewId: number) => {
 
 export const putReview = async (reviewId: number, body: PutReviewRequestBody) => {
   return await api.put<PutReviewResponse>(`/api/v1/reviews/${reviewId}`, body);
+};
+
+export const getMyReviews = async (params: GetMyReviewsParams) => {
+  return await api.get<GetMyReviewsResponse>('/api/reviews/me', { params });
+};
+
+export const updateMyReview = async (reviewId: number, body: UpdateMyReviewRequestBody) => {
+  return await api.put<UpdateMyReviewResponse>(`/api/reviews/${reviewId}`, body);
+};
+
+export const replaceReviewImages = async (
+  reviewId: number,
+  body: ReplaceReviewImagesRequestBody
+) => {
+  return await api.put<ReplaceReviewImagesResponse>(`/api/reviews/${reviewId}/images`, body, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+export const deleteReview = async (reviewId: number) => {
+  return await api.delete<DeleteReviewResponse>(`/api/reviews/${reviewId}`);
+};
+
+export const reportReview = async (reviewId: number, body: ReportReviewRequestBody) => {
+  return await api.post<ReportReviewResponse>(`/api/reviews/${reviewId}/report`, body);
+};
+
+export const reportGuestReview = async (guestReviewId: number, body: ReportReviewRequestBody) => {
+  return await api.post<ReportReviewResponse>(
+    `/api/reviews/guest-reviews/${guestReviewId}/report`,
+    body
+  );
 };
 
 // 업체 리뷰 조회

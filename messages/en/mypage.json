@@ -7,7 +7,29 @@
   "reservations": {
     "title": "Reservations",
     "upcoming": "Upcoming",
-    "past": "Past"
+    "past": "Past",
+    "filters": {
+      "total": "Total",
+      "request": "Request",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled",
+      "completed": "Completed"
+    },
+    "status": {
+      "request": "Request",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled",
+      "completed": "Completed"
+    },
+    "loading": "Loading reservations...",
+    "empty": "No reservations yet",
+    "bookAgain": "Book Again",
+    "viewReview": "View My Review",
+    "writeReview": "Write a Review",
+    "fallback": {
+      "program": "Program",
+      "clinic": "Clinic"
+    }
   },
   "reviews": {
     "title": "Reviews",

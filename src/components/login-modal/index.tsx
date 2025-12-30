@@ -3,6 +3,7 @@ import { Dim, Portal, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
+import { useTranslations } from 'next-intl';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface LoginModalProps {
 
 export function LoginModal({ isOpen, onClose, onCancel }: LoginModalProps) {
   const router = useRouter();
+  const t = useTranslations('auth.loginModal');
 
   if (!isOpen) return null;
 
@@ -56,22 +58,22 @@ export function LoginModal({ isOpen, onClose, onCancel }: LoginModalProps) {
 
         <div css={contentContainer}>
           <Text typo="title_M" color="text_primary" css={title}>
-            Sign in to continue
+            {t('title')}
           </Text>
           <Text typo="body_M" color="text_secondary" css={description}>
-            Create account to unlock curated Korean Wellness Programs
+            {t('description')}
           </Text>
         </div>
 
         <div css={buttonContainer}>
           <button css={cancelButton} onClick={handleCancel}>
             <Text typo="button_M" color="primary50">
-              Cancel
+              {t('cancel')}
             </Text>
           </button>
           <button css={loginButton} onClick={handleLogin}>
             <Text typo="button_M" color="white">
-              Login
+              {t('login')}
             </Text>
           </button>
         </div>

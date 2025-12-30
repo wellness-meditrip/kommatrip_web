@@ -15,6 +15,23 @@ export function useAuthSync() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const refreshAttempted = useRef(false);
+  const refreshFromSessionAttempted = useRef(false);
+
+  const parseJwtPayload = (token: string) => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload) as { exp?: number; type?: string };
+    } catch {
+      return null;
+    }
+  };
 
   // Google 로그인 성공 시 토큰 저장
   useEffect(() => {
@@ -28,6 +45,37 @@ export function useAuthSync() {
     const refreshToken = session.refreshToken;
     if (refreshToken) {
       setCookie('refreshToken', refreshToken, 7); // 7일
+    }
+  }, [session, status]);
+
+  // Google 로그인 세션도 accessToken 만료 시 재발급
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session?.accessToken) return;
+    if (refreshFromSessionAttempted.current) return;
+
+    const payload = parseJwtPayload(session.accessToken);
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    const isExpired = payload?.exp ? payload.exp <= nowInSeconds + 10 : true;
+    const isAccessToken = payload?.type === 'access';
+
+    if (!payload || isExpired || !isAccessToken) {
+      refreshFromSessionAttempted.current = true;
+      beginAuthRefresh();
+      postTokenReissue()
+        .then((response) => {
+          const newAccessToken = response.tokens.access_token;
+          if (newAccessToken) {
+            useAuthStore.getState().setAccessToken(newAccessToken);
+          }
+          resolveAuthRefresh();
+        })
+        .catch((error) => {
+          console.error('[AuthSync] session token reissue failed', error);
+          useAuthStore.getState().clearAuth();
+          deleteCookie('refreshToken');
+          rejectAuthRefresh(error);
+        });
     }
   }, [session, status]);
 

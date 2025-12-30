@@ -1,105 +1,212 @@
-import { useState } from 'react';
-import { Layout, GNB, Text, AppBar } from '@/components';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Layout, GNB, Text, AppBar, Loading, Empty, LoginModal } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { ArrowDown } from '@/icons';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { useGetReservationsQuery } from '@/queries/reservation';
+import { useRequireAuth } from '@/hooks';
+import { ReservationListItem } from '@/models/reservation';
+import { useAuthStore } from '@/store/auth';
+import { useCurrentLocale } from '@/i18n/navigation';
+import { useRouter } from 'next/router';
+import { ROUTES } from '@/constants';
 
 type ReservationStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 type FilterStatus = 'total' | 'request' | 'confirmed' | 'canceled' | 'completed';
 
-interface Reservation {
+interface ReservationCard {
   id: number;
   image: string;
   title: string;
   clinicName: string;
+  companyId?: number;
+  providerAddress?: string;
+  programId?: number;
   date: string;
+  visitDate?: string;
+  visitTime?: string;
   status: ReservationStatus;
   hasReview?: boolean;
 }
 
-const mockReservations: Reservation[] = [
-  {
-    id: 1,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'request',
-  },
-  {
-    id: 2,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 19, 2025 (Sun) 10:00 AM',
-    status: 'canceled',
-  },
-  {
-    id: 3,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 15, 2025 (Wed) 10:00 AM',
-    status: 'confirmed',
-  },
-  {
-    id: 4,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'completed',
-    hasReview: false,
-  },
-  {
-    id: 5,
-    image: '/default.png',
-    title: 'Diat Package',
-    clinicName: 'Woojooyon Clinic',
-    date: 'Oct 21, 2025 (Tue) 10:00 AM',
-    status: 'completed',
-    hasReview: true,
-  },
-];
-
-const filterOptions: { value: FilterStatus; label: string }[] = [
-  { value: 'total', label: 'Total' },
-  { value: 'request', label: 'Request' },
-  { value: 'confirmed', label: 'Confirmed' },
-  { value: 'canceled', label: 'Canceled' },
-  { value: 'completed', label: 'Completed' },
-];
-
 export default function MyBookingsPage() {
+  const t = useTranslations('mypage.reservations');
+  const router = useRouter();
+  const currentLocale = useCurrentLocale();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
+    useRequireAuth(true);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
 
-  const filteredReservations = mockReservations.filter((reservation) => {
-    if (selectedFilter === 'total') return true;
-    return reservation.status === selectedFilter;
-  });
+  const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
+    () => [
+      { value: 'total', label: t('filters.total') },
+      { value: 'request', label: t('filters.request') },
+      { value: 'confirmed', label: t('filters.confirmed') },
+      { value: 'canceled', label: t('filters.canceled') },
+      { value: 'completed', label: t('filters.completed') },
+    ],
+    [t]
+  );
 
-  const upcomingReservations = filteredReservations.filter((r) => r.status !== 'completed');
-  const completedReservations = filteredReservations.filter((r) => r.status === 'completed');
+  const statusParam = selectedFilter === 'total' ? undefined : selectedFilter;
+  const { data, isLoading: isReservationsLoading } = useGetReservationsQuery(
+    {
+      skip: 0,
+      limit: 20,
+      status: statusParam,
+    },
+    !!accessToken
+  );
+
+  useEffect(() => {
+    if (isAuthenticated && !accessToken) {
+      setShowLoginModal(true);
+    }
+  }, [isAuthenticated, accessToken, setShowLoginModal]);
+
+  const formatReservationDate = useCallback(
+    (date?: string, time?: string) => {
+      if (!date) return '-';
+      const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
+      if (Number.isNaN(dateTime.getTime())) return date;
+      const dateText = new Intl.DateTimeFormat(locale, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(dateTime);
+      const dayText = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dateTime);
+      if (!time) return `${dateText} (${dayText})`;
+      const timeText = new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(dateTime);
+      return `${dateText} (${dayText}) ${timeText}`;
+    },
+    [locale]
+  );
+
+  const normalizeStatus = useCallback((status?: string): ReservationStatus => {
+    const value = (status ?? '').toLowerCase();
+    if (value.includes('confirm')) return 'confirmed';
+    if (value.includes('cancel')) return 'canceled';
+    if (value.includes('complete') || value.includes('done')) return 'completed';
+    if (value.includes('pending') || value.includes('wait')) return 'request';
+    if (value.includes('request')) return 'request';
+    return 'request';
+  }, []);
+
+  const mapReservation = useCallback(
+    (reservation: ReservationListItem): ReservationCard => {
+      const status = normalizeStatus(reservation.status);
+      return {
+        id: reservation.id,
+        image:
+          reservation.program_image_url || reservation.company_primary_image_url || '/default.png',
+        title: reservation.program_name || t('fallback.program'),
+        clinicName: reservation.company_name || t('fallback.clinic'),
+        companyId: reservation.company_id,
+        programId: reservation.program_id,
+        providerAddress: reservation.company_address,
+        date: formatReservationDate(reservation.visit_date, reservation.visit_time),
+        visitDate: reservation.visit_date,
+        visitTime: reservation.visit_time,
+        status,
+        hasReview:
+          reservation.can_write_review !== undefined ? !reservation.can_write_review : false,
+      };
+    },
+    [formatReservationDate, normalizeStatus, t]
+  );
+
+  const reservations = useMemo(() => {
+    return (data?.reservations ?? []).map(mapReservation);
+  }, [data, mapReservation]);
+
+  const upcomingReservations = reservations.filter((r) => r.status !== 'completed');
+  const completedReservations = reservations.filter((r) => r.status === 'completed');
+
+  const handleReservationClick = useCallback(
+    (reservation: ReservationCard) => {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(
+          `booking_detail_${reservation.id}`,
+          JSON.stringify({
+            id: reservation.id,
+            status: reservation.status,
+            title: reservation.title,
+            image: reservation.image,
+            clinicName: reservation.clinicName,
+            requestDate: reservation.date,
+            bookingDates: [
+              {
+                date: reservation.visitDate,
+                time: reservation.visitTime,
+              },
+            ],
+            programId: reservation.programId,
+            providerInfo: {
+              name: reservation.clinicName,
+              address: reservation.providerAddress,
+              image: reservation.image,
+              id: reservation.companyId,
+            },
+            hasReview: reservation.hasReview ?? false,
+          })
+        );
+      }
+      router.push(`/${currentLocale}${ROUTES.BOOKINGS_DETAIL(reservation.id)}`);
+    },
+    [currentLocale, router]
+  );
 
   const getStatusButton = (status: ReservationStatus) => {
     switch (status) {
       case 'request':
-        return { text: 'Request', style: requestButton };
+        return { text: t('status.request'), style: requestButton };
       case 'confirmed':
-        return { text: 'Confirmed', style: confirmedButton };
+        return { text: t('status.confirmed'), style: confirmedButton };
       case 'canceled':
-        return { text: 'Canceled', style: canceledButton };
+        return { text: t('status.canceled'), style: canceledButton };
       default:
         return null;
     }
   };
 
+  if (!isAuthenticated) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar logo="light" backgroundColor="green" />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={handleDismissModal}
+        />
+      </Layout>
+    );
+  }
+
+  if (!accessToken) {
+    return (
+      <Layout isAppBarExist={false}>
+        <AppBar logo="light" backgroundColor="green" />
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={handleDismissModal}
+        />
+      </Layout>
+    );
+  }
+
   return (
     <Layout isAppBarExist={false}>
       <AppBar logo="light" backgroundColor="green" />
-      <div css={header}>
+      <div css={headerBar}>
         <button css={filterButton} onClick={() => setIsFilterModalOpen(true)}>
           <Text typo="body_M" color="white">
             {filterOptions.find((f) => f.value === selectedFilter)?.label}
@@ -109,13 +216,38 @@ export default function MyBookingsPage() {
       </div>
 
       {/* Content */}
-      <div css={content}>
+      <div css={contentContainer}>
+        {isReservationsLoading && (
+          <div css={stateContainer}>
+            <Loading title={t('loading')} fullHeight />
+          </div>
+        )}
+        {!isReservationsLoading && reservations.length === 0 && (
+          <div css={stateContainer}>
+            <Empty title={t('empty')} />
+          </div>
+        )}
         {/* Upcoming Reservations */}
         {upcomingReservations.map((reservation) => {
           const statusButton = getStatusButton(reservation.status);
           return (
-            <div key={reservation.id} css={reservationCard}>
-              <div css={cardContent}>
+            <div
+              key={reservation.id}
+              css={reservationCard}
+              role="button"
+              tabIndex={0}
+              onClick={() => handleReservationClick(reservation)}
+              onKeyDown={(event) => {
+                if (event.key === ' ') {
+                  event.preventDefault();
+                  handleReservationClick(reservation);
+                }
+                if (event.key === 'Enter') {
+                  handleReservationClick(reservation);
+                }
+              }}
+            >
+              <div css={cardRow}>
                 <Image
                   src={reservation.image}
                   alt={reservation.title}
@@ -160,18 +292,33 @@ export default function MyBookingsPage() {
           <>
             <div css={sectionTitle}>
               <Text typo="title_L" color="text_primary">
-                Completed
+                {t('status.completed')}
               </Text>
             </div>
 
             {completedReservations.map((reservation) => (
-              <div key={reservation.id} css={completedCard}>
+              <div
+                key={reservation.id}
+                css={completedCard}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleReservationClick(reservation)}
+                onKeyDown={(event) => {
+                  if (event.key === ' ') {
+                    event.preventDefault();
+                    handleReservationClick(reservation);
+                  }
+                  if (event.key === 'Enter') {
+                    handleReservationClick(reservation);
+                  }
+                }}
+              >
                 <div css={completedBadge}>
                   <Text typo="body_S" color="white">
-                    Completed
+                    {t('status.completed')}
                   </Text>
                 </div>
-                <div css={cardContent}>
+                <div css={cardRow}>
                   <Image
                     src={reservation.image}
                     alt={reservation.title}
@@ -191,22 +338,62 @@ export default function MyBookingsPage() {
                     </Text>
                   </div>
                 </div>
-                <div css={completedActions}>
-                  <button css={bookAgainButton}>
+                <div css={actionRow}>
+                  <button
+                    css={bookAgainButton}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (!reservation.companyId || !reservation.programId) return;
+                      router.push({
+                        pathname: `/${currentLocale}${ROUTES.RESERVATIONS}`,
+                        query: {
+                          companyId: reservation.companyId,
+                          programId: reservation.programId,
+                        },
+                      });
+                    }}
+                  >
                     <Text typo="body_M" color="text_secondary">
-                      Book Again
+                      {t('bookAgain')}
                     </Text>
                   </button>
                   {reservation.hasReview ? (
-                    <button css={viewReviewButton}>
+                    <button
+                      css={viewReviewButton}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        router.push(`/${currentLocale}${ROUTES.MYPAGE_REVIEWS}`);
+                      }}
+                    >
                       <Text typo="body_M" color="white">
-                        View My Review
+                        {t('viewReview')}
                       </Text>
                     </button>
                   ) : (
-                    <button css={writeReviewButton}>
+                    <button
+                      css={writeReviewButton}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        const schedule = reservation.date || '-';
+                        if (typeof window !== 'undefined') {
+                          window.sessionStorage.setItem(
+                            'review_draft',
+                            JSON.stringify({
+                              reservationId: reservation.id,
+                              companyId: reservation.companyId,
+                              programId: reservation.programId,
+                              companyName: reservation.clinicName,
+                              programName: reservation.title,
+                              schedule,
+                              programImage: reservation.image,
+                            })
+                          );
+                        }
+                        router.push(`/${currentLocale}${ROUTES.REVIEW}`);
+                      }}
+                    >
                       <Text typo="body_M" color="white">
-                        Write a Review
+                        {t('writeReview')}
                       </Text>
                     </button>
                   )}
@@ -224,11 +411,11 @@ export default function MyBookingsPage() {
           <div css={modalSheet}>
             <div css={modalHandle} />
 
-            <div css={modalOptions}>
+            <div css={modalList}>
               {filterOptions.map((option) => (
                 <button
                   key={option.value}
-                  css={modalOption}
+                  css={modalItem}
                   onClick={() => {
                     setSelectedFilter(option.value);
                     setIsFilterModalOpen(false);
@@ -252,7 +439,7 @@ export default function MyBookingsPage() {
   );
 }
 
-const header = css`
+const headerBar = css`
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -271,20 +458,22 @@ const filterButton = css`
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-
   svg path {
     stroke: white;
   }
 `;
 
-const content = css`
+const contentContainer = css`
   padding: 16px;
+  padding-bottom: calc(${theme.size.gnbHeight});
   background: ${theme.colors.bg_surface1};
-  min-height: calc(100vh - 120px);
-  padding-bottom: 80px;
+`;
+
+const stateContainer = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - ${theme.size.appBarHeight});
 `;
 
 const reservationCard = css`
@@ -293,9 +482,15 @@ const reservationCard = css`
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.primary50};
+    outline-offset: 2px;
+  }
 `;
 
-const cardContent = css`
+const cardRow = css`
   display: flex;
   gap: 16px;
   margin-bottom: 12px;
@@ -319,12 +514,7 @@ const requestButton = css`
   border: 1px solid ${theme.colors.border_default};
   border-radius: 8px;
   background: ${theme.colors.white};
-  cursor: pointer;
   transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${theme.colors.primary50};
-  }
 `;
 
 const confirmedButton = css`
@@ -361,6 +551,12 @@ const completedCard = css`
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.primary50};
+    outline-offset: 2px;
+  }
 `;
 
 const completedBadge = css`
@@ -372,7 +568,7 @@ const completedBadge = css`
   border-radius: 12px;
 `;
 
-const completedActions = css`
+const actionRow = css`
   display: flex;
   gap: 12px;
   margin-top: 12px;
@@ -459,13 +655,13 @@ const modalHandle = css`
   margin: 0 auto 24px;
 `;
 
-const modalOptions = css`
+const modalList = css`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
 
-const modalOption = css`
+const modalItem = css`
   padding: 16px;
   border: none;
   background: none;
