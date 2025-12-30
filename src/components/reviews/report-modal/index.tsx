@@ -25,13 +25,14 @@ export function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
   const [detail, setDetail] = useState('');
 
   const reasons = useMemo(
-    () => [
-      { value: 'commercial_promotional', label: t('report.reasons.commercial') },
-      { value: 'pornographic_harmful', label: t('report.reasons.harmful') },
-      { value: 'personal_attack_offensive', label: t('report.reasons.offensive') },
-      { value: 'personal_information_exposure', label: t('report.reasons.privacy') },
-      { value: 'other', label: t('report.reasons.other') },
-    ],
+    () =>
+      [
+        { value: 'commercial_promotional', label: t('report.reasons.commercial') },
+        { value: 'pornographic_harmful', label: t('report.reasons.harmful') },
+        { value: 'personal_attack_offensive', label: t('report.reasons.offensive') },
+        { value: 'personal_information_exposure', label: t('report.reasons.privacy') },
+        { value: 'other', label: t('report.reasons.other') },
+      ] as const,
     [t]
   );
 
