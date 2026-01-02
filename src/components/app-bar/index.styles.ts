@@ -27,7 +27,7 @@ export const contents = css`
   max-width: ${theme.size.maxWidth};
   height: 100%;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 8px 16px;
 `;
 
 export const center = css`

@@ -24,3 +24,4 @@ export * from './login-modal';
 export * from './portal';
 export * from './select-button';
 export * from './company-detail';
+export * from './hero-section';
