@@ -40,6 +40,7 @@ import { useAuthStore } from '@/store/auth';
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
   onSearch?: () => void;
+  variant?: 'default' | 'transparent';
 }
 
 const languages: { locale: Locale; label: string }[] = [
@@ -48,7 +49,11 @@ const languages: { locale: Locale; label: string }[] = [
   { locale: 'ja', label: '日本語' },
 ];
 
-export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) {
+export function DesktopAppBar({
+  onSearchChange,
+  onSearch,
+  variant = 'default',
+}: DesktopAppBarProps) {
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
 
@@ -114,7 +119,7 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
   }, [isAuthLoading, isLoggedIn, router.isReady, router.pathname]);
 
   return (
-    <div css={wrapper}>
+    <div css={wrapper({ variant })}>
       <div css={logo}>
         <Logo width="70px" height="30px" />
       </div>

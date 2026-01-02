@@ -6,9 +6,13 @@ export const section = css`
   overflow: hidden;
 
   width: 100%;
-  min-height: 560px;
+  min-height: 520px;
   background-size: cover;
   background-position: center;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    min-height: 560px;
+  }
 `;
 
 export const slides = css`
@@ -58,6 +62,10 @@ export const headerOverlay = css`
   flex-direction: column;
   position: relative;
   z-index: 3;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    width: 100%;
+  }
 `;
 
 export const searchBarWrapper = css`
@@ -76,6 +84,11 @@ export const heroContent = css`
   padding: 0 20px 28px;
 
   text-align: left;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    width: 100%;
+    padding: 0 80px 48px;
+  }
 `;
 
 export const heroTitle = css`
@@ -131,6 +144,16 @@ export const progressRow = css`
 
   width: 100%;
   margin-top: 8px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    gap: 0;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    margin-top: 0;
+    padding: 0 0 0.5px;
+  }
 `;
 
 export const progressTrack = css`
@@ -140,6 +163,10 @@ export const progressTrack = css`
   height: 1px;
 
   background: rgb(255 255 255 / 35%);
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    height: 2px;
+  }
 `;
 
 export const progressFill = (ratio: number) => css`

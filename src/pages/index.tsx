@@ -4,16 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { GetStaticProps } from 'next';
-import {
-  Layout,
-  HeroSection,
-  Text,
-  CompanyCard,
-  GNB,
-  CompanyList,
-  DesktopAppBar,
-  Loading,
-} from '@/components';
+import { Layout, HeroSection, Text, CompanyCard, GNB, CompanyList, Loading } from '@/components';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
@@ -107,19 +98,16 @@ export default function HomePage({ heroImages }: HomePageProps) {
 
   return (
     <Layout isAppBarExist={false}>
-      {isDesktop ? (
-        <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
-      ) : (
-        <HeroSection
-          images={heroImages}
-          title={t('home.heroTitle')}
-          placeholder={t('home.searchPlaceholder')}
-          subtitle={t('home.heroSubtitle')}
-          onSearchChange={handleValueChange}
-          onSearch={handleSearch}
-          onBackClick={router.back}
-        />
-      )}
+      <HeroSection
+        images={heroImages}
+        title={t('home.heroTitle')}
+        placeholder={t('home.searchPlaceholder')}
+        subtitle={t('home.heroSubtitle')}
+        onSearchChange={handleValueChange}
+        onSearch={handleSearch}
+        onBackClick={router.back}
+        isDesktop={isDesktop}
+      />
 
       <div css={wrapper}>
         {/* 최근 본 업체 섹션 */}

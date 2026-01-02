@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { AppBar } from '@/components/app-bar';
+import { DesktopAppBar } from '@/components/desktop-app-bar';
 import { SearchBar } from '@/components/search-bar';
 import { Text } from '@/components/text';
 import {
@@ -28,6 +29,7 @@ interface HeroSectionProps {
   subtitle: string;
   onSearchChange: (value: string) => void;
   onSearch: () => void;
+  isDesktop?: boolean;
   onBackClick?: () => void;
 }
 
@@ -41,6 +43,7 @@ export function HeroSection({
   subtitle,
   onSearchChange,
   onSearch,
+  isDesktop = false,
   onBackClick,
 }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -73,15 +76,25 @@ export function HeroSection({
 
       <div css={content}>
         <div css={headerOverlay}>
-          <AppBar onBackClick={onBackClick} logo="light" />
-          <div css={searchBarWrapper}>
-            <SearchBar
-              onValueChange={onSearchChange}
+          {isDesktop ? (
+            <DesktopAppBar
+              onSearchChange={onSearchChange}
               onSearch={onSearch}
-              placeholder={placeholder}
-              isLeft={true}
+              variant="transparent"
             />
-          </div>
+          ) : (
+            <>
+              <AppBar onBackClick={onBackClick} logo="light" />
+              <div css={searchBarWrapper}>
+                <SearchBar
+                  onValueChange={onSearchChange}
+                  onSearch={onSearch}
+                  placeholder={placeholder}
+                  isLeft={true}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div css={heroContent}>
@@ -95,10 +108,12 @@ export function HeroSection({
             <div css={progressTrack}>
               <div css={progressFill((currentIndex + 1) / slidesList.length)} />
             </div>
-            <span css={progressCount}>
-              {String(currentIndex + 1).padStart(2, '0')} /{' '}
-              {String(slidesList.length).padStart(2, '0')}
-            </span>
+            {!isDesktop && (
+              <span css={progressCount}>
+                {String(currentIndex + 1).padStart(2, '0')} /{' '}
+                {String(slidesList.length).padStart(2, '0')}
+              </span>
+            )}
           </div>
         </div>
       </div>
