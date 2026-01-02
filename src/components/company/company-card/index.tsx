@@ -209,9 +209,9 @@ export function CompanyCard({
         </div>
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>
-          {badges?.slice(0, fixedHeight ? 2 : badges.length).map((hashTag) => (
+          {badges?.map((hashTag) => (
             <Tag key={hashTag} service="meditrip" variant="line">
-              #{hashTag}
+              {hashTag}
             </Tag>
           ))}
         </div>
