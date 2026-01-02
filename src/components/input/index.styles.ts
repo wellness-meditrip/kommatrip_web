@@ -60,9 +60,7 @@ export const input = ({ errorMessage }: { errorMessage?: string }) => css`
 `;
 
 export const infoTextWrapper = css`
-  position: absolute;
-  bottom: -20px;
-  left: 2px;
-
+  margin-top: 6px;
   padding: 0 2px;
+  word-break: break-word;
 `;

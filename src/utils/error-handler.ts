@@ -20,6 +20,17 @@ export const getErrorMessage = (error: unknown, defaultMessage: string): string 
   );
 };
 
+const containsHangul = (message: string): boolean => /[가-힣]/.test(message);
+
+/**
+ * API 에러 메시지를 다국어 기본 메시지로 보정
+ */
+export const getLocalizedErrorMessage = (error: unknown, defaultMessage: string): string => {
+  const rawMessage = getErrorMessage(error, defaultMessage);
+  if (containsHangul(rawMessage)) return defaultMessage;
+  return rawMessage;
+};
+
 /**
  * 세션 만료 에러인지 확인
  */

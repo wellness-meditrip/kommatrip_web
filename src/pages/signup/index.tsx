@@ -15,7 +15,11 @@ import {
   usePostSignupMutation,
 } from '@/queries/auth';
 
-import { getErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
+import {
+  getErrorMessage,
+  getLocalizedErrorMessage,
+  isSessionExpiredError,
+} from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -92,9 +96,13 @@ export default function Signup() {
       onError: (error: unknown) => {
         const axiosError = error as AxiosError;
         const status = axiosError?.response?.status;
-        const errorMessage = getErrorMessage(error, t('failedToSendCode'));
+        const rawErrorMessage = getErrorMessage(error, t('failedToSendCode'));
+        const errorMessage = getLocalizedErrorMessage(error, t('failedToSendCode'));
 
-        if (status === 400 && (errorMessage.includes('가입') || errorMessage.includes('이미'))) {
+        if (
+          status === 400 &&
+          (rawErrorMessage.includes('가입') || rawErrorMessage.includes('이미'))
+        ) {
           // 이미 가입된 이메일 에러
           setError('email', { message: t('emailAlreadyRegistered') });
         } else {
@@ -166,7 +174,7 @@ export default function Signup() {
           } else {
             // 코드 틀림 에러
             setError('verificationCode', { message: t('invalidCode') });
-            const errorMessage = getErrorMessage(error, t('invalidCode'));
+            const errorMessage = getLocalizedErrorMessage(error, t('invalidCode'));
             showToast({ title: errorMessage, icon: 'exclaim' });
           }
         },
@@ -195,7 +203,7 @@ export default function Signup() {
           router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, t('failedToCreateAccount'));
+          const errorMessage = getLocalizedErrorMessage(error, t('failedToCreateAccount'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }

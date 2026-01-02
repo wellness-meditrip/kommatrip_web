@@ -11,7 +11,7 @@ import {
   usePostResetPasswordConfirmMutation,
   usePostResetPasswordMutation,
 } from '@/queries/auth';
-import { getErrorMessage } from '@/utils/error-handler';
+import { getLocalizedErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -89,7 +89,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
         showToast({ title: t('verificationCodeSent'), icon: 'check' });
       },
       onError: (error: unknown) => {
-        const errorMessage = getErrorMessage(error, t('failedToSendCode'));
+        const errorMessage = getLocalizedErrorMessage(error, t('failedToSendCode'));
         showToast({ title: errorMessage, icon: 'exclaim' });
       },
     });
@@ -126,27 +126,20 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           showToast({ title: t('emailVerificationCompleted'), icon: 'check' });
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError<{
-            error?: { message?: string };
-            message?: string;
-          }>;
+          const axiosError = error as AxiosError;
           const status = axiosError?.response?.status;
-          const errorData = axiosError?.response?.data;
-          const errorMessage = errorData?.error?.message || errorData?.message || t('invalidCode');
 
           if (status === 400) {
             setCodeVerified(false);
             setVerificationToken('');
             setValue('verificationCode', '');
-            const sessionExpiredMessage =
-              errorMessage.includes('만료') ||
-              errorMessage.includes('expired') ||
-              errorMessage.includes('세션')
-                ? t('sessionExpired')
-                : errorMessage;
-            showToast({ title: sessionExpiredMessage, icon: 'exclaim' });
+            const message = isSessionExpiredError(error)
+              ? t('sessionExpired')
+              : getLocalizedErrorMessage(error, t('invalidCode'));
+            showToast({ title: message, icon: 'exclaim' });
           } else {
-            showToast({ title: errorMessage, icon: 'exclaim' });
+            const message = getLocalizedErrorMessage(error, t('invalidCode'));
+            showToast({ title: message, icon: 'exclaim' });
           }
         },
       }
@@ -175,7 +168,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           handleClose();
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, t('failedToResetPassword'));
+          const errorMessage = getLocalizedErrorMessage(error, t('failedToResetPassword'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
