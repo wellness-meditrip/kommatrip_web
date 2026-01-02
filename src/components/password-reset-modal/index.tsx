@@ -34,6 +34,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [codeVerified, setCodeVerified] = useState(false);
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
   const validation = useValidateAuthForm();
 
@@ -68,25 +69,21 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
   const email = watch('email');
   const password = watch('password');
   const confirmPassword = watch('confirmPassword');
+  const verificationCodeValue = watch('verificationCode');
 
   const handleSendEmail = () => {
     if (!email) {
       setError('email', { message: tValidation('email.required') });
-      showToast({ title: t('pleaseEnterEmail'), icon: 'exclaim' });
       return;
     }
 
     if (errors.email) {
-      showToast({
-        title: errors.email.message || tValidation('email.invalid'),
-        icon: 'exclaim',
-      });
       return;
     }
 
     resetPasswordRequestMutation.mutate(email, {
       onSuccess: () => {
-        showToast({ title: t('verificationCodeSent'), icon: 'check' });
+        setIsCodeSent(true);
       },
       onError: (error: unknown) => {
         const errorMessage = getLocalizedErrorMessage(error, t('failedToSendCode'));
@@ -100,12 +97,11 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
 
     if (!verificationCode) {
       setError('verificationCode', { message: tValidation('verificationCode.required') });
-      showToast({ title: t('pleaseEnterCode'), icon: 'exclaim' });
       return;
     }
 
     if (!email) {
-      showToast({ title: t('pleaseEnterEmailFirst'), icon: 'exclaim' });
+      setError('email', { message: t('pleaseEnterEmailFirst') });
       return;
     }
 
@@ -123,7 +119,6 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
           }
           setVerificationToken(token);
           setCodeVerified(true);
-          showToast({ title: t('emailVerificationCompleted'), icon: 'check' });
         },
         onError: (error: unknown) => {
           const axiosError = error as AxiosError;
@@ -133,13 +128,14 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
             setCodeVerified(false);
             setVerificationToken('');
             setValue('verificationCode', '');
-            const message = isSessionExpiredError(error)
-              ? t('sessionExpired')
-              : getLocalizedErrorMessage(error, t('invalidCode'));
-            showToast({ title: message, icon: 'exclaim' });
+            const errorData = axiosError?.response?.data as { detail?: string } | undefined;
+            const detailMessage = errorData?.detail;
+            const message =
+              detailMessage ||
+              (isSessionExpiredError(error) ? t('sessionExpired') : t('invalidCode'));
+            setError('verificationCode', { message });
           } else {
-            const message = getLocalizedErrorMessage(error, t('invalidCode'));
-            showToast({ title: message, icon: 'exclaim' });
+            setError('verificationCode', { message: t('invalidCode') });
           }
         },
       }
@@ -179,6 +175,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
     // 상태 초기화
     reset();
     setCodeVerified(false);
+    setIsCodeSent(false);
     setVerificationToken('');
     onClose();
   }, [reset, onClose]);
@@ -196,6 +193,16 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, handleClose]);
+
+  useEffect(() => {
+    if (!codeVerified) return;
+
+    if (!verificationCodeValue) {
+      setCodeVerified(false);
+      setVerificationToken('');
+      return;
+    }
+  }, [verificationCodeValue, codeVerified]);
 
   // 모달 열릴 때 body 스크롤 방지
   useEffect(() => {
@@ -260,6 +267,11 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
                 </Text>
               </RoundButton>
             </div>
+            {isCodeSent && !errors.email && (
+              <Text typo="body_XS" color="primary50" css={statusMessage}>
+                {t('verificationCodeSent')}
+              </Text>
+            )}
           </div>
 
           {/* 이메일 인증 코드 */}
@@ -288,7 +300,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
             </div>
             {codeVerified && (
               <Text typo="body_S" color="primary50" css={statusMessage}>
-                * {t('verified')}
+                {t('verified')}
               </Text>
             )}
           </div>
@@ -442,7 +454,7 @@ const content = css`
 const inputGroup = css`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const inputWithButton = css`
@@ -471,8 +483,8 @@ const eyeButton = css`
 `;
 
 const statusMessage = css`
-  margin-top: 4px;
   display: block;
+  padding: 0 2px;
 `;
 
 const submitButton = css`
