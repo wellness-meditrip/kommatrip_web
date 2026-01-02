@@ -64,13 +64,6 @@ export function ProgramCard({
             </Text>
           </div>
         </div>
-        <div css={tags}>
-          {badges?.map((hashTag) => (
-            <Tag key={hashTag} service="meditrip" variant="line">
-              {hashTag}
-            </Tag>
-          ))}
-        </div>
       </div>
     </div>
   );
