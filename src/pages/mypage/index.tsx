@@ -13,6 +13,8 @@ import { UserInfoForm } from '@/components/mypage/user-info-form';
 import { SettingsForm } from '@/components/mypage/settings-form';
 import { useTranslations } from 'next-intl';
 import { routing, type Locale } from '@/i18n/routing';
+import { MyReviewsPanel } from '@/components/mypage/reviews-panel';
+import { ReservationsPanel } from '@/components/mypage/reservations-panel';
 
 type MenuItemConfig = {
   id: string;
@@ -222,6 +224,10 @@ export default function MyPage() {
                   <UserInfoForm variant="embedded" />
                 ) : activeMenu === 'settings' ? (
                   <SettingsForm variant="embedded" />
+                ) : activeMenu === 'reservations' ? (
+                  <ReservationsPanel variant="embedded" />
+                ) : activeMenu === 'reviews' ? (
+                  <MyReviewsPanel variant="embedded" />
                 ) : activeMenu === 'privacy' ? (
                   <div css={detailCard}>
                     <div css={detailFrameWrap}>
