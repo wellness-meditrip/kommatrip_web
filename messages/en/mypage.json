@@ -23,6 +23,11 @@
     },
     "loading": "Loading reservations...",
     "empty": "No reservations yet",
+    "emptyState": {
+      "title": "Nothing booked yet!",
+      "subtitle": "Start exploring your wellness journey",
+      "cta": "Start exploring"
+    },
     "bookAgain": "Book Again",
     "viewReview": "View My Review",
     "writeReview": "Write a Review",

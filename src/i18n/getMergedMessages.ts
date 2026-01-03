@@ -1,4 +1,6 @@
 import type { Locale } from './routing';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 /**
  * 메시지 병합 로직
@@ -74,9 +76,14 @@ const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> =>
 
       for (const namespace of namespaces) {
         try {
-          const messagesModule = await import(`../../messages/${fallbackLocale}/${namespace}.json`);
-          const messages =
-            (messagesModule as { default?: Record<string, unknown> }).default ?? messagesModule;
+          const filePath = path.join(
+            process.cwd(),
+            'messages',
+            fallbackLocale,
+            `${namespace}.json`
+          );
+          const fileContents = await fs.readFile(filePath, 'utf-8');
+          const messages = JSON.parse(fileContents) as Record<string, unknown>;
 
           if (!mergedMessages[namespace]) {
             mergedMessages[namespace] = {};

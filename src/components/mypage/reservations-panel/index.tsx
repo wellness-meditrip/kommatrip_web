@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, Loading, Empty, LoginModal } from '@/components';
+import { Text, Loading, LoginModal } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import Image from 'next/image';
@@ -57,12 +57,10 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
     [t]
   );
 
-  const statusParam = selectedFilter === 'total' ? undefined : selectedFilter;
   const { data, isLoading: isReservationsLoading } = useGetReservationsQuery(
     {
       skip: 0,
       limit: 20,
-      status: statusParam,
     },
     !!accessToken
   );
@@ -131,8 +129,15 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
     return (data?.reservations ?? []).map(mapReservation);
   }, [data, mapReservation]);
 
-  const upcomingReservations = reservations.filter((r) => r.status !== 'completed');
-  const completedReservations = reservations.filter((r) => r.status === 'completed');
+  const filteredReservations = useMemo(() => {
+    if (selectedFilter === 'total') return reservations;
+    return reservations.filter(
+      (reservation) => normalizeStatus(reservation.status) === selectedFilter
+    );
+  }, [normalizeStatus, reservations, selectedFilter]);
+
+  const upcomingReservations = filteredReservations.filter((r) => r.status !== 'completed');
+  const completedReservations = filteredReservations.filter((r) => r.status === 'completed');
   const isEmbedded = variant === 'embedded';
 
   const handleReservationClick = useCallback(
@@ -229,9 +234,34 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
             <Loading title={t('loading')} fullHeight={!isEmbedded} />
           </div>
         )}
-        {!isReservationsLoading && reservations.length === 0 && (
-          <div css={stateContainer(isEmbedded)}>
-            <Empty title={t('empty')} />
+        {!isReservationsLoading && filteredReservations.length === 0 && (
+          <div css={emptyStateWrap}>
+            <div css={emptyStateIcon}>
+              <svg viewBox="0 0 64 64" width="56" height="56" fill="none">
+                <path
+                  d="M32 48V28m0 0c0-8.8 8.6-15.9 20-16-1 11.4-8.6 20-20 20Zm0 0c0-7.2-6.5-13-15-13 0 9.9 6.2 18 15 19m-8 10h16"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <Text typo="title_S" color="text_primary">
+              {t('emptyState.title')}
+            </Text>
+            <Text typo="body_M" color="text_secondary" css={emptyStateSubtitle}>
+              {t('emptyState.subtitle')}
+            </Text>
+            <button
+              type="button"
+              css={emptyStateButton}
+              onClick={() => router.push(`/${currentLocale}${ROUTES.SEARCH}`)}
+            >
+              <Text typo="button_M" color="white">
+                {t('emptyState.cta')}
+              </Text>
+            </button>
           </div>
         )}
         {upcomingReservations.map((reservation) => {
@@ -493,6 +523,39 @@ const stateContainer = (isEmbedded: boolean) => css`
   align-items: center;
   justify-content: center;
   min-height: ${isEmbedded ? '200px' : `calc(100vh - ${theme.size.appBarHeight})`};
+`;
+
+const emptyStateWrap = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  min-height: 320px;
+  text-align: center;
+  background: ${theme.colors.bg_surface1};
+  border-radius: 16px;
+`;
+
+const emptyStateIcon = css`
+  color: ${theme.colors.primary80};
+`;
+
+const emptyStateSubtitle = css`
+  white-space: pre-line;
+`;
+
+const emptyStateButton = css`
+  margin-top: 12px;
+  min-width: 220px;
+  height: 44px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 999px;
+  background: ${theme.colors.primary80};
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 `;
 
 const reservationCard = css`

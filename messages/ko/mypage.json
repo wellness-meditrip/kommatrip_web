@@ -23,6 +23,11 @@
     },
     "loading": "예약 내역을 불러오는 중...",
     "empty": "예약 내역이 없습니다.",
+    "emptyState": {
+      "title": "아직 예약이 없어요!",
+      "subtitle": "웰니스 여정을 시작해보세요",
+      "cta": "둘러보기"
+    },
     "bookAgain": "다시 예약",
     "viewReview": "내 리뷰 보기",
     "writeReview": "리뷰 작성",
