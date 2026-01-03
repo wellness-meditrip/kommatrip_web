@@ -1,11 +1,17 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
-export const wrapper = ({ variant }: { variant: 'default' | 'transparent' }) => css`
+export const wrapper = ({
+  variant,
+  sticky,
+}: {
+  variant: 'default' | 'transparent';
+  sticky: boolean;
+}) => css`
   display: flex;
   align-items: center;
-  position: sticky;
-  top: 0;
+  position: ${sticky ? 'sticky' : 'static'};
+  top: ${sticky ? '0' : 'auto'};
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;
@@ -20,6 +26,8 @@ export const wrapper = ({ variant }: { variant: 'default' | 'transparent' }) => 
 
 export const logo = css`
   flex-shrink: 0;
+
+  cursor: pointer;
 `;
 
 export const searchContainer = css`

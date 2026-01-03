@@ -41,6 +41,9 @@ interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
   onSearch?: () => void;
   variant?: 'default' | 'transparent';
+  showSearch?: boolean;
+  sticky?: boolean;
+  searchPlaceholder?: string;
 }
 
 const languages: { locale: Locale; label: string }[] = [
@@ -53,6 +56,9 @@ export function DesktopAppBar({
   onSearchChange,
   onSearch,
   variant = 'default',
+  showSearch = true,
+  sticky = true,
+  searchPlaceholder,
 }: DesktopAppBarProps) {
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
@@ -119,19 +125,32 @@ export function DesktopAppBar({
   }, [isAuthLoading, isLoggedIn, router.isReady, router.pathname]);
 
   return (
-    <div css={wrapper({ variant })}>
-      <div css={logo}>
+    <div css={wrapper({ variant, sticky })}>
+      <div
+        css={logo}
+        role="button"
+        tabIndex={0}
+        aria-label="Go to home"
+        onClick={() => handleMenuClick(ROUTES.HOME)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            handleMenuClick(ROUTES.HOME);
+          }
+        }}
+      >
         <Logo width="70px" height="30px" />
       </div>
 
-      <div css={searchContainer}>
-        <SearchBar
-          onValueChange={onSearchChange}
-          onSearch={onSearch}
-          placeholder={tCommon('home.searchPlaceholder')}
-          isLeft={true}
-        />
-      </div>
+      {showSearch && (
+        <div css={searchContainer}>
+          <SearchBar
+            onValueChange={onSearchChange}
+            onSearch={onSearch}
+            placeholder={searchPlaceholder ?? tCommon('home.searchPlaceholder')}
+            isLeft={true}
+          />
+        </div>
+      )}
 
       <div css={menuWrapper}>
         <ul css={menuList}>
