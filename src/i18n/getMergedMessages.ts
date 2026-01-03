@@ -47,6 +47,7 @@ const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> =>
         'validation',
         'calendar',
         'category',
+        'categories',
         'filter',
         'map',
         'review-form',

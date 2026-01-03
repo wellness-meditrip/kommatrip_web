@@ -42,11 +42,14 @@
   "home": {
     "heroTitle": "本格的な韓国ウェルネスを発見",
     "heroSubtitle": "心と体を癒すキュレーション体験",
-    "searchPlaceholder": "スパ、クリニック、治療法を検索...",
+    "searchPlaceholder": "検索を開始してください",
     "recommendedTitle": "おすすめ",
     "loadingRecommended": "おすすめの会社を読み込んでいます",
     "loadingRecent": "最近見た施設を読み込み中...",
     "recentlyViewed": "最近見た施設",
     "noRecommendedCompanies": "おすすめの会社がありません"
+  },
+  "search": {
+    "addressPlaceholder": "住所、場所を検索"
   }
 }

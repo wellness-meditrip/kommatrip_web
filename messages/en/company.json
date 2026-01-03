@@ -16,5 +16,6 @@
   "loadFail": "Unable to load company list.",
   "noResultsTitle": "No results for \"{keyword}\"",
   "noResultsSubtitle": "Oops! We couldn't find what you're looking for.",
-  "emptyList": "No companies available."
+  "emptyList": "No companies available.",
+  "searchDate": "Dates"
 }
