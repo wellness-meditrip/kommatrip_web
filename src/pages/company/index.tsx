@@ -558,6 +558,12 @@ export const desktopDivider = css`
 
 export const cardItem = css`
   width: 100%;
+  display: flex;
+  justify-content: center;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    justify-content: stretch;
+  }
 `;
 
 export const cardsGrid = css`
