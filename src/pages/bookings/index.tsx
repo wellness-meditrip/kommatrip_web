@@ -40,7 +40,6 @@ export default function MyBookingsPage() {
   const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
     useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
 
   const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
     () => [
@@ -69,26 +68,26 @@ export default function MyBookingsPage() {
     }
   }, [isAuthenticated, accessToken, setShowLoginModal]);
 
-  const formatReservationDate = useCallback(
-    (date?: string, time?: string) => {
-      if (!date) return '-';
-      const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
-      if (Number.isNaN(dateTime.getTime())) return date;
-      const dateText = new Intl.DateTimeFormat(locale, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }).format(dateTime);
-      const dayText = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dateTime);
-      if (!time) return `${dateText} (${dayText})`;
-      const timeText = new Intl.DateTimeFormat(locale, {
-        hour: 'numeric',
-        minute: '2-digit',
-      }).format(dateTime);
-      return `${dateText} (${dayText}) ${timeText}`;
-    },
-    [locale]
-  );
+  const formatReservationDate = useCallback((date?: string, time?: string) => {
+    if (!date) return '-';
+    const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
+    if (Number.isNaN(dateTime.getTime())) return date;
+    const hasTimeInDate = /\d{2}:\d{2}/.test(date);
+    const shouldShowTime = Boolean(time) || hasTimeInDate;
+    const dateText = new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(dateTime);
+    const dayText = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(dateTime);
+    if (!shouldShowTime) return `${dateText} (${dayText})`;
+    const timeText = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(dateTime);
+    return `${dateText} (${dayText}) ${timeText}`;
+  }, []);
 
   const normalizeStatus = useCallback((status?: string): ReservationStatus => {
     const value = (status ?? '').toLowerCase();
@@ -204,7 +203,7 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} style={{ background: theme.colors.bg_surface1 }}>
       <AppBar logo="light" backgroundColor="green" />
       <div css={headerBar}>
         <button css={filterButton} onClick={() => setIsFilterModalOpen(true)}>
@@ -256,7 +255,7 @@ export default function MyBookingsPage() {
                   css={cardImage}
                 />
                 <div css={cardInfo}>
-                  <Text typo="title_M" color="text_primary">
+                  <Text typo="title_M" color="text_primary" css={cardTitle}>
                     {reservation.title}
                   </Text>
                   <Text typo="body_S" color="text_secondary">
@@ -270,7 +269,7 @@ export default function MyBookingsPage() {
               {statusButton && (
                 <button css={statusButton.style} disabled={reservation.status === 'canceled'}>
                   <Text
-                    typo="body_M"
+                    typo="button_XS"
                     color={
                       reservation.status === 'canceled'
                         ? 'text_disabled'
@@ -326,8 +325,8 @@ export default function MyBookingsPage() {
                     height={80}
                     css={cardImage}
                   />
-                  <div css={cardInfo}>
-                    <Text typo="title_M" color="text_primary">
+                  <div css={completedCardInfo}>
+                    <Text typo="title_M" color="text_primary" css={cardTitle}>
                       {reservation.title}
                     </Text>
                     <Text typo="body_S" color="text_secondary">
@@ -465,8 +464,9 @@ const filterButton = css`
 
 const contentContainer = css`
   padding: 16px;
-  padding-bottom: calc(${theme.size.gnbHeight});
+  padding-bottom: 16px;
   background: ${theme.colors.bg_surface1};
+  min-height: calc(100vh - ${theme.size.appBarHeight});
 `;
 
 const stateContainer = css`
@@ -494,6 +494,7 @@ const cardRow = css`
   display: flex;
   gap: 16px;
   margin-bottom: 12px;
+  align-items: center;
 `;
 
 const cardImage = css`
@@ -506,22 +507,42 @@ const cardInfo = css`
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
+`;
+
+const completedCardInfo = css`
+  ${cardInfo};
+  padding-right: 88px;
+`;
+
+const cardTitle = css`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const requestButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 12px;
+  height: 22px;
+  padding: 0 12px;
   border: 1px solid ${theme.colors.border_default};
-  border-radius: 8px;
+  border-radius: 4px;
   background: ${theme.colors.white};
   transition: all 0.2s ease;
 `;
 
 const confirmedButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 12px;
+  height: 22px;
+  padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   background: ${theme.colors.primary50};
   cursor: pointer;
   transition: all 0.2s ease;
@@ -532,10 +553,14 @@ const confirmedButton = css`
 `;
 
 const canceledButton = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 12px;
+  height: 22px;
+  padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   background: ${theme.colors.gray200};
   cursor: not-allowed;
 `;
@@ -570,14 +595,17 @@ const completedBadge = css`
 
 const actionRow = css`
   display: flex;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
   margin-top: 12px;
 `;
 
 const bookAgainButton = css`
-  flex: 1;
-  padding: 12px;
-  border: 1px solid ${theme.colors.border_default};
+  flex: 0 0 auto;
+  min-width: 140px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid ${theme.colors.primary50};
   border-radius: 24px;
   background: ${theme.colors.white};
   cursor: pointer;
@@ -589,8 +617,10 @@ const bookAgainButton = css`
 `;
 
 const writeReviewButton = css`
-  flex: 1;
-  padding: 12px;
+  flex: 0 0 auto;
+  min-width: 180px;
+  height: 30px;
+  padding: 0 12px;
   border: none;
   border-radius: 24px;
   background: ${theme.colors.primary50};
@@ -603,10 +633,12 @@ const writeReviewButton = css`
 `;
 
 const viewReviewButton = css`
-  flex: 1;
-  padding: 12px;
+  flex: 0 0 auto;
+  min-width: 180px;
+  height: 30px;
+  padding: 0 12px;
   border: none;
-  border-radius: 24px;
+  border-radius: 4px;
   background: ${theme.colors.primary50};
   cursor: pointer;
   transition: all 0.2s ease;
