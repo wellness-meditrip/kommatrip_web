@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import type { CSSObject } from '@emotion/react';
 import { Text } from '@/components/text';
 import { CompanyCard } from '@/components';
 import { useRouter } from 'next/router';
@@ -30,9 +31,15 @@ interface CompanyListProps {
     is_exclusive?: boolean;
   }>;
   cardSize?: 'default' | 'compact';
+  containerCss?: CSSObject;
 }
 
-export function CompanyList({ title, companies, cardSize = 'default' }: CompanyListProps) {
+export function CompanyList({
+  title,
+  companies,
+  cardSize = 'default',
+  containerCss,
+}: CompanyListProps) {
   const router = useRouter();
   const currentLocale = useCurrentLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -71,7 +78,7 @@ export function CompanyList({ title, companies, cardSize = 'default' }: CompanyL
   };
 
   return (
-    <div css={container}>
+    <div css={[container, containerCss]}>
       <div css={header}>
         <Text typo="title_M" color="text_primary" css={title}>
           {title}

@@ -2,7 +2,7 @@
   "title": "Reservation",
   "loading": "Loading...",
   "emptyCompany": "No company information available for reservation.",
-  "submitPayment": "Proceed to Payment",
+  "submitPayment": "Book Now",
   "form": {
     "programs": {
       "title": "Programs",
@@ -54,7 +54,7 @@
     "selectProgram": "Please select a program.",
     "selectContact": "Please choose a contact method.",
     "enterContact": "Please enter your contact info.",
-    "selectDate": "Please select a visit date.",
+    "selectDate": "Please select at least one preferred date.",
     "pastDate": "You can't select past dates.",
     "selectTimesPerDate": "Please select times for each chosen date.",
     "selectTimeSlot": "Please select visit time slots.",

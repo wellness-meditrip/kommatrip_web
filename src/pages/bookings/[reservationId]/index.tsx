@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
-import { AppBar, Layout, LoginModal, Text } from '@/components';
+import { AppBar, Layout, LoginModal, Text, GNB } from '@/components';
 import Image from 'next/image';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
 import { useTranslations } from 'next-intl';
-import { useRequireAuth } from '@/hooks';
+import { useMediaQuery, useRequireAuth } from '@/hooks';
 import { useAuthStore } from '@/store/auth';
 import { useDeleteReservationMutation, useGetReservationDetailQuery } from '@/queries/reservation';
 import type { LanguagePreference, ReservationDetail } from '@/models/reservation';
@@ -44,6 +44,7 @@ export default function BookingDetailPage() {
   const router = useRouter();
   const t = useTranslations('booking-detail');
   const tReservation = useTranslations('reservation');
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
     useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -322,7 +323,7 @@ export default function BookingDetailPage() {
         onBackClick={() => router.back()}
       />
       <div css={pageWrapper}>
-        <div css={contentWrapper}>
+        <div css={contentWrapper(!isDesktop)}>
           <div css={heroImageWrapper}>
             <Image src={heroImage} alt={programTitle} fill css={heroImageStyle} />
           </div>
@@ -463,7 +464,7 @@ export default function BookingDetailPage() {
         </div>
       </div>
 
-      <div css={actionBar}>
+      <div css={actionBar(!isDesktop)}>
         <div css={ctaRow(ctaButtons.length)}>
           {ctaButtons.map((button) => (
             <button
@@ -526,6 +527,7 @@ export default function BookingDetailPage() {
           ))}
         </div>
       </div>
+      {!isDesktop && <GNB />}
     </Layout>
   );
 }
@@ -535,11 +537,12 @@ const pageWrapper = css`
   min-height: 100vh;
 `;
 
-const contentWrapper = css`
+const contentWrapper = (hasGnb: boolean) => css`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 16px 16px calc(${theme.size.ctaButtonHeight} + 32px);
+  padding: 16px 16px
+    calc(${theme.size.ctaButtonHeight} + ${hasGnb ? theme.size.gnbHeight : '0px'} + 32px);
 `;
 
 const heroImageWrapper = css`
@@ -675,11 +678,11 @@ const providerTitleRow = css`
   gap: 8px;
 `;
 
-const actionBar = css`
+const actionBar = (hasGnb: boolean) => css`
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: ${hasGnb ? theme.size.gnbHeight : '0'};
   padding: 16px 18px 24px;
   background: ${theme.colors.bg_surface1};
   box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.04);

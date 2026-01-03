@@ -3,17 +3,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  Layout,
-  AppBar,
-  SearchBar,
-  Text,
-  CompanyCard,
-  GNB,
-  CompanyList,
-  DesktopAppBar,
-  Loading,
-} from '@/components';
+import type { GetStaticProps } from 'next';
+import { Layout, HeroSection, Text, CompanyCard, GNB, CompanyList, Loading } from '@/components';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
@@ -23,8 +14,14 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 
+interface HomePageProps {
+  heroImages: string[];
+}
+
+const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+
 // 홈 페이지 (루트 경로)
-export default function HomePage() {
+export default function HomePage({ heroImages }: HomePageProps) {
   const router = useRouter();
   const t = useTranslations('common');
   const [inputValue, setInputValue] = useState('');
@@ -95,31 +92,27 @@ export default function HomePage() {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
 
+  const handleGoToSearch = () => {
+    handleSearch();
+  };
+
   const handleCompanyClick = (companyId: number) => {
     router.push(`${ROUTES.COMPANY}/${companyId}`);
   };
 
   return (
     <Layout isAppBarExist={false}>
-      {isDesktop ? (
-        <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
-      ) : (
-        <div css={headerSection}>
-          <AppBar onBackClick={router.back} logo="light" />
-          <div css={heroContent}>
-            <Text typo="title_L" color="white" css={heroTitle}>
-              {t('home.heroTitle')}
-            </Text>
-          </div>
-          <div css={searchBarWrapper}>
-            <SearchBar
-              onValueChange={handleValueChange}
-              onSearch={handleSearch}
-              placeholder={t('home.searchPlaceholder')}
-            />
-          </div>
-        </div>
-      )}
+      <HeroSection
+        images={heroImages}
+        title={t('home.heroTitle')}
+        placeholder={t('home.searchPlaceholder')}
+        subtitle={t('home.heroSubtitle')}
+        onSearchChange={handleValueChange}
+        onSearch={handleSearch}
+        onSearchBarClick={handleGoToSearch}
+        onBackClick={router.back}
+        isDesktop={isDesktop}
+      />
 
       <div css={wrapper}>
         {/* 최근 본 업체 섹션 */}
@@ -167,48 +160,9 @@ export default function HomePage() {
   );
 }
 
-// 통합 헤더 영역
-export const headerSection = css`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-
-  background: linear-gradient(135deg, #2d3e36 0%, #476155 50%, #749a88 100%);
-
-  > * {
-    position: relative;
-    z-index: 2;
-  }
-`;
-
-export const heroContent = css`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  flex: 1;
-  justify-content: center;
-
-  margin: 34px 0 20px 0;
-  gap: 16px;
-`;
-
-export const heroTitle = css`
-  color: ${theme.colors.white};
-  letter-spacing: 2px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-`;
-
 export const title = css`
   align-self: flex-start;
   margin-bottom: 20px;
-`;
-
-export const searchBarWrapper = css`
-  width: 100%;
-  margin: 0 auto;
-  flex-shrink: 0;
 `;
 
 export const cardsGrid = css`
@@ -245,3 +199,29 @@ export const bottom = css`
   width: 100%;
   height: 18px;
 `;
+
+export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
+  const path = await import('node:path');
+  const { readdir } = await import('node:fs/promises');
+
+  const dir = path.join(process.cwd(), 'public', 'images', 'hero');
+  let heroImages: string[] = [];
+
+  try {
+    const entries = await readdir(dir, { withFileTypes: true });
+    heroImages = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => ALLOWED_EXTS.has(path.extname(name).toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+      .map((name) => `/images/hero/${name}`);
+  } catch {
+    heroImages = [];
+  }
+
+  return {
+    props: {
+      heroImages,
+    },
+  };
+};

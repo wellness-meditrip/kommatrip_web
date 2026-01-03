@@ -12,6 +12,10 @@ export const card = css`
 
   background: ${theme.colors.white};
   box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    margin: 0;
+  }
 `;
 
 export const locationRow = css`

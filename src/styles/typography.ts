@@ -18,6 +18,11 @@ const typography = {
     font-size: 16px;
     font-weight: 500;
   `,
+
+  body_XL: css`
+    font-size: 32px;
+    font-weight: 500;
+  `,
   body_L: css`
     font-size: 18px;
     font-weight: 400;
@@ -29,6 +34,11 @@ const typography = {
   `,
   body_S: css`
     font-size: 12px;
+    font-weight: 400;
+  `,
+
+  body_XS: css`
+    font-size: 10px;
     font-weight: 400;
   `,
 

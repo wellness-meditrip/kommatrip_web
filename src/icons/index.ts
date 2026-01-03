@@ -65,5 +65,6 @@ export * from './SelectUnfoldActive';
 export * from './SelectUnfoldInactive';
 export * from './Share';
 export * from './ShareWhite';
+export * from './Smile';
 export * from './ToastCheck';
 export * from './ToastExclaim';

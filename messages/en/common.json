@@ -41,11 +41,15 @@
   },
   "home": {
     "heroTitle": "Discover Authentic Korean Wellness",
-    "searchPlaceholder": "Search spas, clinics, treatments...",
+    "heroSubtitle": "Curated experiences that heal your body and mind",
+    "searchPlaceholder": "Start your search",
     "recommendedTitle": "Recommended for You",
     "loadingRecommended": "Loading recommended companies...",
     "loadingRecent": "Loading recently viewed companies...",
     "recentlyViewed": "Recently Viewed",
     "noRecommendedCompanies": "No recommended companies available"
+  },
+  "search": {
+    "addressPlaceholder": "Search for address, location"
   }
 }

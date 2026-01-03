@@ -15,8 +15,8 @@ export const searchBar = css`
   align-items: center;
 
   width: 100%;
-  height: 48px;
-  margin: 12px 20px;
+  height: 42px;
+  margin: 2px 20px 12px;
   padding: 0 16px;
   border: 2px solid ${theme.colors.border_default};
   border-radius: 32px;

@@ -8,58 +8,112 @@ import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
 import { useGetUserProfileQuery } from '@/queries';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { UserInfoForm } from '@/components/mypage/user-info-form';
 import { SettingsForm } from '@/components/mypage/settings-form';
+import { useTranslations } from 'next-intl';
+import { routing, type Locale } from '@/i18n/routing';
+import { MyReviewsPanel } from '@/components/mypage/reviews-panel';
+import { ReservationsPanel } from '@/components/mypage/reservations-panel';
 
-const menuItems = [
-  { id: 'user-info', label: '내 정보 관리', route: ROUTES.MYPAGE_USER_INFO },
-  { id: 'reservations', label: '예약내역', route: ROUTES.MYPAGE_RESERVATIONS },
-  // { id: 'payments', label: '결제수단 관리', route: ROUTES.MYPAGE_PAYMENTS },
-  { id: 'reviews', label: '내 리뷰', route: ROUTES.MYPAGE_REVIEWS },
-  { id: 'settings', label: '설정', route: ROUTES.MYPAGE_SETTINGS },
-  // { id: 'logout', label: '로그아웃' },
-  // { id: 'withdraw', label: '회원탈퇴' },
-  // { id: 'support', label: '계정설정' },
-  { id: 'privacy', label: '서비스 개선' },
-  { id: 'terms', label: '이용약관' },
-] as const;
-
-type MenuItem = (typeof menuItems)[number];
-
-const detailTitleMap: Record<MenuItem['id'], string> = {
-  'user-info': '내 정보',
-  reservations: '예약내역',
-  // payments: '결제수단 관리',
-  reviews: '내 리뷰',
-  settings: '설정',
-  // logout: '로그아웃',
-  // withdraw: '회원탈퇴',
-  privacy: '서비스 개선',
-  terms: '이용약관',
+type MenuItemConfig = {
+  id: string;
+  labelKey: string;
+  detailTitleKey: string;
+  route?: string;
 };
 
-const hasRoute = (item?: MenuItem): item is MenuItem & { route: string } =>
-  !!item && 'route' in item;
+const menuItemsConfig = [
+  {
+    id: 'user-info',
+    labelKey: 'menu.userInfo',
+    detailTitleKey: 'detail.userInfo',
+    route: ROUTES.MYPAGE_USER_INFO,
+  },
+  {
+    id: 'reservations',
+    labelKey: 'menu.reservations',
+    detailTitleKey: 'detail.reservations',
+    route: ROUTES.MYPAGE_RESERVATIONS,
+  },
+  {
+    id: 'reviews',
+    labelKey: 'menu.reviews',
+    detailTitleKey: 'detail.reviews',
+    route: ROUTES.MYPAGE_REVIEWS,
+  },
+  {
+    id: 'settings',
+    labelKey: 'menu.settings',
+    detailTitleKey: 'detail.settings',
+    route: ROUTES.MYPAGE_SETTINGS,
+  },
+  {
+    id: 'privacy',
+    labelKey: 'menu.privacy',
+    detailTitleKey: 'detail.privacy',
+  },
+  {
+    id: 'terms',
+    labelKey: 'menu.terms',
+    detailTitleKey: 'detail.terms',
+  },
+] as const satisfies ReadonlyArray<MenuItemConfig>;
+
+type MenuItemId = (typeof menuItemsConfig)[number]['id'];
+type MenuItem = (typeof menuItemsConfig)[number] & { label: string; route?: string };
+
+const hasRoute = (item?: MenuItem | null): item is MenuItem & { route: string } =>
+  typeof item?.route === 'string';
 
 // 마이페이지
 export default function MyPage() {
   const router = useRouter();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { data: profileData } = useGetUserProfileQuery();
-  const [activeMenu, setActiveMenu] = useState<MenuItem['id']>('user-info');
+  const t = useTranslations('mypage');
+  const [activeMenu, setActiveMenu] = useState<MenuItemId>('user-info');
   const [searchValue, setSearchValue] = useState('');
   const user = profileData?.user;
   const tallyImproveUrl = 'https://tally.so/r/wkDMRj';
   const termsUrl = 'https://linen-sofa-f6f.notion.site/ebd//2958bf64ec2180b69375d5abbb8f8869';
+  const currentLocale = useMemo<Locale>(() => {
+    const pathLocale = router.asPath.split('/')[1];
+    return routing.locales.includes(pathLocale as Locale)
+      ? (pathLocale as Locale)
+      : routing.defaultLocale;
+  }, [router.asPath]);
+
+  const menuItems = useMemo(
+    () =>
+      menuItemsConfig.map((item) => ({
+        ...item,
+        label: t(item.labelKey),
+      })),
+    [t]
+  );
+
+  const toLocalePath = (path: string) => `/${currentLocale}${path}`;
+
+  const detailTitleMap = useMemo(
+    () =>
+      menuItemsConfig.reduce(
+        (acc, item) => {
+          acc[item.id] = t(item.detailTitleKey);
+          return acc;
+        },
+        {} as Record<MenuItemId, string>
+      ),
+    [t]
+  );
 
   const handleClick = (path: string) => {
-    router.push(path);
+    router.push(toLocalePath(path));
   };
 
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    router.push(`${toLocalePath(ROUTES.SEARCH)}${query}`);
   };
 
   const handleOpenTally = () => {
@@ -80,17 +134,17 @@ export default function MyPage() {
   useEffect(() => {
     if (!router.isReady) return;
     const tab = router.query.tab;
-    if (typeof tab === 'string' && menuItems.some((item) => item.id === tab)) {
-      setActiveMenu(tab as MenuItem['id']);
+    if (typeof tab === 'string' && menuItemsConfig.some((item) => item.id === tab)) {
+      setActiveMenu(tab as MenuItemId);
     }
   }, [router.isReady, router.query.tab]);
 
-  const handleMenuSelect = (item: (typeof menuItems)[number]) => {
+  const handleMenuSelect = (item: MenuItem) => {
     setActiveMenu(item.id);
     if (isDesktop) {
       router.replace(
         {
-          pathname: ROUTES.MYPAGE,
+          pathname: toLocalePath(ROUTES.MYPAGE),
           query: { tab: item.id },
         },
         undefined,
@@ -102,20 +156,33 @@ export default function MyPage() {
   if (isDesktop) {
     return (
       <Layout isAppBarExist={false}>
-        <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} />
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={setSearchValue}
+            onSearch={handleSearch}
+            showSearch={false}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
+        </div>
         <section css={desktopPage}>
           <div css={desktopContainer}>
             <aside css={sidebar}>
               <div css={profileCard}>
                 <div css={profileAvatar}>
                   {user?.profile_image_url ? (
-                    <img src={user.profile_image_url} alt="Profile" css={profileImage} />
+                    <img
+                      src={user.profile_image_url}
+                      alt={t('profile.imageAlt')}
+                      css={profileImage}
+                    />
                   ) : (
                     <DefaultProfile width={72} height={72} />
                   )}
                 </div>
                 <Text typo="title_M" color="bg_default">
-                  {user?.username || 'ONYU Member'}
+                  {user?.username || t('profile.fallbackName')}
                 </Text>
                 <button
                   type="button"
@@ -123,7 +190,7 @@ export default function MyPage() {
                   onClick={() => handleMenuSelect(menuItems[0])}
                 >
                   <Text typo="body_S" color="bg_default">
-                    내 정보 관리
+                    {t('profile.manage')}
                   </Text>
                   <ChevronRight width={12} height={12} />
                 </button>
@@ -137,7 +204,7 @@ export default function MyPage() {
                     onClick={() => handleMenuSelect(item)}
                   >
                     <Text
-                      typo="body_M"
+                      typo="button_M"
                       color={item.id === activeMenu ? 'primary50' : 'text_primary'}
                     >
                       {item.label}
@@ -157,11 +224,15 @@ export default function MyPage() {
                   <UserInfoForm variant="embedded" />
                 ) : activeMenu === 'settings' ? (
                   <SettingsForm variant="embedded" />
+                ) : activeMenu === 'reservations' ? (
+                  <ReservationsPanel variant="embedded" />
+                ) : activeMenu === 'reviews' ? (
+                  <MyReviewsPanel variant="embedded" />
                 ) : activeMenu === 'privacy' ? (
                   <div css={detailCard}>
                     <div css={detailFrameWrap}>
                       <iframe
-                        title="ONYU service improvement form"
+                        title={t('iframe.improvementTitle')}
                         src={tallyImproveUrl}
                         css={detailFrame}
                       />
@@ -170,13 +241,13 @@ export default function MyPage() {
                 ) : activeMenu === 'terms' ? (
                   <div css={detailCard}>
                     <div css={detailFrameWrap}>
-                      <iframe title="ONYU terms of use" src={termsUrl} css={detailFrame} />
+                      <iframe title={t('iframe.termsTitle')} src={termsUrl} css={detailFrame} />
                     </div>
                   </div>
                 ) : (
                   <div css={detailCard}>
                     <Text typo="body_M" color="text_secondary">
-                      선택한 메뉴의 상세 내용을 확인하세요.
+                      {t('detail.description')}
                     </Text>
                     {activeRoute && (
                       <button
@@ -185,7 +256,7 @@ export default function MyPage() {
                         onClick={() => handleClick(activeRoute)}
                       >
                         <Text typo="body_S" color="primary50">
-                          상세 페이지 이동
+                          {t('detail.goToPage')}
                         </Text>
                       </button>
                     )}
@@ -201,12 +272,22 @@ export default function MyPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
+      <div css={desktopAppBar}>
+        <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} showSearch={false} />
+      </div>
+      <div css={mobileAppBar}>
+        <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
+      </div>
       <section css={userSection}>
         <div css={userInfo}>
           <div css={userInfoImage}>
             {user?.profile_image_url ? (
-              <img src={user.profile_image_url} alt="프로필 이미지" width={50} height={50} />
+              <img
+                src={user.profile_image_url}
+                alt={t('profile.imageAlt')}
+                width={50}
+                height={50}
+              />
             ) : (
               <DefaultProfile width={50} height={50} />
             )}
@@ -214,12 +295,12 @@ export default function MyPage() {
           <div css={userInfoContent}>
             <div css={userInfoName}>
               <Text typo="title_M" color="text_primary">
-                {user?.username || 'John Doe'}
+                {user?.username || t('profile.fallbackName')}
               </Text>
             </div>
             <div css={userInfoDetail} onClick={() => handleClick(ROUTES.MYPAGE_USER_INFO)}>
               <Text typo="body_M" color="primary50">
-                My Information
+                {t('profile.manage')}
               </Text>
               <ChevronRight width={12} height={12} />
             </div>
@@ -228,10 +309,10 @@ export default function MyPage() {
         <div css={improvement} onClick={handleOpenTally}>
           <div css={improvementTitle}>
             <Text typo="body_L" color="bg_default">
-              Help Improve ONYU
+              {t('improvement.title')}
             </Text>
             <Text typo="body_M" color="bg_default">
-              Help us refine your experience.
+              {t('improvement.subtitle')}
             </Text>
           </div>
           <div css={improvementButton}>
@@ -243,19 +324,19 @@ export default function MyPage() {
       </section>
       <section css={myServiceSection}>
         <div css={myServiceTitle}>
-          <Text typo="body_M" color="text_primary">
-            My Services
+          <Text typo="title_S" color="text_primary">
+            {t('sections.myServices')}
           </Text>
         </div>
         <div css={myServiceList}>
           <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_REVIEWS)}>
-            <Text typo="body_S" color="primary50">
-              Reviews{' '}
+            <Text typo="body_M" color="primary50">
+              {t('menu.reviews')}
             </Text>
           </div>
           <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_SETTINGS)}>
-            <Text typo="body_S" color="primary50">
-              Settings
+            <Text typo="body_M" color="primary50">
+              {t('menu.settings')}
             </Text>
           </div>
         </div>
@@ -263,14 +344,14 @@ export default function MyPage() {
       <div css={line} />
       <section css={myServiceSection}>
         <div css={myServiceTitle}>
-          <Text typo="body_M" color="text_primary">
-            Customer Support
+          <Text typo="title_S" color="text_primary">
+            {t('sections.support')}
           </Text>
         </div>
         <div css={myServiceList}>
           <div css={myServiceItem} onClick={handleOpenTerms}>
-            <Text typo="body_S" color="primary50">
-              Terms of Use
+            <Text typo="body_M" color="primary50">
+              {t('menu.terms')}
             </Text>
           </div>
         </div>
@@ -314,6 +395,7 @@ const userInfoDetail = css`
   display: flex;
   align-items: center;
   gap: 4px;
+  cursor: pointer;
 `;
 
 const improvement = css`
@@ -324,6 +406,7 @@ const improvement = css`
   background-color: ${theme.colors.primary50};
   border-radius: 8px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 `;
 const improvementTitle = css`
   display: flex;
@@ -337,7 +420,7 @@ const myServiceSection = css`
   flex-direction: column;
 `;
 const myServiceTitle = css`
-  padding: 8px 30px;
+  padding: 24px 30px 24px;
 `;
 const myServiceList = css`
   display: flex;
@@ -345,13 +428,30 @@ const myServiceList = css`
 `;
 
 const myServiceItem = css`
-  padding: 24px 40px;
+  padding: 24px 40px 20px;
+  cursor: pointer;
 `;
 
 const line = css`
   width: 100%;
   height: 3px;
   background-color: ${theme.colors.bg_surface1};
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
 `;
 
 const desktopPage = css`

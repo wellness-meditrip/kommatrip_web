@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { theme } from '@/styles';
@@ -21,7 +21,6 @@ interface Props {
 
 export function SettingsForm({ variant = 'page' }: Props) {
   const router = useRouter();
-  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [isMarketingEnabled, setIsMarketingEnabled] = useState(true);
@@ -57,9 +56,16 @@ export function SettingsForm({ variant = 'page' }: Props) {
     useAuthStore.getState().clearAuth();
     deleteCookie('refreshToken');
 
-    if (session) {
-      await signOut({ callbackUrl: ROUTES.HOME });
-      return;
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (error) {
+      console.error('[Logout] Failed to clear auth cookies', error);
+    }
+
+    try {
+      await signOut({ redirect: false });
+    } catch (error) {
+      console.error('[Logout] NextAuth signOut failed', error);
     }
 
     router.replace(ROUTES.HOME);

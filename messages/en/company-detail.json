@@ -1,5 +1,12 @@
 {
   "loading": "Loading company details...",
   "loadFail": "Unable to load company information.",
-  "infoPending": "Information is being prepared."
+  "infoPending": "Information is being prepared.",
+  "tabs": {
+    "info": "Information",
+    "program": "Programs",
+    "review": "Reviews",
+    "notice": "Notice"
+  },
+  "bookNow": "Book Now"
 }

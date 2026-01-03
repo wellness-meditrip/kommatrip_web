@@ -6,11 +6,7 @@ const rangeEdge = theme.colors.primary70;
 
 export const calendarContainer = css`
   margin: 16px 0 24px;
-  padding: 16px;
   border-radius: 20px;
-
-  background-color: ${theme.colors.white};
-  box-shadow: 0 6px 20px rgb(0 0 0 / 8%);
 `;
 
 export const calendarHeader = css`
@@ -26,6 +22,7 @@ export const calendarContent = css`
   border-radius: 16px;
 
   background-color: ${theme.colors.white};
+  box-shadow: 0 6px 20px rgb(0 0 0 / 8%);
 `;
 
 export const monthHeader = css`

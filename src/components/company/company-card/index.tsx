@@ -2,7 +2,7 @@ import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { Location, ChevronLeftWhite } from '@/icons';
 import NextImage from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   wrapper,
   wrapperFixedHeight,
@@ -59,6 +59,9 @@ export function CompanyCard({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const ignoreClickRef = useRef(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchDeltaX = useRef(0);
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
   const imageList = useMemo(
@@ -100,20 +103,60 @@ export function CompanyCard({
     setCurrentImageIndex(index);
   };
 
+  const goPrevImage = () => {
+    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
+  };
+
+  const goNextImage = () => {
+    setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
+  };
+
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
+    goPrevImage();
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
+    goNextImage();
+  };
+
+  const handleTouchStart = (event: React.TouchEvent) => {
+    if (imageList.length < 2) return;
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+    touchDeltaX.current = 0;
+  };
+
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const currentX = event.touches[0]?.clientX ?? touchStartX.current;
+    touchDeltaX.current = currentX - touchStartX.current;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null) return;
+    const deltaX = touchDeltaX.current;
+    touchStartX.current = null;
+    touchDeltaX.current = 0;
+    if (Math.abs(deltaX) < 30) return;
+    ignoreClickRef.current = true;
+    if (deltaX > 0) {
+      goPrevImage();
+    } else {
+      goNextImage();
+    }
+    window.setTimeout(() => {
+      ignoreClickRef.current = false;
+    }, 50);
   };
 
   return (
     <div
       css={[fixedHeight ? wrapperFixedHeight : wrapper, size === 'compact' && wrapperCompact]}
-      onClick={() => onClick(companyId)}
+      onClick={() => {
+        if (ignoreClickRef.current) return;
+        onClick(companyId);
+      }}
     >
       <div
         css={[
@@ -122,7 +165,12 @@ export function CompanyCard({
         ]}
       >
         {imageList.length > 1 ? (
-          <div css={imageCarousel}>
+          <div
+            css={imageCarousel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <div css={carouselContainer}>
               {currentImageUrl && !imageError ? (
                 <NextImage
@@ -209,9 +257,9 @@ export function CompanyCard({
         </div>
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>
-          {badges?.slice(0, fixedHeight ? 2 : badges.length).map((hashTag) => (
+          {badges?.map((hashTag) => (
             <Tag key={hashTag} service="meditrip" variant="line">
-              #{hashTag}
+              {hashTag}
             </Tag>
           ))}
         </div>

@@ -40,15 +40,27 @@ import { useAuthStore } from '@/store/auth';
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
   onSearch?: () => void;
+  variant?: 'default' | 'transparent';
+  showSearch?: boolean;
+  sticky?: boolean;
+  searchPlaceholder?: string;
+  onSearchBarClick?: () => void;
 }
 
 const languages: { locale: Locale; label: string }[] = [
   { locale: 'ko', label: '한국어' },
   { locale: 'en', label: 'English' },
-  { locale: 'ja', label: '日本語' },
 ];
 
-export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) {
+export function DesktopAppBar({
+  onSearchChange,
+  onSearch,
+  variant = 'default',
+  showSearch = true,
+  sticky = true,
+  searchPlaceholder,
+  onSearchBarClick,
+}: DesktopAppBarProps) {
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
 
@@ -62,6 +74,18 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleSearchBarClick = () => {
+    if (onSearchBarClick) {
+      onSearchBarClick();
+      return;
+    }
+    if (onSearch) {
+      onSearch();
+      return;
+    }
+    router.push(ROUTES.SEARCH);
+  };
 
   const handleMenuClick = (path: string) => {
     router.push(path);
@@ -114,19 +138,34 @@ export function DesktopAppBar({ onSearchChange, onSearch }: DesktopAppBarProps) 
   }, [isAuthLoading, isLoggedIn, router.isReady, router.pathname]);
 
   return (
-    <div css={wrapper}>
-      <div css={logo}>
+    <div css={wrapper({ variant, sticky })}>
+      <div
+        css={logo}
+        role="button"
+        tabIndex={0}
+        aria-label="Go to home"
+        onClick={() => handleMenuClick(ROUTES.HOME)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            handleMenuClick(ROUTES.HOME);
+          }
+        }}
+      >
         <Logo width="70px" height="30px" />
       </div>
 
-      <div css={searchContainer}>
-        <SearchBar
-          onValueChange={onSearchChange}
-          onSearch={onSearch}
-          placeholder={tCommon('home.searchPlaceholder')}
-          isLeft={true}
-        />
-      </div>
+      {showSearch && (
+        <div css={searchContainer}>
+          <SearchBar
+            onValueChange={onSearchChange}
+            onSearch={handleSearchBarClick}
+            placeholder={searchPlaceholder ?? tCommon('home.searchPlaceholder')}
+            isLeft={true}
+            onInputClick={handleSearchBarClick}
+            isReadOnly={true}
+          />
+        </div>
+      )}
 
       <div css={menuWrapper}>
         <ul css={menuList}>

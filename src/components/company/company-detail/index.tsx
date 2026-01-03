@@ -18,6 +18,8 @@ import {
   carouselDots,
   carouselDot,
   carouselDotActive,
+  imageLoadingOverlay,
+  imageLoadingSpinner,
 } from './index.styles';
 
 interface Props {
@@ -38,6 +40,7 @@ export default function CompanyDetail({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageLoading, setIsImageLoading] = useState(false);
   const { showToast } = useToast();
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
@@ -47,19 +50,23 @@ export default function CompanyDetail({
   const handleImageError = () => {
     console.log('Image load failed, falling back to default image');
     setImageError(true);
+    setIsImageLoading(false);
   };
 
   const handleDotClick = (index: number) => {
+    setIsImageLoading(true);
     setCurrentImageIndex(index);
   };
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsImageLoading(true);
     setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsImageLoading(true);
     setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
   };
 
@@ -96,9 +103,15 @@ export default function CompanyDetail({
               sizes="100vw"
               quality={90}
               onError={handleImageError}
+              onLoadingComplete={() => setIsImageLoading(false)}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" />
+            <img src="/default.png" alt="기본 이미지" onLoad={() => setIsImageLoading(false)} />
+          )}
+          {isImageLoading && (
+            <div css={imageLoadingOverlay}>
+              <div css={imageLoadingSpinner} aria-hidden="true" />
+            </div>
           )}
 
           {/* 캐러셀 네비게이션 버튼 */}
@@ -142,9 +155,15 @@ export default function CompanyDetail({
               sizes="100vw"
               quality={90}
               onError={handleImageError}
+              onLoadingComplete={() => setIsImageLoading(false)}
             />
           ) : (
-            <img src="/default.png" alt="기본 이미지" />
+            <img src="/default.png" alt="기본 이미지" onLoad={() => setIsImageLoading(false)} />
+          )}
+          {isImageLoading && (
+            <div css={imageLoadingOverlay}>
+              <div css={imageLoadingSpinner} aria-hidden="true" />
+            </div>
           )}
         </div>
       )}

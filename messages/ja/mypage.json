@@ -23,6 +23,11 @@
     },
     "loading": "予約履歴を読み込み中...",
     "empty": "予約履歴がありません。",
+    "emptyState": {
+      "title": "予約はまだありません",
+      "subtitle": "ウェルネスの旅を始めましょう",
+      "cta": "探してみる"
+    },
     "bookAgain": "もう一度予約",
     "viewReview": "自分のレビューを見る",
     "writeReview": "レビューを書く",
@@ -39,5 +44,40 @@
     "title": "設定",
     "language": "言語",
     "notifications": "通知"
+  },
+  "menu": {
+    "userInfo": "個人情報の管理",
+    "reservations": "予約履歴",
+    "reviews": "マイレビュー",
+    "settings": "設定",
+    "privacy": "サービス改善",
+    "terms": "利用規約"
+  },
+  "detail": {
+    "userInfo": "個人情報",
+    "reservations": "予約履歴",
+    "reviews": "マイレビュー",
+    "settings": "設定",
+    "privacy": "サービス改善",
+    "terms": "利用規約",
+    "description": "選択したメニューの詳細を確認してください。",
+    "goToPage": "詳細ページへ"
+  },
+  "profile": {
+    "manage": "個人情報の管理",
+    "fallbackName": "ONYU メンバー",
+    "imageAlt": "プロフィール画像"
+  },
+  "improvement": {
+    "title": "ONYU改善にご協力ください",
+    "subtitle": "体験向上のためご意見をお聞かせください。"
+  },
+  "sections": {
+    "myServices": "マイサービス",
+    "support": "カスタマーサポート"
+  },
+  "iframe": {
+    "improvementTitle": "ONYU サービス改善フォーム",
+    "termsTitle": "ONYU 利用規約"
   }
 }

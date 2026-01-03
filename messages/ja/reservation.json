@@ -2,7 +2,7 @@
   "title": "予約",
   "loading": "読み込み中...",
   "emptyCompany": "予約できる店舗情報がありません。",
-  "submitPayment": "お支払いへ",
+  "submitPayment": "予約する",
   "form": {
     "programs": {
       "title": "プログラム",
@@ -54,7 +54,7 @@
     "selectProgram": "プログラムを選択してください。",
     "selectContact": "連絡方法を選択してください。",
     "enterContact": "連絡先情報を入力してください。",
-    "selectDate": "訪問日を選択してください。",
+    "selectDate": "希望日を1つ以上選択してください。",
     "pastDate": "過去の日付は選択できません。",
     "selectTimesPerDate": "選択した日ごとに時間を選択してください。",
     "selectTimeSlot": "訪問時間帯を選択してください。",

@@ -1,29 +1,60 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { AppBar, SearchBar, CategoryFilter, Calendar, CTAButton } from '@/components';
+import {
+  AppBar,
+  SearchBar,
+  Calendar,
+  CTAButton,
+  DesktopAppBar,
+  FilterBar,
+  CategoryFilter,
+} from '@/components';
 import { Layout } from '@/components/layout';
 import { theme } from '@/styles';
 import { CATEGORIES } from '@/constants/commons/categories';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
+import { useMediaQuery } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 // 검색 페이지
 export default function SearchPage() {
   const router = useRouter();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(['all-care']);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [selectedRange, setSelectedRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
     end: null,
   });
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const tCommon = useTranslations('common');
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기
   useEffect(() => {
-    if (router.isReady && router.query.q) {
-      setSearchValue(router.query.q as string);
+    if (!router.isReady) return;
+    if (typeof router.query.q === 'string') {
+      setSearchValue(router.query.q);
     }
-  }, [router.isReady, router.query.q]);
+  }, [router.isReady, router.query]);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const { date, endDate } = router.query;
+
+    const parseDate = (value?: string | string[]) => {
+      if (!value || Array.isArray(value)) return null;
+      const parsed = new Date(value);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    };
+
+    const nextStart = parseDate(date);
+    const nextEnd = parseDate(endDate);
+
+    if (nextStart || nextEnd) {
+      setSelectedRange({ start: nextStart, end: nextEnd });
+    }
+  }, [router.isReady, router.query]);
 
   const handleSearch = () => {
     const query: Record<string, string> = {};
@@ -87,44 +118,101 @@ export default function SearchPage() {
   };
 
   const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategories((prev) => {
-      if (prev.includes(categoryId)) {
-        // 이미 선택된 카테고리면 제거
-        return prev.filter((id) => id !== categoryId);
-      } else {
-        // 선택되지 않은 카테고리면 추가
-        return [...prev, categoryId];
-      }
-    });
+    const allCategoryIds = CATEGORIES.filter((category) => category.id !== 'all-care').map(
+      (category) => category.id
+    );
+    const isAllSelected =
+      allCategoryIds.length > 0 && selectedCategories.length === allCategoryIds.length;
+
+    const updatedCategories =
+      categoryId === 'all-care'
+        ? isAllSelected
+          ? []
+          : allCategoryIds
+        : selectedCategories.includes(categoryId)
+          ? selectedCategories.filter((id) => id !== categoryId)
+          : [...selectedCategories, categoryId];
+
+    setSelectedCategories(updatedCategories);
   };
 
   return (
-    <Layout isAppBarExist={false} style={{ backgroundColor: theme.colors.primary80 }}>
+    <Layout
+      isAppBarExist={false}
+      style={{
+        backgroundColor: isDesktop ? theme.colors.bg_surface1 : theme.colors.primary80,
+      }}
+    >
       <div css={wrapper}>
-        <AppBar
-          onBackClick={() => router.back()}
-          leftButton={true}
-          logo="light"
-          buttonType="white"
-        />
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={setSearchValue}
+            onSearch={handleSearch}
+            showSearch={false}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar
+            onBackClick={() => router.back()}
+            leftButton={true}
+            logo="light"
+            buttonType="white"
+          />
+        </div>
 
-        <SearchBar
-          value={searchValue}
-          onValueChange={setSearchValue}
-          onSearch={handleSearch}
-          placeholder="Search for address, location"
-        />
+        {!isDesktop && (
+          <SearchBar
+            value={searchValue}
+            onValueChange={setSearchValue}
+            onSearch={handleSearch}
+            placeholder={tCommon('search.addressPlaceholder')}
+          />
+        )}
 
         <div css={contentContainer}>
-          <CategoryFilter
-            categories={CATEGORIES}
-            selectedCategoryIds={selectedCategories}
-            onCategorySelect={handleCategorySelect}
-          />
+          {isDesktop && (
+            <div css={desktopSearchWrapper}>
+              <SearchBar
+                value={searchValue}
+                onValueChange={setSearchValue}
+                onSearch={handleSearch}
+                placeholder={tCommon('search.addressPlaceholder')}
+                isLeft={true}
+              />
+            </div>
+          )}
+          <div css={categorySection}>
+            {isDesktop ? (
+              <FilterBar
+                selectedCategories={selectedCategories}
+                onToggleCategory={handleCategorySelect}
+                onClearAll={() => setSelectedCategories([])}
+                variant="light"
+                showDate={false}
+                layout="stacked"
+                categories={CATEGORIES}
+                centered={true}
+              />
+            ) : (
+              <CategoryFilter
+                categories={CATEGORIES}
+                selectedCategoryIds={selectedCategories}
+                onCategorySelect={handleCategorySelect}
+              />
+            )}
+          </div>
 
-          <Calendar selectedRange={selectedRange} onRangeSelect={handleRangeSelect} />
+          <div css={calendarSection}>
+            <Calendar
+              selectedRange={selectedRange}
+              onRangeSelect={handleRangeSelect}
+              variant={isDesktop ? 'desktop' : 'default'}
+            />
+          </div>
 
-          <CTAButton onClick={handleSeeAll}>See all</CTAButton>
+          <div css={ctaSection}>
+            <CTAButton onClick={handleSeeAll}>See all</CTAButton>
+          </div>
         </div>
       </div>
     </Layout>
@@ -133,9 +221,80 @@ export default function SearchPage() {
 
 const wrapper = css`
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
 `;
 
 const contentContainer = css`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 0 20px;
   padding-bottom: 78px; /* GNB 공간 확보 */
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    max-width: 980px;
+    margin: 0 auto 40px;
+    padding: 16px 28px 48px;
+    background-color: ${theme.colors.white};
+    box-shadow: 0 20px 40px rgb(15 23 20 / 12%);
+    border: 1px solid ${theme.colors.border_default};
+  }
+`;
+
+const categorySection = css`
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding-top: 4px;
+  }
+`;
+
+const calendarSection = css`
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding-top: 8px;
+  }
+`;
+
+const ctaSection = css`
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    align-self: start;
+    display: flex;
+    width: 100%;
+    padding-top: 8px;
+
+    & > div {
+      width: 100%;
+    }
+
+    & > div > button {
+      width: 100%;
+    }
+  }
+`;
+
+const desktopSearchWrapper = css`
+  padding: 12px 0 4px;
+
+  & > div {
+    max-width: 100%;
+  }
+
+  & > div > div {
+    margin: 0;
+  }
 `;

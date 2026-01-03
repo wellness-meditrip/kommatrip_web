@@ -16,5 +16,6 @@
   "loadFail": "施設一覧を読み込めませんでした。",
   "noResultsTitle": "\"{keyword}\"の検索結果がありません。",
   "noResultsSubtitle": "該当する結果が見つかりませんでした。",
-  "emptyList": "施設一覧がありません。"
+  "emptyList": "施設一覧がありません。",
+  "searchDate": "日程"
 }

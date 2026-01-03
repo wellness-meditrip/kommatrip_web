@@ -1,23 +1,33 @@
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
-export const wrapper = css`
+export const wrapper = ({
+  variant,
+  sticky,
+}: {
+  variant: 'default' | 'transparent';
+  sticky: boolean;
+}) => css`
   display: flex;
   align-items: center;
-  position: sticky;
-  top: 0;
+  position: ${sticky ? 'sticky' : 'static'};
+  top: ${sticky ? '0' : 'auto'};
   z-index: ${theme.zIndex.appBar};
 
   width: 100%;
   height: 76px;
   padding: 0 24px;
 
-  background: linear-gradient(135deg, #2d3e36 0%, #476155 50%, #749a88 100%);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  background: ${variant === 'transparent'
+    ? 'transparent'
+    : 'linear-gradient(135deg, #2d3e36 0%, #476155 50%, #749a88 100%)'};
+  box-shadow: ${variant === 'transparent' ? 'none' : '0 2px 8px rgb(0 0 0 / 10%)'};
 `;
 
 export const logo = css`
   flex-shrink: 0;
+
+  cursor: pointer;
 `;
 
 export const searchContainer = css`
@@ -27,6 +37,7 @@ export const searchContainer = css`
   gap: 12px;
 
   max-width: 600px;
+  padding: 10px 0 0;
 `;
 
 export const menuWrapper = css`

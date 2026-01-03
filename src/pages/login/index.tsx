@@ -13,7 +13,7 @@ import { ROUTES } from '@/constants';
 import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
-import { getErrorMessage } from '@/utils/error-handler';
+import { getLocalizedErrorMessage } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 import { useAuthStore } from '@/store/auth';
@@ -106,12 +106,30 @@ export default function Login() {
 
     if (!r.ok) {
       setLoading(false);
-      showToast({ title: 'An error occurred while preparing login', icon: 'exclaim' });
+      showToast({ title: t('prepareLoginFailed'), icon: 'exclaim' });
       return;
     }
 
     // 2) 구글 로그인 시작
     await signIn('google', { callbackUrl: ROUTES.HOME });
+  };
+
+  const onApple = async () => {
+    setLoading(true);
+
+    const r = await fetch('/api/auth/google-meta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country, marketing_consent: marketing }),
+    });
+
+    if (!r.ok) {
+      setLoading(false);
+      showToast({ title: t('prepareLoginFailed'), icon: 'exclaim' });
+      return;
+    }
+
+    await signIn('apple', { callbackUrl: ROUTES.HOME });
   };
 
   const {
@@ -167,7 +185,7 @@ export default function Login() {
           }
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, t('loginFailed'));
+          const errorMessage = getLocalizedErrorMessage(error, t('loginFailed'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -179,8 +197,7 @@ export default function Login() {
   };
 
   const handleAppleLogin = () => {
-    // TODO: Apple 로그인 처리
-    console.log('Apple Login');
+    onApple();
   };
 
   const handleValueChange = (value: string) => {

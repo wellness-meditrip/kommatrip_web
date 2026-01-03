@@ -15,6 +15,8 @@ import {
   PostResetPasswordCompleteResponse,
   PostUserAuthGoogleRequest,
   PostUserAuthGoogleResponse,
+  PostUserAuthAppleRequest,
+  PostUserAuthAppleResponse,
   PostTokenReissueResponse,
   PostInterestRequestBody,
   PostInterestResponse,
@@ -164,6 +166,79 @@ export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
     };
     // 에러 상세 정보 로깅
     console.error('[postUserAuthGoogle] error details', {
+      status: axiosError?.response?.status,
+      statusText: axiosError?.response?.statusText,
+      data: axiosError?.response?.data,
+      errorMessage: axiosError?.message,
+      requestData: {
+        idTokenLength: data.idToken?.length,
+        country: data.country,
+        marketing_consent: data.marketing_consent,
+      },
+    });
+    throw axiosError;
+  }
+};
+
+// 소셜 로그인(apple)
+export const postUserAuthApple = async (data: PostUserAuthAppleRequest) => {
+  console.log('[postUserAuthApple] Request start', {
+    idTokenLength: data.idToken?.length,
+    country: data.country,
+    marketing_consent: data.marketing_consent,
+    url: 'user/non/auth/apple',
+  });
+
+  try {
+    const response = await guestApi.post<PostUserAuthAppleResponse>(
+      'user/non/auth/apple',
+      {
+        idToken: data.idToken,
+        country: data.country,
+        marketing_consent: data.marketing_consent,
+      },
+      {
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    const isObject = typeof response === 'object' && response !== null;
+    const responseRecord = isObject ? (response as { user?: unknown; tokens?: unknown }) : null;
+    console.log('[postUserAuthApple] Response received', {
+      hasResponse: !!response,
+      responseType: typeof response,
+      responseKeys: isObject ? Object.keys(response as object) : [],
+      hasUser: !!responseRecord?.user,
+      hasTokens: !!responseRecord?.tokens,
+    });
+
+    if (response && typeof response === 'object' && 'response' in response) {
+      const wrapped = response as { response?: PostUserAuthAppleResponse };
+      const unwrapped = wrapped.response;
+      console.log('[postUserAuthApple] Unwrapped response', {
+        hasUser: !!unwrapped?.user,
+        hasTokens: !!unwrapped?.tokens,
+      });
+      if (unwrapped) {
+        return unwrapped;
+      }
+    }
+
+    console.log('[postUserAuthApple] Returning response as-is');
+    return response;
+  } catch (error: unknown) {
+    const axiosError = error as {
+      response?: {
+        status?: number;
+        statusText?: string;
+        data?: unknown;
+      };
+      message?: string;
+    };
+    console.error('[postUserAuthApple] error details', {
       status: axiosError?.response?.status,
       statusText: axiosError?.response?.statusText,
       data: axiosError?.response?.data,

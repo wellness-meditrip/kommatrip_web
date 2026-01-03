@@ -19,6 +19,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 export default function ProgramDetailPage() {
   const router = useRouter();
   const t = useTranslations('program-detail');
+  const tCommon = useTranslations('common');
   const { programId } = router.query;
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
@@ -107,8 +108,17 @@ export default function ProgramDetailPage() {
 
   if (!router.isReady || !programIdNumber) {
     return (
-      <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+      <Layout isAppBarExist={false}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={handleSearchChange}
+            onSearch={handleSearch}
+            searchPlaceholder={tCommon('search.addressPlaceholder')}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        </div>
         <Loading title={t('loading')} />
       </Layout>
     );
@@ -116,8 +126,17 @@ export default function ProgramDetailPage() {
 
   if (isLoading) {
     return (
-      <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+      <Layout isAppBarExist={false}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={handleSearchChange}
+            onSearch={handleSearch}
+            searchPlaceholder={tCommon('search.addressPlaceholder')}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        </div>
         <Loading title={t('loading')} />
       </Layout>
     );
@@ -126,8 +145,17 @@ export default function ProgramDetailPage() {
   const program = data?.program;
   if (!program) {
     return (
-      <Layout>
-        <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+      <Layout isAppBarExist={false}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={handleSearchChange}
+            onSearch={handleSearch}
+            searchPlaceholder={tCommon('search.addressPlaceholder')}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+        </div>
         <Empty title={t('loadFail')} />
       </Layout>
     );
@@ -140,11 +168,16 @@ export default function ProgramDetailPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      {isDesktop ? (
-        <DesktopAppBar onSearchChange={handleSearchChange} onSearch={handleSearch} />
-      ) : (
+      <div css={desktopAppBar}>
+        <DesktopAppBar
+          onSearchChange={handleSearchChange}
+          onSearch={handleSearch}
+          searchPlaceholder={tCommon('search.addressPlaceholder')}
+        />
+      </div>
+      <div css={mobileAppBar}>
         <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
-      )}
+      </div>
 
       <div css={pageContainer}>
         <div css={contentLayout}>
@@ -154,7 +187,7 @@ export default function ProgramDetailPage() {
                 {shouldUseNextImage ? (
                   <Image
                     src={imageSrc}
-                    alt="program"
+                    alt={t('imageAlt')}
                     width={1200}
                     height={800}
                     sizes="100vw"
@@ -167,7 +200,7 @@ export default function ProgramDetailPage() {
                 ) : (
                   <img
                     src={imageSrc}
-                    alt="program"
+                    alt={t('imageAlt')}
                     css={mainImage}
                     onError={() => setImageSrc('/default.png')}
                   />
@@ -209,7 +242,7 @@ export default function ProgramDetailPage() {
                   {processItems.map((step, index) => (
                     <div key={`${step}-${index}`} css={processCard}>
                       <Text typo="body_M" color="primary30">
-                        {`Step ${String(index + 1).padStart(2, '0')}`}
+                        {t('step', { number: String(index + 1).padStart(2, '0') })}
                       </Text>
                       <Text typo="body_M" color="text_primary">
                         {step}
@@ -229,7 +262,7 @@ export default function ProgramDetailPage() {
                   {detailImageSrc && (
                     <img
                       src={detailImageSrc}
-                      alt="program detail"
+                      alt={t('detailImageAlt')}
                       css={detailsImage}
                       onError={() => setDetailImageSrc('')}
                     />
@@ -313,6 +346,22 @@ const pageContainer = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     margin: 0 auto;
     padding: 0 32px;
+  }
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
   }
 `;
 

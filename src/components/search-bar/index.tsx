@@ -7,6 +7,8 @@ interface SearchBarProps {
   onSearch?: () => void;
   placeholder?: string;
   isLeft?: boolean;
+  onInputClick?: () => void;
+  isReadOnly?: boolean;
 }
 
 export function SearchBar({
@@ -15,8 +17,11 @@ export function SearchBar({
   onSearch,
   placeholder,
   isLeft = false,
+  onInputClick,
+  isReadOnly = false,
 }: SearchBarProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) return;
     const value = e.target.value;
     onValueChange(value);
   };
@@ -44,6 +49,9 @@ export function SearchBar({
           value={value}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onClick={onInputClick}
+          readOnly={isReadOnly}
+          inputMode={isReadOnly ? 'none' : undefined}
           css={input}
           placeholder={placeholder}
         />

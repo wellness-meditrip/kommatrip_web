@@ -2,7 +2,7 @@
   "title": "예약",
   "loading": "로딩 중...",
   "emptyCompany": "예약할 업체 정보가 없습니다.",
-  "submitPayment": "결제하기",
+  "submitPayment": "예약하기",
   "form": {
     "programs": {
       "title": "프로그램",
@@ -54,7 +54,7 @@
     "selectProgram": "프로그램을 선택해 주세요.",
     "selectContact": "연락 방법을 선택해 주세요.",
     "enterContact": "연락처 정보를 입력해 주세요.",
-    "selectDate": "방문 날짜를 선택해 주세요.",
+    "selectDate": "선호 날짜를 최소 1개 선택해 주세요.",
     "pastDate": "지난 날짜는 선택할 수 없습니다.",
     "selectTimesPerDate": "선택한 날짜마다 시간을 선택해 주세요.",
     "selectTimeSlot": "방문 시간대를 선택해 주세요.",

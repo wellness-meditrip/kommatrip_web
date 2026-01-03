@@ -14,13 +14,12 @@ import {
   emptyDay,
   placeholderText,
   sectionCard,
-  select,
-  timeBoxChevron,
   timeChip,
   timeChips,
   timeGroup,
   timeSection,
   selectedTimesBox,
+  timeBoxChevron,
 } from './index.styles';
 
 interface Props {
@@ -30,6 +29,7 @@ interface Props {
   daysInMonth: number;
   startingDayOfWeek: number;
   isDateSelected: (day: number) => boolean;
+  isDateDisabled: (day: number) => boolean;
   onDateClick: (day: number) => void;
   selectedDates: Date[];
   selectedTimes: Record<string, string[]>;
@@ -48,6 +48,7 @@ export function ScheduleSection({
   daysInMonth,
   startingDayOfWeek,
   isDateSelected,
+  isDateDisabled,
   onDateClick,
   selectedDates,
   selectedTimes,
@@ -71,12 +72,12 @@ export function ScheduleSection({
 
   return (
     <div css={sectionCard}>
-      <Text typo="title_L" color="text_primary">
+      <Text typo="title_M" color="text_primary">
         {t('form.schedule.title')}
       </Text>
 
       <div css={dateSection}>
-        <Text typo="body_M" color="text_primary">
+        <Text typo="title_S" color="text_primary">
           {t('form.schedule.selectDates')}
         </Text>
 
@@ -98,7 +99,7 @@ export function ScheduleSection({
           <div css={calendarGrid}>
             {weekdayLabels.map((day) => (
               <div key={day} css={dayHeader}>
-                <Text typo="body_S" color="text_tertiary">
+                <Text typo="body_M" color="text_tertiary">
                   {day}
                 </Text>
               </div>
@@ -110,13 +111,22 @@ export function ScheduleSection({
 
             {Array.from({ length: daysInMonth }).map((_, index) => {
               const day = index + 1;
+              const isSelected = isDateSelected(day);
+              const isDisabled = isDateDisabled(day);
               return (
                 <div
                   key={day}
-                  css={calendarDay(isDateSelected(day))}
-                  onClick={() => onDateClick(day)}
+                  css={calendarDay(isSelected, isDisabled)}
+                  onClick={() => {
+                    if (!isDisabled || isSelected) {
+                      onDateClick(day);
+                    }
+                  }}
                 >
-                  <Text typo="body_M" color={isDateSelected(day) ? 'white' : 'text_primary'}>
+                  <Text
+                    typo="body_M"
+                    color={isDisabled ? 'text_disabled' : isSelected ? 'white' : 'text_primary'}
+                  >
                     {day}
                   </Text>
                 </div>
@@ -127,7 +137,7 @@ export function ScheduleSection({
       </div>
 
       <div css={timeSection}>
-        <Text typo="body_M" color="text_primary">
+        <Text typo="title_S" color="text_primary">
           {t('form.schedule.selectTimes')}
         </Text>
 
@@ -139,65 +149,46 @@ export function ScheduleSection({
 
         {selectedDates.map((date) => {
           const dateString = formatDateKey(date);
-          const hasSelectedTime = selectedTimes[dateString]?.length > 0;
+          const selectedTimeList = selectedTimes[dateString] ?? [];
+          const hasSelectedTime = selectedTimeList.length > 0;
           const isOpen = timeSelectionOpen[dateString] || false;
 
           return (
             <div key={dateString} css={timeGroup}>
-              <Text typo="body_S" color="text_secondary">
+              <Text typo="button_M" color="primary30">
                 {formatDateForDisplay(date)}
               </Text>
 
-              {hasSelectedTime ? (
-                <>
-                  <div css={selectedTimesBox()} onClick={() => onToggleTimeSelection(dateString)}>
-                    <Text typo="body_M" color="text_primary">
-                      {selectedTimes[dateString].join(' / ')}
-                    </Text>
-                    <div css={timeBoxChevron(isOpen)}>
-                      <Chevron width={20} height={20} />
-                    </div>
-                  </div>
+              <div css={selectedTimesBox()} onClick={() => onToggleTimeSelection(dateString)}>
+                <Text typo="body_M" color={hasSelectedTime ? 'text_primary' : 'text_tertiary'}>
+                  {hasSelectedTime
+                    ? selectedTimeList.join(' / ')
+                    : t('form.schedule.selectTimesPlaceholder')}
+                </Text>
+                <div css={timeBoxChevron(isOpen)}>
+                  <Chevron width={20} height={20} />
+                </div>
+              </div>
 
-                  {isOpen && (
-                    <div css={timeChips}>
-                      {availableTimes.map((time) => (
-                        <div
-                          key={time}
-                          css={timeChip(selectedTimes[dateString]?.includes(time) || false)}
-                          onClick={() => onTimeSelect(dateString, time)}
-                        >
-                          <Text
-                            typo="body_S"
-                            color={
-                              selectedTimes[dateString]?.includes(time) ? 'white' : 'text_secondary'
-                            }
-                          >
-                            {time}
-                          </Text>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <select
-                  css={select}
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onTimeSelect(dateString, e.target.value);
-                      onToggleTimeSelection(dateString);
-                    }
-                  }}
-                >
-                  <option value="">{t('form.schedule.selectTimesPlaceholder')}</option>
+              {isOpen && (
+                <div css={timeChips}>
                   {availableTimes.map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
+                    <div
+                      key={time}
+                      css={timeChip(selectedTimes[dateString]?.includes(time) || false)}
+                      onClick={() => onTimeSelect(dateString, time)}
+                    >
+                      <Text
+                        typo="body_S"
+                        color={
+                          selectedTimes[dateString]?.includes(time) ? 'white' : 'text_secondary'
+                        }
+                      >
+                        {time}
+                      </Text>
+                    </div>
                   ))}
-                </select>
+                </div>
               )}
             </div>
           );

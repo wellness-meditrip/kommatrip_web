@@ -10,5 +10,8 @@
   "bookingInfo": "Booking Information",
   "refundPolicy": "Refund Policy",
   "infoPending": "Information is being prepared.",
-  "bookNow": "Book Now"
+  "bookNow": "Book Now",
+  "imageAlt": "Program image",
+  "detailImageAlt": "Program details image",
+  "step": "Step {number}"
 }

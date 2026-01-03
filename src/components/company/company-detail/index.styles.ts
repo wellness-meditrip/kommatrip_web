@@ -118,6 +118,34 @@ export const carouselDotActive = css`
   cursor: pointer;
 `;
 
+export const imageLoadingOverlay = css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  z-index: 3;
+
+  background: linear-gradient(180deg, rgb(255 255 255 / 65%), rgb(255 255 255 / 35%));
+  inset: 0;
+  backdrop-filter: blur(4px);
+`;
+
+export const imageLoadingSpinner = css`
+  width: 28px;
+  height: 28px;
+  border: 2px solid ${theme.colors.gray200};
+  border-radius: 50%;
+
+  animation: spin 0.8s linear infinite;
+  border-top-color: ${theme.colors.primary50};
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
 export const DetailsWrapper = css`
   display: flex;
   flex-direction: column;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
@@ -15,7 +15,7 @@ import {
   usePostSignupMutation,
 } from '@/queries/auth';
 
-import { getErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
+import { getLocalizedErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -69,6 +69,7 @@ export default function Signup() {
 
   const email = watch('email');
   const password = watch('password');
+  const verificationCodeValue = watch('verificationCode');
 
   const handleSendEmail = () => {
     if (!email) {
@@ -87,14 +88,15 @@ export default function Signup() {
     verifyEmailCodeMutation.mutate(email, {
       onSuccess: () => {
         setEmailVerified(true);
-        showToast({ title: t('verificationCodeSent'), icon: 'check' });
       },
       onError: (error: unknown) => {
         const axiosError = error as AxiosError;
         const status = axiosError?.response?.status;
-        const errorMessage = getErrorMessage(error, t('failedToSendCode'));
+        const errorData = axiosError?.response?.data as { detail?: string } | undefined;
+        const rawErrorMessage = errorData?.detail || '';
+        const errorMessage = getLocalizedErrorMessage(error, t('failedToSendCode'));
 
-        if (status === 400 && (errorMessage.includes('가입') || errorMessage.includes('이미'))) {
+        if (status === 400 && rawErrorMessage.includes('이미 가입된 이메일')) {
           // 이미 가입된 이메일 에러
           setError('email', { message: t('emailAlreadyRegistered') });
         } else {
@@ -110,7 +112,6 @@ export default function Signup() {
 
     if (!verificationCode) {
       setError('verificationCode', { message: tValidation('verificationCode.required') });
-      showToast({ title: t('pleaseEnterCode'), icon: 'exclaim' });
       return;
     }
 
@@ -139,7 +140,6 @@ export default function Signup() {
 
           setVerificationToken(token);
           setCodeVerified(true);
-          showToast({ title: t('emailVerificationCompleted'), icon: 'check' });
         },
         onError: (error: unknown) => {
           const axiosError = error as AxiosError;
@@ -166,8 +166,6 @@ export default function Signup() {
           } else {
             // 코드 틀림 에러
             setError('verificationCode', { message: t('invalidCode') });
-            const errorMessage = getErrorMessage(error, t('invalidCode'));
-            showToast({ title: errorMessage, icon: 'exclaim' });
           }
         },
       }
@@ -195,7 +193,7 @@ export default function Signup() {
           router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, t('failedToCreateAccount'));
+          const errorMessage = getLocalizedErrorMessage(error, t('failedToCreateAccount'));
           showToast({ title: errorMessage, icon: 'exclaim' });
         },
       }
@@ -210,6 +208,25 @@ export default function Signup() {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
     router.push(`${ROUTES.SEARCH}${query}`);
   };
+
+  useEffect(() => {
+    if (!codeVerified) return;
+
+    if (!verificationCodeValue) {
+      setCodeVerified(false);
+      setVerificationToken('');
+    }
+  }, [verificationCodeValue, codeVerified]);
+
+  useEffect(() => {
+    if (!email) return;
+    if (!emailVerified && !codeVerified) return;
+
+    setEmailVerified(false);
+    setCodeVerified(false);
+    setVerificationToken('');
+    setValue('verificationCode', '');
+  }, [email, emailVerified, codeVerified, setValue]);
 
   return (
     <Layout isAppBarExist={false}>
@@ -253,7 +270,7 @@ export default function Signup() {
               </div>
               {emailVerified && !errors.email && (
                 <Text typo="body_S" color="primary50" css={statusMessage}>
-                  * {t('emailVerified')}
+                  * {t('verificationCodeSent')}
                 </Text>
               )}
             </div>
