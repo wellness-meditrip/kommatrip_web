@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useMemo, useState } from 'react';
 import { Text } from '../text';
-import { CalenderWhite, ChevronLeft, ChevronRight } from '@/icons';
+import { CalenderWhite, ChevronLeft, ChevronRight, GnbCalendarActive } from '@/icons';
 import {
   calendarContainer,
   calendarHeader,
@@ -32,6 +32,7 @@ interface RangeValue {
 interface Props {
   selectedRange?: RangeValue;
   onRangeSelect?: (range: RangeValue) => void;
+  variant?: 'default' | 'desktop';
 }
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -64,10 +65,23 @@ const getCalendarDays = (baseDate: Date) => {
   return days;
 };
 
-export function Calendar({ selectedRange, onRangeSelect }: Props) {
+export function Calendar({ selectedRange, onRangeSelect, variant = 'default' }: Props) {
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
 
   const days = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
+  const dateLabel = useMemo(() => {
+    if (!selectedRange?.start) return 'Select dates';
+    const formatDateWithDay = (date: Date) => {
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+      return `${month}.${day}(${weekday})`;
+    };
+    if (!selectedRange.end) {
+      return formatDateWithDay(selectedRange.start);
+    }
+    return `${formatDateWithDay(selectedRange.start)} - ${formatDateWithDay(selectedRange.end)}`;
+  }, [selectedRange]);
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => addMonths(prev, -1));
@@ -111,9 +125,13 @@ export function Calendar({ selectedRange, onRangeSelect }: Props) {
   return (
     <div css={calendarContainer}>
       <div css={calendarHeader}>
-        <CalenderWhite width="22px" height="22px" />
-        <Text typo="body_L" color="text_primary">
-          Select dates
+        {variant === 'desktop' ? (
+          <GnbCalendarActive width="22px" height="22px" />
+        ) : (
+          <CalenderWhite width="22px" height="22px" />
+        )}
+        <Text typo="body_L" color={variant === 'desktop' ? 'text_primary' : 'white'}>
+          {dateLabel}
         </Text>
       </div>
 
@@ -156,17 +174,18 @@ export function Calendar({ selectedRange, onRangeSelect }: Props) {
                   dayCell,
                   !isCurrentMonth && dayCellOutside,
                   isInRange && rangeMiddleCell,
-                  isStart && !isEnd && rangeStartCell,
-                  isEnd && !isStart && rangeEndCell,
+                  hasRange && isStart && !isEnd && rangeStartCell,
+                  hasRange && isEnd && !isStart && rangeEndCell,
                   isStart && isEnd && rangeSingleCell,
+                  isSingle && rangeSingleCell,
                 ]}
               >
                 <button
                   type="button"
                   css={[
                     dayButton,
-                    isStart && !isEnd && rangeStartButton,
-                    isEnd && !isStart && rangeEndButton,
+                    hasRange && isStart && !isEnd && rangeStartButton,
+                    hasRange && isEnd && !isStart && rangeEndButton,
                     isSingle && rangeSingleButton,
                   ]}
                   onClick={() => handleDateClick(date)}
