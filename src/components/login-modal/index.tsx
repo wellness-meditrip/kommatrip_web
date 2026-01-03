@@ -4,6 +4,7 @@ import { ROUTES } from '@/constants';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { useTranslations } from 'next-intl';
+import { Smile } from '@/icons';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -35,25 +36,7 @@ export function LoginModal({ isOpen, onClose, onCancel }: LoginModalProps) {
       <Dim fullScreen onClick={handleCancel} />
       <div css={modalWrapper}>
         <div css={iconContainer}>
-          <div css={smileyIcon}>
-            <svg
-              width="80"
-              height="80"
-              viewBox="0 0 80 80"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="40" cy="40" r="36" stroke={theme.colors.primary50} strokeWidth="3" />
-              <circle cx="28" cy="32" r="3.5" fill={theme.colors.primary50} />
-              <circle cx="52" cy="32" r="3.5" fill={theme.colors.primary50} />
-              <path
-                d="M28 50C28 46 32 44 40 44C48 44 52 46 52 50"
-                stroke={theme.colors.primary50}
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
+          <Smile width={40} height={40} />
         </div>
 
         <div css={contentContainer}>
@@ -103,14 +86,6 @@ const iconContainer = css`
   align-items: center;
   padding-top: 40px;
   padding-bottom: 24px;
-`;
-
-const smileyIcon = css`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80px;
-  height: 80px;
 `;
 
 const contentContainer = css`
