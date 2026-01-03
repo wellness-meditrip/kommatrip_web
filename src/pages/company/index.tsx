@@ -181,6 +181,9 @@ export default function CompanyPage() {
     );
   }, [companies, keyword, selectedCategories]);
 
+  const hasActiveFilters =
+    keyword.trim().length > 0 || selectedCategories.length > 0 || Boolean(selectedRange.start);
+
   // 디버깅: API 응답 구조 확인
   useEffect(() => {
     if (!data) return;
@@ -404,10 +407,12 @@ export default function CompanyPage() {
           {error && <Empty title={t('loadFail')} />}
 
           {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
-          {!isLoading && !error && filteredCompanies.length === 0 && keyword.trim() && (
+          {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
             <div css={recommendedSection}>
               <NoResults
-                title={t('noResultsTitle', { keyword })}
+                title={
+                  keyword.trim().length > 0 ? t('noResultsTitle', { keyword }) : t('list.noResults')
+                }
                 subtitle={t('noResultsSubtitle')}
               />
               <CompanyList
@@ -452,7 +457,7 @@ export default function CompanyPage() {
           )}
 
           {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
-          {!isLoading && !error && companies.length === 0 && !keyword.trim() && (
+          {!isLoading && !error && companies.length === 0 && !hasActiveFilters && (
             <Empty title={t('emptyList')} />
           )}
         </div>
