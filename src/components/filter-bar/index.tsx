@@ -18,20 +18,22 @@ interface FilterBarProps {
   layout?: 'inline' | 'stacked';
   categories?: { id: string; name: string; nameKey?: string; icon: ReactNode }[];
   centered?: boolean;
+  sticky?: boolean;
 }
 
-export function FilterBar({
-  selectedCategories,
-  selectedRange,
-  onDateSelect,
-  onToggleCategory,
-  onClearAll,
-  variant = 'default',
-  showDate = true,
-  layout = 'inline',
-  categories,
-  centered = false,
-}: FilterBarProps) {
+export function FilterBar(props: FilterBarProps) {
+  const {
+    selectedCategories,
+    selectedRange,
+    onDateSelect,
+    onToggleCategory,
+    variant = 'default',
+    showDate = true,
+    layout = 'inline',
+    categories,
+    centered = false,
+    sticky = true,
+  } = props;
   const t = useTranslations('categories');
   const filteredCategories =
     categories ?? CATEGORIES.filter((category) => category.id !== 'all-care');
@@ -54,7 +56,7 @@ export function FilterBar({
     : 'Select dates';
 
   return (
-    <div css={filterContainer({ variant, centered })}>
+    <div css={filterContainer({ variant, centered, sticky })}>
       <div css={filterContent({ layout })}>
         {showDate && (
           <>
@@ -77,10 +79,7 @@ export function FilterBar({
           return (
             <button
               key={category.id}
-              css={[
-                filterButton({ variant, layout }),
-                isSelected && selectedButton({ variant, layout }),
-              ]}
+              css={[filterButton({ variant, layout }), isSelected && selectedButton({ variant })]}
               onClick={() => {
                 onToggleCategory?.(category.id);
               }}
@@ -103,12 +102,14 @@ export function FilterBar({
 const filterContainer = ({
   variant,
   centered,
+  sticky,
 }: {
   variant: 'default' | 'light';
   centered: boolean;
+  sticky: boolean;
 }) => css`
-  position: sticky;
-  top: 0;
+  position: ${sticky ? 'sticky' : 'static'};
+  top: ${sticky ? '0' : 'auto'};
   background-color: ${variant === 'light' ? 'transparent' : theme.colors.primary80};
   width: ${centered ? 'fit-content' : '100%'};
   flex-shrink: 0;
@@ -211,13 +212,7 @@ const filterButton = ({
   }
 `;
 
-const selectedButton = ({
-  variant,
-  layout,
-}: {
-  variant: 'default' | 'light';
-  layout: 'inline' | 'stacked';
-}) => css`
+const selectedButton = ({ variant }: { variant: 'default' | 'light' }) => css`
   background-color: ${theme.colors.primary10Opacity60};
   border-color: ${variant === 'light' ? theme.colors.border_default : 'transparent'};
 `;
