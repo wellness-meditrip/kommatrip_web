@@ -32,10 +32,11 @@ export default function SearchPage() {
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기
   useEffect(() => {
-    if (router.isReady && router.query.q) {
-      setSearchValue(router.query.q as string);
+    if (!router.isReady) return;
+    if (typeof router.query.q === 'string') {
+      setSearchValue(router.query.q);
     }
-  }, [router.isReady, router.query.q]);
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -53,7 +54,7 @@ export default function SearchPage() {
     if (nextStart || nextEnd) {
       setSelectedRange({ start: nextStart, end: nextEnd });
     }
-  }, [router.isReady, router.query.date, router.query.endDate]);
+  }, [router.isReady, router.query]);
 
   const handleSearch = () => {
     const query: Record<string, string> = {};
@@ -143,20 +144,21 @@ export default function SearchPage() {
       }}
     >
       <div css={wrapper}>
-        {isDesktop ? (
+        <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={setSearchValue}
             onSearch={handleSearch}
             showSearch={false}
           />
-        ) : (
+        </div>
+        <div css={mobileAppBar}>
           <AppBar
             onBackClick={() => router.back()}
             leftButton={true}
             logo="light"
             buttonType="white"
           />
-        )}
+        </div>
 
         {!isDesktop && (
           <SearchBar
@@ -221,6 +223,22 @@ const wrapper = css`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
 `;
 
 const contentContainer = css`
