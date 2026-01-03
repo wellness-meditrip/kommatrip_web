@@ -16,5 +16,14 @@ export const wrapper = css`
   max-width: ${theme.size.maxWidth};
   padding: 0 18px 21px;
 
-  background: ${theme.colors.whiteGradient100} !important;
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    position: static;
+    bottom: auto;
+    left: auto;
+    transform: none;
+
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
 `;
