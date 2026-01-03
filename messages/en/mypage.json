@@ -39,5 +39,40 @@
     "title": "Settings",
     "language": "Language",
     "notifications": "Notifications"
+  },
+  "menu": {
+    "userInfo": "My Information",
+    "reservations": "Reservations",
+    "reviews": "My Reviews",
+    "settings": "Settings",
+    "privacy": "Service Improvement",
+    "terms": "Terms of Use"
+  },
+  "detail": {
+    "userInfo": "My Information",
+    "reservations": "Reservations",
+    "reviews": "My Reviews",
+    "settings": "Settings",
+    "privacy": "Service Improvement",
+    "terms": "Terms of Use",
+    "description": "Check the details for the selected menu.",
+    "goToPage": "Go to details"
+  },
+  "profile": {
+    "manage": "My Information",
+    "fallbackName": "ONYU Member",
+    "imageAlt": "Profile image"
+  },
+  "improvement": {
+    "title": "Help Improve ONYU",
+    "subtitle": "Help us refine your experience."
+  },
+  "sections": {
+    "myServices": "My Services",
+    "support": "Customer Support"
+  },
+  "iframe": {
+    "improvementTitle": "ONYU service improvement form",
+    "termsTitle": "ONYU terms of use"
   }
 }

@@ -10,5 +10,8 @@
   "bookingInfo": "予約案内",
   "refundPolicy": "返金規定",
   "infoPending": "情報準備中です。",
-  "bookNow": "今すぐ予約"
+  "bookNow": "今すぐ予約",
+  "imageAlt": "プログラム画像",
+  "detailImageAlt": "プログラム詳細画像",
+  "step": "ステップ{number}"
 }

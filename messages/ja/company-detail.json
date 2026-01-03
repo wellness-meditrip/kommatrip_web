@@ -1,5 +1,12 @@
 {
   "loading": "施設情報を読み込み中...",
   "loadFail": "施設情報を読み込めませんでした。",
-  "infoPending": "情報準備中です。"
+  "infoPending": "情報準備中です。",
+  "tabs": {
+    "info": "情報",
+    "program": "プログラム",
+    "review": "レビュー",
+    "notice": "お知らせ"
+  },
+  "bookNow": "今すぐ予約"
 }

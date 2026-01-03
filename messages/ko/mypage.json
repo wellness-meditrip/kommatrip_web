@@ -39,5 +39,40 @@
     "title": "설정",
     "language": "언어",
     "notifications": "알림"
+  },
+  "menu": {
+    "userInfo": "내 정보 관리",
+    "reservations": "예약내역",
+    "reviews": "내 리뷰",
+    "settings": "설정",
+    "privacy": "서비스 개선",
+    "terms": "이용약관"
+  },
+  "detail": {
+    "userInfo": "내 정보",
+    "reservations": "예약내역",
+    "reviews": "내 리뷰",
+    "settings": "설정",
+    "privacy": "서비스 개선",
+    "terms": "이용약관",
+    "description": "선택한 메뉴의 상세 내용을 확인하세요.",
+    "goToPage": "상세 페이지 이동"
+  },
+  "profile": {
+    "manage": "내 정보 관리",
+    "fallbackName": "ONYU 회원",
+    "imageAlt": "프로필 이미지"
+  },
+  "improvement": {
+    "title": "ONYU 개선에 참여하기",
+    "subtitle": "경험 개선을 위해 의견을 들려주세요."
+  },
+  "sections": {
+    "myServices": "내 서비스",
+    "support": "고객 지원"
+  },
+  "iframe": {
+    "improvementTitle": "ONYU 서비스 개선 설문",
+    "termsTitle": "ONYU 이용약관"
   }
 }
