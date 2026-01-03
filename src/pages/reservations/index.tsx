@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppBar,
+  DesktopAppBar,
   Layout,
   CTAButton,
   LoginModal,
@@ -11,14 +12,18 @@ import {
   ContactSection,
   InquiriesSection,
   ScheduleSection,
+  Text,
+  Dim,
 } from '@/components';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { PaymentLocation } from '@/icons';
-import { useRequireAuth, useToast } from '@/hooks';
+import { useRequireAuth, useToast, useMediaQuery } from '@/hooks';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
+import { useGetUserProfileQuery } from '@/queries/user';
+import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { ROUTES } from '@/constants';
 import { CompanyDetail } from '@/models';
 import { useCurrentLocale } from '@/i18n/navigation';
@@ -30,6 +35,7 @@ export default function ReservationPage() {
   const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const { showToast } = useToast();
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const companyIdQuery = Array.isArray(router.query.companyId)
@@ -49,6 +55,9 @@ export default function ReservationPage() {
   const { data: programList, isLoading: isProgramLoading } = useGetProgramCompanyListQuery({
     company_id: resolvedCompanyId,
   });
+  const { data: profileData } = useGetUserProfileQuery();
+  const { mutateAsync: createReservation, isPending: isCreatingReservation } =
+    usePostCreateReservationMutation();
   const company = companyData?.company ?? prefetchedCompany;
   const programs = programList?.programs ?? [];
   const contactMethods = useMemo(
@@ -91,8 +100,19 @@ export default function ReservationPage() {
   // Contact Information
   const [email, setEmail] = useState('');
   const [selectedContactMethod, setSelectedContactMethod] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
+  const [contactValues, setContactValues] = useState<{
+    line: string;
+    whatsapp: string;
+    kakao: string;
+    phone: string;
+  }>({
+    line: '',
+    whatsapp: '',
+    kakao: '',
+    phone: '',
+  });
   const [language, setLanguage] = useState('korean');
+  const hasInitializedProfile = useRef(false);
 
   // Inquiries
   const [inquiryText, setInquiryText] = useState('');
@@ -102,10 +122,34 @@ export default function ReservationPage() {
 
   // Reservation - times (max 3 per date)
   const [selectedTimes, setSelectedTimes] = useState<{ [key: string]: string[] }>({});
-
-  // Time selection visibility toggle for each date
   const [timeSelectionOpen, setTimeSelectionOpen] = useState<{ [key: string]: boolean }>({});
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8)); // September 2025
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<{
+    company_id: number;
+    company_name: string;
+    company_address: string;
+    company_tags: string[];
+    program_id: number;
+    program_name: string;
+    program_duration_minutes: number;
+    program_price: number;
+    preferred_contact: string;
+    language_preference: string;
+    availability_options: Array<{
+      date: string;
+      times: string[];
+    }>;
+    inquiries: string;
+    contact_line: string;
+    contact_whatsapp: string;
+    contact_kakao: string;
+    contact_phone: string;
+  } | null>(null);
+
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -129,17 +173,60 @@ export default function ReservationPage() {
     }
   }, [router.query.programId, selectedProgramId]);
 
+  useEffect(() => {
+    if (!profileData?.user) return;
+    const user = profileData.user;
+    setEmail(user.email ?? '');
+    if (hasInitializedProfile.current) return;
+
+    const nextContactValues = {
+      line: user.line ?? '',
+      whatsapp: user.whatsapp ?? '',
+      kakao: user.kakao ?? '',
+      phone: user.phone ?? '',
+    };
+    setContactValues(nextContactValues);
+    const preferredMethod =
+      selectedContactMethod ||
+      (['line', 'whatsapp', 'kakao', 'phone'] as const).find(
+        (method) => nextContactValues[method].trim().length > 0
+      ) ||
+      '';
+
+    if (!selectedContactMethod && preferredMethod) {
+      setSelectedContactMethod(preferredMethod);
+    }
+    hasInitializedProfile.current = true;
+  }, [profileData, selectedContactMethod]);
+
+  const handleSelectContactMethod = (method: string) => {
+    setSelectedContactMethod(method);
+  };
+
+  const handleContactValueChange = (value: string) => {
+    if (!selectedContactMethod) return;
+    setContactValues((prev) => ({
+      ...prev,
+      [selectedContactMethod]: value,
+    }));
+  };
+
   // 로딩 중이면 대기
   if (isLoading) {
     return (
       <Layout isAppBarExist={false}>
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          buttonType="dark"
-          title={t('title')}
-          backgroundColor="bg_surface1"
-        />
+        <div css={desktopAppBar}>
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar
+            onBackClick={router.back}
+            leftButton={true}
+            buttonType="dark"
+            title={t('title')}
+            backgroundColor="bg_surface1"
+          />
+        </div>
       </Layout>
     );
   }
@@ -148,13 +235,18 @@ export default function ReservationPage() {
   if (!isAuthenticated) {
     return (
       <Layout isAppBarExist={false}>
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          buttonType="dark"
-          title={t('title')}
-          backgroundColor="bg_surface1"
-        />
+        <div css={desktopAppBar}>
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar
+            onBackClick={router.back}
+            leftButton={true}
+            buttonType="dark"
+            title={t('title')}
+            backgroundColor="bg_surface1"
+          />
+        </div>
         <LoginModal
           isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
@@ -197,21 +289,40 @@ export default function ReservationPage() {
     const isAlreadySelected = selectedDates.some(
       (date) => formatDateForRequest(date) === dateString
     );
+    if (isPastDate(clickedDate) && !isAlreadySelected) {
+      return;
+    }
 
     if (isAlreadySelected) {
       setSelectedDates(selectedDates.filter((date) => formatDateForRequest(date) !== dateString));
       const newTimes = { ...selectedTimes };
       delete newTimes[dateString];
       setSelectedTimes(newTimes);
-
       const newTimeSelectionOpen = { ...timeSelectionOpen };
       delete newTimeSelectionOpen[dateString];
       setTimeSelectionOpen(newTimeSelectionOpen);
-    } else {
-      if (selectedDates.length < 2) {
-        setSelectedDates([...selectedDates, clickedDate]);
-      }
+      return;
     }
+
+    if (selectedDates.length < 2) {
+      const nextDates = [...selectedDates, clickedDate].sort((a, b) => a.getTime() - b.getTime());
+      setSelectedDates(nextDates);
+      return;
+    }
+
+    const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
+    const removedDate = sortedDates[0];
+    const nextDates = [...sortedDates.slice(1), clickedDate].sort(
+      (a, b) => a.getTime() - b.getTime()
+    );
+    const removedDateKey = formatDateForRequest(removedDate);
+    const newTimes = { ...selectedTimes };
+    delete newTimes[removedDateKey];
+    setSelectedTimes(newTimes);
+    const newTimeSelectionOpen = { ...timeSelectionOpen };
+    delete newTimeSelectionOpen[removedDateKey];
+    setTimeSelectionOpen(newTimeSelectionOpen);
+    setSelectedDates(nextDates);
   };
 
   const handleTimeSelect = (dateString: string, time: string) => {
@@ -244,6 +355,11 @@ export default function ReservationPage() {
     return selectedDates.some((selected) => formatDateForRequest(selected) === dateString);
   };
 
+  const isDateDisabled = (day: number) => {
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    return isPastDate(date);
+  };
+
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
 
   const prevMonth = () => {
@@ -255,12 +371,11 @@ export default function ReservationPage() {
   };
 
   const formatDateForDisplay = (date: Date) => {
-    return new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      weekday: 'short',
-    }).format(date);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+    return `${year} . ${month} . ${day} (${weekday})`;
   };
 
   const formatDuration = (minutes?: number) => {
@@ -322,7 +437,11 @@ export default function ReservationPage() {
       return;
     }
 
-    if (!contactPhone.trim()) {
+    const selectedContactValue = selectedContactMethod
+      ? (contactValues[selectedContactMethod as keyof typeof contactValues] ?? '')
+      : '';
+
+    if (!selectedContactValue.trim()) {
       showToast({ title: t('validation.enterContact'), icon: 'exclaim' });
       return;
     }
@@ -396,11 +515,17 @@ export default function ReservationPage() {
       language_preference: normalizeLanguage(language),
       availability_options: availabilityOptions,
       inquiries: inquiryText,
-      contact_line: normalizedContact === 'line' ? contactPhone : '',
-      contact_whatsapp: normalizedContact === 'whatsapp' ? contactPhone : '',
-      contact_kakao: normalizedContact === 'kakao' ? contactPhone : '',
-      contact_phone: normalizedContact === 'phone' ? contactPhone : '',
+      contact_line: contactValues.line,
+      contact_whatsapp: contactValues.whatsapp,
+      contact_kakao: contactValues.kakao,
+      contact_phone: contactValues.phone,
     };
+
+    if (isDesktop) {
+      setPendingDraft(draft);
+      setIsPaymentModalOpen(true);
+      return;
+    }
 
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
@@ -412,16 +537,80 @@ export default function ReservationPage() {
     });
   };
 
+  const handleConfirmPayment = async () => {
+    if (!pendingDraft) return;
+    try {
+      await createReservation({
+        program_id: pendingDraft.program_id,
+        preferred_contact: pendingDraft.preferred_contact,
+        language_preference: pendingDraft.language_preference as
+          | 'korean'
+          | 'english'
+          | 'chinese'
+          | 'japanese',
+        availability_options: pendingDraft.availability_options,
+        inquiries: pendingDraft.inquiries,
+        contact_line: pendingDraft.contact_line,
+        contact_whatsapp: pendingDraft.contact_whatsapp,
+        contact_kakao: pendingDraft.contact_kakao,
+        contact_phone: pendingDraft.contact_phone,
+      });
+
+      if (typeof window !== 'undefined') {
+        const primaryOption = pendingDraft.availability_options[0];
+        const primaryTime = primaryOption?.times?.[0] ?? '';
+        window.sessionStorage.setItem(
+          'reservation_complete',
+          JSON.stringify({
+            company_name: pendingDraft.company_name,
+            program_name: pendingDraft.program_name,
+            program_duration_minutes: pendingDraft.program_duration_minutes,
+            date: primaryOption?.date ?? '',
+            time: primaryTime,
+          })
+        );
+      }
+
+      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`);
+    } catch {
+      showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
+    }
+  };
+
+  const selectedProgram = programs.find((program) => program.id === selectedProgramId);
+  const summaryDate = selectedDates[0];
+  const summaryDateKey = summaryDate ? formatDateForRequest(summaryDate) : '';
+  const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
+  const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
+  const summaryPrice = selectedProgram?.price ?? null;
+  const summaryPriceText =
+    summaryPrice == null ? '-' : `${formatPrice(summaryPrice)} ${t('payment.currency')}`;
+
   return (
     <Layout isAppBarExist={false}>
-      <AppBar
-        onBackClick={router.back}
-        leftButton={true}
-        buttonType="dark"
-        title={t('title')}
-        backgroundColor="bg_surface1"
-      />
+      <div css={desktopAppBar}>
+        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+      </div>
+      <div css={mobileAppBar}>
+        <AppBar
+          onBackClick={router.back}
+          leftButton={true}
+          buttonType="dark"
+          title={t('title')}
+          backgroundColor="bg_surface1"
+        />
+      </div>
       <div css={pageWrapper}>
+        {isDesktop && (
+          <div css={desktopHeader}>
+            <Text typo="title_L" color="text_primary">
+              {t('title')}
+            </Text>
+            <Text typo="body_M" color="text_tertiary">
+              {t('form.schedule.selectDates')}
+            </Text>
+          </div>
+        )}
         {!hasValidCompanyId && (
           <div css={emptyContainer}>
             <Empty title={t('emptyCompany')} />
@@ -432,82 +621,154 @@ export default function ReservationPage() {
             <Loading title={t('loading')} />
           </div>
         )}
-        {/* Company Info */}
-        {hasValidCompanyId && company && (
-          <CompanyInfoCard
-            name={company.name}
-            address={company.address}
-            tags={company.tags ?? []}
-            addressIconNode={<PaymentLocation width={16} height={16} />}
-            variant="payment"
-          />
-        )}
 
-        {/* Programs Section */}
         {hasValidCompanyId && (
-          <ProgramSection
-            isOpen={isProgramsOpen}
-            onToggle={() => setIsProgramsOpen((prev) => !prev)}
-            programs={programs}
-            selectedProgramId={selectedProgramId}
-            onSelectProgram={(programId) =>
-              setSelectedProgramId((prev) => (prev === programId ? null : programId))
-            }
-            formatDuration={formatDuration}
-            formatPrice={formatPrice}
-          />
-        )}
+          <div css={contentGrid}>
+            <div css={sideColumn}>
+              <div css={sidePanel}>
+                {company && (
+                  <CompanyInfoCard
+                    name={company.name}
+                    address={company.address}
+                    tags={company.tags ?? []}
+                    addressIconNode={<PaymentLocation width={16} height={16} />}
+                    variant="payment"
+                  />
+                )}
+                <div css={desktopOnly}>
+                  <div css={summaryCard}>
+                    <Text typo="title_M" color="text_primary">
+                      {t('payment.bookingInfo')}
+                    </Text>
+                    <div css={summaryRow}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.date')}
+                      </Text>
+                      <Text typo="title_S" color="text_primary">
+                        {summaryDate ? formatDateForDisplay(summaryDate) : '-'}
+                      </Text>
+                    </div>
+                    <div css={summaryRow}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.time')}
+                      </Text>
+                      <Text typo="title_S" color="text_primary">
+                        {summaryTimeText}
+                      </Text>
+                    </div>
+                    <div css={summaryRow}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.program')}
+                      </Text>
+                      <Text typo="title_S" color="text_primary" css={summaryValueRight}>
+                        {selectedProgram
+                          ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
+                              'payment.minutes'
+                            )})`
+                          : '-'}
+                      </Text>
+                    </div>
+                  </div>
 
-        {/* Contact Information Section */}
-        {hasValidCompanyId && (
-          <ContactSection
-            isOpen={isContactOpen}
-            onToggle={() => setIsContactOpen((prev) => !prev)}
-            contactMethods={contactMethods}
-            selectedContactMethod={selectedContactMethod}
-            onSelectMethod={setSelectedContactMethod}
-            email={email}
-            onEmailChange={setEmail}
-            contactPhone={contactPhone}
-            onPhoneChange={setContactPhone}
-            language={language}
-            onLanguageChange={setLanguage}
-            languageOptions={languageOptions}
-          />
-        )}
+                  <div css={summaryCard}>
+                    <Text typo="title_M" color="text_primary">
+                      {t('payment.paymentAmount')}
+                    </Text>
+                    <div css={summaryRow}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.paymentAmountLabel')}
+                      </Text>
+                      <Text typo="body_M" color="text_primary">
+                        {summaryPriceText}
+                      </Text>
+                    </div>
+                    <div css={summaryDivider} />
+                    <div css={summaryRow}>
+                      <Text typo="title_S" color="text_primary">
+                        {t('payment.finalPaymentAmount')}
+                      </Text>
+                      <Text typo="title_S" color="primary50">
+                        {summaryPriceText}
+                      </Text>
+                    </div>
+                  </div>
 
-        {/* Inquiries Section */}
-        {hasValidCompanyId && (
-          <InquiriesSection
-            isOpen={isInquiriesOpen}
-            onToggle={() => setIsInquiriesOpen((prev) => !prev)}
-            commonConcerns={commonConcerns}
-            inquiryText={inquiryText}
-            onInquiryChange={setInquiryText}
-          />
-        )}
+                  <div css={desktopSubmitWrapper}>
+                    <CTAButton onClick={handleSubmit} disabled={isCreatingReservation}>
+                      {t('payment.bookNow')}
+                    </CTAButton>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        {/* Reservation Section */}
-        {hasValidCompanyId && (
-          <ScheduleSection
-            currentMonth={currentMonth}
-            onPrevMonth={prevMonth}
-            onNextMonth={nextMonth}
-            daysInMonth={daysInMonth}
-            startingDayOfWeek={startingDayOfWeek}
-            isDateSelected={isDateSelected}
-            onDateClick={handleDateClick}
-            selectedDates={selectedDates}
-            selectedTimes={selectedTimes}
-            timeSelectionOpen={timeSelectionOpen}
-            onToggleTimeSelection={(dateString) =>
-              setTimeSelectionOpen((prev) => ({ ...prev, [dateString]: !prev[dateString] }))
-            }
-            onTimeSelect={handleTimeSelect}
-            availableTimes={availableTimes}
-            formatDateForDisplay={formatDateForDisplay}
-            formatDateKey={formatDateForRequest}
-          />
+            <div css={mainColumn}>
+              {/* Programs Section */}
+              <ProgramSection
+                isOpen={isProgramsOpen}
+                onToggle={() => setIsProgramsOpen((prev) => !prev)}
+                programs={programs}
+                selectedProgramId={selectedProgramId}
+                onSelectProgram={(programId) =>
+                  setSelectedProgramId((prev) => (prev === programId ? null : programId))
+                }
+                formatDuration={formatDuration}
+                formatPrice={formatPrice}
+              />
+
+              {/* Contact Information Section */}
+              <ContactSection
+                isOpen={isContactOpen}
+                onToggle={() => setIsContactOpen((prev) => !prev)}
+                contactMethods={contactMethods}
+                selectedContactMethod={selectedContactMethod}
+                onSelectMethod={handleSelectContactMethod}
+                email={email}
+                onEmailChange={setEmail}
+                isEmailReadOnly={true}
+                contactPhone={
+                  selectedContactMethod
+                    ? (contactValues[selectedContactMethod as keyof typeof contactValues] ?? '')
+                    : ''
+                }
+                onPhoneChange={handleContactValueChange}
+                language={language}
+                onLanguageChange={setLanguage}
+                languageOptions={languageOptions}
+              />
+
+              {/* Inquiries Section */}
+              <InquiriesSection
+                isOpen={isInquiriesOpen}
+                onToggle={() => setIsInquiriesOpen((prev) => !prev)}
+                commonConcerns={commonConcerns}
+                inquiryText={inquiryText}
+                onInquiryChange={setInquiryText}
+              />
+
+              {/* Reservation Section */}
+              <ScheduleSection
+                currentMonth={currentMonth}
+                onPrevMonth={prevMonth}
+                onNextMonth={nextMonth}
+                daysInMonth={daysInMonth}
+                startingDayOfWeek={startingDayOfWeek}
+                isDateSelected={isDateSelected}
+                onDateClick={handleDateClick}
+                selectedDates={selectedDates}
+                selectedTimes={selectedTimes}
+                timeSelectionOpen={timeSelectionOpen}
+                onToggleTimeSelection={(dateString) =>
+                  setTimeSelectionOpen((prev) => ({ ...prev, [dateString]: !prev[dateString] }))
+                }
+                isDateDisabled={isDateDisabled}
+                onTimeSelect={handleTimeSelect}
+                availableTimes={availableTimes}
+                formatDateForDisplay={formatDateForDisplay}
+                formatDateKey={formatDateForRequest}
+              />
+            </div>
+          </div>
         )}
 
         {/* Submit Button */}
@@ -517,6 +778,37 @@ export default function ReservationPage() {
           </div>
         )}
       </div>
+      {isPaymentModalOpen && pendingDraft && (
+        <>
+          <Dim fullScreen onClick={() => setIsPaymentModalOpen(false)} />
+          <div css={modalCard}>
+            <div css={modalText}>
+              <Text typo="title_M" color="text_primary">
+                {t('payment.submitTitle')}
+              </Text>
+              <Text typo="body_M" color="text_tertiary" css={modalDescription}>
+                {t('payment.submitDescription')}
+              </Text>
+            </div>
+            <div css={modalButtonRow}>
+              <button css={modalCancel} onClick={() => setIsPaymentModalOpen(false)}>
+                <Text typo="body_M" color="text_primary">
+                  {t('payment.cancel')}
+                </Text>
+              </button>
+              <button
+                css={modalSubmit}
+                onClick={handleConfirmPayment}
+                disabled={isCreatingReservation}
+              >
+                <Text typo="body_M" color="white">
+                  {t('payment.submit')}
+                </Text>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </Layout>
   );
@@ -526,6 +818,118 @@ export default function ReservationPage() {
 const pageWrapper = css`
   padding: 0 0 120px 0;
   background: ${theme.colors.bg_surface1};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding-bottom: 80px;
+  }
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
+`;
+
+const desktopHeader = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 24px auto 0;
+    padding: 0 40px;
+  }
+`;
+
+const contentGrid = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+    gap: 24px;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+`;
+
+const mainColumn = css`
+  display: flex;
+  flex-direction: column;
+  order: 2;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    order: 1;
+  }
+`;
+
+const sideColumn = css`
+  order: 1;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    order: 2;
+    position: sticky;
+    top: 24px;
+  }
+`;
+
+const sidePanel = css`
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    border: 1px solid ${theme.colors.border_default};
+    border-radius: 20px;
+    padding: 12px 16px;
+    background: ${theme.colors.bg_surface1};
+  }
+`;
+
+const desktopOnly = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+  }
+`;
+
+const summaryCard = css`
+  margin-top: 12px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const summaryRow = css`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const summaryValueRight = css`
+  text-align: right;
+`;
+
+const summaryDivider = css`
+  height: 1px;
+  background: ${theme.colors.border_default};
 `;
 
 const submitButtonWrapper = css`
@@ -536,6 +940,69 @@ const submitButtonWrapper = css`
   padding: 16px 18px;
   background: ${theme.colors.white};
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
+  }
+`;
+
+const desktopSubmitWrapper = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+    margin-top: 16px;
+  }
+`;
+
+const modalCard = css`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: ${theme.colors.white};
+  border-radius: 24px;
+  width: calc(100% - 48px);
+  max-width: 360px;
+  padding: 28px 24px 24px;
+  z-index: ${theme.zIndex.dialog};
+  text-align: center;
+  box-shadow: 0 16px 32px ${theme.colors.grayOpacity200};
+`;
+
+const modalText = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const modalDescription = css`
+  margin: 0;
+  line-height: 1.5;
+`;
+
+const modalButtonRow = css`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+`;
+
+const modalButtonBase = css`
+  border-radius: 999px;
+  padding: 12px 0;
+  border: 1px solid ${theme.colors.primary50};
+  background: ${theme.colors.white};
+  cursor: pointer;
+`;
+
+const modalCancel = css`
+  ${modalButtonBase};
+`;
+
+const modalSubmit = css`
+  ${modalButtonBase};
+  background: ${theme.colors.primary50};
 `;
 
 const loadingContainer = css`

@@ -57,24 +57,32 @@ export const dayHeader = css`
 `;
 
 export const emptyDay = css`
-  padding: 12px 0;
+  height: 40px;
 `;
 
-export const calendarDay = (isSelected: boolean) => css`
-  width: 43px;
-  height: 43px;
-  padding: 12px 0;
+export const calendarDay = (isSelected: boolean, isDisabled: boolean) => css`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
   border-radius: 50%;
 
   background: ${isSelected ? theme.colors.primary50 : 'transparent'};
-  text-align: center;
 
   transition: all 0.2s ease;
 
-  cursor: pointer;
+  cursor: ${isDisabled && !isSelected ? 'not-allowed' : 'pointer'};
+  pointer-events: ${isDisabled && !isSelected ? 'none' : 'auto'};
 
   &:hover {
-    background: ${isSelected ? theme.colors.primary50 : theme.colors.bg_surface1};
+    background: ${isSelected
+      ? theme.colors.primary50
+      : isDisabled
+        ? 'transparent'
+        : theme.colors.bg_surface1};
   }
 `;
 
@@ -96,9 +104,9 @@ export const selectedTimesBox = () => css`
   justify-content: space-between;
 
   margin-top: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
+  border-radius: 12px;
 
   background: ${theme.colors.white};
 
@@ -140,24 +148,6 @@ export const timeChip = (isSelected: boolean) => css`
   cursor: pointer;
 
   &:hover {
-    border-color: ${theme.colors.primary50};
-  }
-`;
-
-export const select = css`
-  width: 100%;
-  margin-top: 8px;
-  padding: 12px 16px;
-  border: 1px solid ${theme.colors.divider_2};
-  border-radius: 10px;
-
-  background: ${theme.colors.white};
-  font-size: 14px;
-
-  cursor: pointer;
-  outline: none;
-
-  &:focus {
     border-color: ${theme.colors.primary50};
   }
 `;

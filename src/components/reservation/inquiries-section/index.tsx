@@ -42,11 +42,11 @@ export function InquiriesSection({
       </div>
       {isOpen && (
         <div css={sectionContent}>
-          <Text typo="body_M" color="text_primary" css={inquiryTitle}>
+          <Text typo="title_S" color="text_primary" css={inquiryTitle}>
             {t('form.inquiries.subtitle')}
           </Text>
           <div css={concernsBox}>
-            <Text typo="body_S" color="text_secondary" css={concernsTitle}>
+            <Text typo="body_M" color="text_secondary" css={concernsTitle}>
               {t('form.inquiries.concernsTitle')}
             </Text>
             <ul css={concernsList}>

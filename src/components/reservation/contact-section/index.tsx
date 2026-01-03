@@ -26,6 +26,7 @@ interface Props {
   onSelectMethod: (method: string) => void;
   email: string;
   onEmailChange: (value: string) => void;
+  isEmailReadOnly?: boolean;
   contactPhone: string;
   onPhoneChange: (value: string) => void;
   language: string;
@@ -41,6 +42,7 @@ export function ContactSection({
   onSelectMethod,
   email,
   onEmailChange,
+  isEmailReadOnly = false,
   contactPhone,
   onPhoneChange,
   language,
@@ -48,6 +50,14 @@ export function ContactSection({
   languageOptions,
 }: Props) {
   const t = useTranslations('reservation');
+  const contactPlaceholderMap: Record<string, string> = {
+    line: 'Line ID',
+    whatsapp: 'WhatsApp Phone Number',
+    kakao: 'Kakao ID',
+    phone: 'Phone Number',
+  };
+  const contactPlaceholder =
+    contactPlaceholderMap[selectedContactMethod] ?? t('form.contact.contactPlaceholder');
 
   return (
     <div css={sectionCard}>
@@ -62,20 +72,24 @@ export function ContactSection({
       {isOpen && (
         <div css={sectionContent}>
           <div css={fieldGroup}>
-            <Text typo="body_M" color="text_primary">
+            <Text typo="title_S" color="text_primary">
               {t('form.contact.email')}
             </Text>
             <input
               type="email"
               placeholder={t('form.contact.emailPlaceholder')}
               value={email}
+              disabled={isEmailReadOnly}
+              aria-disabled={isEmailReadOnly}
+              readOnly={isEmailReadOnly}
+              aria-readonly={isEmailReadOnly}
               onChange={(e) => onEmailChange(e.target.value)}
               css={input}
             />
           </div>
 
           <div css={fieldGroup}>
-            <Text typo="body_M" color="text_primary">
+            <Text typo="title_S" color="text_primary">
               {t('form.contact.preferredMethod')}
             </Text>
             <div css={contactMethodList}>
@@ -96,7 +110,7 @@ export function ContactSection({
             </div>
             <input
               type="text"
-              placeholder={t('form.contact.contactPlaceholder')}
+              placeholder={contactPlaceholder}
               value={contactPhone}
               onChange={(e) => onPhoneChange(e.target.value)}
               css={input}
@@ -104,7 +118,7 @@ export function ContactSection({
           </div>
 
           <div css={fieldGroup}>
-            <Text typo="body_M" color="text_primary">
+            <Text typo="title_S" color="text_primary">
               {t('form.contact.language')}
             </Text>
             <select

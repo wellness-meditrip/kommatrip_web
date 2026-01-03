@@ -57,6 +57,13 @@ export const input = css`
   &::placeholder {
     color: ${theme.colors.text_disabled};
   }
+
+  &:disabled {
+    background: ${theme.colors.bg_surface2};
+    color: ${theme.colors.text_disabled};
+
+    cursor: not-allowed;
+  }
 `;
 
 export const contactMethodList = css`

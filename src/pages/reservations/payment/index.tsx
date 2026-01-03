@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
-import { AppBar, CTAButton, Empty, Layout, Text, CompanyInfoCard } from '@/components';
+import {
+  AppBar,
+  CTAButton,
+  Empty,
+  Layout,
+  Text,
+  CompanyInfoCard,
+  DesktopAppBar,
+} from '@/components';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
-import { useToast } from '@/hooks';
+import { useToast, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { Dim } from '@/components/dim';
 import { PaymentLocation } from '@/icons';
@@ -42,6 +50,7 @@ export default function ReservationPaymentPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const t = useTranslations('reservation');
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
@@ -125,13 +134,17 @@ export default function ReservationPaymentPage() {
   if (!draft) {
     return (
       <Layout isAppBarExist={false}>
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          buttonType="dark"
-          title={t('payment.title')}
-          backgroundColor="bg_surface1"
-        />
+        {isDesktop ? (
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        ) : (
+          <AppBar
+            onBackClick={router.back}
+            leftButton={true}
+            buttonType="dark"
+            title={t('payment.title')}
+            backgroundColor="bg_surface1"
+          />
+        )}
         <div css={emptyContainer}>
           <Empty title={t('payment.missingDraft')} />
         </div>
@@ -141,85 +154,97 @@ export default function ReservationPaymentPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar
-        onBackClick={router.back}
-        leftButton={true}
-        buttonType="dark"
-        title={t('payment.title')}
-        backgroundColor="bg_surface1"
-      />
-      <div css={pageWrapper}>
-        <CompanyInfoCard
-          name={draft.company_name}
-          address={draft.company_address}
-          tags={draft.company_tags}
-          addressIconNode={<PaymentLocation width={16} height={16} />}
-          variant="payment"
+      {isDesktop ? (
+        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+      ) : (
+        <AppBar
+          onBackClick={router.back}
+          leftButton={true}
+          buttonType="dark"
+          title={t('payment.title')}
+          backgroundColor="bg_surface1"
         />
+      )}
+      <div css={pageWrapper}>
+        <div css={contentGrid}>
+          <div css={mainColumn}>
+            <CompanyInfoCard
+              name={draft.company_name}
+              address={draft.company_address}
+              tags={draft.company_tags}
+              addressIconNode={<PaymentLocation width={16} height={16} />}
+              variant="payment"
+            />
 
-        <div css={infoCard}>
-          <Text typo="title_M" color="text_primary">
-            {t('payment.bookingInfo')}
-          </Text>
-          <div css={infoRow}>
-            <Text typo="body_M" color="text_secondary">
-              {t('payment.date')}
-            </Text>
-            <Text typo="body_M" color="text_primary">
-              {primaryOption ? formatDateDisplay(primaryOption.date) : '-'}
-            </Text>
+            <div css={infoCard}>
+              <Text typo="title_M" color="text_primary">
+                {t('payment.bookingInfo')}
+              </Text>
+              <div css={infoRow}>
+                <Text typo="body_M" color="text_secondary">
+                  {t('payment.date')}
+                </Text>
+                <Text typo="title_S" color="text_primary">
+                  {primaryOption ? formatDateDisplay(primaryOption.date) : '-'}
+                </Text>
+              </div>
+              <div css={infoRow}>
+                <Text typo="body_M" color="text_secondary">
+                  {t('payment.time')}
+                </Text>
+                <Text typo="title_S" color="text_primary">
+                  {primaryOption ? formatTimeDisplay(primaryOption.time) : '-'}
+                </Text>
+              </div>
+              <div css={infoRow}>
+                <Text typo="body_M" color="text_secondary">
+                  {t('payment.program')}
+                </Text>
+                <Text typo="title_S" color="text_primary" css={programText}>
+                  {draft.program_name} ({draft.program_duration_minutes}
+                  {t('payment.minutes')})
+                </Text>
+              </div>
+            </div>
           </div>
-          <div css={infoRow}>
-            <Text typo="body_M" color="text_secondary">
-              {t('payment.time')}
-            </Text>
-            <Text typo="body_M" color="text_primary">
-              {primaryOption ? formatTimeDisplay(primaryOption.time) : '-'}
-            </Text>
-          </div>
-          <div css={infoRow}>
-            <Text typo="body_M" color="text_secondary">
-              {t('payment.program')}
-            </Text>
-            <Text typo="body_M" color="text_primary" css={programText}>
-              {draft.program_name} ({draft.program_duration_minutes}
-              {t('payment.minutes')})
-            </Text>
-          </div>
-        </div>
 
-        <div css={infoCard}>
-          <Text typo="title_M" color="text_primary">
-            {t('payment.paymentMethod')}
-          </Text>
-          <div css={paymentMethod}>
-            <div css={radioSelected} />
-            <Text typo="body_M" color="text_primary">
-              {t('payment.payOnSite')}
-            </Text>
-          </div>
-        </div>
+          <div css={sideColumn}>
+            <div css={sidePanel}>
+              <div css={infoCard}>
+                <Text typo="title_M" color="text_primary">
+                  {t('payment.paymentMethod')}
+                </Text>
+                <div css={paymentMethod}>
+                  <div css={radioSelected} />
+                  <Text typo="body_M" color="text_primary">
+                    {t('payment.payOnSite')}
+                  </Text>
+                </div>
+              </div>
 
-        <div css={infoCard}>
-          <Text typo="title_M" color="text_primary">
-            {t('payment.paymentAmount')}
-          </Text>
-          <div css={amountRow}>
-            <Text typo="body_M" color="text_secondary">
-              {t('payment.paymentAmountLabel')}
-            </Text>
-            <Text typo="body_M" color="text_primary">
-              {formatPrice(draft.program_price)} {t('payment.currency')}
-            </Text>
-          </div>
-          <div css={divider} />
-          <div css={amountRow}>
-            <Text typo="body_M" color="text_primary">
-              {t('payment.finalPaymentAmount')}
-            </Text>
-            <Text typo="title_S" color="primary50">
-              {formatPrice(draft.program_price)} {t('payment.currency')}
-            </Text>
+              <div css={infoCard}>
+                <Text typo="title_M" color="text_primary">
+                  {t('payment.paymentAmount')}
+                </Text>
+                <div css={amountRow}>
+                  <Text typo="body_M" color="text_secondary">
+                    {t('payment.paymentAmountLabel')}
+                  </Text>
+                  <Text typo="body_M" color="text_primary">
+                    {formatPrice(draft.program_price)} {t('payment.currency')}
+                  </Text>
+                </div>
+                <div css={divider} />
+                <div css={amountRow}>
+                  <Text typo="title_S" color="text_primary">
+                    {t('payment.finalPaymentAmount')}
+                  </Text>
+                  <Text typo="title_S" color="primary50">
+                    {formatPrice(draft.program_price)} {t('payment.currency')}
+                  </Text>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -264,6 +289,52 @@ export default function ReservationPaymentPage() {
 const pageWrapper = css`
   padding: 0 0 120px 0;
   background: ${theme.colors.bg_surface1};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding-bottom: 80px;
+  }
+`;
+
+const contentGrid = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 24px;
+    align-items: start;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+`;
+
+const mainColumn = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const sideColumn = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    position: sticky;
+    top: 24px;
+  }
+`;
+
+const sidePanel = css`
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    border: 1px solid ${theme.colors.border_default};
+    border-radius: 20px;
+    margin: 16px;
+    background: ${theme.colors.bg_surface1};
+  }
 `;
 
 const infoCard = css`
@@ -334,6 +405,15 @@ const actionBar = css`
   padding: 16px 18px;
   background: ${theme.colors.white};
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    position: static;
+    max-width: 360px;
+    margin: 16px auto 0;
+    padding: 0 24px 24px;
+    background: transparent;
+    box-shadow: none;
+  }
 `;
 
 const modalCard = css`

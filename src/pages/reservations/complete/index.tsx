@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
-import { Layout, RoundButton, Text, Empty, AppBar } from '@/components';
+import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar } from '@/components';
 import { Check } from '@/icons';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { useMediaQuery } from '@/hooks';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -40,6 +41,7 @@ const formatConfirmationDate = (
 export default function ReservationCompletePage() {
   const router = useRouter();
   const t = useTranslations('reservation');
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
   const [data, setData] = useState<ReservationCompleteData | null>(null);
@@ -64,7 +66,11 @@ export default function ReservationCompletePage() {
 
   return (
     <Layout isAppBarExist={false}>
-      <AppBar logo="dark" />
+      {isDesktop ? (
+        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+      ) : (
+        <AppBar logo="dark" />
+      )}
       <div css={pageWrapper}>
         <div css={successSection}>
           <div css={checkIconWrapper}>
@@ -120,6 +126,12 @@ const pageWrapper = css`
   gap: 24px;
   background: ${theme.colors.bg_surface1};
   min-height: calc(100vh - 120px);
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 140px 24px 64px;
+  }
 `;
 
 const successSection = css`
@@ -152,6 +164,10 @@ const reservationCard = css`
   flex-direction: column;
   gap: 8px;
   text-align: center;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    max-width: 480px;
+  }
 `;
 
 const clinicName = css`
@@ -173,6 +189,13 @@ const actionBar = css`
   bottom: 0;
   padding: 16px 18px 24px;
   background: ${theme.colors.bg_surface1};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    position: static;
+    max-width: 360px;
+    margin: 0 auto 40px;
+    padding: 0 24px;
+  }
 `;
 
 const emptyContainer = css`
