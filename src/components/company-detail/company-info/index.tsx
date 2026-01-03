@@ -18,6 +18,7 @@ import {
   contactList,
   contactRow,
   contactLabel,
+  facilityIcon,
 } from './index.styles';
 import { Text } from '@/components/text';
 import {
@@ -345,9 +346,9 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
             {availableFacilities.map((facility) => (
               <InfoRow
                 key={facility.key}
-                icon={facility.icon}
+                icon={<span css={facilityIcon}>{facility.icon}</span>}
                 title={
-                  <Text typo="button_S" color="text_primary">
+                  <Text typo="button_S" color="primary30">
                     {facility.label}
                   </Text>
                 }

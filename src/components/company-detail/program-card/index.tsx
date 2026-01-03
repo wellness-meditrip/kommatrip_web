@@ -1,6 +1,5 @@
 import { Text } from '@/components/text';
 import { Clock } from '@/icons';
-import { Tag } from '@/components';
 import { useRouter } from 'next/router';
 import { useCurrentLocale } from '@/i18n/navigation';
 
@@ -8,7 +7,6 @@ import {
   infoWrapper,
   itemWrapper,
   itemImage,
-  tags,
   programDetails,
   detailRow,
   separator,
@@ -29,7 +27,6 @@ export function ProgramCard({
   duration,
   price,
   image,
-  badges,
   companyId,
   programId,
 }: ProgramCardProps) {

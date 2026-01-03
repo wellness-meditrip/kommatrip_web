@@ -30,19 +30,13 @@ export const reviewSummary = css`
 
 export const titleWrapper = css`
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 8px;
-
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 12px;
-  }
 `;
 export const title = css`
   display: flex;
-  flex-shrink: 0;
+  flex: 1;
   align-items: center;
   gap: 4px;
 
@@ -57,6 +51,7 @@ export const toolTip = css`
   position: relative;
 
   min-width: 0;
+  margin-left: auto;
 
   cursor: pointer;
 

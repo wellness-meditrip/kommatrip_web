@@ -169,3 +169,13 @@ export const contactRow = css`
 export const contactLabel = css`
   min-width: 84px;
 `;
+
+export const facilityIcon = css`
+  display: inline-flex;
+
+  svg path,
+  svg circle,
+  svg rect {
+    stroke: ${theme.colors.primary30};
+  }
+`;

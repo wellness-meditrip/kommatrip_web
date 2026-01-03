@@ -55,30 +55,41 @@ export default function ClinicDetailPage() {
   const reviewRef = useRef<HTMLDivElement>(null);
   const noticeRef = useRef<HTMLDivElement>(null);
   const isScrollingToSection = useRef(false);
+  const isObserverSyncing = useRef(false);
+  const hasHandledQueryTab = useRef(false);
 
   const TABS = useMemo(
     () => [
-      { id: 'info', label: 'Information', ref: infoRef },
-      { id: 'program', label: 'Programs', ref: programRef },
-      { id: 'review', label: 'Reviews', ref: reviewRef },
-      { id: 'notice', label: 'Notice', ref: noticeRef },
+      { id: 'info', label: t('tabs.info'), ref: infoRef },
+      { id: 'program', label: t('tabs.program'), ref: programRef },
+      { id: 'review', label: t('tabs.review'), ref: reviewRef },
+      { id: 'notice', label: t('tabs.notice'), ref: noticeRef },
     ],
-    []
+    [t]
   );
 
   useEffect(() => {
+    if (!router.isReady) return;
     const queryTab = router.query.service as string;
-    if (queryTab && TABS.some((tab) => tab.id === queryTab)) {
-      setActiveTab(queryTab);
-      // URL에서 탭 정보를 가져오면 해당 섹션으로 스크롤
-      setTimeout(() => {
-        const tab = TABS.find((t) => t.id === queryTab);
-        if (tab?.ref.current) {
-          tab.ref.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+    if (!queryTab || !TABS.some((tab) => tab.id === queryTab)) return;
+
+    setActiveTab(queryTab);
+
+    const shouldSkipScroll = isObserverSyncing.current || isScrollingToSection.current;
+    if (isObserverSyncing.current) {
+      isObserverSyncing.current = false;
     }
-  }, [router.query.service, TABS]);
+    if (hasHandledQueryTab.current || shouldSkipScroll) return;
+    hasHandledQueryTab.current = true;
+
+    // URL에서 탭 정보를 가져오면 해당 섹션으로 스크롤
+    setTimeout(() => {
+      const tab = TABS.find((t) => t.id === queryTab);
+      if (tab?.ref.current) {
+        tab.ref.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  }, [router.isReady, router.query.service, TABS]);
 
   // 비회원 검증 로직
   // const { data: isValidUser, isSuccess } = useGetUserValidateQuery();
@@ -120,6 +131,7 @@ export default function ClinicDetailPage() {
         setActiveTab((prev) => {
           if (prev !== currentId) {
             const localizedPath = `/${currentLocale}${ROUTES.COMPANY_DETAIL(companyIdNumber)}`;
+            isObserverSyncing.current = true;
             router.replace(
               {
                 pathname: '/company/[companyId]',
@@ -186,6 +198,25 @@ export default function ClinicDetailPage() {
     setSearchValue(value);
   };
 
+  const handleShare = async () => {
+    if (typeof window === 'undefined') return;
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: data?.company?.name || t('title'),
+          url: shareUrl,
+        });
+        return;
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      }
+    } catch (error) {
+      console.error('Share failed', error);
+    }
+  };
+
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
     router.push(`/${currentLocale}${ROUTES.SEARCH}${query}`);
@@ -238,22 +269,24 @@ export default function ClinicDetailPage() {
 
   return (
     <Layout isAppBarExist={false}>
-      {isDesktop ? (
+      <div css={desktopAppBar}>
         <DesktopAppBar
           onSearchChange={handleSearchChange}
           onSearch={handleSearch}
           searchPlaceholder={tCommon('search.addressPlaceholder')}
         />
-      ) : (
+      </div>
+      <div css={mobileAppBar}>
         <AppBar
           onBackClick={router.back}
           leftButton={true}
           rightButton={true}
           buttonType="dark"
           rightButtonType="share"
+          onRightButtonClick={handleShare}
           backgroundColor="bg_surface1"
         />
-      )}
+      </div>
       <div css={pageContainer}>
         <div css={contentLayout}>
           <div css={mainContent}>
@@ -323,7 +356,7 @@ export default function ClinicDetailPage() {
             <aside css={stickySidebar}>
               <div css={bookingCard}>
                 <RoundButton size="L" fullWidth onClick={handleReserveClick}>
-                  Book Now
+                  {t('bookNow')}
                 </RoundButton>
               </div>
             </aside>
@@ -331,7 +364,7 @@ export default function ClinicDetailPage() {
         </div>
       </div>
 
-      {!isDesktop && <CTAButton onClick={handleReserveClick}>Book Now</CTAButton>}
+      {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
@@ -378,7 +411,7 @@ const stickyTabHeader = css`
   }
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    top: 66px;
+    top: 76px;
     z-index: ${theme.zIndex.appBar};
   }
 `;
@@ -398,6 +431,25 @@ const pageContainer = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     margin: 0 auto;
     padding: 0 32px;
+  }
+`;
+
+const desktopAppBar = css`
+  display: none;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: ${theme.zIndex.appBar};
+  }
+`;
+
+const mobileAppBar = css`
+  display: block;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    display: none;
   }
 `;
 
