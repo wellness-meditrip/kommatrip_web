@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import NextAuth, { type NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import AppleProvider from 'next-auth/providers/apple';
 import { exchangeGoogle } from '@/server/auth/exchangeGoogle';
+import { exchangeApple } from '@/server/auth/exchangeApple';
 import type { Token, User } from '@/models/auth';
 
 const META_COOKIE = 'google_auth_meta';
@@ -30,6 +32,8 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
   const meta = readMeta(req);
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const appleClientId = process.env.APPLE_CLIENT_ID;
+  const appleClientSecret = process.env.APPLE_CLIENT_SECRET;
   const googleProvider =
     googleClientId && googleClientSecret
       ? [
@@ -41,6 +45,15 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
           }),
         ]
       : [];
+  const appleProvider =
+    appleClientId && appleClientSecret
+      ? [
+          AppleProvider({
+            clientId: appleClientId,
+            clientSecret: appleClientSecret,
+          }),
+        ]
+      : [];
 
   return {
     secret: requiredEnv('NEXTAUTH_SECRET'),
@@ -48,7 +61,7 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
     jwt: { maxAge: 60 * 60 }, // 1시간
     debug: process.env.NODE_ENV === 'development', // 개발 환경에서 디버그 로그 활성화
 
-    providers: googleProvider,
+    providers: [...googleProvider, ...appleProvider],
 
     pages: { signIn: '/login' },
 
@@ -101,6 +114,55 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
               };
             };
             console.error('[next-auth][jwt] Google exchange failed', {
+              error: axiosError?.message,
+              status: axiosError?.response?.status,
+              statusText: axiosError?.response?.statusText,
+              data: axiosError?.response?.data,
+            });
+            throw axiosError;
+          }
+        }
+        if (account?.provider === 'apple' && account.id_token && !token.backendTokens) {
+          console.log('[next-auth][jwt] Starting Apple exchange', {
+            hasIdToken: !!account.id_token,
+            idTokenLength: account.id_token?.length,
+            country: meta.country,
+            marketing_consent: meta.marketing_consent,
+          });
+
+          try {
+            const result = await exchangeApple({
+              idToken: account.id_token,
+              country: meta.country,
+              marketing_consent: meta.marketing_consent,
+            });
+
+            console.log('[next-auth][jwt] Apple exchange success', {
+              hasUser: !!result.user,
+              hasTokens: !!result.tokens,
+              userId: result.user?.id,
+              resultKeys: Object.keys(result || {}),
+              userKeys: result.user ? Object.keys(result.user) : [],
+              tokensKeys: result.tokens ? Object.keys(result.tokens) : [],
+            });
+
+            token.backendUser = result.user as User;
+            token.backendTokens = result.tokens as Token;
+
+            console.log('[next-auth][jwt] Token updated', {
+              hasBackendUser: !!token.backendUser,
+              hasBackendTokens: !!token.backendTokens,
+            });
+          } catch (error: unknown) {
+            const axiosError = error as {
+              message?: string;
+              response?: {
+                status?: number;
+                statusText?: string;
+                data?: unknown;
+              };
+            };
+            console.error('[next-auth][jwt] Apple exchange failed', {
               error: axiosError?.message,
               status: axiosError?.response?.status,
               statusText: axiosError?.response?.statusText,

@@ -115,6 +115,19 @@ export interface PostUserAuthGoogleResponse {
   tokens: Token;
 }
 
+// 소셜 로그인(apple)
+export interface PostUserAuthAppleRequest {
+  idToken: string;
+  country: string;
+  marketing_consent: boolean;
+}
+
+export interface PostUserAuthAppleResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
 // 토큰 재발급
 export interface PostTokenReissueResponse {
   message: string;

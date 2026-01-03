@@ -114,6 +114,24 @@ export default function Login() {
     await signIn('google', { callbackUrl: ROUTES.HOME });
   };
 
+  const onApple = async () => {
+    setLoading(true);
+
+    const r = await fetch('/api/auth/google-meta', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country, marketing_consent: marketing }),
+    });
+
+    if (!r.ok) {
+      setLoading(false);
+      showToast({ title: t('prepareLoginFailed'), icon: 'exclaim' });
+      return;
+    }
+
+    await signIn('apple', { callbackUrl: ROUTES.HOME });
+  };
+
   const {
     register,
     handleSubmit,
@@ -179,8 +197,7 @@ export default function Login() {
   };
 
   const handleAppleLogin = () => {
-    // TODO: Apple 로그인 처리
-    console.log('Apple Login');
+    onApple();
   };
 
   const handleValueChange = (value: string) => {
