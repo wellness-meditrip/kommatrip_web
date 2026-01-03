@@ -19,6 +19,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 export default function ProgramDetailPage() {
   const router = useRouter();
   const t = useTranslations('program-detail');
+  const tCommon = useTranslations('common');
   const { programId } = router.query;
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
@@ -141,7 +142,11 @@ export default function ProgramDetailPage() {
   return (
     <Layout isAppBarExist={false}>
       {isDesktop ? (
-        <DesktopAppBar onSearchChange={handleSearchChange} onSearch={handleSearch} />
+        <DesktopAppBar
+          onSearchChange={handleSearchChange}
+          onSearch={handleSearch}
+          searchPlaceholder={tCommon('search.addressPlaceholder')}
+        />
       ) : (
         <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
       )}

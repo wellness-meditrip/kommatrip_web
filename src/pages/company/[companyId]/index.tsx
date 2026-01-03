@@ -32,6 +32,7 @@ export default function ClinicDetailPage() {
   const router = useRouter();
   const { companyId } = router.query;
   const t = useTranslations('company-detail');
+  const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const [searchValue, setSearchValue] = useState('');
@@ -238,7 +239,11 @@ export default function ClinicDetailPage() {
   return (
     <Layout isAppBarExist={false}>
       {isDesktop ? (
-        <DesktopAppBar onSearchChange={handleSearchChange} onSearch={handleSearch} />
+        <DesktopAppBar
+          onSearchChange={handleSearchChange}
+          onSearch={handleSearch}
+          searchPlaceholder={tCommon('search.addressPlaceholder')}
+        />
       ) : (
         <AppBar
           onBackClick={router.back}
@@ -373,7 +378,7 @@ const stickyTabHeader = css`
   }
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    top: 72px;
+    top: 66px;
     z-index: ${theme.zIndex.appBar};
   }
 `;
