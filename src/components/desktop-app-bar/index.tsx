@@ -44,12 +44,12 @@ interface DesktopAppBarProps {
   showSearch?: boolean;
   sticky?: boolean;
   searchPlaceholder?: string;
+  onSearchBarClick?: () => void;
 }
 
 const languages: { locale: Locale; label: string }[] = [
   { locale: 'ko', label: '한국어' },
   { locale: 'en', label: 'English' },
-  { locale: 'ja', label: '日本語' },
 ];
 
 export function DesktopAppBar({
@@ -59,6 +59,7 @@ export function DesktopAppBar({
   showSearch = true,
   sticky = true,
   searchPlaceholder,
+  onSearchBarClick,
 }: DesktopAppBarProps) {
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
@@ -73,6 +74,18 @@ export function DesktopAppBar({
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleSearchBarClick = () => {
+    if (onSearchBarClick) {
+      onSearchBarClick();
+      return;
+    }
+    if (onSearch) {
+      onSearch();
+      return;
+    }
+    router.push(ROUTES.SEARCH);
+  };
 
   const handleMenuClick = (path: string) => {
     router.push(path);
@@ -145,9 +158,11 @@ export function DesktopAppBar({
         <div css={searchContainer}>
           <SearchBar
             onValueChange={onSearchChange}
-            onSearch={onSearch}
+            onSearch={handleSearchBarClick}
             placeholder={searchPlaceholder ?? tCommon('home.searchPlaceholder')}
             isLeft={true}
+            onInputClick={handleSearchBarClick}
+            isReadOnly={true}
           />
         </div>
       )}

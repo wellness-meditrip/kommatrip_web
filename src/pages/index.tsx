@@ -92,6 +92,10 @@ export default function HomePage({ heroImages }: HomePageProps) {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
 
+  const handleGoToSearch = () => {
+    handleSearch();
+  };
+
   const handleCompanyClick = (companyId: number) => {
     router.push(`${ROUTES.COMPANY}/${companyId}`);
   };
@@ -105,6 +109,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
         subtitle={t('home.heroSubtitle')}
         onSearchChange={handleValueChange}
         onSearch={handleSearch}
+        onSearchBarClick={handleGoToSearch}
         onBackClick={router.back}
         isDesktop={isDesktop}
       />

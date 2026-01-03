@@ -31,6 +31,7 @@ interface HeroSectionProps {
   onSearch: () => void;
   isDesktop?: boolean;
   onBackClick?: () => void;
+  onSearchBarClick?: () => void;
 }
 
 const FALLBACK_IMAGE = '/images/hero/hero1.webp';
@@ -45,6 +46,7 @@ export function HeroSection({
   onSearch,
   isDesktop = false,
   onBackClick,
+  onSearchBarClick,
 }: HeroSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const slidesList = useMemo(() => (images.length > 0 ? images : [FALLBACK_IMAGE]), [images]);
@@ -81,6 +83,7 @@ export function HeroSection({
               onSearchChange={onSearchChange}
               onSearch={onSearch}
               variant="transparent"
+              onSearchBarClick={onSearchBarClick}
             />
           ) : (
             <>
@@ -91,6 +94,8 @@ export function HeroSection({
                   onSearch={onSearch}
                   placeholder={placeholder}
                   isLeft={true}
+                  onInputClick={onSearchBarClick}
+                  isReadOnly={true}
                 />
               </div>
             </>
