@@ -1,10 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { Text } from '../text';
 import { categoryGrid, categoryButton, selectedCategory, categoryName } from './index.styles';
+import { useTranslations } from 'next-intl';
 
 interface Category {
   id: string;
   name: string;
+  nameKey?: string;
   icon: React.ReactNode;
 }
 
@@ -15,10 +17,17 @@ interface Props {
 }
 
 export function CategoryFilter({ categories, selectedCategoryIds, onCategorySelect }: Props) {
+  const t = useTranslations('categories');
+  const allCategoryIds = categories
+    .filter((category) => category.id !== 'all-care')
+    .map((category) => category.id);
+  const isAllSelected =
+    allCategoryIds.length > 0 && allCategoryIds.every((id) => selectedCategoryIds.includes(id));
   return (
     <div css={categoryGrid}>
       {categories.map((category) => {
-        const isSelected = selectedCategoryIds.includes(category.id);
+        const isSelected =
+          category.id === 'all-care' ? isAllSelected : selectedCategoryIds.includes(category.id);
         return (
           <button
             key={category.id}
@@ -27,7 +36,7 @@ export function CategoryFilter({ categories, selectedCategoryIds, onCategorySele
           >
             <div css={categoryName}>{category.icon}</div>
             <Text typo="body_S" color="primary10">
-              {category.name}
+              {category.nameKey ? t(category.nameKey) : category.name}
             </Text>
           </button>
         );
