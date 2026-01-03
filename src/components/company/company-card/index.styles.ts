@@ -177,6 +177,7 @@ export const imageCarousel = css`
 
   width: 100%;
   height: 100%;
+  touch-action: pan-y;
 
   &:hover button {
     opacity: 1;

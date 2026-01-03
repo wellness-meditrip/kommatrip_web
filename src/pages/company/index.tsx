@@ -23,7 +23,7 @@ import type { Company } from '@/models';
 import { useTranslations } from 'next-intl';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useMediaQuery } from '@/hooks';
-import { DefaultProfile, GnbCalendarActive, GnbSearchActive } from '@/icons';
+import { GnbCalendarActive, GnbSearchActive } from '@/icons';
 import { CATEGORIES } from '@/constants/commons/categories';
 
 // 업체 리스트 페이지
@@ -140,6 +140,22 @@ export default function CompanyPage() {
     }
     return [];
   }, [data]);
+
+  const recommendedCompanies = useMemo(() => {
+    type CompanySearchPayload = {
+      data?: { companies?: Company[] };
+      companies?: Company[];
+    };
+    const payload = recommendedData as CompanySearchPayload | undefined;
+
+    if (payload?.data?.companies) {
+      return payload.data.companies;
+    }
+    if (payload?.companies) {
+      return payload.companies;
+    }
+    return [];
+  }, [recommendedData]);
 
   // 필터링된 companies (한 번만 계산)
   const filteredCompanies = useMemo(() => {
@@ -298,90 +314,107 @@ export default function CompanyPage() {
   }, [inputValue]);
 
   return (
-    <Layout isAppBarExist={false} style={{ backgroundColor: theme.colors.bg_surface1 }}>
+    <Layout
+      isAppBarExist={false}
+      style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
+    >
       {isDesktop ? (
         <div css={desktopHeader}>
           <DesktopAppBar
             onSearchChange={handleValueChange}
             onSearch={handleSearch}
             showSearch={false}
+            sticky={false}
           />
-          <div css={desktopSearchArea}>
-            <div css={desktopSearchForm}>
-              <div css={desktopSearchField} onClick={handleGoToSearch}>
-                <GnbSearchActive width={20} height={20} />
-                <input
-                  value={inputValue}
-                  onChange={(event) => handleValueChange(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') handleGoToSearch();
-                  }}
-                  placeholder={tCommon('search.addressPlaceholder')}
-                  css={desktopSearchInput}
-                />
+        </div>
+      ) : (
+        <AppBar
+          onBackClick={router.back}
+          logo="light"
+          leftButton={true}
+          buttonType="white"
+          backgroundColor="green"
+        />
+      )}
+
+      <div css={contentScroll}>
+        {isDesktop ? (
+          <>
+            <div css={desktopSearchArea}>
+              <div css={desktopSearchForm}>
+                <div css={desktopSearchField} onClick={handleGoToSearch}>
+                  <GnbSearchActive width={20} height={20} />
+                  <input
+                    value={inputValue}
+                    onChange={(event) => handleValueChange(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') handleGoToSearch();
+                    }}
+                    placeholder={tCommon('search.addressPlaceholder')}
+                    css={desktopSearchInput}
+                  />
+                </div>
+                <div css={desktopDivider} />
+                <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
+                  <GnbCalendarActive width={18} height={18} />
+                  <span>{dateText}</span>
+                </button>
               </div>
-              <div css={desktopDivider} />
-              <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
-                <GnbCalendarActive width={18} height={18} />
-                <span>{dateText}</span>
-              </button>
             </div>
-          </div>
-          <div css={desktopFilterArea}>
+            <div css={desktopFilterArea}>
+              <FilterBar
+                selectedCategories={selectedCategories}
+                selectedRange={selectedRange}
+                onDateSelect={handleDateSelect}
+                onToggleCategory={handleToggleCategory}
+                onClearAll={handleClearAll}
+                variant="light"
+                showDate={false}
+                layout="stacked"
+                categories={CATEGORIES}
+                centered={true}
+                sticky={false}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div css={searchBarWrapper} onClick={handleGoToSearch}>
+              <SearchBar
+                value={inputValue}
+                onValueChange={handleValueChange}
+                onSearch={handleGoToSearch}
+                placeholder={tCommon('search.addressPlaceholder')}
+              />
+            </div>
             <FilterBar
               selectedCategories={selectedCategories}
               selectedRange={selectedRange}
               onDateSelect={handleDateSelect}
               onToggleCategory={handleToggleCategory}
               onClearAll={handleClearAll}
-              variant="light"
-              showDate={false}
-              layout="stacked"
-              categories={CATEGORIES}
-              centered={true}
+              sticky={false}
             />
-          </div>
-        </div>
-      ) : (
-        <>
-          <AppBar
-            onBackClick={router.back}
-            logo="light"
-            leftButton={true}
-            buttonType="white"
-            backgroundColor="green"
-          />
-          <div css={searchBarWrapper} onClick={handleGoToSearch}>
-            <SearchBar
-              value={inputValue}
-              onValueChange={handleValueChange}
-              onSearch={handleGoToSearch}
-              placeholder={tCommon('search.addressPlaceholder')}
-            />
-          </div>
-          <FilterBar
-            selectedCategories={selectedCategories}
-            selectedRange={selectedRange}
-            onDateSelect={handleDateSelect}
-            onToggleCategory={handleToggleCategory}
-            onClearAll={handleClearAll}
-          />
-        </>
-      )}
+          </>
+        )}
 
-      <div css={wrapper}>
-        {/* 로딩 상태 */}
-        {isLoading && <Loading title={t('loadingList')} />}
-        {error && <Empty title={t('loadFail')} />}
+        <div css={wrapper}>
+          {/* 로딩 상태 */}
+          {isLoading && <Loading title={t('loadingList')} />}
+          {error && <Empty title={t('loadFail')} />}
 
-        {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
-        {!isLoading && !error && filteredCompanies.length === 0 && keyword.trim() && (
-          <>
-            <NoResults title={t('noResultsTitle', { keyword })} subtitle={t('noResultsSubtitle')} />
-            <CompanyList
-              title="Recommended"
-              companies={
-                recommendedData?.data?.companies?.map((company) => ({
+          {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
+          {!isLoading && !error && filteredCompanies.length === 0 && keyword.trim() && (
+            <div css={recommendedSection}>
+              <NoResults
+                title={t('noResultsTitle', { keyword })}
+                subtitle={t('noResultsSubtitle')}
+              />
+              <CompanyList
+                title={tCommon('home.recommendedTitle')}
+                containerCss={recommendedList}
+                cardSize="compact"
+                companies={recommendedCompanies.map((company) => ({
                   hospital_id: company.id,
                   hospital_name: company.name,
                   address: company.address,
@@ -390,39 +423,39 @@ export default function CompanyPage() {
                   images: company.photos || [],
                   departments: company.tags,
                   is_exclusive: company.is_exclusive,
-                })) || []
-              }
-            />
-          </>
-        )}
+                }))}
+              />
+            </div>
+          )}
 
-        {/* 업체 리스트 표시 (필터링된 결과) */}
-        {!isLoading && !error && filteredCompanies.length > 0 && (
-          <div css={cardsGrid}>
-            {filteredCompanies.map((company) => (
-              <div key={company.id} css={cardItem}>
-                <CompanyCard
-                  companyId={company.id}
-                  companyImage={company.photos?.[0] || '/default.png'}
-                  companyName={company.name || ''}
-                  badges={company.tags || []}
-                  companyAddress={company.address || ''}
-                  isExclusive={company.is_exclusive}
-                  fixedHeight={true}
-                  onClick={(companyId: number) => {
-                    router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
-                  }}
-                  images={company.photos || []}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+          {/* 업체 리스트 표시 (필터링된 결과) */}
+          {!isLoading && !error && filteredCompanies.length > 0 && (
+            <div css={cardsGrid}>
+              {filteredCompanies.map((company) => (
+                <div key={company.id} css={cardItem}>
+                  <CompanyCard
+                    companyId={company.id}
+                    companyImage={company.photos?.[0] || '/default.png'}
+                    companyName={company.name || ''}
+                    badges={company.tags || []}
+                    companyAddress={company.address || ''}
+                    isExclusive={company.is_exclusive}
+                    fixedHeight={true}
+                    onClick={(companyId: number) => {
+                      router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
+                    }}
+                    images={company.photos || []}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
-        {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
-        {!isLoading && !error && companies.length === 0 && !keyword.trim() && (
-          <Empty title={t('emptyList')} />
-        )}
+          {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
+          {!isLoading && !error && companies.length === 0 && !keyword.trim() && (
+            <Empty title={t('emptyList')} />
+          )}
+        </div>
       </div>
       <GNB />
     </Layout>
@@ -445,6 +478,13 @@ export const wrapper = css`
     align-items: stretch;
     margin: 0 auto;
   }
+`;
+
+export const contentScroll = css`
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
 export const searchBarWrapper = css`
@@ -533,6 +573,21 @@ export const cardsGrid = css`
     grid-template-columns: repeat(3, 353px);
     justify-content: center;
     gap: 32px;
+  }
+`;
+
+export const recommendedSection = css`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const recommendedList = css`
+  width: 100%;
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    margin: 0 auto;
   }
 `;
 export const bottom = css`
