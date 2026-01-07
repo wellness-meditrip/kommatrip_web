@@ -114,7 +114,18 @@ export function useAuthSync() {
 
     // InterestSetting이 false이고, 현재 페이지가 관심사 등록 페이지가 아니면 리다이렉트
     const user = session.user as { InterestSetting?: boolean };
-    if (user.InterestSetting === false && router.pathname !== ROUTES.INTEREST) {
+    const skipInterestRedirect =
+      typeof window !== 'undefined' && window.sessionStorage.getItem('interest_done') === '1';
+
+    if (user.InterestSetting !== false && skipInterestRedirect) {
+      window.sessionStorage.removeItem('interest_done');
+    }
+
+    if (
+      user.InterestSetting === false &&
+      !skipInterestRedirect &&
+      router.pathname !== ROUTES.INTEREST
+    ) {
       router.push(ROUTES.INTEREST);
     }
   }, [session, status, router]);
