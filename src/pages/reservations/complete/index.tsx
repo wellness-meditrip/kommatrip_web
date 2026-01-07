@@ -65,42 +65,46 @@ export default function ReservationCompletePage() {
   }, [data, locale, t]);
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} style={{ background: theme.colors.bg_surface1 }}>
       {isDesktop ? (
-        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        <div css={desktopAppBarWrap}>
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        </div>
       ) : (
         <AppBar logo="dark" />
       )}
       <div css={pageWrapper}>
-        <div css={successSection}>
-          <div css={checkIconWrapper}>
-            <Check width={72} height={72} />
+        <div css={contentWrapper}>
+          <div css={successSection}>
+            <div css={checkIconWrapper}>
+              <Check width={72} height={72} />
+            </div>
+            <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
+              {t('complete.title')}
+            </Text>
+            <Text tag="p" typo="body_M" color="text_tertiary">
+              {t('complete.subtitle')}
+            </Text>
           </div>
-          <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
-            {t('complete.title')}
-          </Text>
-          <Text tag="p" typo="body_M" color="text_tertiary">
-            {t('complete.subtitle')}
-          </Text>
-        </div>
 
-        {data ? (
-          <div css={reservationCard}>
-            <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
-              {data.company_name}
-            </Text>
-            <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
-              {confirmationDate || '-'}
-            </Text>
-            <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
-              {data.program_name} ({data.program_duration_minutes}min)
-            </Text>
-          </div>
-        ) : (
-          <div css={emptyContainer}>
-            <Empty title={t('complete.missingData')} />
-          </div>
-        )}
+          {data ? (
+            <div css={reservationCard}>
+              <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
+                {data.company_name}
+              </Text>
+              <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
+                {confirmationDate || '-'}
+              </Text>
+              <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
+                {data.program_name} ({data.program_duration_minutes}min)
+              </Text>
+            </div>
+          ) : (
+            <div css={emptyContainer}>
+              <Empty title={t('complete.missingData')} />
+            </div>
+          )}
+        </div>
       </div>
 
       <div css={actionBar}>
@@ -119,17 +123,21 @@ export default function ReservationCompletePage() {
 }
 
 const pageWrapper = css`
+  width: 100%;
+  background: ${theme.colors.bg_surface1};
+  min-height: 100vh;
+`;
+
+const contentWrapper = css`
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 120px 24px 40px;
   gap: 24px;
-  background: ${theme.colors.bg_surface1};
-  min-height: calc(100vh - 120px);
+  max-width: 720px;
+  margin: 0 auto;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    max-width: 720px;
-    margin: 0 auto;
     padding: 140px 24px 64px;
   }
 `;
@@ -191,13 +199,20 @@ const actionBar = css`
   background: ${theme.colors.bg_surface1};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    position: static;
-    max-width: 360px;
-    margin: 0 auto 40px;
+    margin: 0 auto 24px;
     padding: 0 24px;
   }
 `;
 
 const emptyContainer = css`
   width: 100%;
+`;
+
+const desktopAppBarWrap = css`
+  height: 76px;
+  min-height: 76px;
+
+  > div {
+    height: 76px;
+  }
 `;
