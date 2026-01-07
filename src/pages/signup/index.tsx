@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
@@ -69,7 +69,6 @@ export default function Signup() {
 
   const email = watch('email');
   const password = watch('password');
-  const verificationCodeValue = watch('verificationCode');
 
   const handleSendEmail = () => {
     if (!email) {
@@ -209,24 +208,18 @@ export default function Signup() {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
 
-  useEffect(() => {
-    if (!codeVerified) return;
-
-    if (!verificationCodeValue) {
-      setCodeVerified(false);
-      setVerificationToken('');
-    }
-  }, [verificationCodeValue, codeVerified]);
+  const prevEmailRef = useRef('');
 
   useEffect(() => {
     if (!email) return;
-    if (!emailVerified && !codeVerified) return;
-
-    setEmailVerified(false);
-    setCodeVerified(false);
-    setVerificationToken('');
-    setValue('verificationCode', '');
-  }, [email, emailVerified, codeVerified, setValue]);
+    if (prevEmailRef.current && prevEmailRef.current !== email) {
+      setEmailVerified(false);
+      setCodeVerified(false);
+      setVerificationToken('');
+      setValue('verificationCode', '');
+    }
+    prevEmailRef.current = email;
+  }, [email, setValue]);
 
   return (
     <Layout isAppBarExist={false}>
@@ -284,12 +277,13 @@ export default function Signup() {
                   placeholder={t('codePlaceholder')}
                   {...register('verificationCode', { ...validation.verificationCode })}
                   errorMessage={errors.verificationCode?.message}
+                  disabled={codeVerified}
                 />
                 <RoundButton
                   size="M"
                   type="button"
                   onClick={handleConfirmCode}
-                  disabled={isLoading || !watch('verificationCode')}
+                  disabled={isLoading || !watch('verificationCode') || codeVerified}
                   css={actionButton}
                 >
                   <Text typo="button_M" color="white">
