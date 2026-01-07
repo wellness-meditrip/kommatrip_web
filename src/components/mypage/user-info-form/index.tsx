@@ -43,6 +43,7 @@ interface Props {
 export function UserInfoForm({ variant = 'page' }: Props) {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const t = useTranslations('mypage');
   const tValidation = useTranslations('validation');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -133,12 +134,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     if (!allowedTypes.includes(file.type)) {
-      showToast({ title: 'Only JPG, PNG, or WEBP files are allowed.', icon: 'exclaim' });
+      showToast({ title: t('toast.profileImageTypeError'), icon: 'exclaim' });
       event.target.value = '';
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      showToast({ title: 'Image must be 5MB or smaller.', icon: 'exclaim' });
+      showToast({ title: t('toast.profileImageSizeError'), icon: 'exclaim' });
       event.target.value = '';
       return;
     }
@@ -157,7 +158,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           setProfileImageUrl(response.user.profile_image_url);
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
-        showToast({ title: response.message || 'Profile image updated.', icon: 'check' });
+        showToast({ title: t('toast.profileImageUploaded'), icon: 'check' });
         if (previewUrlRef.current) {
           URL.revokeObjectURL(previewUrlRef.current);
           previewUrlRef.current = null;
@@ -185,7 +186,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           setProfileImageUrl('');
         }
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
-        showToast({ title: response.message || 'Profile image deleted.', icon: 'check' });
+        showToast({ title: t('toast.profileImageDeleted'), icon: 'check' });
       },
       onError: (error: unknown) => {
         const message = getErrorMessage(error, 'Failed to delete profile image');
@@ -240,7 +241,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           });
 
           queryClient.setQueryData(QUERY_KEYS.GET_USER_PROFILE, response);
-          showToast({ title: response.message || 'Saved', icon: 'check' });
+          showToast({ title: t('toast.profileUpdated'), icon: 'check' });
         },
         onError: (error: unknown) => {
           const message = getErrorMessage(error, 'Failed to update profile');

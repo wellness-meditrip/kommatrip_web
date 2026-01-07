@@ -79,5 +79,13 @@
   "iframe": {
     "improvementTitle": "ONYU 서비스 개선 설문",
     "termsTitle": "ONYU 이용약관"
+  },
+  "toast": {
+    "profileUpdated": "프로필 정보가 수정되었습니다.",
+    "profileImageUploaded": "프로필 이미지가 업로드되었습니다.",
+    "profileImageDeleted": "프로필 이미지가 삭제되었습니다.",
+    "profileImageTypeError": "JPG, PNG, WEBP 형식의 이미지만 업로드하실 수 있습니다.",
+    "profileImageSizeError": "이미지 용량은 5MB 이하만 업로드하실 수 있습니다.",
+    "marketingConsentUpdated": "마케팅 수신 동의가 변경되었습니다."
   }
 }

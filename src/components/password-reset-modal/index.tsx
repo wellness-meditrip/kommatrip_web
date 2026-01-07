@@ -158,7 +158,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
       {
         onSuccess: (response) => {
           showToast({
-            title: response?.message || t('passwordResetSuccess'),
+            title: t('passwordResetSuccess'),
             icon: 'check',
           });
           handleClose();
