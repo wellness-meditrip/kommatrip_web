@@ -152,12 +152,7 @@ export default function SearchPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar
-            onBackClick={() => router.back()}
-            leftButton={true}
-            logo="light"
-            buttonType="white"
-          />
+          <AppBar onBackClick={() => router.back()} leftButton={true} buttonType="white" />
         </div>
 
         {!isDesktop && (
