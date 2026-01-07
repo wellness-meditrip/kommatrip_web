@@ -411,11 +411,11 @@ export default function ReservationPage() {
   };
 
   const normalizeContactMethod = (method: string) => {
-    if (method === 'line') return 'line';
-    if (method === 'whatsapp') return 'whatsapp';
-    if (method === 'kakao') return 'kakao';
-    if (method === 'phone') return 'phone';
-    return method.toLowerCase();
+    if (method === 'line') return 'Line';
+    if (method === 'whatsapp') return 'Whats App';
+    if (method === 'kakao') return 'Kakao';
+    if (method === 'phone') return 'Phone';
+    return method;
   };
 
   const normalizeLanguage = (value: string) => {

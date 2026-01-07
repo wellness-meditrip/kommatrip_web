@@ -14,7 +14,7 @@
       "email": "이메일",
       "emailPlaceholder": "Elena123@email.com",
       "preferredMethod": "연락 방법",
-      "contactPlaceholder": "Elena122",
+      "contactPlaceholder": "연락처를 입력해 주세요.",
       "language": "언어 선택",
       "languages": {
         "korean": "한국어",

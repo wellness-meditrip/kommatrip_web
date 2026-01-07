@@ -14,7 +14,7 @@
       "email": "メール",
       "emailPlaceholder": "Elena123@email.com",
       "preferredMethod": "連絡方法",
-      "contactPlaceholder": "Elena122",
+      "contactPlaceholder": "連絡先をご入力ください。",
       "language": "言語",
       "languages": {
         "korean": "韓国語",

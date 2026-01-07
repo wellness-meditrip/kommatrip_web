@@ -8,7 +8,7 @@ const theme = {
     minWidth: '320px',
     maxWidth: '1440px',
     appBarHeight: '52px',
-    gnbHeight: '60px',
+    gnbHeight: '54px',
     ctaButtonHeight: '72px',
   },
   breakpoints: {

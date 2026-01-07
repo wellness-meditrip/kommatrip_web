@@ -94,17 +94,17 @@ export function useChangeLocale() {
 export function useCurrentLocale(): Locale {
   const router = useRouter();
 
-  // 1. 쿠키에서 로케일 확인 (가장 신뢰할 수 있는 소스)
-  const cookieLocale = getCookie('NEXT_LOCALE');
-  if (cookieLocale && routing.locales.includes(cookieLocale as Locale)) {
-    return cookieLocale as Locale;
-  }
-
-  // 2. URL 경로에서 로케일 확인 (쿼리 파라미터 제외)
+  // 1. URL 경로에서 로케일 확인 (쿼리 파라미터 제외)
   const currentPath = router.asPath.split('?')[0];
   const pathSegments = currentPath.split('/').filter(Boolean);
   if (pathSegments.length > 0 && routing.locales.includes(pathSegments[0] as Locale)) {
     return pathSegments[0] as Locale;
+  }
+
+  // 2. 쿠키에서 로케일 확인
+  const cookieLocale = getCookie('NEXT_LOCALE');
+  if (cookieLocale && routing.locales.includes(cookieLocale as Locale)) {
+    return cookieLocale as Locale;
   }
 
   // 3. 기본값 반환

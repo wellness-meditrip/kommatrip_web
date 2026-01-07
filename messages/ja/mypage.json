@@ -79,5 +79,13 @@
   "iframe": {
     "improvementTitle": "ONYU サービス改善フォーム",
     "termsTitle": "ONYU 利用規約"
+  },
+  "toast": {
+    "profileUpdated": "プロフィール情報を更新しました。",
+    "profileImageUploaded": "プロフィール画像をアップロードしました。",
+    "profileImageDeleted": "プロフィール画像を削除しました。",
+    "profileImageTypeError": "JPG、PNG、WEBP形式の画像のみアップロードできます。",
+    "profileImageSizeError": "画像サイズは5MB以下でアップロードしてください。",
+    "marketingConsentUpdated": "マーケティング配信の同意設定を更新しました。"
   }
 }

@@ -28,9 +28,14 @@ export const tags = css`
 `;
 
 export const itemImage = css`
+  flex-shrink: 0;
+
   width: 80px;
+  min-width: 80px;
   height: 80px;
+  min-height: 80px;
   border-radius: 12px;
+  object-fit: cover;
 `;
 
 export const programDetails = css`

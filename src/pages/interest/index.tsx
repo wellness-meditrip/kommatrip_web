@@ -16,6 +16,7 @@ import { usePostInterestMutation } from '@/queries/auth';
 import { useMediaQuery, useToast } from '@/hooks';
 import { getErrorMessage } from '@/utils/error-handler';
 import type { Gender, AgeGroup } from '@/models/auth';
+import { useSession } from 'next-auth/react';
 
 // 관심사 옵션
 const INTEREST_OPTIONS = [
@@ -60,6 +61,7 @@ export default function InterestPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const { update } = useSession();
   const [inputValue, setInputValue] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
@@ -126,10 +128,13 @@ export default function InterestPage() {
         TopicInterest: filteredInterests,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           showToast({ title: 'Interest settings saved successfully', icon: 'check' });
-          // 세션을 새로고침하여 InterestSetting 업데이트 반영
-          window.location.href = ROUTES.HOME;
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem('interest_done', '1');
+          }
+          await update({ InterestSetting: true });
+          router.replace(ROUTES.HOME);
         },
         onError: (error: unknown) => {
           const errorMessage = getErrorMessage(error, 'Failed to save interest settings');
@@ -248,7 +253,6 @@ export default function InterestPage() {
 const container = css`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   background-color: ${theme.colors.bg_default};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
@@ -262,7 +266,7 @@ const container = css`
 const gradientHeader = css`
   position: relative;
   width: 100%;
-  padding: 100px 20px 40px;
+  padding: 20px 20px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;

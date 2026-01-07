@@ -1,6 +1,16 @@
 import { Logo, LogoDark, ChevronLeftWhite, Chevron, Share, ShareWhite } from '@/icons';
 import { Text } from '../text';
-import { contents, wrapper, center, leftButtonWrapper, rightButtonWrapper } from './index.styles';
+import {
+  contents,
+  wrapper,
+  center,
+  leftButtonWrapper,
+  rightButtonWrapper,
+  logoButton,
+} from './index.styles';
+import { useRouter } from 'next/router';
+import { useCurrentLocale } from '@/i18n/navigation';
+import { ROUTES } from '@/constants';
 
 type ButtonType = 'styled' | 'white' | 'dark';
 type BackgroundColor = 'none' | 'white' | 'green' | 'bg_surface1';
@@ -13,6 +23,7 @@ interface Props {
   buttonType?: ButtonType;
   title?: string;
   logo?: LogoType;
+  onLogoClick?: () => void;
   backgroundColor?: BackgroundColor;
   rightButton?: boolean;
   rightButtonType?: RightButtonType;
@@ -49,6 +60,7 @@ export function AppBar({
   onBackClick,
   title,
   logo,
+  onLogoClick,
   leftButton = false,
   buttonType = 'styled',
   backgroundColor = 'none',
@@ -56,6 +68,17 @@ export function AppBar({
   rightButtonType = 'share',
   onRightButtonClick,
 }: Props) {
+  const router = useRouter();
+  const currentLocale = useCurrentLocale();
+
+  const handleLogoClick = () => {
+    if (onLogoClick) {
+      onLogoClick();
+      return;
+    }
+    router.push(`/${currentLocale}${ROUTES.HOME}`);
+  };
+
   return (
     <header css={wrapper({ backgroundColor: BACKGROUND_COLOR_MAP[backgroundColor] })}>
       <div css={contents}>
@@ -65,7 +88,11 @@ export function AppBar({
           </button>
         )}
         <div css={center}>
-          {logo && LOGO_MAP[logo]}
+          {logo && (
+            <button type="button" css={logoButton} onClick={handleLogoClick} aria-label="Home">
+              {LOGO_MAP[logo]}
+            </button>
+          )}
           {title && (
             <Text color="text_primary" typo="title_L">
               {title}

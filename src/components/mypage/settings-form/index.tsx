@@ -12,6 +12,7 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { deleteCookie } from '@/utils/cookie';
 import { ROUTES } from '@/constants';
+import { useTranslations } from 'next-intl';
 
 type Variant = 'page' | 'embedded';
 
@@ -23,6 +24,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const t = useTranslations('mypage');
   const [isMarketingEnabled, setIsMarketingEnabled] = useState(true);
   const isEmbedded = variant === 'embedded';
   const { data: profileData } = useGetUserProfileQuery();
@@ -41,7 +43,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
       {
         onSuccess: (response) => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
-          showToast({ title: response.message || 'Updated marketing consent.', icon: 'check' });
+          showToast({ title: t('toast.marketingConsentUpdated'), icon: 'check' });
         },
         onError: (error: unknown) => {
           setIsMarketingEnabled(!nextValue);

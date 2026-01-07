@@ -24,7 +24,7 @@ interface BookingDetailData {
   clinicName?: string;
   requestDate?: string;
   bookingDates?: { date?: string; time?: string }[];
-  guestInfo?: { name?: string; contact?: string; language?: string };
+  guestInfo?: { name?: string; contact?: string; contactMethod?: string; language?: string };
   providerInfo?: { id?: number; name?: string; address?: string; image?: string };
   paymentInfo?: { amount?: string; finalAmount?: string };
   hasReview?: boolean;
@@ -176,12 +176,27 @@ export default function BookingDetailPage() {
     [formatDateString, formatTimeString, formatDateWithWeekday, formatTimeFromDate]
   );
 
+  const formatContactMethodLabel = useCallback((value?: string | null) => {
+    const normalized = (value ?? '').toLowerCase();
+    if (normalized.includes('line')) return 'Line';
+    if (normalized.includes('whatsapp')) return 'WhatsApp';
+    if (normalized.includes('kakao')) return 'Kakao';
+    if (normalized.includes('phone')) return 'Phone';
+    return '';
+  }, []);
+
   const buildContactValue = useCallback((reservation: ReservationDetail) => {
+    const method = (reservation.preferred_contact ?? '').toLowerCase();
+    if (method.includes('line')) return reservation.contact_line || '-';
+    if (method.includes('whatsapp')) return reservation.contact_whatsapp || '-';
+    if (method.includes('kakao')) return reservation.contact_kakao || '-';
+    if (method.includes('phone')) return reservation.contact_phone || '-';
+
     return (
-      reservation.contact_phone ||
       reservation.contact_line ||
       reservation.contact_whatsapp ||
       reservation.contact_kakao ||
+      reservation.contact_phone ||
       reservation.customer_email ||
       '-'
     );
@@ -218,6 +233,7 @@ export default function BookingDetailPage() {
         guestInfo: {
           name: reservation.user_name || prev?.guestInfo?.name,
           contact: buildContactValue(reservation),
+          contactMethod: formatContactMethodLabel(reservation.preferred_contact),
           language: guestLanguage,
         },
         providerInfo: {
@@ -239,6 +255,7 @@ export default function BookingDetailPage() {
     formatAmount,
     buildBookingDates,
     buildContactValue,
+    formatContactMethodLabel,
     languageLabelMap,
     isLanguagePreference,
   ]);
@@ -248,6 +265,8 @@ export default function BookingDetailPage() {
     ? detail.bookingDates
     : [{ date: '-', time: '-' }];
   const guestInfo = detail?.guestInfo ?? {};
+  const contactValue = guestInfo.contact || '-';
+  const contactMethodLabel = guestInfo.contactMethod;
   const providerInfo = detail?.providerInfo ?? {};
   const paymentInfo = detail?.paymentInfo ?? {};
   const companyId = detail?.companyId;
@@ -389,9 +408,23 @@ export default function BookingDetailPage() {
                 <Text typo="body_M" color="text_tertiary">
                   {t('labels.contact')}
                 </Text>
-                <Text typo="body_M" color="text_primary">
-                  {guestInfo.contact || '-'}
-                </Text>
+                {contactMethodLabel ? (
+                  <div css={contactTextRow}>
+                    <Text typo="body_M" color="primary30">
+                      {contactMethodLabel}
+                    </Text>
+                    <Text typo="body_M" color="text_tertiary">
+                      |
+                    </Text>
+                    <Text typo="body_M" color="text_primary">
+                      {contactValue}
+                    </Text>
+                  </div>
+                ) : (
+                  <Text typo="body_M" color="text_primary">
+                    {contactValue}
+                  </Text>
+                )}
               </div>
               <div css={infoRow}>
                 <Text typo="body_M" color="text_tertiary">
@@ -623,6 +656,12 @@ const infoRow = css`
   gap: 12px;
 `;
 
+const contactTextRow = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const divider = css`
   height: 1px;
   background: ${theme.colors.border_default};
@@ -684,8 +723,6 @@ const actionBar = (hasGnb: boolean) => css`
   right: 0;
   bottom: ${hasGnb ? theme.size.gnbHeight : '0'};
   padding: 16px 18px 24px;
-  background: ${theme.colors.bg_surface1};
-  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.04);
 `;
 
 const ctaRow = (count: number) => css`

@@ -38,6 +38,19 @@ export const center = css`
   white-space: nowrap;
 `;
 
+export const logoButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: none;
+
+  background: transparent;
+
+  cursor: pointer;
+`;
+
 export const leftButtonWrapper = (props: { buttonType: string }) => css`
   display: flex;
   align-items: center;

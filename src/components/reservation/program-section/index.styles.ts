@@ -57,8 +57,12 @@ export const programCard = (isSelected: boolean) => css`
 `;
 
 export const programImage = css`
+  flex-shrink: 0;
+
   width: 72px;
+  min-width: 72px;
   height: 72px;
+  min-height: 72px;
   border-radius: 8px;
   object-fit: cover;
 `;
