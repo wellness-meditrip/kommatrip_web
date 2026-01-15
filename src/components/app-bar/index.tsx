@@ -1,4 +1,11 @@
-import { Logo, LogoDark, ChevronLeftWhite, Chevron, Share, ShareWhite } from '@/icons';
+import {
+  KommaSpaceLogo,
+  KommaSpaceLogoWhite,
+  ChevronLeftWhite,
+  Chevron,
+  Share,
+  ShareWhite,
+} from '@/icons';
 import { Text } from '../text';
 import {
   contents,
@@ -52,8 +59,8 @@ const RIGHT_BUTTON_ICON_MAP = {
 } as const;
 
 const LOGO_MAP = {
-  light: <Logo width="70px" height="30px" />,
-  dark: <LogoDark width="70px" height="30px" />,
+  light: <KommaSpaceLogoWhite width="90px" height="40px" />,
+  dark: <KommaSpaceLogo width="90px" height="40px" />,
 } as const;
 
 export function AppBar({

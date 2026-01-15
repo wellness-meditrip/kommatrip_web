@@ -47,6 +47,8 @@ export * from './GnbSearchActive';
 export * from './GnbSearchInactive';
 export * from './GoogleLogo';
 export * from './ImageUploadPlus';
+export * from './KommaSpaceLogo';
+export * from './KommaSpaceLogoWhite';
 export * from './Location';
 export * from './LoginFilled';
 export * from './Login';
