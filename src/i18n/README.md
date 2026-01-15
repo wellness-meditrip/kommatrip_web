@@ -112,7 +112,7 @@ messages/
 ```json
 {
   "app": {
-    "title": "meditrip - 글로벌 웰니스를 위한 한의학 플랫폼"
+    "title": "kommatrip - 글로벌 웰니스를 위한 한의학 플랫폼"
   },
   "button": {
     "confirm": "확인",

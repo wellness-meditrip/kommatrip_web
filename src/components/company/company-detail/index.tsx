@@ -181,7 +181,7 @@ export default function CompanyDetail({
         </div>
         <div css={tags}>
           {badges?.map((hashTag) => (
-            <Tag key={hashTag} service="meditrip" variant="line">
+            <Tag key={hashTag} service="kommatrip" variant="line">
               {hashTag}
             </Tag>
           ))}

@@ -18,13 +18,13 @@ export const wrapper = ({ variant, service }: { variant: Variant; service: Servi
 `;
 
 export const solid = ({ service }: { service: Service }) => css`
-  background: ${service === 'meditrip' ? theme.colors.primary30 : theme.colors.gray100};
+  background: ${service === 'kommatrip' ? theme.colors.primary30 : theme.colors.gray100};
 `;
 
 export const line = ({ service }: { service: Service }) => css`
   background: ${service === 'search'
     ? theme.colors.white
-    : service === 'meditrip'
+    : service === 'kommatrip'
       ? theme.colors.primary10Opacity40
       : theme.colors.gray100};
   color: ${service === 'search'
