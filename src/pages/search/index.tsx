@@ -29,6 +29,7 @@ export default function SearchPage() {
   });
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const tCommon = useTranslations('common');
+  const tSearch = useTranslations('search');
 
   // URL 쿼리 파라미터에서 초기 검색어 가져오기
   useEffect(() => {
@@ -139,6 +140,7 @@ export default function SearchPage() {
   return (
     <Layout
       isAppBarExist={false}
+      title={tSearch('title')}
       style={{
         backgroundColor: isDesktop ? theme.colors.bg_surface1 : theme.colors.primary80,
       }}

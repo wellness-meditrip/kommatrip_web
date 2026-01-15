@@ -23,6 +23,7 @@ export default function ProgramDetailPage() {
   const { programId } = router.query;
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
+  const pageTitle = data?.program?.name || t('title');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -108,7 +109,7 @@ export default function ProgramDetailPage() {
 
   if (!router.isReady || !programIdNumber) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={pageTitle}>
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -117,7 +118,7 @@ export default function ProgramDetailPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
         </div>
         <Loading title={t('loading')} />
       </Layout>
@@ -126,7 +127,7 @@ export default function ProgramDetailPage() {
 
   if (isLoading) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={pageTitle}>
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -135,7 +136,7 @@ export default function ProgramDetailPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
         </div>
         <Loading title={t('loading')} />
       </Layout>
@@ -145,7 +146,7 @@ export default function ProgramDetailPage() {
   const program = data?.program;
   if (!program) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={pageTitle}>
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -154,7 +155,7 @@ export default function ProgramDetailPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={t('title')} />
+          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
         </div>
         <Empty title={t('loadFail')} />
       </Layout>
@@ -167,7 +168,7 @@ export default function ProgramDetailPage() {
   const processItems = program.process ?? [];
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={pageTitle}>
       <div css={desktopAppBar}>
         <DesktopAppBar
           onSearchChange={handleSearchChange}
@@ -176,7 +177,7 @@ export default function ProgramDetailPage() {
         />
       </div>
       <div css={mobileAppBar}>
-        <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={t('title')} />
+        <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={pageTitle} />
       </div>
 
       <div css={pageContainer}>

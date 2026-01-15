@@ -1,11 +1,11 @@
 {
-  "title": "병원/클리닉",
+  "title": "업체",
   "list": {
-    "title": "병원 목록",
+    "title": "업체 목록",
     "noResults": "검색 결과가 없습니다"
   },
   "detail": {
-    "title": "병원 상세",
+    "title": "업체 상세",
     "introduction": "소개",
     "programs": "프로그램",
     "reviews": "리뷰",

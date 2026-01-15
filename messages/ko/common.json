@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "meditrip",
-    "title": "글로벌 웰니스를 위한 한의학 플랫폼",
-    "description": "meditrip은 글로벌 웰니스를 위한 한의학 플랫폼입니다"
+    "name": "kommatrip",
+    "title": "서울에서 즐기는 한국 웰니스 & K-뷰티 투어",
+    "description": "kommatrip은 글로벌 웰니스를 위한 한의학 플랫폼입니다"
   },
   "button": {
     "confirm": "확인",

@@ -214,7 +214,7 @@ export default function ReservationPage() {
   // 로딩 중이면 대기
   if (isLoading) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={t('title')}>
         <div css={desktopAppBar}>
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>
@@ -234,7 +234,7 @@ export default function ReservationPage() {
   // 비회원인 경우 페이지 내용을 숨기고 모달만 표시
   if (!isAuthenticated) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={t('title')}>
         <div css={desktopAppBar}>
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>
@@ -587,7 +587,7 @@ export default function ReservationPage() {
     summaryPrice == null ? '-' : `${formatPrice(summaryPrice)} ${t('payment.currency')}`;
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       <div css={desktopAppBar}>
         <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
       </div>

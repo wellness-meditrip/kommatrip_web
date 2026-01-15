@@ -5,9 +5,11 @@ import { UserInfoForm } from '@/components/mypage/user-info-form';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { ROUTES } from '@/constants';
+import { useTranslations } from 'next-intl';
 
 export default function MyPageUserInfo() {
   const router = useRouter();
+  const tMypage = useTranslations('mypage');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
 
@@ -29,7 +31,7 @@ export default function MyPageUserInfo() {
   }, [isDesktop, router]);
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={tMypage('detail.userInfo')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} />
       ) : (

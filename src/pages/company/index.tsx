@@ -319,6 +319,7 @@ export default function CompanyPage() {
   return (
     <Layout
       isAppBarExist={false}
+      title={t('title')}
       style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
     >
       {isDesktop ? (

@@ -1,11 +1,11 @@
 {
-  "title": "クリニック",
+  "title": "施設",
   "list": {
-    "title": "クリニック一覧",
+    "title": "施設一覧",
     "noResults": "検索結果がありません"
   },
   "detail": {
-    "title": "クリニック詳細",
+    "title": "施設詳細",
     "introduction": "紹介",
     "programs": "プログラム",
     "reviews": "レビュー",

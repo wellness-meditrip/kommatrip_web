@@ -1,13 +1,13 @@
 import { useTranslations } from 'next-intl';
 
 import {
-  Logo,
   Globe,
   GlobeFilled,
   Login,
   LoginFilled,
   MypageActive,
   MypageInactive,
+  KommaSpaceLogoWhite,
 } from '@/icons';
 import {
   wrapper,
@@ -151,7 +151,7 @@ export function DesktopAppBar({
           }
         }}
       >
-        <Logo width="70px" height="30px" />
+        <KommaSpaceLogoWhite width="90px" height="40px" />
       </div>
 
       {showSearch && (

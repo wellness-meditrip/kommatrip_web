@@ -9,7 +9,7 @@ interface Props {
   service?: Service;
 }
 
-export function Tag({ children, variant = 'solid', service = 'meditrip' }: Props) {
+export function Tag({ children, variant = 'solid', service = 'kommatrip' }: Props) {
   return (
     <div css={wrapper({ variant, service })}>
       <Text typo="button_S" color="inherit">

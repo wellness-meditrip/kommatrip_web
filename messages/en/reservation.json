@@ -85,7 +85,7 @@
     "minutes": "min"
   },
   "complete": {
-    "title": "Your reservation request has been submitted!",
+    "title": "Reservation Complete",
     "subtitle": "We will confirm it after review.",
     "missingData": "Reservation details not found.",
     "cta": "My Bookings",

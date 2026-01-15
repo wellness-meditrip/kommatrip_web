@@ -222,7 +222,7 @@ export default function Signup() {
   }, [email, setValue]);
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
       ) : (

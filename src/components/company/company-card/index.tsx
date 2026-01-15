@@ -258,7 +258,7 @@ export function CompanyCard({
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>
           {badges?.map((hashTag) => (
-            <Tag key={hashTag} service="meditrip" variant="line">
+            <Tag key={hashTag} service="kommatrip" variant="line">
               {hashTag}
             </Tag>
           ))}

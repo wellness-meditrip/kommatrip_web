@@ -194,7 +194,7 @@ export default function ReviewEditPage() {
   );
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('editTitle')}>
       <AppBar
         onBackClick={router.back}
         leftButton={true}

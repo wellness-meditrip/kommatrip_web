@@ -1,11 +1,11 @@
 {
-  "title": "Clinics",
+  "title": "Companys",
   "list": {
-    "title": "Clinic List",
+    "title": "Company List",
     "noResults": "No search results"
   },
   "detail": {
-    "title": "Clinic Details",
+    "title": "Company Details",
     "introduction": "Introduction",
     "programs": "Programs",
     "reviews": "Reviews",

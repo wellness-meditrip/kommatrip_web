@@ -1,4 +1,5 @@
 {
+  "title": "company Details",
   "loading": "Loading company details...",
   "loadFail": "Unable to load company information.",
   "infoPending": "Information is being prepared.",

@@ -1,4 +1,18 @@
+import Head from 'next/head';
+import { useTranslations } from 'next-intl';
+
 // 패키지 리스트 페이지
 export default function PackageListPage() {
-  return <>패키지 리스트 페이지입니다</>;
+  const tCommon = useTranslations('common');
+  const t = useTranslations('packages');
+  const pageTitle = `${tCommon('app.name')} | ${t('title')}`;
+
+  return (
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+      </Head>
+      <>패키지 리스트 페이지입니다</>
+    </>
+  );
 }

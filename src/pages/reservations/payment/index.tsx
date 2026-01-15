@@ -133,7 +133,7 @@ export default function ReservationPaymentPage() {
 
   if (!draft) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={t('payment.title')}>
         {isDesktop ? (
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         ) : (
@@ -153,7 +153,7 @@ export default function ReservationPaymentPage() {
   }
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('payment.title')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
       ) : (
