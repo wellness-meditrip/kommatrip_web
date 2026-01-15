@@ -11,6 +11,7 @@ import '@/styles/normalize.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
+import Script from 'next/script';
 import { Loading } from '@/components';
 
 /**
@@ -30,6 +31,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const [isLocaleReady, setIsLocaleReady] = useState(false);
   const defaultAppName = 'kommatrip';
   const defaultAppTitle = 'Korean Wellness & K-beauty Tours in Seoul';
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -80,6 +82,29 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     (messages?.common as { app?: { title?: string } } | undefined)?.app?.title || defaultAppTitle;
   const pageTitle = `${appName} | ${appTitle}`;
 
+  useEffect(() => {
+    if (!gtmId) return;
+
+    const handleRouteChange = (url: string) => {
+      if (!window.dataLayer) return;
+      window.dataLayer.push({
+        event: 'page_view',
+        page_location: window.location.href,
+        page_path: url,
+        page_title: document.title,
+      });
+    };
+
+    if (router.isReady) {
+      handleRouteChange(router.asPath);
+    }
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [gtmId, router]);
+
   return (
     <>
       <Head>
@@ -89,6 +114,31 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
           content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0"
         />
       </Head>
+      {gtmId && (
+        <Script id="gtm-consent-default" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              ad_storage: 'denied',
+              analytics_storage: 'denied',
+              ad_user_data: 'denied',
+              ad_personalization: 'denied'
+            });
+          `}
+        </Script>
+      )}
+      {gtmId && (
+        <Script id="gtm-loader" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${gtmId}');
+          `}
+        </Script>
+      )}
       <SessionProvider session={session}>
         <AuthSync />
         <NextIntlClientProvider locale={locale} messages={messages}>
