@@ -28,6 +28,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const [isLoading, setIsLoading] = useState(true);
   const [locale, setLocale] = useState<Locale>(routing.defaultLocale);
   const [isLocaleReady, setIsLocaleReady] = useState(false);
+  const defaultTitle = 'kommatrip - Korean Wellness & K-beauty Tours in Seoul';
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -72,10 +73,13 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     loadMessages();
   }, [locale, isLocaleReady]);
 
+  const pageTitle =
+    (messages?.common as { app?: { title?: string } } | undefined)?.app?.title || defaultTitle;
+
   return (
     <>
       <Head>
-        <title>meditrip - 글로벌 웰니스를 위한 한의학 플랫폼</title>
+        <title>{pageTitle}</title>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0"

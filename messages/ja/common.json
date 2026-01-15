@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "meditrip",
+    "name": "kommatrip",
     "title": "グローバルウェルネスのための韓医学プラットフォーム",
-    "description": "meditripはグローバルウェルネスのための韓医学プラットフォームです"
+    "description": "kommatripはグローバルウェルネスのための韓医学プラットフォームです"
   },
   "button": {
     "confirm": "確認",
