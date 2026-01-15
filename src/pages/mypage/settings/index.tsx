@@ -5,9 +5,11 @@ import { SettingsForm } from '@/components/mypage/settings-form';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { ROUTES } from '@/constants';
+import { useTranslations } from 'next-intl';
 
 export default function MyPageSettings() {
   const router = useRouter();
+  const tMypage = useTranslations('mypage');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
 
@@ -29,7 +31,7 @@ export default function MyPageSettings() {
   }, [isDesktop, router]);
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={tMypage('settings.title')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} />
       ) : (

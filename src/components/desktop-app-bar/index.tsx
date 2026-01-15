@@ -1,7 +1,6 @@
 import { useTranslations } from 'next-intl';
 
 import {
-  Logo,
   Globe,
   GlobeFilled,
   Login,

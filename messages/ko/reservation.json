@@ -85,7 +85,7 @@
     "minutes": "분"
   },
   "complete": {
-    "title": "예약 요청이 접수되었습니다!",
+    "title": "예약 완료",
     "subtitle": "검토 후 확정 안내를 드릴게요.",
     "missingData": "예약 정보를 찾을 수 없습니다.",
     "cta": "예약 내역",

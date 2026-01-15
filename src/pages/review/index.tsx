@@ -271,7 +271,7 @@ export default function ReviewPage() {
   };
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('createTitle')}>
       <AppBar
         onBackClick={router.back}
         leftButton={true}

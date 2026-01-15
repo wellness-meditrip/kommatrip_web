@@ -243,9 +243,11 @@ export default function ClinicDetailPage() {
     });
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
+  const pageTitle = data?.company?.name;
+
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
-      <Layout>
+      <Layout title={pageTitle}>
         <Loading title={t('loading')} />
       </Layout>
     );
@@ -253,7 +255,7 @@ export default function ClinicDetailPage() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout title={pageTitle}>
         <Empty title={t('loadFail')} />
       </Layout>
     );
@@ -261,14 +263,14 @@ export default function ClinicDetailPage() {
 
   if (!data) {
     return (
-      <Layout>
+      <Layout title={pageTitle}>
         <Loading title={t('loading')} />
       </Layout>
     );
   }
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={pageTitle}>
       <div css={desktopAppBar}>
         <DesktopAppBar
           onSearchChange={handleSearchChange}

@@ -209,7 +209,7 @@ export default function Login() {
     router.push(`${ROUTES.SEARCH}${query}`);
   };
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
       ) : (

@@ -10,7 +10,7 @@ export default function MyPage() {
   const tMypage = useTranslations('mypage');
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={tMypage('reviews.myReviews')}>
       <AppBar
         onBackClick={router.back}
         leftButton

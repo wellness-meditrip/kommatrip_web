@@ -28,7 +28,8 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const [isLoading, setIsLoading] = useState(true);
   const [locale, setLocale] = useState<Locale>(routing.defaultLocale);
   const [isLocaleReady, setIsLocaleReady] = useState(false);
-  const defaultTitle = 'kommatrip - Korean Wellness & K-beauty Tours in Seoul';
+  const defaultAppName = 'kommatrip';
+  const defaultAppTitle = 'Korean Wellness & K-beauty Tours in Seoul';
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -73,8 +74,11 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
     loadMessages();
   }, [locale, isLocaleReady]);
 
-  const pageTitle =
-    (messages?.common as { app?: { title?: string } } | undefined)?.app?.title || defaultTitle;
+  const appName =
+    (messages?.common as { app?: { name?: string } } | undefined)?.app?.name || defaultAppName;
+  const appTitle =
+    (messages?.common as { app?: { title?: string } } | undefined)?.app?.title || defaultAppTitle;
+  const pageTitle = `${appName} | ${appTitle}`;
 
   return (
     <>

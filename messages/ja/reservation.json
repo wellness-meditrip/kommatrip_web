@@ -85,7 +85,7 @@
     "minutes": "分"
   },
   "complete": {
-    "title": "予約リクエストを送信しました！",
+    "title": "予約完了",
     "subtitle": "確認後にご連絡します。",
     "missingData": "予約情報が見つかりません。",
     "cta": "予約履歴",

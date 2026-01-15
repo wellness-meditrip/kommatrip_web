@@ -111,7 +111,7 @@ export default function CompanyReviewListPage() {
   };
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       <AppBar onBackClick={router.back} leftButton={true} buttonType={'dark'} title={t('title')} />
 
       <div css={pageWrapper}>

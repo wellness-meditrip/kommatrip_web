@@ -17,6 +17,7 @@ import { useMediaQuery, useToast } from '@/hooks';
 import { getErrorMessage } from '@/utils/error-handler';
 import type { Gender, AgeGroup } from '@/models/auth';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 
 // 관심사 옵션
 const INTEREST_OPTIONS = [
@@ -59,6 +60,7 @@ const AGE_GROUP_OPTIONS: { id: AgeGroup; label: string }[] = [
 
 export default function InterestPage() {
   const router = useRouter();
+  const t = useTranslations('interest');
   const { showToast } = useToast();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { update } = useSession();
@@ -155,7 +157,7 @@ export default function InterestPage() {
   const isFormValid = selectedInterests.length > 0 && selectedGender && selectedAgeGroup;
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       {isDesktop ? (
         <DesktopAppBar onSearchChange={handleValueChange} onSearch={handleSearch} />
       ) : (

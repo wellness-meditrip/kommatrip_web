@@ -155,7 +155,7 @@ export default function MyPage() {
 
   if (isDesktop) {
     return (
-      <Layout isAppBarExist={false}>
+      <Layout isAppBarExist={false} title={t('title')}>
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={setSearchValue}
@@ -271,7 +271,7 @@ export default function MyPage() {
   }
 
   return (
-    <Layout isAppBarExist={false}>
+    <Layout isAppBarExist={false} title={t('title')}>
       <div css={desktopAppBar}>
         <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} showSearch={false} />
       </div>

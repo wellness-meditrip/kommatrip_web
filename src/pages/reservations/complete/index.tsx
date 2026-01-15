@@ -65,7 +65,11 @@ export default function ReservationCompletePage() {
   }, [data, locale, t]);
 
   return (
-    <Layout isAppBarExist={false} style={{ background: theme.colors.bg_surface1 }}>
+    <Layout
+      isAppBarExist={false}
+      title={t('complete.title')}
+      style={{ background: theme.colors.bg_surface1 }}
+    >
       {isDesktop ? (
         <div css={desktopAppBarWrap}>
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
