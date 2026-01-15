@@ -30,7 +30,7 @@ export function CompanyGoogleMap({ address, latitude, longitude }: Props) {
         mapInstance = new google.maps.Map(mapRef.current!, {
           center: location,
           zoom: 15,
-          mapId: process.env.NEXT_PUBLIC_MAP_ID_API_KEY,
+          mapId: process.env.NEXT_PUBLIC_MAP_ID,
         });
 
         new google.maps.marker.AdvancedMarkerElement({
@@ -50,7 +50,7 @@ export function CompanyGoogleMap({ address, latitude, longitude }: Props) {
               mapInstance = new google.maps.Map(mapRef.current!, {
                 center: location,
                 zoom: 15,
-                mapId: process.env.NEXT_PUBLIC_MAP_ID_API_KEY,
+                mapId: process.env.NEXT_PUBLIC_MAP_ID,
               });
 
               new google.maps.marker.AdvancedMarkerElement({
