@@ -2,7 +2,7 @@
   "app": {
     "name": "kommatrip",
     "title": "서울에서 즐기는 한국 웰니스 & K-뷰티 투어",
-    "description": "kommatrip은 글로벌 웰니스를 위한 한의학 플랫폼입니다"
+    "description": "kommatrip은 서울에서 즐기는 한국 웰니스와 K-뷰티 투어 가이드입니다"
   },
   "button": {
     "confirm": "확인",
