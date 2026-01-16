@@ -1,4 +1,5 @@
 import { css } from '@emotion/react';
+import { title } from 'process';
 
 const typography = {
   title_XL: css`
@@ -16,6 +17,10 @@ const typography = {
   `,
   title_S: css`
     font-size: 16px;
+    font-weight: 500;
+  `,
+  title_XS: css`
+    font-size: 14px;
     font-weight: 500;
   `,
 

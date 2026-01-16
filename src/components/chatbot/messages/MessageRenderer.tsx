@@ -11,6 +11,7 @@ import {
   messageContentRow,
   messageRow,
   messageTime,
+  optionMessageBubble,
   optionButton,
   optionCard,
   optionGrid,
@@ -68,7 +69,7 @@ export function MessageRenderer({
         <div>
           {assistantHeaderView}
           <div css={messageContentRow}>
-            <div css={messageBubble('assistant')}>
+            <div css={[messageBubble('assistant'), optionMessageBubble]}>
               {message.content && (
                 <Text typo="body_M" color="text_primary">
                   {message.content}
@@ -76,7 +77,7 @@ export function MessageRenderer({
               )}
               <div css={optionCard}>
                 {message.title && (
-                  <Text typo="title_S" color="text_primary">
+                  <Text typo="title_XS" color="text_primary">
                     {message.title}
                   </Text>
                 )}
@@ -89,7 +90,7 @@ export function MessageRenderer({
                       disabled={!!selectedCountry}
                       onClick={() => onSelectCountry(option.value)}
                     >
-                      <Text typo="button_M" color="text_primary">
+                      <Text typo="button_S" color="text_primary">
                         {option.label}
                       </Text>
                     </button>
@@ -114,7 +115,7 @@ export function MessageRenderer({
         <div>
           {assistantHeaderView}
           <div css={messageContentRow}>
-            <div css={messageBubble('assistant')}>
+            <div css={[messageBubble('assistant'), optionMessageBubble]}>
               {message.content && (
                 <Text typo="body_M" color="text_primary">
                   {message.content}
@@ -122,7 +123,7 @@ export function MessageRenderer({
               )}
               <div css={optionCard}>
                 {message.title && (
-                  <Text typo="title_S" color="text_primary">
+                  <Text typo="title_XS" color="text_primary">
                     {message.title}
                   </Text>
                 )}
@@ -135,7 +136,7 @@ export function MessageRenderer({
                       disabled={!!selectedLanguage}
                       onClick={() => onSelectLanguage(option.value)}
                     >
-                      <Text typo="button_M" color="text_primary">
+                      <Text typo="button_S" color="text_primary">
                         {option.label}
                       </Text>
                     </button>
@@ -160,7 +161,7 @@ export function MessageRenderer({
         <div>
           {assistantHeaderView}
           <div css={messageContentRow}>
-            <div css={messageBubble('assistant')}>
+            <div css={[messageBubble('assistant'), optionMessageBubble]}>
               {message.content && (
                 <Text typo="body_M" color="text_primary">
                   {message.content}

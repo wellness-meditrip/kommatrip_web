@@ -277,6 +277,11 @@ export const messageBubble = (role: 'assistant' | 'user') => css`
   box-shadow: 0 6px 12px rgb(0 0 0 / 5%);
 `;
 
+export const optionMessageBubble = css`
+  width: 100%;
+  max-width: 100%;
+`;
+
 export const assistantHeader = css`
   display: flex;
   align-items: center;
@@ -328,10 +333,11 @@ export const assistantLabel = css`
 export const optionCard = css`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 
-  padding: 16px;
-  border: 1px solid ${theme.colors.border_default};
+  /* padding: 16px; */
+
+  /* border: 1px solid ${theme.colors.border_default}; */
   border-radius: 18px;
 
   background: ${theme.colors.white};
@@ -353,6 +359,7 @@ export const optionButton = css`
   align-items: center;
   justify-content: center;
 
+  width: 100%;
   height: auto;
   padding: 8px 10px;
   border: 1px solid ${theme.colors.primary30};
@@ -386,9 +393,9 @@ export const suggestionList = css`
 
 export const suggestionButton = css`
   width: 100%;
-  padding: 12px 14px;
+  padding: 8px 10px;
   border: 1px solid ${theme.colors.primary30};
-  border-radius: 14px;
+  border-radius: 8px;
 
   background: ${theme.colors.white};
   color: ${theme.colors.text_primary};
