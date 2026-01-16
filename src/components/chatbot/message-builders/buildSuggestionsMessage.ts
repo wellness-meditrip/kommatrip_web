@@ -7,4 +7,5 @@ export const buildSuggestionsMessage = (title: string): ChatMessage => ({
   kind: 'options',
   optionsType: 'suggestions',
   content: title,
+  createdAt: new Date().toISOString(),
 });

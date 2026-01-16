@@ -189,6 +189,7 @@ export const useChatActions = ({
             role: 'user',
             kind: 'text',
             content: getCountryLabel(country),
+            createdAt: new Date().toISOString(),
           },
         ]);
         if (!hasOptionsMessage(activeSessionId, 'language')) {
@@ -242,6 +243,7 @@ export const useChatActions = ({
             role: 'user',
             kind: 'text',
             content: getLanguageLabel(language),
+            createdAt: new Date().toISOString(),
           },
         ]);
         if (!hasOptionsMessage(activeSessionId, 'suggestions')) {
@@ -273,6 +275,7 @@ export const useChatActions = ({
         role: 'user',
         content: trimmed,
         kind: 'text',
+        createdAt: new Date().toISOString(),
       };
       uiDispatch({ type: 'setInput', value: '' });
       messageDispatch({
@@ -298,6 +301,7 @@ export const useChatActions = ({
           role: 'assistant',
           content: response.answer,
           kind: 'text',
+          createdAt: new Date().toISOString(),
         };
         messageDispatch({
           type: 'appendMessages',

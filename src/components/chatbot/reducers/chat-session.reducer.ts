@@ -35,7 +35,8 @@ export const chatSessionReducer = (
       const nextSessions = state.sessions.filter(
         (session) => session.session_id !== action.sessionId
       );
-      const { [action.sessionId]: _meta, ...nextMeta } = state.sessionMeta;
+      const nextMeta = { ...state.sessionMeta };
+      delete nextMeta[action.sessionId];
       return {
         ...state,
         sessions: nextSessions,

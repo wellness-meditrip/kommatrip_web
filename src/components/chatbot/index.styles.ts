@@ -253,7 +253,14 @@ export const sessionDeleteButton = css`
 
 export const messageRow = (role: 'assistant' | 'user') => css`
   display: flex;
+  align-items: flex-end;
   justify-content: ${role === 'user' ? 'flex-end' : 'flex-start'};
+  gap: 8px;
+`;
+
+export const messageContentRow = css`
+  display: inline-flex;
+  align-items: flex-end;
 `;
 
 export const messageBubble = (role: 'assistant' | 'user') => css`
@@ -268,6 +275,39 @@ export const messageBubble = (role: 'assistant' | 'user') => css`
 
   background: ${role === 'user' ? theme.colors.primary10 : theme.colors.white};
   box-shadow: 0 6px 12px rgb(0 0 0 / 5%);
+`;
+
+export const assistantHeader = css`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 6px;
+`;
+
+export const assistantAvatar = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+
+  background: ${theme.colors.primary10};
+  color: ${theme.colors.primary50};
+`;
+
+export const assistantName = css`
+  font-weight: 600;
+`;
+
+export const messageTime = (role: 'assistant' | 'user') => css`
+  align-self: flex-end;
+
+  color: ${theme.colors.text_tertiary};
+  white-space: nowrap;
+  ${role === 'user' ? 'margin-right: 4px;' : 'margin-left: 4px;'}
 `;
 
 export const optionBubble = css`
@@ -363,6 +403,18 @@ export const suggestionButton = css`
   }
 `;
 
+export const dateHeader = css`
+  display: flex;
+  justify-content: center;
+
+  margin-bottom: 12px;
+`;
+
+export const loadingLottie = css`
+  width: 48px;
+  height: 24px;
+`;
+
 export const inputArea = css`
   display: flex;
   flex-direction: column;
@@ -412,6 +464,10 @@ export const sendButton = css`
   transition: background-color 0.2s ease;
 
   cursor: pointer;
+
+  & svg {
+    transform: rotate(-90deg);
+  }
 
   &:disabled {
     background: ${theme.colors.gray200};

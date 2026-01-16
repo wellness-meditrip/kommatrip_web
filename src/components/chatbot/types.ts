@@ -4,9 +4,10 @@ export type ChatMessage = {
   id: string;
   role: 'assistant' | 'user';
   content?: string;
-  kind?: 'text' | 'options';
+  kind?: 'text' | 'options' | 'loading';
   optionsType?: 'country' | 'language' | 'suggestions';
   title?: string;
+  createdAt?: string;
 };
 
 export type ViewMode = 'list' | 'detail';

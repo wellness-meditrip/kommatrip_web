@@ -12,4 +12,5 @@ export const buildOptionsMessage = (
   optionsType: type,
   content,
   title: type === 'country' ? t('selectCountry') : t('selectLanguage'),
+  createdAt: new Date().toISOString(),
 });

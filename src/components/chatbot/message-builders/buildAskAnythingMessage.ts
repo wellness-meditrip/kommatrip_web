@@ -6,4 +6,5 @@ export const buildAskAnythingMessage = (content: string): ChatMessage => ({
   role: 'assistant',
   kind: 'text',
   content,
+  createdAt: new Date().toISOString(),
 });

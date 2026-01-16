@@ -69,12 +69,16 @@ export const chatMessageReducer = (
         },
       };
     case 'removeSessionData': {
-      const { [action.sessionId]: _messages, ...nextMessages } = state.messagesBySession;
-      const { [action.sessionId]: _history, ...nextHistory } = state.historyLoaded;
-      const { [action.sessionId]: _intro, ...nextIntro } = state.introInitialized;
-      const { [action.sessionId]: _count, ...nextCounts } = state.messageCountBySession;
-      const { [action.sessionId]: _suggestion, ...nextSuggestions } =
-        state.activeSuggestionBySession;
+      const nextMessages = { ...state.messagesBySession };
+      const nextHistory = { ...state.historyLoaded };
+      const nextIntro = { ...state.introInitialized };
+      const nextCounts = { ...state.messageCountBySession };
+      const nextSuggestions = { ...state.activeSuggestionBySession };
+      delete nextMessages[action.sessionId];
+      delete nextHistory[action.sessionId];
+      delete nextIntro[action.sessionId];
+      delete nextCounts[action.sessionId];
+      delete nextSuggestions[action.sessionId];
       return {
         ...state,
         messagesBySession: nextMessages,

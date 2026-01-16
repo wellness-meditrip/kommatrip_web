@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useCurrentLocale } from '@/i18n/navigation';
 import { nanoid } from 'nanoid';
 import { ChatSessionMetadataResponse } from '@/models/chat';
 import { getChatSessionDetail, getChatSessions } from '@/apis/chat';
@@ -9,7 +10,7 @@ import { useToast } from '@/hooks';
 import { Dim, LoginModal, Portal, Text } from '@/components';
 import { ChevronLeft, ChevronRight, Close, Clock, ReviewAi } from '@/icons';
 import {
-  assistantLabel,
+  dateHeader,
   floatingButton,
   headerButton,
   headerTitle,
@@ -17,8 +18,6 @@ import {
   inputField,
   inputRow,
   limitNotice,
-  messageBubble,
-  messageRow,
   modalBody,
   modalHeader,
   modalWrapper,
@@ -76,6 +75,7 @@ export function ChatbotLauncher() {
 
 function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const t = useTranslations('chatbot');
+  const currentLocale = useCurrentLocale();
   const { showToast } = useToast();
   const showToastRef = useRef(showToast);
   const [uiState, uiDispatch] = useReducer(chatUIReducer, initialUIState);
@@ -98,9 +98,56 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     activeSuggestionBySession,
   } = messageState;
 
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    ko: 'ko-KR',
+    ja: 'ja-JP',
+    zh: 'zh-CN',
+    ms: 'ms-MY',
+    id: 'id-ID',
+  };
+  const locale = localeMap[currentLocale as string] ?? 'en-US';
+
+  const formatChatTime = useCallback(
+    (value?: string) => {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(date);
+    },
+    [locale]
+  );
+
+  const formatChatDate = useCallback(
+    (value?: string) => {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      }).format(date);
+    },
+    [locale]
+  );
+
   const activeSession = activeSessionId ? sessionMeta[activeSessionId] : null;
-  const activeMessages = activeSessionId ? (messagesBySession[activeSessionId] ?? []) : [];
-  const messageCount = activeSessionId ? (messageCountBySession[activeSessionId] ?? 0) : 0;
+  const activeMessages = useMemo(
+    () => (activeSessionId ? (messagesBySession[activeSessionId] ?? []) : []),
+    [activeSessionId, messagesBySession]
+  );
+  const messageCount = useMemo(
+    () => (activeSessionId ? (messageCountBySession[activeSessionId] ?? 0) : 0),
+    [activeSessionId, messageCountBySession]
+  );
+  const chatDateLabel = useMemo(() => {
+    const firstTimestamp = activeMessages.find((message) => message.createdAt)?.createdAt;
+    return formatChatDate(firstTimestamp ?? new Date().toISOString());
+  }, [activeMessages, formatChatDate]);
 
   const countryOptions = useMemo(
     () => [
@@ -199,12 +246,14 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
             role: 'user',
             content: item.question,
             kind: 'text',
+            createdAt: item.timestamp,
           },
           {
             id: `a-${item.sequence}`,
             role: 'assistant',
             content: item.answer,
             kind: 'text',
+            createdAt: item.timestamp,
           },
         ]);
         messageDispatch({
@@ -261,6 +310,7 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
         role: 'user',
         kind: 'text',
         content: getCountryLabel(country),
+        createdAt: new Date().toISOString(),
       });
       nextMessages.push(buildOptionsMessage('language', t, t('prompts.language')));
     }
@@ -270,6 +320,7 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
         role: 'user',
         kind: 'text',
         content: getLanguageLabel(language),
+        createdAt: new Date().toISOString(),
       });
       nextMessages.push(buildSuggestionsMessage(t('recommendations.title')));
     }
@@ -326,23 +377,6 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     if (!question) return;
     await sendSuggestion(question);
   };
-
-  const renderAssistantMessage = (content: string, withLabel = false) => (
-    <div css={messageRow('assistant')}>
-      <div css={messageBubble('assistant')}>
-        {withLabel && (
-          <div css={assistantLabel}>
-            <Text typo="body_S" color="text_secondary">
-              {t('assistantLabel')}
-            </Text>
-          </div>
-        )}
-        <Text typo="body_M" color="text_primary">
-          {content}
-        </Text>
-      </div>
-    </div>
-  );
 
   const renderListView = () => (
     <div css={scrollArea}>
@@ -420,24 +454,53 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   const renderDetailView = () => (
     <>
       <div css={scrollArea} ref={scrollRef}>
+        {chatDateLabel ? (
+          <div css={dateHeader}>
+            <Text typo="body_S" color="text_tertiary">
+              {chatDateLabel}
+            </Text>
+          </div>
+        ) : null}
         {activeMessages.map((message) => (
           <MessageRenderer
             key={message.id}
             message={message}
-            assistantLabelText={t('assistantLabel')}
+            assistantNameText={t('assistantName')}
             countryOptions={countryOptions}
             languageOptions={languageOptions}
             suggestionQuestions={suggestionQuestions}
             selectedCountry={activeSession?.metadata?.country}
             selectedLanguage={activeSession?.metadata?.language}
             activeSuggestion={activeSessionId ? activeSuggestionBySession[activeSessionId] : null}
+            formatTime={formatChatTime}
             onSelectCountry={selectCountry}
             onSelectLanguage={selectLanguage}
             onSelectSuggestion={handleSendSuggestion}
           />
         ))}
 
-        {isSending && renderAssistantMessage(t('sending'), true)}
+        {isSending ? (
+          <MessageRenderer
+            key="chatbot-sending"
+            message={{
+              id: 'chatbot-sending',
+              role: 'assistant',
+              kind: 'loading',
+              createdAt: new Date().toISOString(),
+            }}
+            assistantNameText={t('assistantName')}
+            countryOptions={countryOptions}
+            languageOptions={languageOptions}
+            suggestionQuestions={suggestionQuestions}
+            selectedCountry={activeSession?.metadata?.country}
+            selectedLanguage={activeSession?.metadata?.language}
+            activeSuggestion={activeSessionId ? activeSuggestionBySession[activeSessionId] : null}
+            formatTime={formatChatTime}
+            onSelectCountry={selectCountry}
+            onSelectLanguage={selectLanguage}
+            onSelectSuggestion={handleSendSuggestion}
+          />
+        ) : null}
       </div>
 
       <div css={inputArea}>
