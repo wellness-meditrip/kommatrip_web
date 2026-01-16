@@ -1,0 +1,67 @@
+{
+  "launcherLabel": "Chatbot",
+  "title": "Chatbot",
+  "startNewChat": "Start new chat",
+  "history": "History",
+  "noHistory": "No previous records.",
+  "untitledSession": "New chat",
+  "loading": "Loading...",
+  "assistantLabel": "AI answer",
+  "assistantName": "Assistant",
+  "delete": "Delete chat",
+  "deleteSuccess": "Successfully deleted.",
+  "welcome": {
+    "title": "Welcome to ONYU.",
+    "subtitle": "Let's find your Korean heritage wellness.",
+    "prompt": "Choose your country!"
+  },
+  "prompts": {
+    "language": "Choose your language!"
+  },
+  "recommendations": {
+    "title": "Here are popular questions travelers ask.",
+    "items": [
+      "Is acupuncture safe? What should I expect?",
+      "Are cupping marks normal? How long do they last?",
+      "What is a “hanok spa,” and how is it different from a jjimjilbang?"
+    ]
+  },
+  "selectCountry": "Select your country",
+  "selectLanguage": "Select your language",
+  "askAnything": "Don't see your question? Ask me anything.",
+  "inputPlaceholder": "Please enter your question.",
+  "limitNotice": "The chat limit for this session is set to 10 messages.",
+  "messageLimitReached": "You've reached the message limit for this session.",
+  "sending": "Thinking...",
+  "buttons": {
+    "back": "Back",
+    "close": "Close"
+  },
+  "errors": {
+    "loadSessions": "Failed to load chat sessions.",
+    "loadSession": "Failed to load chat history.",
+    "sendMessage": "Failed to send your message.",
+    "setCountry": "Failed to set your country.",
+    "setLanguage": "Failed to set your language.",
+    "deleteSession": "Failed to delete the chat session."
+  },
+  "countries": {
+    "usa": "USA",
+    "japan": "Japan",
+    "china": "China",
+    "korea": "Korea",
+    "europe": "Europe",
+    "singapore": "Singapore",
+    "malaysia": "Malaysia",
+    "indonesia": "Indonesia",
+    "etc": "etc"
+  },
+  "languages": {
+    "english": "English",
+    "japanese": "日本語",
+    "chinese": "中文",
+    "korean": "한국어",
+    "malay": "Bahasa Melayu",
+    "indonesian": "Bahasa Indonesia"
+  }
+}

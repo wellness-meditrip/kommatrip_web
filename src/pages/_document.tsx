@@ -5,7 +5,24 @@ export default function Document() {
 
   return (
     <Html lang="ko" suppressHydrationWarning>
-      <Head />
+      <Head>
+        {gtmId && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);}
+                gtag('consent', 'default', {
+                  ad_storage: 'denied',
+                  analytics_storage: 'denied',
+                  ad_user_data: 'denied',
+                  ad_personalization: 'denied'
+                });
+              `,
+            }}
+          />
+        )}
+      </Head>
       <body>
         {gtmId && (
           <noscript>

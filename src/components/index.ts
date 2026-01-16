@@ -7,10 +7,10 @@ export * from './calendar';
 export * from './button';
 export * from './image-input';
 
+export * from './rating';
 export * from './dialog';
 export * from './dim';
 export * from './empty';
-export * from './rating';
 export * from './layout';
 
 export * from './tabs';
@@ -25,3 +25,4 @@ export * from './portal';
 export * from './select-button';
 export * from './company-detail';
 export * from './hero-section';
+export * from './chatbot';

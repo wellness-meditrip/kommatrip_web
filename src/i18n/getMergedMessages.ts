@@ -72,6 +72,7 @@ const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> =>
         'update',
         'loading',
         'empty',
+        'chatbot',
       ];
 
       for (const namespace of namespaces) {
