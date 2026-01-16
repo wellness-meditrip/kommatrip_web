@@ -156,7 +156,7 @@ export function PasswordResetModal({ isOpen, onClose }: PasswordResetModalProps)
         confirm_password: confirmPassword,
       },
       {
-        onSuccess: (response) => {
+        onSuccess: () => {
           showToast({
             title: t('passwordResetSuccess'),
             icon: 'check',

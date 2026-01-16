@@ -41,7 +41,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
     postMarketingConsentMutation.mutate(
       { marketing_consent: nextValue },
       {
-        onSuccess: (response) => {
+        onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
           showToast({ title: t('toast.marketingConsentUpdated'), icon: 'check' });
         },
