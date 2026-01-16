@@ -12,7 +12,7 @@ import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
 import Script from 'next/script';
-import { Loading } from '@/components';
+import { ChatbotLauncher, Loading } from '@/components';
 
 /**
  * NextAuth 세션과 zustand auth store 동기화
@@ -115,20 +115,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         />
       </Head>
       {gtmId && (
-        <Script id="gtm-consent-default" strategy="beforeInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){window.dataLayer.push(arguments);}
-            gtag('consent', 'default', {
-              ad_storage: 'denied',
-              analytics_storage: 'denied',
-              ad_user_data: 'denied',
-              ad_personalization: 'denied'
-            });
-          `}
-        </Script>
-      )}
-      {gtmId && (
         <Script id="gtm-loader" strategy="afterInteractive">
           {`
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -149,7 +135,10 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
                   {isLoading ? (
                     <Loading title={loadingMessageByLocale[locale]} />
                   ) : (
-                    <Component {...pageProps} />
+                    <>
+                      <Component {...pageProps} />
+                      <ChatbotLauncher />
+                    </>
                   )}
                 </ToastProvider>
               </DialogProvider>
