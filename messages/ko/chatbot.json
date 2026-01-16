@@ -1,0 +1,66 @@
+{
+  "launcherLabel": "챗봇",
+  "title": "챗봇",
+  "startNewChat": "새 채팅 시작",
+  "history": "기록",
+  "noHistory": "이전 기록이 없습니다.",
+  "untitledSession": "새 채팅",
+  "loading": "불러오는 중...",
+  "assistantLabel": "AI 답변",
+  "delete": "채팅 삭제",
+  "deleteSuccess": "성공적으로 삭제되었습니다.",
+  "welcome": {
+    "title": "ONYU에 오신 것을 환영합니다.",
+    "subtitle": "한국 전통 웰니스 경험을 찾아보세요.",
+    "prompt": "국가를 선택해주세요!"
+  },
+  "prompts": {
+    "language": "언어를 선택해주세요!"
+  },
+  "recommendations": {
+    "title": "여행자들이 자주 묻는 질문이에요.",
+    "items": [
+      "침술은 안전한가요? 어떤 점을 기대하면 좋을까요?",
+      "부항 자국은 정상인가요? 얼마나 오래 가나요?",
+      "“한옥 스파”는 무엇이고 찜질방과는 어떻게 다른가요?"
+    ]
+  },
+  "selectCountry": "국가 선택",
+  "selectLanguage": "언어 선택",
+  "askAnything": "원하는 질문이 없나요? 무엇이든 물어보세요.",
+  "inputPlaceholder": "질문을 입력해주세요.",
+  "limitNotice": "이 세션의 채팅 제한은 10회입니다.",
+  "messageLimitReached": "이 세션의 메시지 제한에 도달했습니다.",
+  "sending": "답변 작성 중...",
+  "buttons": {
+    "back": "뒤로",
+    "close": "닫기"
+  },
+  "errors": {
+    "loadSessions": "채팅 세션을 불러오지 못했습니다.",
+    "loadSession": "채팅 기록을 불러오지 못했습니다.",
+    "sendMessage": "메시지 전송에 실패했습니다.",
+    "setCountry": "국가 설정에 실패했습니다.",
+    "setLanguage": "언어 설정에 실패했습니다.",
+    "deleteSession": "채팅 삭제에 실패했습니다."
+  },
+  "countries": {
+    "usa": "미국",
+    "japan": "일본",
+    "china": "중국",
+    "korea": "한국",
+    "europe": "유럽",
+    "singapore": "싱가포르",
+    "malaysia": "말레이시아",
+    "indonesia": "인도네시아",
+    "etc": "기타"
+  },
+  "languages": {
+    "english": "English",
+    "japanese": "日本語",
+    "chinese": "中文",
+    "korean": "한국어",
+    "malay": "말레이어",
+    "indonesian": "인도네시아어"
+  }
+}
