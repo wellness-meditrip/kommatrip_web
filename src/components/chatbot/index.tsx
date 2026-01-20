@@ -8,9 +8,16 @@ import { getChatSessionDetail, getChatSessions } from '@/apis/chat';
 import { useAuthStore } from '@/store/auth';
 import { useToast } from '@/hooks';
 import { Dim, LoginModal, Portal, Text } from '@/components';
-import { ChevronLeft, ChevronRight, Close, Clock, ReviewAi } from '@/icons';
+import { Chatbot, ChevronLeft, ChevronRight, Close, Clock, ReviewAi } from '@/icons';
 import {
   dateHeader,
+  emptyItem,
+  emptyState,
+  emptyStateChip,
+  emptyStateChipRow,
+  emptyStateIcon,
+  emptyStateTips,
+  emptyStateTitle,
   floatingButton,
   headerButton,
   headerTitle,
@@ -177,6 +184,10 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
   );
   const suggestionQuestions = useMemo(() => {
     const raw = t.raw('recommendations.items');
+    return Array.isArray(raw) ? raw : [];
+  }, [t]);
+  const emptyStateTips = useMemo(() => {
+    const raw = t.raw('emptyState.tips');
     return Array.isArray(raw) ? raw : [];
   }, [t]);
 
@@ -380,73 +391,106 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
 
   const renderListView = () => (
     <div css={scrollArea}>
-      <button css={startNewChatButton} onClick={startNewChat}>
-        <ReviewAi width={18} height={18} />
-        <Text typo="button_M" color="text_primary">
-          {t('startNewChat')}
-        </Text>
-      </button>
-
-      <div css={sectionTitle}>
-        <Clock width={16} height={16} />
-        <Text typo="button_M" color="text_tertiary">
-          {t('history')}
-        </Text>
-      </div>
-
       {isLoadingSessions ? (
         <Text typo="body_M" color="text_secondary">
           {t('loading')}
         </Text>
       ) : sessions.length === 0 ? (
-        <Text typo="body_M" color="text_tertiary">
-          {t('noHistory')}
-        </Text>
-      ) : (
-        <div css={sessionList}>
-          {sessions.map((session) => (
-            <div
-              key={session.session_id}
-              css={sessionItem}
-              className="chat-session-item"
-              data-reveal={hoveredSessionId === session.session_id}
-              onMouseLeave={() =>
-                uiDispatch({
-                  type: 'setHoveredSession',
-                  sessionId: hoveredSessionId === session.session_id ? null : hoveredSessionId,
-                })
-              }
-            >
-              <button
-                css={sessionButton}
-                className="chat-session-button"
-                onClick={() => selectSession(session.session_id)}
-              >
-                <Text typo="button_M" color="text_primary">
-                  {session.session_name || t('untitledSession')}
-                </Text>
-              </button>
-              <div
-                css={sessionRevealZone}
-                onMouseEnter={() =>
-                  uiDispatch({ type: 'setHoveredSession', sessionId: session.session_id })
-                }
-                aria-hidden="true"
-              />
-              <button
-                css={sessionDeleteButton}
-                className="chat-session-delete"
-                aria-label={t('delete')}
-                onClick={() => deleteSession(session.session_id)}
-                onMouseEnter={() =>
-                  uiDispatch({ type: 'setHoveredSession', sessionId: session.session_id })
-                }
-              >
-                <Close width={12} height={12} />
-              </button>
+        <div css={emptyState}>
+          <div css={emptyStateTitle}>
+            <span css={emptyStateIcon} aria-hidden="true">
+              <Chatbot width={22} height={22} />
+            </span>
+            <div css={emptyItem}>
+              <Text typo="title_M" color="text_primary">
+                {t('emptyState.title')}
+              </Text>
+              <Text typo="body_M" color="text_secondary">
+                {t('emptyState.description')}
+              </Text>
             </div>
-          ))}
+          </div>
+          <div css={emptyStateTips}>
+            <Text typo="body_S" color="text_tertiary">
+              {t('emptyState.tipsTitle')}
+            </Text>
+            <div css={emptyStateChipRow}>
+              {emptyStateTips.map((tip: string) => (
+                <div key={tip} css={emptyStateChip}>
+                  <Text typo="body_S" color="text_secondary">
+                    {tip}
+                  </Text>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button css={startNewChatButton} onClick={startNewChat}>
+            <ReviewAi width={18} height={18} />
+            <Text typo="button_M" color="text_primary">
+              {t('startNewChat')}
+            </Text>
+          </button>
         </div>
+      ) : (
+        <>
+          <button css={startNewChatButton} onClick={startNewChat}>
+            <ReviewAi width={18} height={18} />
+            <Text typo="button_M" color="text_primary">
+              {t('startNewChat')}
+            </Text>
+          </button>
+
+          <div css={sectionTitle}>
+            <Clock width={16} height={16} />
+            <Text typo="button_M" color="text_tertiary">
+              {t('history')}
+            </Text>
+          </div>
+          <div css={sessionList}>
+            {sessions.map((session) => (
+              <div
+                key={session.session_id}
+                css={sessionItem}
+                className="chat-session-item"
+                data-reveal={hoveredSessionId === session.session_id}
+                onMouseLeave={() =>
+                  uiDispatch({
+                    type: 'setHoveredSession',
+                    sessionId: hoveredSessionId === session.session_id ? null : hoveredSessionId,
+                  })
+                }
+              >
+                <button
+                  css={sessionButton}
+                  className="chat-session-button"
+                  onClick={() => selectSession(session.session_id)}
+                >
+                  <Text typo="button_M" color="text_primary">
+                    {session.session_name || t('untitledSession')}
+                  </Text>
+                </button>
+                <div
+                  css={sessionRevealZone}
+                  onMouseEnter={() =>
+                    uiDispatch({ type: 'setHoveredSession', sessionId: session.session_id })
+                  }
+                  aria-hidden="true"
+                />
+                <button
+                  css={sessionDeleteButton}
+                  className="chat-session-delete"
+                  aria-label={t('delete')}
+                  onClick={() => deleteSession(session.session_id)}
+                  onMouseEnter={() =>
+                    uiDispatch({ type: 'setHoveredSession', sessionId: session.session_id })
+                  }
+                >
+                  <Close width={12} height={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
