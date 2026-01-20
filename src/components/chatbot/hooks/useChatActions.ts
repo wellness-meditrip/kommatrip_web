@@ -7,7 +7,6 @@ import {
   setChatCountry,
   setChatLanguage,
 } from '@/apis/chat';
-import type { ChatSessionMetadataResponse } from '@/models/chat';
 import {
   buildAskAnythingMessage,
   buildOptionsMessage,
@@ -136,10 +135,14 @@ export const useChatActions = ({
 
   const selectSession = useCallback(
     (sessionId: string) => {
+      if (!sessionMeta[sessionId]) {
+        showToast({ title: t('errors.loadSession'), icon: 'exclaim' });
+        return;
+      }
       sessionDispatch({ type: 'setActiveSession', sessionId });
       uiDispatch({ type: 'setView', view: 'detail' });
     },
-    [sessionDispatch, uiDispatch]
+    [sessionDispatch, sessionMeta, showToast, t, uiDispatch]
   );
 
   const deleteSession = useCallback(
@@ -162,16 +165,14 @@ export const useChatActions = ({
   const selectCountry = useCallback(
     async (country: string) => {
       if (!activeSessionId) return;
+      const currentSession = sessionMeta[activeSessionId];
+      if (!currentSession) {
+        showToast({ title: t('errors.loadSession'), icon: 'exclaim' });
+        return;
+      }
       if (sessionMeta[activeSessionId]?.metadata?.country) return;
       try {
         const response = await setChatCountry({ session_id: activeSessionId, country });
-        const currentSession =
-          sessionMeta[activeSessionId] ??
-          ({
-            session_id: activeSessionId,
-            user_id: 0,
-            metadata: {},
-          } as ChatSessionMetadataResponse);
         sessionDispatch({
           type: 'setSessionMeta',
           sessionId: activeSessionId,
@@ -216,16 +217,14 @@ export const useChatActions = ({
   const selectLanguage = useCallback(
     async (language: string) => {
       if (!activeSessionId) return;
+      const currentSession = sessionMeta[activeSessionId];
+      if (!currentSession) {
+        showToast({ title: t('errors.loadSession'), icon: 'exclaim' });
+        return;
+      }
       if (sessionMeta[activeSessionId]?.metadata?.language) return;
       try {
         const response = await setChatLanguage({ session_id: activeSessionId, language });
-        const currentSession =
-          sessionMeta[activeSessionId] ??
-          ({
-            session_id: activeSessionId,
-            user_id: 0,
-            metadata: {},
-          } as ChatSessionMetadataResponse);
         sessionDispatch({
           type: 'setSessionMeta',
           sessionId: activeSessionId,
@@ -315,13 +314,11 @@ export const useChatActions = ({
         });
 
         if (response.session_name) {
-          const currentSession =
-            sessionMeta[activeSessionId] ??
-            ({
-              session_id: activeSessionId,
-              user_id: 0,
-              metadata: {},
-            } as ChatSessionMetadataResponse);
+          const currentSession = sessionMeta[activeSessionId];
+          if (!currentSession) {
+            showToast({ title: t('errors.loadSession'), icon: 'exclaim' });
+            return;
+          }
           sessionDispatch({
             type: 'setSessionMeta',
             sessionId: activeSessionId,

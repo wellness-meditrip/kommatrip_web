@@ -4,6 +4,12 @@
   "startNewChat": "새 채팅 시작",
   "history": "기록",
   "noHistory": "이전 기록이 없습니다.",
+  "emptyState": {
+    "title": "첫 대화를 시작해보세요.",
+    "description": "원하는 웰니스 경험을 간편하게 추천해드려요.",
+    "tipsTitle": "이런 내용을 물어볼 수 있어요",
+    "tips": ["맞춤 프로그램 추천", "예약 전 궁금한 점", "여행 일정 조율"]
+  },
   "untitledSession": "새 채팅",
   "loading": "불러오는 중...",
   "assistantLabel": "AI 답변",

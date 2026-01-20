@@ -4,6 +4,12 @@
   "startNewChat": "Start new chat",
   "history": "History",
   "noHistory": "No previous records.",
+  "emptyState": {
+    "title": "Start your first conversation.",
+    "description": "Get quick recommendations for the wellness experience you want.",
+    "tipsTitle": "Try asking about",
+    "tips": ["Personalized program picks", "Questions before booking", "Trip schedule alignment"]
+  },
   "untitledSession": "New chat",
   "loading": "Loading...",
   "assistantLabel": "AI answer",

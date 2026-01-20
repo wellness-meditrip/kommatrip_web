@@ -128,6 +128,66 @@ export const scrollArea = css`
   padding: 16px;
 `;
 
+export const emptyState = css`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  padding: 18px;
+  border: 1px solid ${theme.colors.primary10};
+  border-radius: 20px;
+
+  background: linear-gradient(140deg, ${theme.colors.bg_surface2} 0%, #fff 100%);
+  box-shadow: 0 16px 30px ${theme.colors.grayOpacity50};
+`;
+
+export const emptyStateTitle = css`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const emptyStateIcon = css`
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+
+  background: ${theme.colors.primary50};
+  box-shadow: inset 0 0 0 2px ${theme.colors.primary40};
+`;
+export const emptyItem = css`
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+`;
+export const emptyStateTips = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const emptyStateChipRow = css`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 8px;
+`;
+
+export const emptyStateChip = css`
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 12px ${theme.colors.grayOpacity50};
+`;
+
 export const startNewChatButton = css`
   display: flex;
   align-items: center;
