@@ -19,6 +19,7 @@ import {
   Loading,
   LoginModal,
   Empty,
+  Meta,
 } from '@/components';
 import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
@@ -36,6 +37,7 @@ export default function ClinicDetailPage() {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const [searchValue, setSearchValue] = useState('');
+  const appName = tCommon('app.name');
 
   const companyIdNumber = Number(companyId);
 
@@ -243,11 +245,25 @@ export default function ClinicDetailPage() {
     });
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
-  const pageTitle = data?.company?.name;
+  const companyName = data?.company?.name?.trim();
+  const pageTitle = companyName || t('title');
+  const metaTitle = `${pageTitle} | ${appName}`;
+  const companyDescription = data?.company?.description?.trim() || '';
+  const metaDescription = companyDescription || tCommon('app.description');
+  const ogImage =
+    data?.company?.image_urls?.[0] || data?.company?.primary_image_url || '/og/OG_image.jpg';
+  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
 
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
       <Layout title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <Loading title={t('loading')} />
       </Layout>
     );
@@ -256,6 +272,13 @@ export default function ClinicDetailPage() {
   if (error) {
     return (
       <Layout title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <Empty title={t('loadFail')} />
       </Layout>
     );
@@ -264,6 +287,13 @@ export default function ClinicDetailPage() {
   if (!data) {
     return (
       <Layout title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <Loading title={t('loading')} />
       </Layout>
     );
@@ -271,6 +301,13 @@ export default function ClinicDetailPage() {
 
   return (
     <Layout isAppBarExist={false} title={pageTitle}>
+      <Meta
+        title={metaTitle}
+        description={metaDescription}
+        image={ogImage}
+        url={canonicalPath}
+        siteName={appName}
+      />
       <div css={desktopAppBar}>
         <DesktopAppBar
           onSearchChange={handleSearchChange}

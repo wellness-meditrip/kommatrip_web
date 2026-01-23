@@ -13,6 +13,7 @@ import {
   FilterBar,
   GNB,
   DesktopAppBar,
+  Meta,
 } from '@/components';
 import { useGetCompanySearchQuery } from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
@@ -34,6 +35,11 @@ export default function CompanyPage() {
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { q, categories, date, endDate } = router.query;
+  const appName = tCommon('app.name');
+  const appDescription = tCommon('app.description');
+  const pageTitle = `${t('title')} | ${appName}`;
+  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
+  const ogImage = '/og/OG_image.jpg';
   const [inputValue, setInputValue] = useState('');
   const [keyword, setKeyword] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -322,6 +328,13 @@ export default function CompanyPage() {
       title={t('title')}
       style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
     >
+      <Meta
+        title={pageTitle}
+        description={appDescription}
+        image={ogImage}
+        url={canonicalPath}
+        siteName={appName}
+      />
       {isDesktop ? (
         <div css={desktopHeader}>
           <DesktopAppBar

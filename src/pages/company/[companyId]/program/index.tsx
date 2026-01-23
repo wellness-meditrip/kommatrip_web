@@ -5,7 +5,15 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar, LoginModal } from '@/components';
+import {
+  CTAButton,
+  Loading,
+  Empty,
+  RoundButton,
+  DesktopAppBar,
+  LoginModal,
+  Meta,
+} from '@/components';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
@@ -24,6 +32,13 @@ export default function ProgramDetailPage() {
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
   const pageTitle = data?.program?.name || t('title');
+  const appName = tCommon('app.name');
+  const appDescription = tCommon('app.description');
+  const metaTitle = `${pageTitle} | ${appName}`;
+  const metaDescription = data?.program?.description?.trim() || appDescription;
+  const ogImage =
+    data?.program?.image_urls?.[0] || data?.program?.primary_image_url || '/og/OG_image.jpg';
+  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -110,6 +125,13 @@ export default function ProgramDetailPage() {
   if (!router.isReady || !programIdNumber) {
     return (
       <Layout isAppBarExist={false} title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -118,7 +140,7 @@ export default function ProgramDetailPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
+          <AppBar onBackClick={router.back} leftButton={true} />
         </div>
         <Loading title={t('loading')} />
       </Layout>
@@ -128,6 +150,13 @@ export default function ProgramDetailPage() {
   if (isLoading) {
     return (
       <Layout isAppBarExist={false} title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -147,6 +176,13 @@ export default function ProgramDetailPage() {
   if (!program) {
     return (
       <Layout isAppBarExist={false} title={pageTitle}>
+        <Meta
+          title={metaTitle}
+          description={metaDescription}
+          image={ogImage}
+          url={canonicalPath}
+          siteName={appName}
+        />
         <div css={desktopAppBar}>
           <DesktopAppBar
             onSearchChange={handleSearchChange}
@@ -169,6 +205,13 @@ export default function ProgramDetailPage() {
 
   return (
     <Layout isAppBarExist={false} title={pageTitle}>
+      <Meta
+        title={metaTitle}
+        description={metaDescription}
+        image={ogImage}
+        url={canonicalPath}
+        siteName={appName}
+      />
       <div css={desktopAppBar}>
         <DesktopAppBar
           onSearchChange={handleSearchChange}

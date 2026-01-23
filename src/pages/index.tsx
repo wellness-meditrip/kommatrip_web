@@ -4,7 +4,16 @@ import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { GetStaticProps } from 'next';
-import { Layout, HeroSection, Text, CompanyCard, GNB, CompanyList, Loading } from '@/components';
+import {
+  Layout,
+  HeroSection,
+  Text,
+  CompanyCard,
+  GNB,
+  CompanyList,
+  Loading,
+  Meta,
+} from '@/components';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
@@ -30,6 +39,12 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const isLoggedIn = status === 'authenticated' || !!accessToken;
   const queryClient = useQueryClient();
+  const appName = t('app.name');
+  const appTitle = t('app.title');
+  const appDescription = t('app.description');
+  const pageTitle = `${appName} | ${appTitle}`;
+  const canonicalPath = router.asPath.split('?')[0] || '/';
+  const ogImagePath = '/og/OG_image.jpg';
 
   // 최근 본 업체 조회
   const {
@@ -102,6 +117,13 @@ export default function HomePage({ heroImages }: HomePageProps) {
 
   return (
     <Layout isAppBarExist={false}>
+      <Meta
+        title={pageTitle}
+        description={appDescription}
+        image={ogImagePath}
+        url={canonicalPath}
+        siteName={appName}
+      />
       <HeroSection
         images={heroImages}
         title={t('home.heroTitle')}
