@@ -11,6 +11,7 @@ import '@/styles/normalize.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
+import { Meta, createPageMeta, type MetaProps } from '@/seo';
 import { ChatbotLauncher, Loading } from '@/components';
 
 /**
@@ -30,6 +31,8 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const [isLocaleReady, setIsLocaleReady] = useState(false);
   const defaultAppName = 'kommatrip';
   const defaultAppTitle = 'Korean Wellness & K-beauty Tours in Seoul';
+  const defaultAppDescription =
+    'kommatrip is your guide to Korean Wellness & K-beauty tours in Seoul';
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
@@ -80,6 +83,17 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const appTitle =
     (messages?.common as { app?: { title?: string } } | undefined)?.app?.title || defaultAppTitle;
   const pageTitle = `${appName} | ${appTitle}`;
+  const pageDescription =
+    (messages?.common as { app?: { description?: string } } | undefined)?.app?.description ||
+    defaultAppDescription;
+  const resolvedMeta: MetaProps =
+    (pageProps as { meta?: MetaProps }).meta ??
+    createPageMeta({
+      pageTitle,
+      description: pageDescription,
+      path: router.asPath || '/',
+      image: '/og/OG_image.jpg',
+    });
 
   useEffect(() => {
     if (!gtmId) return;
@@ -107,12 +121,12 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   return (
     <>
       <Head>
-        <title>{pageTitle}</title>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0"
         />
       </Head>
+      <Meta {...resolvedMeta} />
       <SessionProvider session={session}>
         <AuthSync />
         <NextIntlClientProvider locale={locale} messages={messages}>
