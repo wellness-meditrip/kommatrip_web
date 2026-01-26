@@ -1,25 +1,6 @@
 import Head from 'next/head';
-
-type TwitterCardType = 'summary' | 'summary_large_image';
-
-export interface MetaProps {
-  title: string;
-  description: string;
-  image?: string;
-  url?: string;
-  siteName?: string;
-  type?: string;
-  noindex?: boolean;
-  twitterCard?: TwitterCardType;
-  imageAlt?: string;
-}
-
-const toAbsoluteUrl = (siteUrl: string, value?: string) => {
-  if (!value) return '';
-  if (value.startsWith('http://') || value.startsWith('https://')) return value;
-  if (!siteUrl) return value;
-  return `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
-};
+import type { MetaProps } from './meta.types';
+import { toAbsoluteUrl } from './meta.utils';
 
 export function Meta({
   title,

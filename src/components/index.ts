@@ -26,4 +26,3 @@ export * from './select-button';
 export * from './company-detail';
 export * from './hero-section';
 export * from './chatbot';
-export * from './seo/Meta';
