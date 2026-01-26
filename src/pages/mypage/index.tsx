@@ -1,5 +1,6 @@
 import { AppBar, DesktopAppBar, GNB } from '@/components';
 import { Layout } from '@/components/layout';
+import { Meta, createPageMeta } from '@/seo';
 import { useRouter } from 'next/router';
 import { Text } from '@/components/text';
 import { ChevronRight, ChevronRightWhite, DefaultProfile } from '@/icons';
@@ -72,6 +73,7 @@ export default function MyPage() {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { data: profileData } = useGetUserProfileQuery();
   const t = useTranslations('mypage');
+  const tCommon = useTranslations('common');
   const [activeMenu, setActiveMenu] = useState<MenuItemId>('user-info');
   const [searchValue, setSearchValue] = useState('');
   const user = profileData?.user;
@@ -153,8 +155,136 @@ export default function MyPage() {
     }
   };
 
+  const meta = createPageMeta({
+    pageTitle: t('title'),
+    description: tCommon('app.description'),
+    path: router.asPath || '/mypage',
+    noindex: true,
+  });
+
   if (isDesktop) {
     return (
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={t('title')}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={setSearchValue}
+              onSearch={handleSearch}
+              showSearch={false}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
+          </div>
+          <section css={desktopPage}>
+            <div css={desktopContainer}>
+              <aside css={sidebar}>
+                <div css={profileCard}>
+                  <div css={profileAvatar}>
+                    {user?.profile_image_url ? (
+                      <img
+                        src={user.profile_image_url}
+                        alt={t('profile.imageAlt')}
+                        css={profileImage}
+                      />
+                    ) : (
+                      <DefaultProfile width={72} height={72} />
+                    )}
+                  </div>
+                  <Text typo="title_M" color="bg_default">
+                    {user?.username || t('profile.fallbackName')}
+                  </Text>
+                  <button
+                    type="button"
+                    css={profileManageButton}
+                    onClick={() => handleMenuSelect(menuItems[0])}
+                  >
+                    <Text typo="body_S" color="bg_default">
+                      {t('profile.manage')}
+                    </Text>
+                    <ChevronRight width={12} height={12} />
+                  </button>
+                </div>
+                <div css={menuSection}>
+                  {menuItems.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      css={menuItem(item.id === activeMenu)}
+                      onClick={() => handleMenuSelect(item)}
+                    >
+                      <Text
+                        typo="button_M"
+                        color={item.id === activeMenu ? 'primary50' : 'text_primary'}
+                      >
+                        {item.label}
+                      </Text>
+                    </button>
+                  ))}
+                </div>
+              </aside>
+              <div css={detailPanel}>
+                <div css={detailHeader}>
+                  <Text typo="title_M" color="text_primary">
+                    {detailTitleMap[activeMenu]}
+                  </Text>
+                </div>
+                <div css={detailContent}>
+                  {activeMenu === 'user-info' ? (
+                    <UserInfoForm variant="embedded" />
+                  ) : activeMenu === 'settings' ? (
+                    <SettingsForm variant="embedded" />
+                  ) : activeMenu === 'reservations' ? (
+                    <ReservationsPanel variant="embedded" />
+                  ) : activeMenu === 'reviews' ? (
+                    <MyReviewsPanel variant="embedded" />
+                  ) : activeMenu === 'privacy' ? (
+                    <div css={detailCard}>
+                      <div css={detailFrameWrap}>
+                        <iframe
+                          title={t('iframe.improvementTitle')}
+                          src={tallyImproveUrl}
+                          css={detailFrame}
+                        />
+                      </div>
+                    </div>
+                  ) : activeMenu === 'terms' ? (
+                    <div css={detailCard}>
+                      <div css={detailFrameWrap}>
+                        <iframe title={t('iframe.termsTitle')} src={termsUrl} css={detailFrame} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div css={detailCard}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('detail.description')}
+                      </Text>
+                      {activeRoute && (
+                        <button
+                          type="button"
+                          css={detailAction}
+                          onClick={() => handleClick(activeRoute)}
+                        >
+                          <Text typo="body_S" color="primary50">
+                            {t('detail.goToPage')}
+                          </Text>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        </Layout>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('title')}>
         <div css={desktopAppBar}>
           <DesktopAppBar
@@ -166,198 +296,87 @@ export default function MyPage() {
         <div css={mobileAppBar}>
           <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
         </div>
-        <section css={desktopPage}>
-          <div css={desktopContainer}>
-            <aside css={sidebar}>
-              <div css={profileCard}>
-                <div css={profileAvatar}>
-                  {user?.profile_image_url ? (
-                    <img
-                      src={user.profile_image_url}
-                      alt={t('profile.imageAlt')}
-                      css={profileImage}
-                    />
-                  ) : (
-                    <DefaultProfile width={72} height={72} />
-                  )}
-                </div>
-                <Text typo="title_M" color="bg_default">
+        <section css={userSection}>
+          <div css={userInfo}>
+            <div css={userInfoImage}>
+              {user?.profile_image_url ? (
+                <img
+                  src={user.profile_image_url}
+                  alt={t('profile.imageAlt')}
+                  width={50}
+                  height={50}
+                />
+              ) : (
+                <DefaultProfile width={50} height={50} />
+              )}
+            </div>
+            <div css={userInfoContent}>
+              <div css={userInfoName}>
+                <Text typo="title_M" color="text_primary">
                   {user?.username || t('profile.fallbackName')}
                 </Text>
-                <button
-                  type="button"
-                  css={profileManageButton}
-                  onClick={() => handleMenuSelect(menuItems[0])}
-                >
-                  <Text typo="body_S" color="bg_default">
-                    {t('profile.manage')}
-                  </Text>
-                  <ChevronRight width={12} height={12} />
-                </button>
               </div>
-              <div css={menuSection}>
-                {menuItems.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    css={menuItem(item.id === activeMenu)}
-                    onClick={() => handleMenuSelect(item)}
-                  >
-                    <Text
-                      typo="button_M"
-                      color={item.id === activeMenu ? 'primary50' : 'text_primary'}
-                    >
-                      {item.label}
-                    </Text>
-                  </button>
-                ))}
-              </div>
-            </aside>
-            <div css={detailPanel}>
-              <div css={detailHeader}>
-                <Text typo="title_M" color="text_primary">
-                  {detailTitleMap[activeMenu]}
+              <div css={userInfoDetail} onClick={() => handleClick(ROUTES.MYPAGE_USER_INFO)}>
+                <Text typo="body_M" color="primary50">
+                  {t('profile.manage')}
                 </Text>
+                <ChevronRight width={12} height={12} />
               </div>
-              <div css={detailContent}>
-                {activeMenu === 'user-info' ? (
-                  <UserInfoForm variant="embedded" />
-                ) : activeMenu === 'settings' ? (
-                  <SettingsForm variant="embedded" />
-                ) : activeMenu === 'reservations' ? (
-                  <ReservationsPanel variant="embedded" />
-                ) : activeMenu === 'reviews' ? (
-                  <MyReviewsPanel variant="embedded" />
-                ) : activeMenu === 'privacy' ? (
-                  <div css={detailCard}>
-                    <div css={detailFrameWrap}>
-                      <iframe
-                        title={t('iframe.improvementTitle')}
-                        src={tallyImproveUrl}
-                        css={detailFrame}
-                      />
-                    </div>
-                  </div>
-                ) : activeMenu === 'terms' ? (
-                  <div css={detailCard}>
-                    <div css={detailFrameWrap}>
-                      <iframe title={t('iframe.termsTitle')} src={termsUrl} css={detailFrame} />
-                    </div>
-                  </div>
-                ) : (
-                  <div css={detailCard}>
-                    <Text typo="body_M" color="text_secondary">
-                      {t('detail.description')}
-                    </Text>
-                    {activeRoute && (
-                      <button
-                        type="button"
-                        css={detailAction}
-                        onClick={() => handleClick(activeRoute)}
-                      >
-                        <Text typo="body_S" color="primary50">
-                          {t('detail.goToPage')}
-                        </Text>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+            </div>
+          </div>
+          <div css={improvement} onClick={handleOpenTally}>
+            <div css={improvementTitle}>
+              <Text typo="body_L" color="bg_default">
+                {t('improvement.title')}
+              </Text>
+              <Text typo="body_M" color="bg_default">
+                {t('improvement.subtitle')}
+              </Text>
+            </div>
+            <div css={improvementButton}>
+              <button type="button">
+                <ChevronRightWhite width={12} height={12} />
+              </button>
             </div>
           </div>
         </section>
-      </Layout>
-    );
-  }
-
-  return (
-    <Layout isAppBarExist={false} title={t('title')}>
-      <div css={desktopAppBar}>
-        <DesktopAppBar onSearchChange={setSearchValue} onSearch={handleSearch} showSearch={false} />
-      </div>
-      <div css={mobileAppBar}>
-        <AppBar onBackClick={router.back} logo="dark" backgroundColor="bg_surface1" />
-      </div>
-      <section css={userSection}>
-        <div css={userInfo}>
-          <div css={userInfoImage}>
-            {user?.profile_image_url ? (
-              <img
-                src={user.profile_image_url}
-                alt={t('profile.imageAlt')}
-                width={50}
-                height={50}
-              />
-            ) : (
-              <DefaultProfile width={50} height={50} />
-            )}
+        <section css={myServiceSection}>
+          <div css={myServiceTitle}>
+            <Text typo="title_S" color="text_primary">
+              {t('sections.myServices')}
+            </Text>
           </div>
-          <div css={userInfoContent}>
-            <div css={userInfoName}>
-              <Text typo="title_M" color="text_primary">
-                {user?.username || t('profile.fallbackName')}
-              </Text>
-            </div>
-            <div css={userInfoDetail} onClick={() => handleClick(ROUTES.MYPAGE_USER_INFO)}>
+          <div css={myServiceList}>
+            <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_REVIEWS)}>
               <Text typo="body_M" color="primary50">
-                {t('profile.manage')}
+                {t('menu.reviews')}
               </Text>
-              <ChevronRight width={12} height={12} />
+            </div>
+            <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_SETTINGS)}>
+              <Text typo="body_M" color="primary50">
+                {t('menu.settings')}
+              </Text>
             </div>
           </div>
-        </div>
-        <div css={improvement} onClick={handleOpenTally}>
-          <div css={improvementTitle}>
-            <Text typo="body_L" color="bg_default">
-              {t('improvement.title')}
-            </Text>
-            <Text typo="body_M" color="bg_default">
-              {t('improvement.subtitle')}
+        </section>
+        <div css={line} />
+        <section css={myServiceSection}>
+          <div css={myServiceTitle}>
+            <Text typo="title_S" color="text_primary">
+              {t('sections.support')}
             </Text>
           </div>
-          <div css={improvementButton}>
-            <button type="button">
-              <ChevronRightWhite width={12} height={12} />
-            </button>
+          <div css={myServiceList}>
+            <div css={myServiceItem} onClick={handleOpenTerms}>
+              <Text typo="body_M" color="primary50">
+                {t('menu.terms')}
+              </Text>
+            </div>
           </div>
-        </div>
-      </section>
-      <section css={myServiceSection}>
-        <div css={myServiceTitle}>
-          <Text typo="title_S" color="text_primary">
-            {t('sections.myServices')}
-          </Text>
-        </div>
-        <div css={myServiceList}>
-          <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_REVIEWS)}>
-            <Text typo="body_M" color="primary50">
-              {t('menu.reviews')}
-            </Text>
-          </div>
-          <div css={myServiceItem} onClick={() => handleClick(ROUTES.MYPAGE_SETTINGS)}>
-            <Text typo="body_M" color="primary50">
-              {t('menu.settings')}
-            </Text>
-          </div>
-        </div>
-      </section>
-      <div css={line} />
-      <section css={myServiceSection}>
-        <div css={myServiceTitle}>
-          <Text typo="title_S" color="text_primary">
-            {t('sections.support')}
-          </Text>
-        </div>
-        <div css={myServiceList}>
-          <div css={myServiceItem} onClick={handleOpenTerms}>
-            <Text typo="body_M" color="primary50">
-              {t('menu.terms')}
-            </Text>
-          </div>
-        </div>
-      </section>
-      <GNB />
-    </Layout>
+        </section>
+        <GNB />
+      </Layout>
+    </>
   );
 }
 
