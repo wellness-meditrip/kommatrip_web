@@ -15,7 +15,8 @@
 
 - 기본 형식: `"{pageTitle} | {appName}"`
 - 검색/목록 키워드 포함: `"{keyword} - {pageTitle} | {appName}"`
-- 홈은 브랜드 우선(`"{appName} | {appTitle}"`)을 유지할 수 있도록 `appName: ''` 전달
+- 홈은 `pageTitle`을 이미 `"{appName} | {appTitle}"` 형태로 만들어 전달한다
+- `buildTitle`은 `pageTitle`에 앱명이 포함돼 있으면 중복으로 붙이지 않는다
 
 ## 설명 규칙
 

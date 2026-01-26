@@ -152,7 +152,7 @@ export default function ProgramDetailPage() {
             />
           </div>
           <div css={mobileAppBar}>
-            <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
+            <AppBar onBackClick={router.back} leftButton={true} />
           </div>
           <Loading title={t('loading')} />
         </Layout>
@@ -174,7 +174,7 @@ export default function ProgramDetailPage() {
             />
           </div>
           <div css={mobileAppBar}>
-            <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
+            <AppBar onBackClick={router.back} leftButton={true} />
           </div>
           <Empty title={t('loadFail')} />
         </Layout>
@@ -199,7 +199,7 @@ export default function ProgramDetailPage() {
           />
         </div>
         <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={pageTitle} />
+          <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" />
         </div>
 
         <div css={pageContainer}>

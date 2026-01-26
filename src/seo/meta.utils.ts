@@ -1,7 +1,7 @@
 export const toAbsoluteUrl = (siteUrl: string, value?: string) => {
   if (!value) return undefined;
   if (value.startsWith('http://') || value.startsWith('https://')) return value;
-  if (!siteUrl) return value;
+  if (!siteUrl) return undefined;
   return `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
 };
 
