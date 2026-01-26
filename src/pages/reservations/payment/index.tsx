@@ -18,6 +18,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 import { Dim } from '@/components/dim';
 import { PaymentLocation } from '@/icons';
 import { useTranslations } from 'next-intl';
+import { Meta, createPageMeta } from '@/seo';
 
 interface ReservationDraft {
   company_id: number;
@@ -50,6 +51,7 @@ export default function ReservationPaymentPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const t = useTranslations('reservation');
+  const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
@@ -88,6 +90,13 @@ export default function ReservationPaymentPage() {
     const [firstTime] = first.times ?? [];
     return { date: first.date, time: firstTime ?? '' };
   }, [draft]);
+
+  const meta = createPageMeta({
+    pageTitle: t('payment.title'),
+    description: tCommon('app.description'),
+    path: router.asPath || '/reservations/payment',
+    noindex: true,
+  });
 
   const handleSubmit = async () => {
     if (!draft) {
@@ -133,6 +142,31 @@ export default function ReservationPaymentPage() {
 
   if (!draft) {
     return (
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={t('payment.title')}>
+          {isDesktop ? (
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          ) : (
+            <AppBar
+              onBackClick={router.back}
+              leftButton={true}
+              buttonType="dark"
+              title={t('payment.title')}
+              backgroundColor="bg_surface1"
+            />
+          )}
+          <div css={emptyContainer}>
+            <Empty title={t('payment.missingDraft')} />
+          </div>
+        </Layout>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('payment.title')}>
         {isDesktop ? (
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
@@ -145,144 +179,125 @@ export default function ReservationPaymentPage() {
             backgroundColor="bg_surface1"
           />
         )}
-        <div css={emptyContainer}>
-          <Empty title={t('payment.missingDraft')} />
-        </div>
-      </Layout>
-    );
-  }
-
-  return (
-    <Layout isAppBarExist={false} title={t('payment.title')}>
-      {isDesktop ? (
-        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
-      ) : (
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          buttonType="dark"
-          title={t('payment.title')}
-          backgroundColor="bg_surface1"
-        />
-      )}
-      <div css={pageWrapper}>
-        <div css={contentGrid}>
-          <div css={mainColumn}>
-            <CompanyInfoCard
-              name={draft.company_name}
-              address={draft.company_address}
-              tags={draft.company_tags}
-              addressIconNode={<PaymentLocation width={16} height={16} />}
-              variant="payment"
-            />
-
-            <div css={infoCard}>
-              <Text typo="title_M" color="text_primary">
-                {t('payment.bookingInfo')}
-              </Text>
-              <div css={infoRow}>
-                <Text typo="body_M" color="text_secondary">
-                  {t('payment.date')}
-                </Text>
-                <Text typo="title_S" color="text_primary">
-                  {primaryOption ? formatDateDisplay(primaryOption.date) : '-'}
-                </Text>
-              </div>
-              <div css={infoRow}>
-                <Text typo="body_M" color="text_secondary">
-                  {t('payment.time')}
-                </Text>
-                <Text typo="title_S" color="text_primary">
-                  {primaryOption ? formatTimeDisplay(primaryOption.time) : '-'}
-                </Text>
-              </div>
-              <div css={infoRow}>
-                <Text typo="body_M" color="text_secondary">
-                  {t('payment.program')}
-                </Text>
-                <Text typo="title_S" color="text_primary" css={programText}>
-                  {draft.program_name} ({draft.program_duration_minutes}
-                  {t('payment.minutes')})
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          <div css={sideColumn}>
-            <div css={sidePanel}>
-              <div css={infoCard}>
-                <Text typo="title_M" color="text_primary">
-                  {t('payment.paymentMethod')}
-                </Text>
-                <div css={paymentMethod}>
-                  <div css={radioSelected} />
-                  <Text typo="body_M" color="text_primary">
-                    {t('payment.payOnSite')}
-                  </Text>
-                </div>
-              </div>
+        <div css={pageWrapper}>
+          <div css={contentGrid}>
+            <div css={mainColumn}>
+              <CompanyInfoCard
+                name={draft.company_name}
+                address={draft.company_address}
+                tags={draft.company_tags}
+                addressIconNode={<PaymentLocation width={16} height={16} />}
+                variant="payment"
+              />
 
               <div css={infoCard}>
                 <Text typo="title_M" color="text_primary">
-                  {t('payment.paymentAmount')}
+                  {t('payment.bookingInfo')}
                 </Text>
-                <div css={amountRow}>
+                <div css={infoRow}>
                   <Text typo="body_M" color="text_secondary">
-                    {t('payment.paymentAmountLabel')}
+                    {t('payment.date')}
                   </Text>
-                  <Text typo="body_M" color="text_primary">
-                    {formatPrice(draft.program_price)} {t('payment.currency')}
+                  <Text typo="title_S" color="text_primary">
+                    {primaryOption ? formatDateDisplay(primaryOption.date) : '-'}
                   </Text>
                 </div>
-                <div css={divider} />
-                <div css={amountRow}>
+                <div css={infoRow}>
+                  <Text typo="body_M" color="text_secondary">
+                    {t('payment.time')}
+                  </Text>
                   <Text typo="title_S" color="text_primary">
-                    {t('payment.finalPaymentAmount')}
+                    {primaryOption ? formatTimeDisplay(primaryOption.time) : '-'}
                   </Text>
-                  <Text typo="title_S" color="primary50">
-                    {formatPrice(draft.program_price)} {t('payment.currency')}
+                </div>
+                <div css={infoRow}>
+                  <Text typo="body_M" color="text_secondary">
+                    {t('payment.program')}
                   </Text>
+                  <Text typo="title_S" color="text_primary" css={programText}>
+                    {draft.program_name} ({draft.program_duration_minutes}
+                    {t('payment.minutes')})
+                  </Text>
+                </div>
+              </div>
+            </div>
+
+            <div css={sideColumn}>
+              <div css={sidePanel}>
+                <div css={infoCard}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.paymentMethod')}
+                  </Text>
+                  <div css={paymentMethod}>
+                    <div css={radioSelected} />
+                    <Text typo="body_M" color="text_primary">
+                      {t('payment.payOnSite')}
+                    </Text>
+                  </div>
+                </div>
+
+                <div css={infoCard}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.paymentAmount')}
+                  </Text>
+                  <div css={amountRow}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.paymentAmountLabel')}
+                    </Text>
+                    <Text typo="body_M" color="text_primary">
+                      {formatPrice(draft.program_price)} {t('payment.currency')}
+                    </Text>
+                  </div>
+                  <div css={divider} />
+                  <div css={amountRow}>
+                    <Text typo="title_S" color="text_primary">
+                      {t('payment.finalPaymentAmount')}
+                    </Text>
+                    <Text typo="title_S" color="primary50">
+                      {formatPrice(draft.program_price)} {t('payment.currency')}
+                    </Text>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div css={actionBar}>
-        <CTAButton onClick={() => setIsModalOpen(true)} disabled={isPending}>
-          {t('payment.bookNow')}
-        </CTAButton>
-      </div>
+        <div css={actionBar}>
+          <CTAButton onClick={() => setIsModalOpen(true)} disabled={isPending}>
+            {t('payment.bookNow')}
+          </CTAButton>
+        </div>
 
-      {isModalOpen && (
-        <>
-          <Dim fullScreen onClick={() => setIsModalOpen(false)} />
-          <div css={modalCard}>
-            <div css={modalText}>
-              <Text typo="title_M" color="text_primary">
-                {t('payment.submitTitle')}
-              </Text>
-              <Text typo="body_M" color="text_tertiary" css={modalDescription}>
-                {t('payment.submitDescription')}
-              </Text>
-            </div>
-            <div css={modalButtonRow}>
-              <button css={modalCancel} onClick={() => setIsModalOpen(false)}>
-                <Text typo="body_M" color="text_primary">
-                  {t('payment.cancel')}
+        {isModalOpen && (
+          <>
+            <Dim fullScreen onClick={() => setIsModalOpen(false)} />
+            <div css={modalCard}>
+              <div css={modalText}>
+                <Text typo="title_M" color="text_primary">
+                  {t('payment.submitTitle')}
                 </Text>
-              </button>
-              <button css={modalSubmit} onClick={handleSubmit}>
-                <Text typo="body_M" color="white">
-                  {t('payment.submit')}
+                <Text typo="body_M" color="text_tertiary" css={modalDescription}>
+                  {t('payment.submitDescription')}
                 </Text>
-              </button>
+              </div>
+              <div css={modalButtonRow}>
+                <button css={modalCancel} onClick={() => setIsModalOpen(false)}>
+                  <Text typo="body_M" color="text_primary">
+                    {t('payment.cancel')}
+                  </Text>
+                </button>
+                <button css={modalSubmit} onClick={handleSubmit}>
+                  <Text typo="body_M" color="white">
+                    {t('payment.submit')}
+                  </Text>
+                </button>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-    </Layout>
+          </>
+        )}
+      </Layout>
+    </>
   );
 }
 

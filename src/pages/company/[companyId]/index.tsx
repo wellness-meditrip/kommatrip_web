@@ -19,8 +19,8 @@ import {
   Loading,
   LoginModal,
   Empty,
-  Meta,
 } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
@@ -37,7 +37,6 @@ export default function ClinicDetailPage() {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const [searchValue, setSearchValue] = useState('');
-  const appName = tCommon('app.name');
 
   const companyIdNumber = Number(companyId);
 
@@ -247,169 +246,160 @@ export default function ClinicDetailPage() {
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
   const companyName = data?.company?.name?.trim();
   const pageTitle = companyName || t('title');
-  const metaTitle = `${pageTitle} | ${appName}`;
   const companyDescription = data?.company?.description?.trim() || '';
   const metaDescription = companyDescription || tCommon('app.description');
   const ogImage =
     data?.company?.image_urls?.[0] || data?.company?.primary_image_url || '/og/OG_image.jpg';
-  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
+  const meta = createPageMeta({
+    pageTitle,
+    description: metaDescription,
+    path: router.asPath,
+    image: ogImage,
+  });
 
   if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
     return (
-      <Layout title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <Loading title={t('loading')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout title={pageTitle}>
+          <Loading title={t('loading')} />
+        </Layout>
+      </>
     );
   }
 
   if (error) {
     return (
-      <Layout title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <Empty title={t('loadFail')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout title={pageTitle}>
+          <Empty title={t('loadFail')} />
+        </Layout>
+      </>
     );
   }
 
   if (!data) {
     return (
-      <Layout title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <Loading title={t('loading')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout title={pageTitle}>
+          <Loading title={t('loading')} />
+        </Layout>
+      </>
     );
   }
 
   return (
-    <Layout isAppBarExist={false} title={pageTitle}>
-      <Meta
-        title={metaTitle}
-        description={metaDescription}
-        image={ogImage}
-        url={canonicalPath}
-        siteName={appName}
-      />
-      <div css={desktopAppBar}>
-        <DesktopAppBar
-          onSearchChange={handleSearchChange}
-          onSearch={handleSearch}
-          searchPlaceholder={tCommon('search.addressPlaceholder')}
-        />
-      </div>
-      <div css={mobileAppBar}>
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          rightButton={true}
-          buttonType="dark"
-          rightButtonType="share"
-          onRightButtonClick={handleShare}
-          backgroundColor="bg_surface1"
-        />
-      </div>
-      <div css={pageContainer}>
-        <div css={contentLayout}>
-          <div css={mainContent}>
-            {data?.company && (
-              <CompanyDetail
-                badges={data.company.tags || []}
-                companyImage={data.company.primary_image_url || '/default.png'}
-                companyName={data.company.name}
-                companyAddress={data.company.address}
-                images={data.company.image_urls || []}
-              />
-            )}
+    <>
+      <Meta {...meta} />
+      <Layout isAppBarExist={false} title={pageTitle}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={handleSearchChange}
+            onSearch={handleSearch}
+            searchPlaceholder={tCommon('search.addressPlaceholder')}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar
+            onBackClick={router.back}
+            leftButton={true}
+            rightButton={true}
+            buttonType="dark"
+            rightButtonType="share"
+            onRightButtonClick={handleShare}
+            backgroundColor="bg_surface1"
+          />
+        </div>
+        <div css={pageContainer}>
+          <div css={contentLayout}>
+            <div css={mainContent}>
+              {data?.company && (
+                <CompanyDetail
+                  badges={data.company.tags || []}
+                  companyImage={data.company.primary_image_url || '/default.png'}
+                  companyName={data.company.name}
+                  companyAddress={data.company.address}
+                  images={data.company.image_urls || []}
+                />
+              )}
 
-            <section css={wrapper}>
-              {/* 고정된 탭 헤더 */}
-              <div css={stickyTabHeader}>
-                {TABS.map((tab) => (
-                  <Tab
-                    key={tab.id}
-                    id={tab.id}
-                    label={tab.label}
-                    isActive={activeTab === tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                  />
-                ))}
-              </div>
-
-              {/* 모든 컨텐츠를 한 번에 렌더링 */}
-              <div css={content}>
-                <div ref={infoRef} data-section="info" css={section}>
-                  {data?.company ? (
-                    <CompanyInfo data={data.company} />
-                  ) : (
-                    <Loading title={t('loading')} />
-                  )}
-                </div>
-
-                <div ref={programRef} data-section="program" css={section}>
-                  {data?.company ? (
-                    <CompanyProgram badges={data.company.tags || []} companyId={companyIdNumber} />
-                  ) : (
-                    <Loading title={t('loading')} />
-                  )}
-                </div>
-
-                <div ref={reviewRef} data-section="review" css={section}>
-                  <CompanyReview companyId={companyIdNumber} />
-                </div>
-
-                <div ref={noticeRef} data-section="notice" css={section}>
-                  {data?.company && (
-                    <CompanyNotice
-                      bookingInformation={data.company.booking_information}
-                      refundRegulation={data.company.refund_regulation}
+              <section css={wrapper}>
+                {/* 고정된 탭 헤더 */}
+                <div css={stickyTabHeader}>
+                  {TABS.map((tab) => (
+                    <Tab
+                      key={tab.id}
+                      id={tab.id}
+                      label={tab.label}
+                      isActive={activeTab === tab.id}
+                      onClick={() => handleTabClick(tab.id)}
                     />
-                  )}
+                  ))}
                 </div>
 
-                {/* <div css={youWillAlsoLikeWrapper}>
+                {/* 모든 컨텐츠를 한 번에 렌더링 */}
+                <div css={content}>
+                  <div ref={infoRef} data-section="info" css={section}>
+                    {data?.company ? (
+                      <CompanyInfo data={data.company} />
+                    ) : (
+                      <Loading title={t('loading')} />
+                    )}
+                  </div>
+
+                  <div ref={programRef} data-section="program" css={section}>
+                    {data?.company ? (
+                      <CompanyProgram
+                        badges={data.company.tags || []}
+                        companyId={companyIdNumber}
+                      />
+                    ) : (
+                      <Loading title={t('loading')} />
+                    )}
+                  </div>
+
+                  <div ref={reviewRef} data-section="review" css={section}>
+                    <CompanyReview companyId={companyIdNumber} />
+                  </div>
+
+                  <div ref={noticeRef} data-section="notice" css={section}>
+                    {data?.company && (
+                      <CompanyNotice
+                        bookingInformation={data.company.booking_information}
+                        refundRegulation={data.company.refund_regulation}
+                      />
+                    )}
+                  </div>
+
+                  {/* <div css={youWillAlsoLikeWrapper}>
                   <CompanyList title="You will also like" companies={[]} />
                 </div> */}
-              </div>
-            </section>
+                </div>
+              </section>
+            </div>
+
+            {isDesktop && (
+              <aside css={stickySidebar}>
+                <div css={bookingCard}>
+                  <RoundButton size="L" fullWidth onClick={handleReserveClick}>
+                    {t('bookNow')}
+                  </RoundButton>
+                </div>
+              </aside>
+            )}
           </div>
-
-          {isDesktop && (
-            <aside css={stickySidebar}>
-              <div css={bookingCard}>
-                <RoundButton size="L" fullWidth onClick={handleReserveClick}>
-                  {t('bookNow')}
-                </RoundButton>
-              </div>
-            </aside>
-          )}
         </div>
-      </div>
 
-      {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onCancel={() => setShowLoginModal(false)}
-      />
-    </Layout>
+        {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
+        <LoginModal
+          isOpen={showLoginModal}
+          onClose={() => setShowLoginModal(false)}
+          onCancel={() => setShowLoginModal(false)}
+        />
+      </Layout>
+    </>
   );
 }
 

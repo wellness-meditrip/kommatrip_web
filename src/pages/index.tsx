@@ -4,16 +4,8 @@ import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { GetStaticProps } from 'next';
-import {
-  Layout,
-  HeroSection,
-  Text,
-  CompanyCard,
-  GNB,
-  CompanyList,
-  Loading,
-  Meta,
-} from '@/components';
+import { Layout, HeroSection, Text, CompanyCard, GNB, CompanyList, Loading } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
@@ -43,8 +35,13 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const appTitle = t('app.title');
   const appDescription = t('app.description');
   const pageTitle = `${appName} | ${appTitle}`;
-  const canonicalPath = router.asPath.split('?')[0] || '/';
   const ogImagePath = '/og/OG_image.jpg';
+  const meta = createPageMeta({
+    pageTitle,
+    description: appDescription,
+    path: router.asPath || '/',
+    image: ogImagePath,
+  });
 
   // 최근 본 업체 조회
   const {
@@ -116,69 +113,65 @@ export default function HomePage({ heroImages }: HomePageProps) {
   };
 
   return (
-    <Layout isAppBarExist={false}>
-      <Meta
-        title={pageTitle}
-        description={appDescription}
-        image={ogImagePath}
-        url={canonicalPath}
-        siteName={appName}
-      />
-      <HeroSection
-        images={heroImages}
-        title={t('home.heroTitle')}
-        placeholder={t('home.searchPlaceholder')}
-        subtitle={t('home.heroSubtitle')}
-        onSearchChange={handleValueChange}
-        onSearch={handleSearch}
-        onSearchBarClick={handleGoToSearch}
-        onBackClick={router.back}
-        isDesktop={isDesktop}
-      />
+    <>
+      <Meta {...meta} />
+      <Layout isAppBarExist={false}>
+        <HeroSection
+          images={heroImages}
+          title={t('home.heroTitle')}
+          placeholder={t('home.searchPlaceholder')}
+          subtitle={t('home.heroSubtitle')}
+          onSearchChange={handleValueChange}
+          onSearch={handleSearch}
+          onSearchBarClick={handleGoToSearch}
+          onBackClick={router.back}
+          isDesktop={isDesktop}
+        />
 
-      <div css={wrapper}>
-        {/* 최근 본 업체 섹션 */}
-        {isRecentLoading ? (
-          <Loading title={t('home.loadingRecent')} />
-        ) : formattedRecentCompanies.length > 0 ? (
-          <CompanyList
-            title={t('home.recentlyViewed')}
-            companies={formattedRecentCompanies}
-            cardSize="compact"
-          />
-        ) : null}
+        <div css={wrapper}>
+          {/* 최근 본 업체 섹션 */}
+          {isRecentLoading ? (
+            <Loading title={t('home.loadingRecent')} />
+          ) : formattedRecentCompanies.length > 0 ? (
+            <CompanyList
+              title={t('home.recentlyViewed')}
+              companies={formattedRecentCompanies}
+              cardSize="compact"
+            />
+          ) : null}
 
-        <Text typo="title_M" color="text_primary" css={title}>
-          {t('home.recommendedTitle')}
-        </Text>
-
-        {isRecommendedLoading ? (
-          <Loading title={t('home.loadingRecommended')} />
-        ) : formattedRecommendedCompanies.length > 0 ? (
-          <div css={cardsGrid}>
-            {formattedRecommendedCompanies.map((company) => (
-              <CompanyCard
-                key={company.id}
-                companyId={company.id}
-                companyImage={company.image}
-                companyName={company.name}
-                companyAddress={company.address}
-                badges={company.tags}
-                images={company.images}
-                isExclusive={company.is_exclusive}
-                fixedHeight={true}
-                onClick={() => handleCompanyClick(company.id)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Text typo="body_M" color="text_secondary">
-            {t('home.noRecommendedCompanies')}
+          <Text typo="title_M" color="text_primary" css={title}>
+            {t('home.recommendedTitle')}
           </Text>
-        )}
-      </div>
-      <GNB />
-    </Layout>
+
+          {isRecommendedLoading ? (
+            <Loading title={t('home.loadingRecommended')} />
+          ) : formattedRecommendedCompanies.length > 0 ? (
+            <div css={cardsGrid}>
+              {formattedRecommendedCompanies.map((company) => (
+                <CompanyCard
+                  key={company.id}
+                  companyId={company.id}
+                  companyImage={company.image}
+                  companyName={company.name}
+                  companyAddress={company.address}
+                  badges={company.tags}
+                  images={company.images}
+                  isExclusive={company.is_exclusive}
+                  fixedHeight={true}
+                  onClick={() => handleCompanyClick(company.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <Text typo="body_M" color="text_secondary">
+              {t('home.noRecommendedCompanies')}
+            </Text>
+          )}
+        </div>
+        <GNB />
+      </Layout>
+    </>
   );
 }
 

@@ -5,15 +5,8 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import {
-  CTAButton,
-  Loading,
-  Empty,
-  RoundButton,
-  DesktopAppBar,
-  LoginModal,
-  Meta,
-} from '@/components';
+import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar, LoginModal } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
@@ -32,13 +25,16 @@ export default function ProgramDetailPage() {
   const programIdNumber = Number(programId);
   const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
   const pageTitle = data?.program?.name || t('title');
-  const appName = tCommon('app.name');
   const appDescription = tCommon('app.description');
-  const metaTitle = `${pageTitle} | ${appName}`;
   const metaDescription = data?.program?.description?.trim() || appDescription;
   const ogImage =
     data?.program?.image_urls?.[0] || data?.program?.primary_image_url || '/og/OG_image.jpg';
-  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
+  const meta = createPageMeta({
+    pageTitle,
+    description: metaDescription,
+    path: router.asPath,
+    image: ogImage,
+  });
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -124,77 +120,65 @@ export default function ProgramDetailPage() {
 
   if (!router.isReady || !programIdNumber) {
     return (
-      <Layout isAppBarExist={false} title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <div css={desktopAppBar}>
-          <DesktopAppBar
-            onSearchChange={handleSearchChange}
-            onSearch={handleSearch}
-            searchPlaceholder={tCommon('search.addressPlaceholder')}
-          />
-        </div>
-        <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} />
-        </div>
-        <Loading title={t('loading')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={pageTitle}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
+              searchPlaceholder={tCommon('search.addressPlaceholder')}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar onBackClick={router.back} leftButton={true} />
+          </div>
+          <Loading title={t('loading')} />
+        </Layout>
+      </>
     );
   }
 
   if (isLoading) {
     return (
-      <Layout isAppBarExist={false} title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <div css={desktopAppBar}>
-          <DesktopAppBar
-            onSearchChange={handleSearchChange}
-            onSearch={handleSearch}
-            searchPlaceholder={tCommon('search.addressPlaceholder')}
-          />
-        </div>
-        <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
-        </div>
-        <Loading title={t('loading')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={pageTitle}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
+              searchPlaceholder={tCommon('search.addressPlaceholder')}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
+          </div>
+          <Loading title={t('loading')} />
+        </Layout>
+      </>
     );
   }
 
   const program = data?.program;
   if (!program) {
     return (
-      <Layout isAppBarExist={false} title={pageTitle}>
-        <Meta
-          title={metaTitle}
-          description={metaDescription}
-          image={ogImage}
-          url={canonicalPath}
-          siteName={appName}
-        />
-        <div css={desktopAppBar}>
-          <DesktopAppBar
-            onSearchChange={handleSearchChange}
-            onSearch={handleSearch}
-            searchPlaceholder={tCommon('search.addressPlaceholder')}
-          />
-        </div>
-        <div css={mobileAppBar}>
-          <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
-        </div>
-        <Empty title={t('loadFail')} />
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={pageTitle}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
+              searchPlaceholder={tCommon('search.addressPlaceholder')}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar onBackClick={router.back} leftButton={true} title={pageTitle} />
+          </div>
+          <Empty title={t('loadFail')} />
+        </Layout>
+      </>
     );
   }
 
@@ -204,170 +188,166 @@ export default function ProgramDetailPage() {
   const processItems = program.process ?? [];
 
   return (
-    <Layout isAppBarExist={false} title={pageTitle}>
-      <Meta
-        title={metaTitle}
-        description={metaDescription}
-        image={ogImage}
-        url={canonicalPath}
-        siteName={appName}
-      />
-      <div css={desktopAppBar}>
-        <DesktopAppBar
-          onSearchChange={handleSearchChange}
-          onSearch={handleSearch}
-          searchPlaceholder={tCommon('search.addressPlaceholder')}
-        />
-      </div>
-      <div css={mobileAppBar}>
-        <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={pageTitle} />
-      </div>
+    <>
+      <Meta {...meta} />
+      <Layout isAppBarExist={false} title={pageTitle}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar
+            onSearchChange={handleSearchChange}
+            onSearch={handleSearch}
+            searchPlaceholder={tCommon('search.addressPlaceholder')}
+          />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" title={pageTitle} />
+        </div>
 
-      <div css={pageContainer}>
-        <div css={contentLayout}>
-          <div css={mainContent}>
-            <div css={headerRow}>
-              <div css={imageSection}>
-                {shouldUseNextImage ? (
-                  <Image
-                    src={imageSrc}
-                    alt={t('imageAlt')}
-                    width={1200}
-                    height={800}
-                    sizes="100vw"
-                    quality={90}
-                    priority
-                    unoptimized={isSasImage}
-                    css={mainImage}
-                    onError={() => setImageSrc('/default.png')}
-                  />
-                ) : (
-                  <img
-                    src={imageSrc}
-                    alt={t('imageAlt')}
-                    css={mainImage}
-                    onError={() => setImageSrc('/default.png')}
-                  />
-                )}
-              </div>
-
-              <Text typo="title_L" color="text_primary" css={programTitle}>
-                {program.name}
-              </Text>
-            </div>
-            <div css={programSection}>
-              <div css={titleWrapper}>
-                <Text typo="title_M" color="text_primary" css={infoTitle}>
-                  {t('programInfo')}
-                </Text>
-              </div>
-              <div css={infoCard}>
-                <div css={infoRow}>
-                  <Clock width={16} height={16} />
-                  <Text typo="button_S" color="text_secondary">
-                    {t('duration', { minutes: program.duration_minutes })}
-                  </Text>
-                </div>
-                <div css={infoRow}>
-                  <Wallet width={16} height={16} />
-                  <Text typo="button_S" color="text_secondary">
-                    {formattedPrice}
-                  </Text>
-                </div>
-              </div>
-
-              <div css={processSection}>
-                <div css={titleWrapper}>
-                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
-                    {t('process')}
-                  </Text>
-                </div>
-                <div css={processGrid}>
-                  {processItems.map((step, index) => (
-                    <div key={`${step}-${index}`} css={processCard}>
-                      <Text typo="body_M" color="primary30">
-                        {t('step', { number: String(index + 1).padStart(2, '0') })}
-                      </Text>
-                      <Text typo="body_M" color="text_primary">
-                        {step}
-                      </Text>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div css={detailsSection}>
-                <div css={titleWrapper}>
-                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
-                    {t('details')}
-                  </Text>
-                </div>
-                <div css={detailsCard}>
-                  {detailImageSrc && (
+        <div css={pageContainer}>
+          <div css={contentLayout}>
+            <div css={mainContent}>
+              <div css={headerRow}>
+                <div css={imageSection}>
+                  {shouldUseNextImage ? (
+                    <Image
+                      src={imageSrc}
+                      alt={t('imageAlt')}
+                      width={1200}
+                      height={800}
+                      sizes="100vw"
+                      quality={90}
+                      priority
+                      unoptimized={isSasImage}
+                      css={mainImage}
+                      onError={() => setImageSrc('/default.png')}
+                    />
+                  ) : (
                     <img
-                      src={detailImageSrc}
-                      alt={t('detailImageAlt')}
-                      css={detailsImage}
-                      onError={() => setDetailImageSrc('')}
+                      src={imageSrc}
+                      alt={t('imageAlt')}
+                      css={mainImage}
+                      onError={() => setImageSrc('/default.png')}
                     />
                   )}
-                  <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
-                    {detailsText || t('infoPending')}
-                  </Text>
                 </div>
-              </div>
 
-              <div css={noticeSection}>
+                <Text typo="title_L" color="text_primary" css={programTitle}>
+                  {program.name}
+                </Text>
+              </div>
+              <div css={programSection}>
                 <div css={titleWrapper}>
-                  <Text typo="title_M" color="text_primary" css={sectionTitle}>
-                    {t('notice')}
+                  <Text typo="title_M" color="text_primary" css={infoTitle}>
+                    {t('programInfo')}
                   </Text>
                 </div>
-                <div css={noticeCard}>
-                  <button css={noticeHeader} onClick={() => setIsBookingOpen((prev) => !prev)}>
-                    <Text typo="title_S" color="text_primary">
-                      {t('bookingInfo')}
+                <div css={infoCard}>
+                  <div css={infoRow}>
+                    <Clock width={16} height={16} />
+                    <Text typo="button_S" color="text_secondary">
+                      {t('duration', { minutes: program.duration_minutes })}
                     </Text>
-                    <ArrowDown width={16} height={16} css={noticeArrow(isBookingOpen)} />
-                  </button>
-                  {isBookingOpen && (
-                    <Text typo="body_M" color="text_secondary" css={noticeText}>
-                      {bookingInfo || t('infoPending')}
+                  </div>
+                  <div css={infoRow}>
+                    <Wallet width={16} height={16} />
+                    <Text typo="button_S" color="text_secondary">
+                      {formattedPrice}
                     </Text>
-                  )}
+                  </div>
                 </div>
-                <div css={noticeCard}>
-                  <button css={noticeHeader} onClick={() => setIsRefundOpen((prev) => !prev)}>
-                    <Text typo="title_S" color="text_primary">
-                      {t('refundPolicy')}
+
+                <div css={processSection}>
+                  <div css={titleWrapper}>
+                    <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                      {t('process')}
                     </Text>
-                    <ArrowDown width={16} height={16} css={noticeArrow(isRefundOpen)} />
-                  </button>
-                  {isRefundOpen && (
-                    <Text typo="body_M" color="text_secondary" css={noticeText}>
-                      {refundInfo || t('infoPending')}
+                  </div>
+                  <div css={processGrid}>
+                    {processItems.map((step, index) => (
+                      <div key={`${step}-${index}`} css={processCard}>
+                        <Text typo="body_M" color="primary30">
+                          {t('step', { number: String(index + 1).padStart(2, '0') })}
+                        </Text>
+                        <Text typo="body_M" color="text_primary">
+                          {step}
+                        </Text>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div css={detailsSection}>
+                  <div css={titleWrapper}>
+                    <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                      {t('details')}
                     </Text>
-                  )}
+                  </div>
+                  <div css={detailsCard}>
+                    {detailImageSrc && (
+                      <img
+                        src={detailImageSrc}
+                        alt={t('detailImageAlt')}
+                        css={detailsImage}
+                        onError={() => setDetailImageSrc('')}
+                      />
+                    )}
+                    <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
+                      {detailsText || t('infoPending')}
+                    </Text>
+                  </div>
+                </div>
+
+                <div css={noticeSection}>
+                  <div css={titleWrapper}>
+                    <Text typo="title_M" color="text_primary" css={sectionTitle}>
+                      {t('notice')}
+                    </Text>
+                  </div>
+                  <div css={noticeCard}>
+                    <button css={noticeHeader} onClick={() => setIsBookingOpen((prev) => !prev)}>
+                      <Text typo="title_S" color="text_primary">
+                        {t('bookingInfo')}
+                      </Text>
+                      <ArrowDown width={16} height={16} css={noticeArrow(isBookingOpen)} />
+                    </button>
+                    {isBookingOpen && (
+                      <Text typo="body_M" color="text_secondary" css={noticeText}>
+                        {bookingInfo || t('infoPending')}
+                      </Text>
+                    )}
+                  </div>
+                  <div css={noticeCard}>
+                    <button css={noticeHeader} onClick={() => setIsRefundOpen((prev) => !prev)}>
+                      <Text typo="title_S" color="text_primary">
+                        {t('refundPolicy')}
+                      </Text>
+                      <ArrowDown width={16} height={16} css={noticeArrow(isRefundOpen)} />
+                    </button>
+                    {isRefundOpen && (
+                      <Text typo="body_M" color="text_secondary" css={noticeText}>
+                        {refundInfo || t('infoPending')}
+                      </Text>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {isDesktop && (
+              <aside css={stickySidebar}>
+                <div css={bookingCard}>
+                  <RoundButton size="L" fullWidth onClick={handleReserveClick}>
+                    {t('bookNow')}
+                  </RoundButton>
+                </div>
+              </aside>
+            )}
           </div>
-
-          {isDesktop && (
-            <aside css={stickySidebar}>
-              <div css={bookingCard}>
-                <RoundButton size="L" fullWidth onClick={handleReserveClick}>
-                  {t('bookNow')}
-                </RoundButton>
-              </div>
-            </aside>
-          )}
         </div>
-      </div>
 
-      {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-    </Layout>
+        {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
+        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      </Layout>
+    </>
   );
 }
 

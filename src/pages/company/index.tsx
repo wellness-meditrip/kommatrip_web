@@ -13,8 +13,9 @@ import {
   FilterBar,
   GNB,
   DesktopAppBar,
-  Meta,
 } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
+import type { GetServerSideProps } from 'next';
 import { useGetCompanySearchQuery } from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
 import { theme } from '@/styles';
@@ -27,21 +28,33 @@ import { useMediaQuery } from '@/hooks';
 import { GnbCalendarActive, GnbSearchActive } from '@/icons';
 import { CATEGORIES } from '@/constants/commons/categories';
 
+interface CompanyPageProps {
+  initialKeyword: string;
+  initialCanonicalPath: string;
+}
+
 // 업체 리스트 페이지
-export default function CompanyPage() {
+export default function CompanyPage({ initialKeyword, initialCanonicalPath }: CompanyPageProps) {
   const router = useRouter();
   const t = useTranslations('company');
   const tCommon = useTranslations('common');
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { q, categories, date, endDate } = router.query;
-  const appName = tCommon('app.name');
   const appDescription = tCommon('app.description');
-  const pageTitle = `${t('title')} | ${appName}`;
-  const canonicalPath = router.asPath ? router.asPath.split('?')[0] : '';
+  const rawKeyword = typeof q === 'string' ? q : initialKeyword;
+  const metaKeyword = rawKeyword.trim();
+  const metaDescription = metaKeyword ? `${metaKeyword} - ${t('list.title')}` : appDescription;
   const ogImage = '/og/OG_image.jpg';
-  const [inputValue, setInputValue] = useState('');
-  const [keyword, setKeyword] = useState('');
+  const meta = createPageMeta({
+    keyword: metaKeyword || undefined,
+    pageTitle: t('title'),
+    description: metaDescription,
+    path: router.asPath || initialCanonicalPath,
+    image: ogImage,
+  });
+  const [inputValue, setInputValue] = useState(initialKeyword);
+  const [keyword, setKeyword] = useState(initialKeyword);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedRange, setSelectedRange] = useState<{ start: Date | null; end: Date | null }>({
     start: null,
@@ -323,163 +336,176 @@ export default function CompanyPage() {
   }, [inputValue]);
 
   return (
-    <Layout
-      isAppBarExist={false}
-      title={t('title')}
-      style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
-    >
-      <Meta
-        title={pageTitle}
-        description={appDescription}
-        image={ogImage}
-        url={canonicalPath}
-        siteName={appName}
-      />
-      {isDesktop ? (
-        <div css={desktopHeader}>
-          <DesktopAppBar
-            onSearchChange={handleValueChange}
-            onSearch={handleSearch}
-            showSearch={false}
-            sticky={false}
-          />
-        </div>
-      ) : (
-        <AppBar
-          onBackClick={router.back}
-          logo="light"
-          leftButton={true}
-          buttonType="white"
-          backgroundColor="green"
-        />
-      )}
-
-      <div css={contentScroll}>
+    <>
+      <Meta {...meta} />
+      <Layout
+        isAppBarExist={false}
+        title={t('title')}
+        style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
+      >
         {isDesktop ? (
-          <>
-            <div css={desktopSearchArea}>
-              <div css={desktopSearchForm}>
-                <div css={desktopSearchField} onClick={handleGoToSearch}>
-                  <GnbSearchActive width={20} height={20} />
-                  <input
-                    value={inputValue}
-                    onChange={(event) => handleValueChange(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') handleGoToSearch();
-                    }}
-                    placeholder={tCommon('search.addressPlaceholder')}
-                    css={desktopSearchInput}
-                  />
+          <div css={desktopHeader}>
+            <DesktopAppBar
+              onSearchChange={handleValueChange}
+              onSearch={handleSearch}
+              showSearch={false}
+              sticky={false}
+            />
+          </div>
+        ) : (
+          <AppBar
+            onBackClick={router.back}
+            logo="light"
+            leftButton={true}
+            buttonType="white"
+            backgroundColor="green"
+          />
+        )}
+
+        <div css={contentScroll}>
+          {isDesktop ? (
+            <>
+              <div css={desktopSearchArea}>
+                <div css={desktopSearchForm}>
+                  <div css={desktopSearchField} onClick={handleGoToSearch}>
+                    <GnbSearchActive width={20} height={20} />
+                    <input
+                      value={inputValue}
+                      onChange={(event) => handleValueChange(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') handleGoToSearch();
+                      }}
+                      placeholder={tCommon('search.addressPlaceholder')}
+                      css={desktopSearchInput}
+                    />
+                  </div>
+                  <div css={desktopDivider} />
+                  <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
+                    <GnbCalendarActive width={18} height={18} />
+                    <span>{dateText}</span>
+                  </button>
                 </div>
-                <div css={desktopDivider} />
-                <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
-                  <GnbCalendarActive width={18} height={18} />
-                  <span>{dateText}</span>
-                </button>
               </div>
-            </div>
-            <div css={desktopFilterArea}>
+              <div css={desktopFilterArea}>
+                <FilterBar
+                  selectedCategories={selectedCategories}
+                  selectedRange={selectedRange}
+                  onDateSelect={handleDateSelect}
+                  onToggleCategory={handleToggleCategory}
+                  onClearAll={handleClearAll}
+                  variant="light"
+                  showDate={false}
+                  layout="stacked"
+                  categories={CATEGORIES}
+                  centered={true}
+                  sticky={false}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div css={searchBarWrapper} onClick={handleGoToSearch}>
+                <SearchBar
+                  value={inputValue}
+                  onValueChange={handleValueChange}
+                  onSearch={handleGoToSearch}
+                  placeholder={tCommon('search.addressPlaceholder')}
+                />
+              </div>
               <FilterBar
                 selectedCategories={selectedCategories}
                 selectedRange={selectedRange}
                 onDateSelect={handleDateSelect}
                 onToggleCategory={handleToggleCategory}
                 onClearAll={handleClearAll}
-                variant="light"
-                showDate={false}
-                layout="stacked"
-                categories={CATEGORIES}
-                centered={true}
                 sticky={false}
               />
-            </div>
-          </>
-        ) : (
-          <>
-            <div css={searchBarWrapper} onClick={handleGoToSearch}>
-              <SearchBar
-                value={inputValue}
-                onValueChange={handleValueChange}
-                onSearch={handleGoToSearch}
-                placeholder={tCommon('search.addressPlaceholder')}
-              />
-            </div>
-            <FilterBar
-              selectedCategories={selectedCategories}
-              selectedRange={selectedRange}
-              onDateSelect={handleDateSelect}
-              onToggleCategory={handleToggleCategory}
-              onClearAll={handleClearAll}
-              sticky={false}
-            />
-          </>
-        )}
-
-        <div css={wrapper}>
-          {/* 로딩 상태 */}
-          {isLoading && <Loading title={t('loadingList')} />}
-          {error && <Empty title={t('loadFail')} />}
-
-          {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
-          {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
-            <div css={recommendedSection}>
-              <NoResults
-                title={
-                  keyword.trim().length > 0 ? t('noResultsTitle', { keyword }) : t('list.noResults')
-                }
-                subtitle={t('noResultsSubtitle')}
-              />
-              <CompanyList
-                title={tCommon('home.recommendedTitle')}
-                containerCss={recommendedList}
-                cardSize="compact"
-                companies={recommendedCompanies.map((company) => ({
-                  hospital_id: company.id,
-                  hospital_name: company.name,
-                  address: company.address,
-                  rating: Number(company.rating_average || 0),
-                  image_url: company.photos?.[0] || '/default.png',
-                  images: company.photos || [],
-                  departments: company.tags,
-                  is_exclusive: company.is_exclusive,
-                }))}
-              />
-            </div>
+            </>
           )}
 
-          {/* 업체 리스트 표시 (필터링된 결과) */}
-          {!isLoading && !error && filteredCompanies.length > 0 && (
-            <div css={cardsGrid}>
-              {filteredCompanies.map((company) => (
-                <div key={company.id} css={cardItem}>
-                  <CompanyCard
-                    companyId={company.id}
-                    companyImage={company.photos?.[0] || '/default.png'}
-                    companyName={company.name || ''}
-                    badges={company.tags || []}
-                    companyAddress={company.address || ''}
-                    isExclusive={company.is_exclusive}
-                    fixedHeight={true}
-                    onClick={(companyId: number) => {
-                      router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
-                    }}
-                    images={company.photos || []}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <div css={wrapper}>
+            {/* 로딩 상태 */}
+            {isLoading && <Loading title={t('loadingList')} />}
+            {error && <Empty title={t('loadFail')} />}
 
-          {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
-          {!isLoading && !error && companies.length === 0 && !hasActiveFilters && (
-            <Empty title={t('emptyList')} />
-          )}
+            {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
+            {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
+              <div css={recommendedSection}>
+                <NoResults
+                  title={
+                    keyword.trim().length > 0
+                      ? t('noResultsTitle', { keyword })
+                      : t('list.noResults')
+                  }
+                  subtitle={t('noResultsSubtitle')}
+                />
+                <CompanyList
+                  title={tCommon('home.recommendedTitle')}
+                  containerCss={recommendedList}
+                  cardSize="compact"
+                  companies={recommendedCompanies.map((company) => ({
+                    hospital_id: company.id,
+                    hospital_name: company.name,
+                    address: company.address,
+                    rating: Number(company.rating_average || 0),
+                    image_url: company.photos?.[0] || '/default.png',
+                    images: company.photos || [],
+                    departments: company.tags,
+                    is_exclusive: company.is_exclusive,
+                  }))}
+                />
+              </div>
+            )}
+
+            {/* 업체 리스트 표시 (필터링된 결과) */}
+            {!isLoading && !error && filteredCompanies.length > 0 && (
+              <div css={cardsGrid}>
+                {filteredCompanies.map((company) => (
+                  <div key={company.id} css={cardItem}>
+                    <CompanyCard
+                      companyId={company.id}
+                      companyImage={company.photos?.[0] || '/default.png'}
+                      companyName={company.name || ''}
+                      badges={company.tags || []}
+                      companyAddress={company.address || ''}
+                      isExclusive={company.is_exclusive}
+                      fixedHeight={true}
+                      onClick={(companyId: number) => {
+                        router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
+                      }}
+                      images={company.photos || []}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
+            {!isLoading && !error && companies.length === 0 && !hasActiveFilters && (
+              <Empty title={t('emptyList')} />
+            )}
+          </div>
         </div>
-      </div>
-      <GNB />
-    </Layout>
+        <GNB />
+      </Layout>
+    </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<CompanyPageProps> = async ({
+  query,
+  resolvedUrl,
+}) => {
+  const q = typeof query.q === 'string' ? query.q.trim() : '';
+  const canonicalPath = resolvedUrl.split('?')[0] || '/company';
+
+  return {
+    props: {
+      initialKeyword: q,
+      initialCanonicalPath: canonicalPath,
+    },
+  };
+};
 
 export const wrapper = css`
   display: flex;

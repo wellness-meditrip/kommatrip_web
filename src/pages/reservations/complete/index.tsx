@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
 import { Check } from '@/icons';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
@@ -41,6 +42,7 @@ const formatConfirmationDate = (
 export default function ReservationCompletePage() {
   const router = useRouter();
   const t = useTranslations('reservation');
+  const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
@@ -63,66 +65,75 @@ export default function ReservationCompletePage() {
       t('complete.dateTime', values)
     );
   }, [data, locale, t]);
+  const meta = createPageMeta({
+    pageTitle: t('complete.title'),
+    description: tCommon('app.description'),
+    path: router.asPath || '/reservations/complete',
+    noindex: true,
+  });
 
   return (
-    <Layout
-      isAppBarExist={false}
-      title={t('complete.title')}
-      style={{ background: theme.colors.bg_surface1 }}
-    >
-      {isDesktop ? (
-        <div css={desktopAppBarWrap}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
-        </div>
-      ) : (
-        <AppBar logo="dark" />
-      )}
-      <div css={pageWrapper}>
-        <div css={contentWrapper}>
-          <div css={successSection}>
-            <div css={checkIconWrapper}>
-              <Check width={72} height={72} />
-            </div>
-            <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
-              {t('complete.title')}
-            </Text>
-            <Text tag="p" typo="body_M" color="text_tertiary">
-              {t('complete.subtitle')}
-            </Text>
+    <>
+      <Meta {...meta} />
+      <Layout
+        isAppBarExist={false}
+        title={t('complete.title')}
+        style={{ background: theme.colors.bg_surface1 }}
+      >
+        {isDesktop ? (
+          <div css={desktopAppBarWrap}>
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
+        ) : (
+          <AppBar logo="dark" />
+        )}
+        <div css={pageWrapper}>
+          <div css={contentWrapper}>
+            <div css={successSection}>
+              <div css={checkIconWrapper}>
+                <Check width={72} height={72} />
+              </div>
+              <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
+                {t('complete.title')}
+              </Text>
+              <Text tag="p" typo="body_M" color="text_tertiary">
+                {t('complete.subtitle')}
+              </Text>
+            </div>
 
-          {data ? (
-            <div css={reservationCard}>
-              <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
-                {data.company_name}
-              </Text>
-              <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
-                {confirmationDate || '-'}
-              </Text>
-              <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
-                {data.program_name} ({data.program_duration_minutes}min)
-              </Text>
-            </div>
-          ) : (
-            <div css={emptyContainer}>
-              <Empty title={t('complete.missingData')} />
-            </div>
-          )}
+            {data ? (
+              <div css={reservationCard}>
+                <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
+                  {data.company_name}
+                </Text>
+                <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
+                  {confirmationDate || '-'}
+                </Text>
+                <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
+                  {data.program_name} ({data.program_duration_minutes}min)
+                </Text>
+              </div>
+            ) : (
+              <div css={emptyContainer}>
+                <Empty title={t('complete.missingData')} />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div css={actionBar}>
-        <RoundButton
-          onClick={() => router.push(`/${currentLocale}${ROUTES.BOOKINGS}`)}
-          size="L"
-          fullWidth
-        >
-          <Text typo="button_L" color="white">
-            {t('complete.cta')}
-          </Text>
-        </RoundButton>
-      </div>
-    </Layout>
+        <div css={actionBar}>
+          <RoundButton
+            onClick={() => router.push(`/${currentLocale}${ROUTES.BOOKINGS}`)}
+            size="L"
+            fullWidth
+          >
+            <Text typo="button_L" color="white">
+              {t('complete.cta')}
+            </Text>
+          </RoundButton>
+        </div>
+      </Layout>
+    </>
   );
 }
 

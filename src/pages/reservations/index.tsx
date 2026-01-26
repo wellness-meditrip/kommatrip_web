@@ -15,6 +15,7 @@ import {
   Text,
   Dim,
 } from '@/components';
+import { Meta, createPageMeta } from '@/seo';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
@@ -32,6 +33,7 @@ import { useTranslations } from 'next-intl';
 export default function ReservationPage() {
   const router = useRouter();
   const t = useTranslations('reservation');
+  const tCommon = useTranslations('common');
   const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const { showToast } = useToast();
@@ -78,6 +80,13 @@ export default function ReservationPage() {
     ],
     [t]
   );
+
+  const meta = createPageMeta({
+    pageTitle: t('title'),
+    description: tCommon('app.description'),
+    path: router.asPath || '/reservations',
+    noindex: true,
+  });
   const commonConcerns = useMemo(
     () => [
       t('form.inquiries.concerns.firstTime'),
@@ -214,45 +223,51 @@ export default function ReservationPage() {
   // 로딩 중이면 대기
   if (isLoading) {
     return (
-      <Layout isAppBarExist={false} title={t('title')}>
-        <div css={desktopAppBar}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
-        </div>
-        <div css={mobileAppBar}>
-          <AppBar
-            onBackClick={router.back}
-            leftButton={true}
-            buttonType="dark"
-            title={t('title')}
-            backgroundColor="bg_surface1"
-          />
-        </div>
-      </Layout>
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={t('title')}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar
+              onBackClick={router.back}
+              leftButton={true}
+              buttonType="dark"
+              title={t('title')}
+              backgroundColor="bg_surface1"
+            />
+          </div>
+        </Layout>
+      </>
     );
   }
 
   // 비회원인 경우 페이지 내용을 숨기고 모달만 표시
   if (!isAuthenticated) {
     return (
-      <Layout isAppBarExist={false} title={t('title')}>
-        <div css={desktopAppBar}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
-        </div>
-        <div css={mobileAppBar}>
-          <AppBar
-            onBackClick={router.back}
-            leftButton={true}
-            buttonType="dark"
-            title={t('title')}
-            backgroundColor="bg_surface1"
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={t('title')}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar
+              onBackClick={router.back}
+              leftButton={true}
+              buttonType="dark"
+              title={t('title')}
+              backgroundColor="bg_surface1"
+            />
+          </div>
+          <LoginModal
+            isOpen={showLoginModal}
+            onClose={() => setShowLoginModal(false)}
+            onCancel={handleDismissModal}
           />
-        </div>
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onCancel={handleDismissModal}
-        />
-      </Layout>
+        </Layout>
+      </>
     );
   }
 
@@ -587,230 +602,233 @@ export default function ReservationPage() {
     summaryPrice == null ? '-' : `${formatPrice(summaryPrice)} ${t('payment.currency')}`;
 
   return (
-    <Layout isAppBarExist={false} title={t('title')}>
-      <div css={desktopAppBar}>
-        <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
-      </div>
-      <div css={mobileAppBar}>
-        <AppBar
-          onBackClick={router.back}
-          leftButton={true}
-          buttonType="dark"
-          title={t('title')}
-          backgroundColor="bg_surface1"
-        />
-      </div>
-      <div css={pageWrapper}>
-        {isDesktop && (
-          <div css={desktopHeader}>
-            <Text typo="title_L" color="text_primary">
-              {t('title')}
-            </Text>
-            <Text typo="body_M" color="text_tertiary">
-              {t('form.schedule.selectDates')}
-            </Text>
-          </div>
-        )}
-        {!hasValidCompanyId && (
-          <div css={emptyContainer}>
-            <Empty title={t('emptyCompany')} />
-          </div>
-        )}
-        {hasValidCompanyId && (isCompanyLoading || isProgramLoading) && (
-          <div css={loadingContainer}>
-            <Loading title={t('loading')} />
-          </div>
-        )}
+    <>
+      <Meta {...meta} />
+      <Layout isAppBarExist={false} title={t('title')}>
+        <div css={desktopAppBar}>
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+        </div>
+        <div css={mobileAppBar}>
+          <AppBar
+            onBackClick={router.back}
+            leftButton={true}
+            buttonType="dark"
+            title={t('title')}
+            backgroundColor="bg_surface1"
+          />
+        </div>
+        <div css={pageWrapper}>
+          {isDesktop && (
+            <div css={desktopHeader}>
+              <Text typo="title_L" color="text_primary">
+                {t('title')}
+              </Text>
+              <Text typo="body_M" color="text_tertiary">
+                {t('form.schedule.selectDates')}
+              </Text>
+            </div>
+          )}
+          {!hasValidCompanyId && (
+            <div css={emptyContainer}>
+              <Empty title={t('emptyCompany')} />
+            </div>
+          )}
+          {hasValidCompanyId && (isCompanyLoading || isProgramLoading) && (
+            <div css={loadingContainer}>
+              <Loading title={t('loading')} />
+            </div>
+          )}
 
-        {hasValidCompanyId && (
-          <div css={contentGrid}>
-            <div css={sideColumn}>
-              <div css={sidePanel}>
-                {company && (
-                  <CompanyInfoCard
-                    name={company.name}
-                    address={company.address}
-                    tags={company.tags ?? []}
-                    addressIconNode={<PaymentLocation width={16} height={16} />}
-                    variant="payment"
-                  />
-                )}
-                <div css={desktopOnly}>
-                  <div css={summaryCard}>
-                    <Text typo="title_M" color="text_primary">
-                      {t('payment.bookingInfo')}
-                    </Text>
-                    <div css={summaryRow}>
-                      <Text typo="body_M" color="text_secondary">
-                        {t('payment.date')}
+          {hasValidCompanyId && (
+            <div css={contentGrid}>
+              <div css={sideColumn}>
+                <div css={sidePanel}>
+                  {company && (
+                    <CompanyInfoCard
+                      name={company.name}
+                      address={company.address}
+                      tags={company.tags ?? []}
+                      addressIconNode={<PaymentLocation width={16} height={16} />}
+                      variant="payment"
+                    />
+                  )}
+                  <div css={desktopOnly}>
+                    <div css={summaryCard}>
+                      <Text typo="title_M" color="text_primary">
+                        {t('payment.bookingInfo')}
                       </Text>
-                      <Text typo="title_S" color="text_primary">
-                        {summaryDate ? formatDateForDisplay(summaryDate) : '-'}
-                      </Text>
+                      <div css={summaryRow}>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.date')}
+                        </Text>
+                        <Text typo="title_S" color="text_primary">
+                          {summaryDate ? formatDateForDisplay(summaryDate) : '-'}
+                        </Text>
+                      </div>
+                      <div css={summaryRow}>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.time')}
+                        </Text>
+                        <Text typo="title_S" color="text_primary">
+                          {summaryTimeText}
+                        </Text>
+                      </div>
+                      <div css={summaryRow}>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.program')}
+                        </Text>
+                        <Text typo="title_S" color="text_primary" css={summaryValueRight}>
+                          {selectedProgram
+                            ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
+                                'payment.minutes'
+                              )})`
+                            : '-'}
+                        </Text>
+                      </div>
                     </div>
-                    <div css={summaryRow}>
-                      <Text typo="body_M" color="text_secondary">
-                        {t('payment.time')}
-                      </Text>
-                      <Text typo="title_S" color="text_primary">
-                        {summaryTimeText}
-                      </Text>
-                    </div>
-                    <div css={summaryRow}>
-                      <Text typo="body_M" color="text_secondary">
-                        {t('payment.program')}
-                      </Text>
-                      <Text typo="title_S" color="text_primary" css={summaryValueRight}>
-                        {selectedProgram
-                          ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
-                              'payment.minutes'
-                            )})`
-                          : '-'}
-                      </Text>
-                    </div>
-                  </div>
 
-                  <div css={summaryCard}>
-                    <Text typo="title_M" color="text_primary">
-                      {t('payment.paymentAmount')}
-                    </Text>
-                    <div css={summaryRow}>
-                      <Text typo="body_M" color="text_secondary">
-                        {t('payment.paymentAmountLabel')}
+                    <div css={summaryCard}>
+                      <Text typo="title_M" color="text_primary">
+                        {t('payment.paymentAmount')}
                       </Text>
-                      <Text typo="body_M" color="text_primary">
-                        {summaryPriceText}
-                      </Text>
+                      <div css={summaryRow}>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.paymentAmountLabel')}
+                        </Text>
+                        <Text typo="body_M" color="text_primary">
+                          {summaryPriceText}
+                        </Text>
+                      </div>
+                      <div css={summaryDivider} />
+                      <div css={summaryRow}>
+                        <Text typo="title_S" color="text_primary">
+                          {t('payment.finalPaymentAmount')}
+                        </Text>
+                        <Text typo="title_S" color="primary50">
+                          {summaryPriceText}
+                        </Text>
+                      </div>
                     </div>
-                    <div css={summaryDivider} />
-                    <div css={summaryRow}>
-                      <Text typo="title_S" color="text_primary">
-                        {t('payment.finalPaymentAmount')}
-                      </Text>
-                      <Text typo="title_S" color="primary50">
-                        {summaryPriceText}
-                      </Text>
-                    </div>
-                  </div>
 
-                  <div css={desktopSubmitWrapper}>
-                    <CTAButton onClick={handleSubmit} disabled={isCreatingReservation}>
-                      {t('payment.bookNow')}
-                    </CTAButton>
+                    <div css={desktopSubmitWrapper}>
+                      <CTAButton onClick={handleSubmit} disabled={isCreatingReservation}>
+                        {t('payment.bookNow')}
+                      </CTAButton>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <div css={mainColumn}>
+                {/* Programs Section */}
+                <ProgramSection
+                  isOpen={isProgramsOpen}
+                  onToggle={() => setIsProgramsOpen((prev) => !prev)}
+                  programs={programs}
+                  selectedProgramId={selectedProgramId}
+                  onSelectProgram={(programId) =>
+                    setSelectedProgramId((prev) => (prev === programId ? null : programId))
+                  }
+                  formatDuration={formatDuration}
+                  formatPrice={formatPrice}
+                />
+
+                {/* Contact Information Section */}
+                <ContactSection
+                  isOpen={isContactOpen}
+                  onToggle={() => setIsContactOpen((prev) => !prev)}
+                  contactMethods={contactMethods}
+                  selectedContactMethod={selectedContactMethod}
+                  onSelectMethod={handleSelectContactMethod}
+                  email={email}
+                  onEmailChange={setEmail}
+                  isEmailReadOnly={true}
+                  contactPhone={
+                    selectedContactMethod
+                      ? (contactValues[selectedContactMethod as keyof typeof contactValues] ?? '')
+                      : ''
+                  }
+                  onPhoneChange={handleContactValueChange}
+                  language={language}
+                  onLanguageChange={setLanguage}
+                  languageOptions={languageOptions}
+                />
+
+                {/* Inquiries Section */}
+                <InquiriesSection
+                  isOpen={isInquiriesOpen}
+                  onToggle={() => setIsInquiriesOpen((prev) => !prev)}
+                  commonConcerns={commonConcerns}
+                  inquiryText={inquiryText}
+                  onInquiryChange={setInquiryText}
+                />
+
+                {/* Reservation Section */}
+                <ScheduleSection
+                  currentMonth={currentMonth}
+                  onPrevMonth={prevMonth}
+                  onNextMonth={nextMonth}
+                  daysInMonth={daysInMonth}
+                  startingDayOfWeek={startingDayOfWeek}
+                  isDateSelected={isDateSelected}
+                  onDateClick={handleDateClick}
+                  selectedDates={selectedDates}
+                  selectedTimes={selectedTimes}
+                  timeSelectionOpen={timeSelectionOpen}
+                  onToggleTimeSelection={(dateString) =>
+                    setTimeSelectionOpen((prev) => ({ ...prev, [dateString]: !prev[dateString] }))
+                  }
+                  isDateDisabled={isDateDisabled}
+                  onTimeSelect={handleTimeSelect}
+                  availableTimes={availableTimes}
+                  formatDateForDisplay={formatDateForDisplay}
+                  formatDateKey={formatDateForRequest}
+                />
+              </div>
             </div>
+          )}
 
-            <div css={mainColumn}>
-              {/* Programs Section */}
-              <ProgramSection
-                isOpen={isProgramsOpen}
-                onToggle={() => setIsProgramsOpen((prev) => !prev)}
-                programs={programs}
-                selectedProgramId={selectedProgramId}
-                onSelectProgram={(programId) =>
-                  setSelectedProgramId((prev) => (prev === programId ? null : programId))
-                }
-                formatDuration={formatDuration}
-                formatPrice={formatPrice}
-              />
-
-              {/* Contact Information Section */}
-              <ContactSection
-                isOpen={isContactOpen}
-                onToggle={() => setIsContactOpen((prev) => !prev)}
-                contactMethods={contactMethods}
-                selectedContactMethod={selectedContactMethod}
-                onSelectMethod={handleSelectContactMethod}
-                email={email}
-                onEmailChange={setEmail}
-                isEmailReadOnly={true}
-                contactPhone={
-                  selectedContactMethod
-                    ? (contactValues[selectedContactMethod as keyof typeof contactValues] ?? '')
-                    : ''
-                }
-                onPhoneChange={handleContactValueChange}
-                language={language}
-                onLanguageChange={setLanguage}
-                languageOptions={languageOptions}
-              />
-
-              {/* Inquiries Section */}
-              <InquiriesSection
-                isOpen={isInquiriesOpen}
-                onToggle={() => setIsInquiriesOpen((prev) => !prev)}
-                commonConcerns={commonConcerns}
-                inquiryText={inquiryText}
-                onInquiryChange={setInquiryText}
-              />
-
-              {/* Reservation Section */}
-              <ScheduleSection
-                currentMonth={currentMonth}
-                onPrevMonth={prevMonth}
-                onNextMonth={nextMonth}
-                daysInMonth={daysInMonth}
-                startingDayOfWeek={startingDayOfWeek}
-                isDateSelected={isDateSelected}
-                onDateClick={handleDateClick}
-                selectedDates={selectedDates}
-                selectedTimes={selectedTimes}
-                timeSelectionOpen={timeSelectionOpen}
-                onToggleTimeSelection={(dateString) =>
-                  setTimeSelectionOpen((prev) => ({ ...prev, [dateString]: !prev[dateString] }))
-                }
-                isDateDisabled={isDateDisabled}
-                onTimeSelect={handleTimeSelect}
-                availableTimes={availableTimes}
-                formatDateForDisplay={formatDateForDisplay}
-                formatDateKey={formatDateForRequest}
-              />
+          {/* Submit Button */}
+          {hasValidCompanyId && (
+            <div css={submitButtonWrapper}>
+              <CTAButton onClick={handleSubmit}>{t('submitPayment')}</CTAButton>
             </div>
-          </div>
-        )}
-
-        {/* Submit Button */}
-        {hasValidCompanyId && (
-          <div css={submitButtonWrapper}>
-            <CTAButton onClick={handleSubmit}>{t('submitPayment')}</CTAButton>
-          </div>
-        )}
-      </div>
-      {isPaymentModalOpen && pendingDraft && (
-        <>
-          <Dim fullScreen onClick={() => setIsPaymentModalOpen(false)} />
-          <div css={modalCard}>
-            <div css={modalText}>
-              <Text typo="title_M" color="text_primary">
-                {t('payment.submitTitle')}
-              </Text>
-              <Text typo="body_M" color="text_tertiary" css={modalDescription}>
-                {t('payment.submitDescription')}
-              </Text>
-            </div>
-            <div css={modalButtonRow}>
-              <button css={modalCancel} onClick={() => setIsPaymentModalOpen(false)}>
-                <Text typo="body_M" color="text_primary">
-                  {t('payment.cancel')}
+          )}
+        </div>
+        {isPaymentModalOpen && pendingDraft && (
+          <>
+            <Dim fullScreen onClick={() => setIsPaymentModalOpen(false)} />
+            <div css={modalCard}>
+              <div css={modalText}>
+                <Text typo="title_M" color="text_primary">
+                  {t('payment.submitTitle')}
                 </Text>
-              </button>
-              <button
-                css={modalSubmit}
-                onClick={handleConfirmPayment}
-                disabled={isCreatingReservation}
-              >
-                <Text typo="body_M" color="white">
-                  {t('payment.submit')}
+                <Text typo="body_M" color="text_tertiary" css={modalDescription}>
+                  {t('payment.submitDescription')}
                 </Text>
-              </button>
+              </div>
+              <div css={modalButtonRow}>
+                <button css={modalCancel} onClick={() => setIsPaymentModalOpen(false)}>
+                  <Text typo="body_M" color="text_primary">
+                    {t('payment.cancel')}
+                  </Text>
+                </button>
+                <button
+                  css={modalSubmit}
+                  onClick={handleConfirmPayment}
+                  disabled={isCreatingReservation}
+                >
+                  <Text typo="body_M" color="white">
+                    {t('payment.submit')}
+                  </Text>
+                </button>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
-    </Layout>
+          </>
+        )}
+        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+      </Layout>
+    </>
   );
 }
 
