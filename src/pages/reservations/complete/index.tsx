@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { css } from '@emotion/react';
-import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar } from '@/components';
+import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar, Loading } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { Check } from '@/icons';
 import { theme } from '@/styles';
@@ -9,6 +9,8 @@ import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useMediaQuery } from '@/hooks';
+import { usePostConfirmPaymentMutation } from '@/queries/payment';
+import type { ReservationDataForPaymentConfirm } from '@/models/payment';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -47,8 +49,87 @@ export default function ReservationCompletePage() {
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const [data, setData] = useState<ReservationCompleteData | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const hasConfirmedRef = useRef(false);
+  const { mutateAsync: confirmPayment } = usePostConfirmPaymentMutation();
 
   useEffect(() => {
+    if (!router.isReady) return;
+    if (typeof window === 'undefined') return;
+    const { paymentKey, orderId, amount } = router.query;
+    const hasPaymentQuery = !!paymentKey && !!orderId && !!amount;
+
+    if (hasPaymentQuery && !hasConfirmedRef.current) {
+      hasConfirmedRef.current = true;
+      const storedDraft = window.sessionStorage.getItem('reservation_draft');
+      if (!storedDraft) {
+        setIsConfirming(false);
+        return;
+      }
+
+      let reservationData: ReservationDataForPaymentConfirm | null = null;
+      try {
+        const draft = JSON.parse(storedDraft);
+        reservationData = {
+          program_id: draft.program_id,
+          preferred_contact: draft.preferred_contact,
+          language_preference: draft.language_preference,
+          availability_options: draft.availability_options,
+          inquiries: draft.inquiries,
+          contact_line: draft.contact_line,
+          contact_whatsapp: draft.contact_whatsapp,
+          contact_kakao: draft.contact_kakao,
+          contact_phone: draft.contact_phone,
+        };
+        window.sessionStorage.setItem(
+          'reservation_complete',
+          JSON.stringify({
+            company_name: draft.company_name,
+            program_name: draft.program_name,
+            program_duration_minutes: draft.program_duration_minutes,
+            date: draft.availability_options?.[0]?.date ?? '',
+            time: draft.availability_options?.[0]?.times?.[0] ?? '',
+          })
+        );
+      } catch {
+        setIsConfirming(false);
+        return;
+      }
+
+      const resolvedAmount = Number(Array.isArray(amount) ? amount[0] : amount);
+      if (!Number.isFinite(resolvedAmount) || !reservationData) {
+        setIsConfirming(false);
+        return;
+      }
+
+      setIsConfirming(true);
+      confirmPayment({
+        orderId: Array.isArray(orderId) ? orderId[0] : orderId,
+        paymentKey: Array.isArray(paymentKey) ? paymentKey[0] : paymentKey,
+        amount: resolvedAmount,
+        programId: reservationData.program_id,
+        reservationData,
+      })
+        .catch(() => {
+          // 실패 시에도 완료 페이지는 유지하되 데이터가 없으면 Empty로 표시됨
+        })
+        .finally(() => {
+          setIsConfirming(false);
+        });
+      return;
+    }
+
+    const stored = window.sessionStorage.getItem('reservation_complete');
+    if (!stored) return;
+    try {
+      setData(JSON.parse(stored));
+    } catch {
+      window.sessionStorage.removeItem('reservation_complete');
+    }
+  }, [router.isReady, router.query, confirmPayment]);
+
+  useEffect(() => {
+    if (isConfirming) return;
     if (typeof window === 'undefined') return;
     const stored = window.sessionStorage.getItem('reservation_complete');
     if (!stored) return;
@@ -57,7 +138,7 @@ export default function ReservationCompletePage() {
     } catch {
       window.sessionStorage.removeItem('reservation_complete');
     }
-  }, []);
+  }, [isConfirming]);
 
   const confirmationDate = useMemo(() => {
     if (!data) return '';
@@ -89,34 +170,40 @@ export default function ReservationCompletePage() {
         )}
         <div css={pageWrapper}>
           <div css={contentWrapper}>
-            <div css={successSection}>
-              <div css={checkIconWrapper}>
-                <Check width={72} height={72} />
-              </div>
-              <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
-                {t('complete.title')}
-              </Text>
-              <Text tag="p" typo="body_M" color="text_tertiary">
-                {t('complete.subtitle')}
-              </Text>
-            </div>
-
-            {data ? (
-              <div css={reservationCard}>
-                <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
-                  {data.company_name}
-                </Text>
-                <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
-                  {confirmationDate || '-'}
-                </Text>
-                <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
-                  {data.program_name} ({data.program_duration_minutes}min)
-                </Text>
-              </div>
+            {isConfirming ? (
+              <Loading title={t('payment.tossProcessingTitle')} fullHeight />
             ) : (
-              <div css={emptyContainer}>
-                <Empty title={t('complete.missingData')} />
-              </div>
+              <>
+                <div css={successSection}>
+                  <div css={checkIconWrapper}>
+                    <Check width={72} height={72} />
+                  </div>
+                  <Text tag="h1" typo="title_L" color="primary50" css={successMessage}>
+                    {t('complete.title')}
+                  </Text>
+                  <Text tag="p" typo="body_M" color="text_tertiary">
+                    {t('complete.subtitle')}
+                  </Text>
+                </div>
+
+                {data ? (
+                  <div css={reservationCard}>
+                    <Text tag="p" typo="body_M" color="text_primary" css={clinicName}>
+                      {data.company_name}
+                    </Text>
+                    <Text tag="p" typo="body_M" color="primary50" css={reservationDateTime}>
+                      {confirmationDate || '-'}
+                    </Text>
+                    <Text tag="p" typo="body_M" color="text_tertiary" css={packageName}>
+                      {data.program_name} ({data.program_duration_minutes}min)
+                    </Text>
+                  </div>
+                ) : (
+                  <div css={emptyContainer}>
+                    <Empty title={t('complete.missingData')} />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

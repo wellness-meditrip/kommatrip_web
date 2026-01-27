@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
+import { ANONYMOUS, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import {
   AppBar,
   CTAButton,
@@ -13,12 +14,14 @@ import {
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
+import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
 import { useToast, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { Dim } from '@/components/dim';
 import { PaymentLocation } from '@/icons';
 import { useTranslations } from 'next-intl';
 import { Meta, createPageMeta } from '@/seo';
+import type { PaymentOrder } from '@/models/payment';
 
 interface ReservationDraft {
   company_id: number;
@@ -47,6 +50,8 @@ const formatTimeDisplay = (timeString: string) => {
   return timeString.slice(0, 5);
 };
 
+type PaymentMethod = 'onsite' | 'toss';
+
 export default function ReservationPaymentPage() {
   const router = useRouter();
   const { showToast } = useToast();
@@ -57,7 +62,15 @@ export default function ReservationPaymentPage() {
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onsite');
+  const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
+  const [isWidgetReady, setIsWidgetReady] = useState(false);
   const { mutateAsync: createReservation, isPending } = usePostCreateReservationMutation();
+  const { mutateAsync: createPaymentOrder, isPending: isPaymentOrderPending } =
+    usePostCreatePaymentOrderMutation();
+  const paymentWidgetsRef = useRef<ReturnType<
+    Awaited<ReturnType<typeof loadTossPayments>>['widgets']
+  > | null>(null);
 
   const formatDateDisplay = (dateString: string) => {
     if (!dateString) return '-';
@@ -90,6 +103,76 @@ export default function ReservationPaymentPage() {
     const [firstTime] = first.times ?? [];
     return { date: first.date, time: firstTime ?? '' };
   }, [draft]);
+
+  useEffect(() => {
+    if (paymentMethodChoice !== 'toss' || !draft || paymentOrder) return;
+    let isMounted = true;
+    const createOrder = async () => {
+      try {
+        const response = await createPaymentOrder({ programId: draft.program_id });
+        if (isMounted) {
+          setPaymentOrder(response.order);
+        }
+      } catch {
+        if (isMounted) {
+          showToast({ title: t('payment.toastPaymentOrderFailed'), icon: 'exclaim' });
+        }
+      }
+    };
+    createOrder();
+    return () => {
+      isMounted = false;
+    };
+  }, [paymentMethodChoice, draft, paymentOrder, createPaymentOrder, showToast, t]);
+
+  useEffect(() => {
+    if (paymentMethodChoice !== 'toss') {
+      paymentWidgetsRef.current = null;
+      setIsWidgetReady(false);
+      return;
+    }
+    if (!draft || !paymentOrder) return;
+    if (!process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY) {
+      showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+      return;
+    }
+
+    let isMounted = true;
+    const initializeWidget = async () => {
+      try {
+        const tossPayments = await loadTossPayments(
+          process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY!
+        );
+        const widgets = tossPayments.widgets({ customerKey: ANONYMOUS });
+        paymentWidgetsRef.current = widgets;
+        await widgets.setAmount({
+          currency: paymentOrder.currency ?? 'KRW',
+          value: paymentOrder.amount,
+        });
+        await widgets.renderPaymentMethods({
+          selector: '#toss-payment-methods',
+          variantKey: 'DEFAULT',
+        });
+        await widgets.renderAgreement({
+          selector: '#toss-payment-agreement',
+          variantKey: 'AGREEMENT',
+        });
+        if (isMounted) {
+          setIsWidgetReady(true);
+        }
+      } catch {
+        if (isMounted) {
+          setIsWidgetReady(false);
+          showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+        }
+      }
+    };
+
+    initializeWidget();
+    return () => {
+      isMounted = false;
+    };
+  }, [paymentMethodChoice, draft, paymentOrder, showToast, t]);
 
   const meta = createPageMeta({
     pageTitle: t('payment.title'),
@@ -138,6 +221,44 @@ export default function ReservationPaymentPage() {
     } catch {
       showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
     }
+  };
+
+  const handleTossPayment = async () => {
+    if (!draft) {
+      showToast({ title: t('payment.toastMissingDraft'), icon: 'exclaim' });
+      return;
+    }
+    if (!paymentOrder) {
+      showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
+      return;
+    }
+    if (!paymentWidgetsRef.current) {
+      showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+      return;
+    }
+    if (typeof window === 'undefined') return;
+
+    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`;
+    const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
+
+    try {
+      await paymentWidgetsRef.current.requestPayment({
+        orderId: paymentOrder.order_id,
+        orderName: draft.program_name,
+        successUrl,
+        failUrl,
+      });
+    } catch {
+      showToast({ title: t('payment.toastTossRequestFailed'), icon: 'exclaim' });
+    }
+  };
+
+  const handleActionClick = () => {
+    if (paymentMethodChoice === 'toss') {
+      handleTossPayment();
+      return;
+    }
+    setIsModalOpen(true);
   };
 
   if (!draft) {
@@ -228,13 +349,46 @@ export default function ReservationPaymentPage() {
                   <Text typo="title_M" color="text_primary">
                     {t('payment.paymentMethod')}
                   </Text>
-                  <div css={paymentMethod}>
-                    <div css={radioSelected} />
-                    <Text typo="body_M" color="text_primary">
-                      {t('payment.payOnSite')}
-                    </Text>
+                  <div css={paymentMethodOptions}>
+                    <button
+                      type="button"
+                      css={paymentMethodButton}
+                      data-selected={paymentMethodChoice === 'onsite'}
+                      onClick={() => setPaymentMethodChoice('onsite')}
+                    >
+                      <span css={radioDot(paymentMethodChoice === 'onsite')} />
+                      <Text typo="body_M" color="text_primary">
+                        {t('payment.payOnSite')}
+                      </Text>
+                    </button>
+                    <button
+                      type="button"
+                      css={paymentMethodButton}
+                      data-selected={paymentMethodChoice === 'toss'}
+                      onClick={() => setPaymentMethodChoice('toss')}
+                    >
+                      <span css={radioDot(paymentMethodChoice === 'toss')} />
+                      <Text typo="body_M" color="text_primary">
+                        {t('payment.tossPayments')}
+                      </Text>
+                    </button>
                   </div>
                 </div>
+
+                {paymentMethodChoice === 'toss' && (
+                  <div css={infoCard}>
+                    <Text typo="title_M" color="text_primary">
+                      {t('payment.tossWidgetTitle')}
+                    </Text>
+                    {!isWidgetReady && (
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.tossPreparing')}
+                      </Text>
+                    )}
+                    <div id="toss-payment-methods" css={widgetBox} />
+                    <div id="toss-payment-agreement" css={widgetBox} />
+                  </div>
+                )}
 
                 <div css={infoCard}>
                   <Text typo="title_M" color="text_primary">
@@ -264,8 +418,15 @@ export default function ReservationPaymentPage() {
         </div>
 
         <div css={actionBar}>
-          <CTAButton onClick={() => setIsModalOpen(true)} disabled={isPending}>
-            {t('payment.bookNow')}
+          <CTAButton
+            onClick={handleActionClick}
+            disabled={
+              isPending ||
+              (paymentMethodChoice === 'toss' &&
+                (isPaymentOrderPending || !paymentOrder || !isWidgetReady))
+            }
+          >
+            {paymentMethodChoice === 'toss' ? t('payment.payWithToss') : t('payment.bookNow')}
           </CTAButton>
         </div>
 
@@ -374,30 +535,45 @@ const programText = css`
   text-align: right;
 `;
 
-const paymentMethod = css`
+const paymentMethodOptions = css`
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 `;
 
-const radioSelected = css`
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid ${theme.colors.primary50};
-  position: relative;
+const paymentMethodButton = css`
+  flex: 1;
+  min-width: 140px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid ${theme.colors.border_default};
+  background: ${theme.colors.white};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: ${theme.colors.primary50};
-    transform: translate(-50%, -50%);
+  &[data-selected='true'] {
+    border-color: ${theme.colors.primary50};
+    box-shadow: 0 4px 10px ${theme.colors.grayOpacity50};
   }
+`;
+
+const radioDot = (selected: boolean) => css`
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid ${selected ? theme.colors.primary50 : theme.colors.border_default};
+  background: ${selected ? theme.colors.primary50 : theme.colors.white};
+`;
+
+const widgetBox = css`
+  border-radius: 12px;
+  overflow: hidden;
 `;
 
 const amountRow = css`
