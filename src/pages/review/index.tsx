@@ -61,7 +61,7 @@ export default function ReviewPage() {
   const { open } = useDialog();
   const { mutate, isPending } = usePostClinicReviewMutation();
   const currentLocale = useCurrentLocale();
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const reservationId = reviewDraft?.reservationId;

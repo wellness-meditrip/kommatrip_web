@@ -41,9 +41,6 @@ export const detectLocale = (): Locale => {
 
   // 브라우저 언어 감지
   const browserLang = navigator.language.split('-')[0];
-  if (browserLang === 'ja' && routing.locales.includes('ja')) {
-    return 'ja';
-  }
   if (browserLang === 'ko' && routing.locales.includes('ko')) {
     return 'ko';
   }

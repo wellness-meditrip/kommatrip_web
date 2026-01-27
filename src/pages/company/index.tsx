@@ -341,7 +341,8 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
       <Layout
         isAppBarExist={false}
         title={t('title')}
-        style={{ backgroundColor: theme.colors.bg_surface1, overflow: 'hidden' }}
+        style={{ backgroundColor: theme.colors.bg_surface1 }}
+        scrollMode="page"
       >
         {isDesktop ? (
           <div css={desktopHeader}>
@@ -362,129 +363,125 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
           />
         )}
 
-        <div css={contentScroll}>
-          {isDesktop ? (
-            <>
-              <div css={desktopSearchArea}>
-                <div css={desktopSearchForm}>
-                  <div css={desktopSearchField} onClick={handleGoToSearch}>
-                    <GnbSearchActive width={20} height={20} />
-                    <input
-                      value={inputValue}
-                      onChange={(event) => handleValueChange(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') handleGoToSearch();
-                      }}
-                      placeholder={tCommon('search.addressPlaceholder')}
-                      css={desktopSearchInput}
-                    />
-                  </div>
-                  <div css={desktopDivider} />
-                  <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
-                    <GnbCalendarActive width={18} height={18} />
-                    <span>{dateText}</span>
-                  </button>
+        {isDesktop ? (
+          <>
+            <div css={desktopSearchArea}>
+              <div css={desktopSearchForm}>
+                <div css={desktopSearchField} onClick={handleGoToSearch}>
+                  <GnbSearchActive width={20} height={20} />
+                  <input
+                    value={inputValue}
+                    onChange={(event) => handleValueChange(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') handleGoToSearch();
+                    }}
+                    placeholder={tCommon('search.addressPlaceholder')}
+                    css={desktopSearchInput}
+                  />
                 </div>
+                <div css={desktopDivider} />
+                <button type="button" css={desktopSearchButton} onClick={handleDateSelect}>
+                  <GnbCalendarActive width={18} height={18} />
+                  <span>{dateText}</span>
+                </button>
               </div>
-              <div css={desktopFilterArea}>
-                <FilterBar
-                  selectedCategories={selectedCategories}
-                  selectedRange={selectedRange}
-                  onDateSelect={handleDateSelect}
-                  onToggleCategory={handleToggleCategory}
-                  onClearAll={handleClearAll}
-                  variant="light"
-                  showDate={false}
-                  layout="stacked"
-                  categories={CATEGORIES}
-                  centered={true}
-                  sticky={false}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div css={searchBarWrapper} onClick={handleGoToSearch}>
-                <SearchBar
-                  value={inputValue}
-                  onValueChange={handleValueChange}
-                  onSearch={handleGoToSearch}
-                  placeholder={tCommon('search.addressPlaceholder')}
-                />
-              </div>
+            </div>
+            <div css={desktopFilterArea}>
               <FilterBar
                 selectedCategories={selectedCategories}
                 selectedRange={selectedRange}
                 onDateSelect={handleDateSelect}
                 onToggleCategory={handleToggleCategory}
                 onClearAll={handleClearAll}
+                variant="light"
+                showDate={false}
+                layout="stacked"
+                categories={CATEGORIES}
+                centered={true}
                 sticky={false}
               />
-            </>
+            </div>
+          </>
+        ) : (
+          <>
+            <div css={searchBarWrapper} onClick={handleGoToSearch}>
+              <SearchBar
+                value={inputValue}
+                onValueChange={handleValueChange}
+                onSearch={handleGoToSearch}
+                placeholder={tCommon('search.addressPlaceholder')}
+              />
+            </div>
+            <FilterBar
+              selectedCategories={selectedCategories}
+              selectedRange={selectedRange}
+              onDateSelect={handleDateSelect}
+              onToggleCategory={handleToggleCategory}
+              onClearAll={handleClearAll}
+              sticky={false}
+            />
+          </>
+        )}
+
+        <div css={wrapper}>
+          {/* 로딩 상태 */}
+          {isLoading && <Loading title={t('loadingList')} />}
+          {error && <Empty title={t('loadFail')} />}
+
+          {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
+          {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
+            <div css={recommendedSection}>
+              <NoResults
+                title={
+                  keyword.trim().length > 0 ? t('noResultsTitle', { keyword }) : t('list.noResults')
+                }
+                subtitle={t('noResultsSubtitle')}
+              />
+              <CompanyList
+                title={tCommon('home.recommendedTitle')}
+                containerCss={recommendedList}
+                cardSize="compact"
+                companies={recommendedCompanies.map((company) => ({
+                  hospital_id: company.id,
+                  hospital_name: company.name,
+                  address: company.address,
+                  rating: Number(company.rating_average || 0),
+                  image_url: company.photos?.[0] || '/default.png',
+                  images: company.photos || [],
+                  departments: company.tags,
+                  is_exclusive: company.is_exclusive,
+                }))}
+              />
+            </div>
           )}
 
-          <div css={wrapper}>
-            {/* 로딩 상태 */}
-            {isLoading && <Loading title={t('loadingList')} />}
-            {error && <Empty title={t('loadFail')} />}
+          {/* 업체 리스트 표시 (필터링된 결과) */}
+          {!isLoading && !error && filteredCompanies.length > 0 && (
+            <div css={cardsGrid}>
+              {filteredCompanies.map((company) => (
+                <div key={company.id} css={cardItem}>
+                  <CompanyCard
+                    companyId={company.id}
+                    companyImage={company.photos?.[0] || '/default.png'}
+                    companyName={company.name || ''}
+                    badges={company.tags || []}
+                    companyAddress={company.address || ''}
+                    isExclusive={company.is_exclusive}
+                    fixedHeight={true}
+                    onClick={(companyId: number) => {
+                      router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
+                    }}
+                    images={company.photos || []}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
-            {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
-            {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
-              <div css={recommendedSection}>
-                <NoResults
-                  title={
-                    keyword.trim().length > 0
-                      ? t('noResultsTitle', { keyword })
-                      : t('list.noResults')
-                  }
-                  subtitle={t('noResultsSubtitle')}
-                />
-                <CompanyList
-                  title={tCommon('home.recommendedTitle')}
-                  containerCss={recommendedList}
-                  cardSize="compact"
-                  companies={recommendedCompanies.map((company) => ({
-                    hospital_id: company.id,
-                    hospital_name: company.name,
-                    address: company.address,
-                    rating: Number(company.rating_average || 0),
-                    image_url: company.photos?.[0] || '/default.png',
-                    images: company.photos || [],
-                    departments: company.tags,
-                    is_exclusive: company.is_exclusive,
-                  }))}
-                />
-              </div>
-            )}
-
-            {/* 업체 리스트 표시 (필터링된 결과) */}
-            {!isLoading && !error && filteredCompanies.length > 0 && (
-              <div css={cardsGrid}>
-                {filteredCompanies.map((company) => (
-                  <div key={company.id} css={cardItem}>
-                    <CompanyCard
-                      companyId={company.id}
-                      companyImage={company.photos?.[0] || '/default.png'}
-                      companyName={company.name || ''}
-                      badges={company.tags || []}
-                      companyAddress={company.address || ''}
-                      isExclusive={company.is_exclusive}
-                      fixedHeight={true}
-                      onClick={(companyId: number) => {
-                        router.push(`/${currentLocale}${ROUTES.COMPANY_DETAIL(companyId)}`);
-                      }}
-                      images={company.photos || []}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
-            {!isLoading && !error && companies.length === 0 && !hasActiveFilters && (
-              <Empty title={t('emptyList')} />
-            )}
-          </div>
+          {/* 데이터가 없을 때 (로딩 완료, 에러 없음, 데이터 없음, 키워드 없음) */}
+          {!isLoading && !error && companies.length === 0 && !hasActiveFilters && (
+            <Empty title={t('emptyList')} />
+          )}
         </div>
         <GNB />
       </Layout>
@@ -523,13 +520,6 @@ export const wrapper = css`
     align-items: stretch;
     margin: 0 auto;
   }
-`;
-
-export const contentScroll = css`
-  flex: 1;
-  width: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 `;
 
 export const searchBarWrapper = css`

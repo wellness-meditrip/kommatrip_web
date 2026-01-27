@@ -141,6 +141,7 @@ export default function SearchPage() {
     <Layout
       isAppBarExist={false}
       title={tSearch('title')}
+      showFooter={false}
       style={{
         backgroundColor: isDesktop ? theme.colors.bg_surface1 : theme.colors.primary80,
       }}

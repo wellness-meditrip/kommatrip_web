@@ -54,7 +54,7 @@ export default function ReservationPaymentPage() {
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { mutateAsync: createReservation, isPending } = usePostCreateReservationMutation();

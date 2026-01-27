@@ -39,7 +39,7 @@ export default function ReservationPage() {
   const { showToast } = useToast();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const companyIdQuery = Array.isArray(router.query.companyId)
     ? router.query.companyId[0]
     : router.query.companyId;

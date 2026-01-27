@@ -186,7 +186,7 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
     const raw = t.raw('recommendations.items');
     return Array.isArray(raw) ? raw : [];
   }, [t]);
-  const emptyStateTips = useMemo(() => {
+  const emptyStateTipItems = useMemo(() => {
     const raw = t.raw('emptyState.tips');
     return Array.isArray(raw) ? raw : [];
   }, [t]);
@@ -415,7 +415,7 @@ function ChatbotModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => voi
               {t('emptyState.tipsTitle')}
             </Text>
             <div css={emptyStateChipRow}>
-              {emptyStateTips.map((tip: string) => (
+              {emptyStateTipItems.map((tip: string) => (
                 <div key={tip} css={emptyStateChip}>
                   <Text typo="body_S" color="text_secondary">
                     {tip}

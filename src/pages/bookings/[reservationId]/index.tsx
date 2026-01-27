@@ -68,7 +68,7 @@ export default function BookingDetailPage() {
     }
   }, [reservationId]);
 
-  const locale = router.locale === 'ko' ? 'ko-KR' : router.locale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = router.locale === 'ko' ? 'ko-KR' : 'en-US';
 
   const formatDateWithWeekday = useCallback(
     (date: Date) => {

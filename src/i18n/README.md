@@ -1,10 +1,10 @@
 # 다국어(i18n) 사용 가이드
 
-이 프로젝트는 `next-intl`을 사용하여 한국어(ko), 영어(en), 일본어(ja)를 지원합니다.
+이 프로젝트는 `next-intl`을 사용하여 한국어(ko), 영어(en)를 지원합니다.
 
 ## 기본 구조
 
-- **로케일**: `ko`, `en`, `ja`
+- **로케일**: `ko`, `en`
 - **기본 로케일**: `en`
 - **메시지 파일**: `messages/{locale}/{namespace}.json`
 - **URL 구조**: `/{locale}/...` (예: `/ko/company`, `/en/company`)
@@ -80,9 +80,6 @@ export default function LanguageSwitcher() {
       <button onClick={() => changeLocale('en')} disabled={currentLocale === 'en'}>
         English
       </button>
-      <button onClick={() => changeLocale('ja')} disabled={currentLocale === 'ja'}>
-        日本語
-      </button>
     </div>
   );
 }
@@ -101,7 +98,6 @@ messages/
   │   └── ...
   ├── en/
   │   └── ...
-  └── ja/
       └── ...
 ```
 
@@ -127,7 +123,6 @@ messages/
 
 - **en**: ko → en
 - **ko**: en → ko
-- **ja**: ko → en → ja
 
 ## 로케일 감지 순서
 

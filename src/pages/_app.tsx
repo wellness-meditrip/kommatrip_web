@@ -49,7 +49,6 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const loadingMessageByLocale: Record<Locale, string> = {
     en: 'Loading...',
     ko: '로딩 중...',
-    ja: '読み込み中...',
   };
 
   // 클라이언트 사이드에서 메시지 로드

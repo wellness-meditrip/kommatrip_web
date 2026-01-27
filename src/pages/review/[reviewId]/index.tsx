@@ -52,7 +52,7 @@ export default function ReviewEditPage() {
   const { showToast } = useToast();
   const { open } = useDialog();
   const currentLocale = useCurrentLocale();
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
 
   // URL에서 review_id 가져오기
   const reviewId = Number(router.query.reviewId);
