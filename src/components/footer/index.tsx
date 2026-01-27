@@ -21,16 +21,19 @@ export function Footer() {
     },
   ];
 
-  const infoLines = [
-    t('info.businessName'),
-    t('info.ceo'),
-    t('info.address'),
-    t('info.phone'),
-    t('info.businessNumber'),
-    t('info.foreignPatient'),
-    t('info.venture'),
-    t('info.email'),
-  ].filter((line) => line && line.trim().length > 0);
+  const infoKeys = [
+    'businessName',
+    'ceo',
+    'address',
+    'phone',
+    'businessNumber',
+    'foreignPatient',
+    'venture',
+    'email',
+  ];
+  const infoLines = infoKeys
+    .map((key) => t(`info.${key}`))
+    .filter((line) => line && line.trim().length > 0);
 
   return (
     <footer css={wrapper}>
@@ -42,7 +45,7 @@ export function Footer() {
                 key={link.label}
                 href={link.href}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 css={linkItem}
               >
                 <Text typo="body_S" color="inherit">
