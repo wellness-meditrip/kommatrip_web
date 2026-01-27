@@ -87,6 +87,9 @@ export const calendarDay = (isSelected: boolean, isDisabled: boolean) => css`
 `;
 
 export const timeSection = css`
+  display: flex;
+  flex-direction: column;
+
   margin-top: 32px;
 `;
 
