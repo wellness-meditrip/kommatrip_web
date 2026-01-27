@@ -20,15 +20,44 @@ import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { PaymentLocation } from '@/icons';
+import { ANONYMOUS, loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { useRequireAuth, useToast, useMediaQuery } from '@/hooks';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useGetUserProfileQuery } from '@/queries/user';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
+import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
 import { ROUTES } from '@/constants';
 import { CompanyDetail } from '@/models';
+import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+
+interface ReservationDraft {
+  company_id: number;
+  company_name: string;
+  company_address: string;
+  company_tags: string[];
+  company_primary_image_url?: string;
+  program_id: number;
+  program_name: string;
+  program_duration_minutes: number;
+  program_price: number;
+  program_primary_image_url?: string;
+  preferred_contact: string;
+  language_preference: string;
+  availability_options: Array<{
+    date: string;
+    times: string[];
+  }>;
+  inquiries: string;
+  contact_line: string;
+  contact_whatsapp: string;
+  contact_kakao: string;
+  contact_phone: string;
+}
+
+type PaymentMethod = 'onsite' | 'toss';
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -60,6 +89,8 @@ export default function ReservationPage() {
   const { data: profileData } = useGetUserProfileQuery();
   const { mutateAsync: createReservation, isPending: isCreatingReservation } =
     usePostCreateReservationMutation();
+  const { mutateAsync: createPaymentOrder, isPending: isPaymentOrderPending } =
+    usePostCreatePaymentOrderMutation();
   const company = companyData?.company ?? prefetchedCompany;
   const programs = programList?.programs ?? [];
   const contactMethods = useMemo(
@@ -133,27 +164,17 @@ export default function ReservationPage() {
   const [selectedTimes, setSelectedTimes] = useState<{ [key: string]: string[] }>({});
   const [timeSelectionOpen, setTimeSelectionOpen] = useState<{ [key: string]: boolean }>({});
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [pendingDraft, setPendingDraft] = useState<{
-    company_id: number;
-    company_name: string;
-    company_address: string;
-    company_tags: string[];
-    program_id: number;
-    program_name: string;
-    program_duration_minutes: number;
-    program_price: number;
-    preferred_contact: string;
-    language_preference: string;
-    availability_options: Array<{
-      date: string;
-      times: string[];
-    }>;
-    inquiries: string;
-    contact_line: string;
-    contact_whatsapp: string;
-    contact_kakao: string;
-    contact_phone: string;
-  } | null>(null);
+  const [pendingDraft, setPendingDraft] = useState<ReservationDraft | null>(null);
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onsite');
+  const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
+  const [isWidgetReady, setIsWidgetReady] = useState(false);
+  const paymentWidgetsRef = useRef<ReturnType<
+    Awaited<ReturnType<typeof loadTossPayments>>['widgets']
+  > | null>(null);
+  const lastOrderRequestRef = useRef<number | null>(null);
+  const isOrderRequestingRef = useRef(false);
+  const [isPaymentWidgetOpen, setIsPaymentWidgetOpen] = useState(false);
+  const hasRenderedWidgetRef = useRef(false);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -207,6 +228,100 @@ export default function ReservationPage() {
     }
     hasInitializedProfile.current = true;
   }, [profileData, selectedContactMethod]);
+
+  useEffect(() => {
+    if (paymentMethodChoice !== 'toss') {
+      paymentWidgetsRef.current = null;
+      hasRenderedWidgetRef.current = false;
+      setIsWidgetReady(false);
+      setPaymentOrder(null);
+      lastOrderRequestRef.current = null;
+      isOrderRequestingRef.current = false;
+      return;
+    }
+    if (!selectedProgramId) return;
+    if (paymentOrder?.program_id === selectedProgramId) return;
+    if (lastOrderRequestRef.current === selectedProgramId || isOrderRequestingRef.current) return;
+
+    let isMounted = true;
+    setIsWidgetReady(false);
+    paymentWidgetsRef.current = null;
+    hasRenderedWidgetRef.current = false;
+    lastOrderRequestRef.current = selectedProgramId;
+    isOrderRequestingRef.current = true;
+
+    const createOrder = async () => {
+      try {
+        const response = await createPaymentOrder({ programId: selectedProgramId });
+        if (isMounted) {
+          setPaymentOrder(response.order);
+        }
+      } catch {
+        if (isMounted) {
+          showToast({ title: t('payment.toastPaymentOrderFailed'), icon: 'exclaim' });
+          lastOrderRequestRef.current = null;
+        }
+      } finally {
+        isOrderRequestingRef.current = false;
+      }
+    };
+
+    createOrder();
+    return () => {
+      isMounted = false;
+    };
+  }, [paymentMethodChoice, selectedProgramId, paymentOrder, createPaymentOrder, showToast, t]);
+
+  useEffect(() => {
+    if (paymentMethodChoice !== 'toss') return;
+    if (!paymentOrder || !isPaymentWidgetOpen) return;
+    if (!process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY) {
+      showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+      return;
+    }
+
+    let isMounted = true;
+    const initializeWidget = async () => {
+      try {
+        if (!paymentWidgetsRef.current) {
+          const tossPayments = await loadTossPayments(
+            process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY!
+          );
+          paymentWidgetsRef.current = tossPayments.widgets({ customerKey: ANONYMOUS });
+        }
+        const widgets = paymentWidgetsRef.current;
+        if (!widgets) return;
+        await widgets.setAmount({
+          currency: paymentOrder.currency ?? 'KRW',
+          value: paymentOrder.amount,
+        });
+        if (!hasRenderedWidgetRef.current) {
+          await widgets.renderPaymentMethods({
+            selector: '#reservation-payment-methods-modal',
+            variantKey: 'DEFAULT',
+          });
+          await widgets.renderAgreement({
+            selector: '#reservation-payment-agreement-modal',
+            variantKey: 'AGREEMENT',
+          });
+          hasRenderedWidgetRef.current = true;
+        }
+        if (isMounted) {
+          setIsWidgetReady(true);
+        }
+      } catch {
+        if (isMounted) {
+          setIsWidgetReady(false);
+          showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+        }
+      }
+    };
+
+    initializeWidget();
+    return () => {
+      isMounted = false;
+    };
+  }, [paymentMethodChoice, paymentOrder, isPaymentWidgetOpen, showToast, t]);
 
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
@@ -441,15 +556,21 @@ export default function ReservationPage() {
     return 'korean';
   };
 
-  const handleSubmit = async () => {
+  const buildDraft = (showErrors: boolean): ReservationDraft | null => {
+    const showError = (key: string) => {
+      if (showErrors) {
+        showToast({ title: t(key as never), icon: 'exclaim' });
+      }
+    };
+
     if (!selectedProgramId) {
-      showToast({ title: t('validation.selectProgram'), icon: 'exclaim' });
-      return;
+      showError('validation.selectProgram');
+      return null;
     }
 
     if (!selectedContactMethod) {
-      showToast({ title: t('validation.selectContact'), icon: 'exclaim' });
-      return;
+      showError('validation.selectContact');
+      return null;
     }
 
     const selectedContactValue = selectedContactMethod
@@ -457,18 +578,18 @@ export default function ReservationPage() {
       : '';
 
     if (!selectedContactValue.trim()) {
-      showToast({ title: t('validation.enterContact'), icon: 'exclaim' });
-      return;
+      showError('validation.enterContact');
+      return null;
     }
 
     if (selectedDates.length === 0) {
-      showToast({ title: t('validation.selectDate'), icon: 'exclaim' });
-      return;
+      showError('validation.selectDate');
+      return null;
     }
 
     if (selectedDates.some((date) => isPastDate(date))) {
-      showToast({ title: t('validation.pastDate'), icon: 'exclaim' });
-      return;
+      showError('validation.pastDate');
+      return null;
     }
 
     const hasEmptyTimes = selectedDates.some(
@@ -476,8 +597,8 @@ export default function ReservationPage() {
     );
 
     if (hasEmptyTimes) {
-      showToast({ title: t('validation.selectTimesPerDate'), icon: 'exclaim' });
-      return;
+      showError('validation.selectTimesPerDate');
+      return null;
     }
 
     const availabilityOptions = selectedDates
@@ -492,8 +613,8 @@ export default function ReservationPage() {
       .filter((option) => option.times.length > 0);
 
     if (availabilityOptions.length === 0) {
-      showToast({ title: t('validation.selectTimeSlot'), icon: 'exclaim' });
-      return;
+      showError('validation.selectTimeSlot');
+      return null;
     }
 
     const hasDuplicateTimes = availabilityOptions.some((option) => {
@@ -502,30 +623,32 @@ export default function ReservationPage() {
     });
 
     if (hasDuplicateTimes) {
-      showToast({ title: t('validation.duplicateTimes'), icon: 'exclaim' });
-      return;
+      showError('validation.duplicateTimes');
+      return null;
     }
 
     const normalizedContact = normalizeContactMethod(selectedContactMethod);
     const selectedProgram = programs.find((program) => program.id === selectedProgramId);
     if (!selectedProgram) {
-      showToast({ title: t('validation.programNotFound'), icon: 'exclaim' });
-      return;
+      showError('validation.programNotFound');
+      return null;
     }
     if (!company) {
-      showToast({ title: t('validation.companyNotFound'), icon: 'exclaim' });
-      return;
+      showError('validation.companyNotFound');
+      return null;
     }
 
-    const draft = {
+    return {
       company_id: company.id,
       company_name: company.name,
       company_address: company.address,
       company_tags: company.tags ?? [],
+      company_primary_image_url: company.primary_image_url ?? '',
       program_id: selectedProgram.id,
       program_name: selectedProgram.name,
       program_duration_minutes: selectedProgram.duration_minutes,
       program_price: selectedProgram.price,
+      program_primary_image_url: selectedProgram.primary_image_url ?? '',
       preferred_contact: normalizedContact,
       language_preference: normalizeLanguage(language),
       availability_options: availabilityOptions,
@@ -535,21 +658,51 @@ export default function ReservationPage() {
       contact_kakao: contactValues.kakao,
       contact_phone: contactValues.phone,
     };
+  };
 
-    if (isDesktop) {
+  const handleTossPayment = async (draft: ReservationDraft) => {
+    if (!paymentOrder || paymentOrder.program_id !== draft.program_id) {
+      showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
+      return;
+    }
+    if (!paymentWidgetsRef.current || !isWidgetReady) {
+      showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+      return;
+    }
+    if (typeof window === 'undefined') return;
+
+    window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
+    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`;
+    const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
+
+    try {
+      await paymentWidgetsRef.current.requestPayment({
+        orderId: paymentOrder.order_id,
+        orderName: draft.program_name,
+        successUrl,
+        failUrl,
+      });
+    } catch {
+      showToast({ title: t('payment.toastTossRequestFailed'), icon: 'exclaim' });
+    }
+  };
+
+  const handleSubmit = async () => {
+    const draft = buildDraft(true);
+    if (!draft) return;
+
+    if (paymentMethodChoice === 'toss') {
+      if (!paymentOrder) {
+        showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
+        return;
+      }
       setPendingDraft(draft);
-      setIsPaymentModalOpen(true);
+      setIsPaymentWidgetOpen(true);
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
-    }
-
-    router.push({
-      pathname: `/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT}`,
-      query: { companyId: company.id, programId: selectedProgram.id },
-    });
+    setPendingDraft(draft);
+    setIsPaymentModalOpen(true);
   };
 
   const handleConfirmPayment = async () => {
@@ -598,8 +751,7 @@ export default function ReservationPage() {
   const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
   const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
   const summaryPrice = selectedProgram?.price ?? null;
-  const summaryPriceText =
-    summaryPrice == null ? '-' : `${formatPrice(summaryPrice)} ${t('payment.currency')}`;
+  const summaryPriceText = summaryPrice == null ? '-' : formatPrice(summaryPrice);
 
   return (
     <>
@@ -644,77 +796,33 @@ export default function ReservationPage() {
               <div css={sideColumn}>
                 <div css={sidePanel}>
                   {company && (
-                    <CompanyInfoCard
-                      name={company.name}
-                      address={company.address}
-                      tags={company.tags ?? []}
-                      addressIconNode={<PaymentLocation width={16} height={16} />}
-                      variant="payment"
-                    />
+                    <div css={companyInfoCard}>
+                      <img
+                        src={company.primary_image_url || '/default.png'}
+                        alt={company.name}
+                        css={companyImage}
+                      />
+                      <CompanyInfoCard
+                        name={company.name}
+                        address={company.address}
+                        tags={company.tags ?? []}
+                        addressIconNode={<PaymentLocation width={16} height={16} />}
+                        variant="payment"
+                      />
+                    </div>
                   )}
-                  <div css={desktopOnly}>
-                    <div css={summaryCard}>
-                      <Text typo="title_M" color="text_primary">
-                        {t('payment.bookingInfo')}
-                      </Text>
-                      <div css={summaryRow}>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.date')}
-                        </Text>
-                        <Text typo="title_S" color="text_primary">
-                          {summaryDate ? formatDateForDisplay(summaryDate) : '-'}
-                        </Text>
-                      </div>
-                      <div css={summaryRow}>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.time')}
-                        </Text>
-                        <Text typo="title_S" color="text_primary">
-                          {summaryTimeText}
-                        </Text>
-                      </div>
-                      <div css={summaryRow}>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.program')}
-                        </Text>
-                        <Text typo="title_S" color="text_primary" css={summaryValueRight}>
-                          {selectedProgram
-                            ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
-                                'payment.minutes'
-                              )})`
-                            : '-'}
-                        </Text>
-                      </div>
-                    </div>
-
-                    <div css={summaryCard}>
-                      <Text typo="title_M" color="text_primary">
-                        {t('payment.paymentAmount')}
-                      </Text>
-                      <div css={summaryRow}>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.paymentAmountLabel')}
-                        </Text>
-                        <Text typo="body_M" color="text_primary">
-                          {summaryPriceText}
-                        </Text>
-                      </div>
-                      <div css={summaryDivider} />
-                      <div css={summaryRow}>
-                        <Text typo="title_S" color="text_primary">
-                          {t('payment.finalPaymentAmount')}
-                        </Text>
-                        <Text typo="title_S" color="primary50">
-                          {summaryPriceText}
-                        </Text>
-                      </div>
-                    </div>
-
-                    <div css={desktopSubmitWrapper}>
-                      <CTAButton onClick={handleSubmit} disabled={isCreatingReservation}>
-                        {t('payment.bookNow')}
-                      </CTAButton>
-                    </div>
+                  <div css={desktopSubmitWrapper}>
+                    <CTAButton
+                      onClick={handleSubmit}
+                      disabled={
+                        isCreatingReservation ||
+                        (paymentMethodChoice === 'toss' && (isPaymentOrderPending || !paymentOrder))
+                      }
+                    >
+                      {paymentMethodChoice === 'toss'
+                        ? t('payment.payWithToss')
+                        : t('payment.bookNow')}
+                    </CTAButton>
                   </div>
                 </div>
               </div>
@@ -784,6 +892,93 @@ export default function ReservationPage() {
                   formatDateForDisplay={formatDateForDisplay}
                   formatDateKey={formatDateForRequest}
                 />
+
+                <div css={paymentSection}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.paymentMethod')}
+                  </Text>
+                  <div css={paymentMethodOptions}>
+                    <button
+                      type="button"
+                      css={paymentMethodButton}
+                      data-selected={paymentMethodChoice === 'onsite'}
+                      onClick={() => setPaymentMethodChoice('onsite')}
+                    >
+                      <span css={radioDot(paymentMethodChoice === 'onsite')} />
+                      <Text typo="body_M" color="text_primary">
+                        {t('payment.payOnSite')}
+                      </Text>
+                    </button>
+                    <button
+                      type="button"
+                      css={paymentMethodButton}
+                      data-selected={paymentMethodChoice === 'toss'}
+                      onClick={() => setPaymentMethodChoice('toss')}
+                    >
+                      <span css={radioDot(paymentMethodChoice === 'toss')} />
+                      <Text typo="body_M" color="text_primary">
+                        {t('payment.tossPayments')}
+                      </Text>
+                    </button>
+                  </div>
+                </div>
+
+                <div css={summaryCard}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.bookingInfo')}
+                  </Text>
+                  <div css={summaryRow}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.date')}
+                    </Text>
+                    <Text typo="title_S" color="text_primary">
+                      {summaryDate ? formatDateForDisplay(summaryDate) : '-'}
+                    </Text>
+                  </div>
+                  <div css={summaryRow}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.time')}
+                    </Text>
+                    <Text typo="title_S" color="text_primary">
+                      {summaryTimeText}
+                    </Text>
+                  </div>
+                  <div css={summaryRow}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.program')}
+                    </Text>
+                    <Text typo="title_S" color="text_primary" css={summaryValueRight}>
+                      {selectedProgram
+                        ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
+                            'payment.minutes'
+                          )})`
+                        : '-'}
+                    </Text>
+                  </div>
+                </div>
+
+                <div css={summaryCard}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.paymentAmount')}
+                  </Text>
+                  <div css={summaryRow}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.paymentAmountLabel')}
+                    </Text>
+                    <Text typo="body_M" color="text_primary">
+                      {summaryPriceText}
+                    </Text>
+                  </div>
+                  <div css={summaryDivider} />
+                  <div css={summaryRow}>
+                    <Text typo="title_S" color="text_primary">
+                      {t('payment.finalPaymentAmount')}
+                    </Text>
+                    <Text typo="title_S" color="primary50">
+                      {summaryPriceText}
+                    </Text>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -791,7 +986,15 @@ export default function ReservationPage() {
           {/* Submit Button */}
           {hasValidCompanyId && (
             <div css={submitButtonWrapper}>
-              <CTAButton onClick={handleSubmit}>{t('submitPayment')}</CTAButton>
+              <CTAButton
+                onClick={handleSubmit}
+                disabled={
+                  isCreatingReservation ||
+                  (paymentMethodChoice === 'toss' && (isPaymentOrderPending || !paymentOrder))
+                }
+              >
+                {paymentMethodChoice === 'toss' ? t('payment.payWithToss') : t('payment.bookNow')}
+              </CTAButton>
             </div>
           )}
         </div>
@@ -826,6 +1029,40 @@ export default function ReservationPage() {
             </div>
           </>
         )}
+        {isPaymentWidgetOpen && pendingDraft && (
+          <>
+            <Dim fullScreen onClick={() => setIsPaymentWidgetOpen(false)} />
+            <div css={paymentWidgetModal}>
+              <div css={paymentWidgetHeader}>
+                <Text typo="title_M" color="text_primary">
+                  {t('payment.tossWidgetTitle')}
+                </Text>
+                <button
+                  type="button"
+                  css={modalClose}
+                  onClick={() => setIsPaymentWidgetOpen(false)}
+                >
+                  ×
+                </button>
+              </div>
+              {!isWidgetReady && (
+                <Text typo="body_M" color="text_secondary">
+                  {t('payment.tossPreparing')}
+                </Text>
+              )}
+              <div id="reservation-payment-methods-modal" css={widgetBox} />
+              <div id="reservation-payment-agreement-modal" css={widgetBox} />
+              <div css={paymentWidgetAction}>
+                <CTAButton
+                  onClick={() => handleTossPayment(pendingDraft)}
+                  disabled={!isWidgetReady}
+                >
+                  {t('payment.payWithToss')}
+                </CTAButton>
+              </div>
+            </div>
+          </>
+        )}
         <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </Layout>
     </>
@@ -838,7 +1075,7 @@ const pageWrapper = css`
   background: ${theme.colors.bg_surface1};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    padding-bottom: 80px;
+    padding: 96px 0 80px;
   }
 `;
 
@@ -847,6 +1084,13 @@ const desktopAppBar = css`
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: ${theme.zIndex.dialog};
+    background: ${theme.colors.bg_surface1};
+    border-bottom: 1px solid ${theme.colors.border_default};
   }
 `;
 
@@ -902,7 +1146,9 @@ const sideColumn = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     order: 2;
     position: sticky;
-    top: 24px;
+    z-index: 0;
+    top: 96px;
+    align-self: flex-start;
   }
 `;
 
@@ -910,21 +1156,120 @@ const sidePanel = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     border: 1px solid ${theme.colors.border_default};
     border-radius: 20px;
-    padding: 12px 16px;
+    padding: 16px;
     background: ${theme.colors.bg_surface1};
+    position: relative;
+    z-index: 0;
   }
 `;
 
-const desktopOnly = css`
-  display: none;
+const companyInfoCard = css`
+  padding: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
+  margin-bottom: 12px;
+`;
 
-  @media (min-width: ${theme.breakpoints.desktop}) {
-    display: block;
+const companyImage = css`
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+`;
+
+const paymentSection = css`
+  margin: 12px 16px 8px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const paymentMethodOptions = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const paymentMethodButton = css`
+  width: 100%;
+  border-radius: 999px;
+  padding: 10px 14px;
+  border: 1px solid ${theme.colors.border_default};
+  background: ${theme.colors.white};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &[data-selected='true'] {
+    border-color: ${theme.colors.primary50};
+    box-shadow: 0 4px 10px ${theme.colors.grayOpacity50};
   }
+`;
+
+const radioDot = (selected: boolean) => css`
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid ${selected ? theme.colors.primary50 : theme.colors.border_default};
+  background: ${selected ? theme.colors.primary50 : theme.colors.white};
+`;
+
+const widgetBox = css`
+  border-radius: 12px;
+  overflow: hidden;
+`;
+
+const paymentWidgetModal = css`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: ${theme.colors.white};
+  border-radius: 24px;
+  width: calc(100% - 48px);
+  max-width: 720px;
+  max-height: 80vh;
+  padding: 24px;
+  z-index: ${theme.zIndex.dialog};
+  box-shadow: 0 16px 32px ${theme.colors.grayOpacity200};
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: auto;
+`;
+
+const paymentWidgetHeader = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const modalClose = css`
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: ${theme.colors.text_secondary};
+`;
+
+const paymentWidgetAction = css`
+  margin-top: 8px;
 `;
 
 const summaryCard = css`
-  margin-top: 12px;
+  margin: 12px 16px 8px;
   padding: 20px 18px;
   border-radius: 16px;
   background: ${theme.colors.white};

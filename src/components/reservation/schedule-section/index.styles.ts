@@ -2,7 +2,7 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 
 export const sectionCard = css`
-  margin: 12px 16px 80px;
+  margin: 12px 16px 30px;
   padding: 24px 18px;
   border-radius: 16px;
 
