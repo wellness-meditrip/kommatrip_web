@@ -12,6 +12,7 @@ export * from './dialog';
 export * from './dim';
 export * from './empty';
 export * from './layout';
+export * from './footer';
 
 export * from './tabs';
 export * from './tag';

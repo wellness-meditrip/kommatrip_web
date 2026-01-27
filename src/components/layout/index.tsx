@@ -3,6 +3,7 @@ import { CSSProperties, ReactNode } from 'react';
 import Head from 'next/head';
 import { useTranslations } from 'next-intl';
 import { screen, main } from './index.styles';
+import { Footer } from '../footer';
 
 interface Props {
   isAppBarExist?: boolean;
@@ -24,6 +25,7 @@ export function Layout({ isAppBarExist = true, title, children, style }: Props) 
       </Head>
       <main css={main({ isAppBarExist })} style={style}>
         {children}
+        <Footer />
       </main>
     </div>
   );
