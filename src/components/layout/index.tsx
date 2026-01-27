@@ -10,9 +10,10 @@ interface Props {
   title?: string;
   children: ReactNode;
   style?: CSSProperties;
+  showFooter?: boolean;
 }
 
-export function Layout({ isAppBarExist = true, title, children, style }: Props) {
+export function Layout({ isAppBarExist = true, title, children, style, showFooter = true }: Props) {
   const t = useTranslations('common');
   const appName = t('app.name');
   const appTitle = t('app.title');
@@ -25,7 +26,7 @@ export function Layout({ isAppBarExist = true, title, children, style }: Props) 
       </Head>
       <main css={main({ isAppBarExist })} style={style}>
         {children}
-        <Footer />
+        {showFooter && <Footer />}
       </main>
     </div>
   );
