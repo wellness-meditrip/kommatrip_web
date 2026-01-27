@@ -7,7 +7,6 @@ import path from 'path';
  * Fallback 체인:
  * - en: en → ko (en이 없으면 ko 사용)
  * - ko: ko → en (ko가 없으면 en 사용)
- * - ja: ja → ko → en (ja가 없으면 ko, ko도 없으면 en 사용)
  */
 const getFallbackChain = (locale: Locale): Locale[] => {
   switch (locale) {
@@ -15,8 +14,6 @@ const getFallbackChain = (locale: Locale): Locale[] => {
       return ['en', 'ko'];
     case 'ko':
       return ['ko', 'en'];
-    case 'ja':
-      return ['ja', 'ko', 'en'];
     default:
       return ['en'];
   }
