@@ -61,7 +61,7 @@ export function ScheduleSection({
 }: Props) {
   const t = useTranslations('reservation');
   const currentLocale = useCurrentLocale();
-  const locale = currentLocale === 'ko' ? 'ko-KR' : currentLocale === 'ja' ? 'ja-JP' : 'en-US';
+  const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const weekdayLabels = useMemo(() => {
     const base = new Date(2024, 0, 7);
     return Array.from({ length: 7 }).map((_, index) => {
