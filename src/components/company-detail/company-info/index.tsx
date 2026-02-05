@@ -173,14 +173,14 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
     <div css={container}>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
-          Editor&apos;s Comment
+          {t('editorComment')}
         </Text>
 
         {recognitionText && (
           <div css={infoWrapper}>
             <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
               <Text typo="title_S" color="text_primary">
-                Official Recognition
+                {t('officialRecognition')}
               </Text>
               <div css={hoursArrow(isRecognitionOpen)}>
                 <ArrowDown width={30} height={30} />
@@ -196,7 +196,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
         <div css={infoWrapper}>
           <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
             <Text typo="title_S" color="text_primary">
-              Getting Here
+              {t('gettingHere')}
             </Text>
             <div css={hoursArrow(isGettingHereOpen)}>
               <ArrowDown width={30} height={30} />
@@ -211,7 +211,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
         <div css={infoWrapper}>
           <div css={recognitionHeader} onClick={() => setIsHighlightsOpen((prev) => !prev)}>
             <Text typo="title_S" color="text_primary">
-              Highlights
+              {t('highlights')}
             </Text>
             <div css={hoursArrow(isHighlightsOpen)}>
               <ArrowDown width={30} height={30} />
@@ -226,7 +226,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
       </div>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
-          Operation Information
+          {t('operationInfo')}
         </Text>
         <div css={infoWrapper}>
           <div css={hoursWrapper}>
@@ -237,7 +237,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
               <div css={hoursHeader(isHoursOpen)} onClick={() => setIsHoursOpen(!isHoursOpen)}>
                 <div css={hoursHeaderLeft}>
                   <Text typo="button_S" color={isCurrentlyOpen ? 'primary50' : 'text_secondary'}>
-                    {isCurrentlyOpen ? 'Open' : 'Closed'}
+                    {isCurrentlyOpen ? t('open') : t('closed')}
                   </Text>
                   <Text typo="button_S" color="text_secondary">
                     {closedText}
@@ -282,7 +282,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
                   {websiteUrl && (
                     <div css={contactRow}>
                       <Text typo="button_S" color="text_secondary" css={contactLabel}>
-                        Website
+                        {t('website')}
                       </Text>
                       <Text
                         typo="button_S"
@@ -296,7 +296,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
                   {instagramUrl && (
                     <div css={contactRow}>
                       <Text typo="button_S" color="text_secondary" css={contactLabel}>
-                        Instagram
+                        {t('instagram')}
                       </Text>
                       <Text
                         typo="button_S"
@@ -310,7 +310,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
                   {whatsappUrl && (
                     <div css={contactRow}>
                       <Text typo="button_S" color="text_secondary" css={contactLabel}>
-                        WhatsApp
+                        {t('whatsapp')}
                       </Text>
                       <Text
                         typo="button_S"
@@ -329,7 +329,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
       </div>
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
-          Location
+          {t('location')}
         </Text>
         <CompanyGoogleMap
           address={data.address}
@@ -340,7 +340,7 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
       {availableFacilities.length > 0 && (
         <div css={wrapper}>
           <Text typo="title_M" color="text_primary">
-            Facilities
+            {t('facilities')}
           </Text>
           <div css={infoWrapper}>
             {availableFacilities.map((facility) => (
