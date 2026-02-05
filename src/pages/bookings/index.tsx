@@ -26,12 +26,22 @@ export default function MyBookingsPage() {
   return (
     <Layout
       isAppBarExist={false}
+      showFooter={false}
       title={tMypage('reservations.title')}
-      style={{ background: theme.colors.bg_surface1 }}
+      scrollMode="page"
+      style={{
+        background: theme.colors.bg_surface1,
+      }}
     >
       <AppBar logo="light" backgroundColor="green" />
-      <ReservationsPanel />
+      <div css={contentWrap}>
+        <ReservationsPanel />
+      </div>
       <GNB />
     </Layout>
   );
 }
+
+const contentWrap = {
+  paddingBottom: `calc(${theme.size.gnbHeight} + 24px + env(safe-area-inset-bottom))`,
+};
