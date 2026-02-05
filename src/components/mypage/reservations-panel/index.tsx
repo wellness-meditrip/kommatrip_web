@@ -513,9 +513,15 @@ const tabButton = (isActive: boolean) => css`
 
 const contentContainer = (isEmbedded: boolean) => css`
   padding: ${isEmbedded ? '0' : '16px'};
-  padding-bottom: ${isEmbedded ? '0' : '16px'};
+  padding-bottom: ${isEmbedded
+    ? `calc(${theme.size.gnbHeight} + env(safe-area-inset-bottom))`
+    : `calc(16px + ${theme.size.gnbHeight} + env(safe-area-inset-bottom))`};
   background: ${isEmbedded ? 'transparent' : theme.colors.bg_surface1};
   min-height: ${isEmbedded ? 'auto' : `calc(100vh - ${theme.size.appBarHeight})`};
+
+  @media (min-width: ${theme.breakpoints.desktop}) {
+    padding-bottom: ${isEmbedded ? '0' : `calc(16px + ${theme.size.gnbHeight})`};
+  }
 `;
 
 const stateContainer = (isEmbedded: boolean) => css`

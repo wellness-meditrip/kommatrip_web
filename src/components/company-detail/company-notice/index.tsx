@@ -7,6 +7,7 @@ import {
   noticeRow,
   titleWrapper,
 } from './index.styles';
+import { useTranslations } from 'next-intl';
 
 interface CompanyNoticeProps {
   bookingInformation?: string | null;
@@ -14,6 +15,7 @@ interface CompanyNoticeProps {
 }
 
 export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyNoticeProps) {
+  const t = useTranslations('company-detail');
   const hasBookingInfo = !!bookingInformation?.trim();
   const hasRefundRegulation = !!refundRegulation?.trim();
   const formattedBookingInformation = bookingInformation?.replace(/\\n/g, '\n') ?? '';
@@ -26,7 +28,7 @@ export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyN
   return (
     <div css={noticeWrapper}>
       <Text typo="title_M" color="text_primary">
-        Notice
+        {t('noticeTitle')}
       </Text>
       <div css={noticeInfoWrapper}>
         {hasBookingInfo && (
@@ -34,7 +36,7 @@ export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyN
             <div css={noticeTextBlock}>
               <div css={titleWrapper}>
                 <Text typo="title_S" color="text_primary">
-                  Booking information
+                  {t('bookingInfo')}
                 </Text>
               </div>
               <Text typo="body_M" color="text_secondary" css={noticeContent}>
@@ -50,7 +52,7 @@ export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyN
             <div css={noticeTextBlock}>
               <div css={titleWrapper}>
                 <Text typo="title_S" color="text_primary">
-                  Refund regulation
+                  {t('refundRegulation')}
                 </Text>
               </div>
               <Text typo="body_M" color="text_secondary" css={noticeContent}>

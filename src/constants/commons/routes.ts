@@ -39,7 +39,6 @@ export const ROUTES = {
   RESERVATIONS_PAYMENT: '/reservations/payment',
   RESERVATIONS_PAYMENT_SUCCESS: '/reservations/payment/success',
   RESERVATIONS_PAYMENT_FAIL: '/reservations/payment/fail',
-  RESERVATIONS_COMPLETE: '/reservations/complete',
   BOOKINGS: '/bookings',
   BOOKINGS_DETAIL: (reservationId: number | string) => `/bookings/${reservationId}`,
 

@@ -33,6 +33,9 @@ import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 
+const REFUND_POLICY_URL =
+  'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
+
 interface ReservationDraft {
   company_id: number;
   company_name: string;
@@ -175,6 +178,7 @@ export default function ReservationPage() {
   const isOrderRequestingRef = useRef(false);
   const [isPaymentWidgetOpen, setIsPaymentWidgetOpen] = useState(false);
   const hasRenderedWidgetRef = useRef(false);
+  const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -672,7 +676,7 @@ export default function ReservationPage() {
     if (typeof window === 'undefined') return;
 
     window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
-    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`;
+    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`;
     const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
 
     try {
@@ -690,6 +694,10 @@ export default function ReservationPage() {
   const handleSubmit = async () => {
     const draft = buildDraft(true);
     if (!draft) return;
+    if (!isPolicyAccepted) {
+      showToast({ title: t('payment.refundAcceptRequired'), icon: 'exclaim' });
+      return;
+    }
 
     if (paymentMethodChoice === 'toss') {
       if (!paymentOrder) {
@@ -739,7 +747,7 @@ export default function ReservationPage() {
         );
       }
 
-      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`);
+      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`);
     } catch {
       showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
     }
@@ -756,7 +764,7 @@ export default function ReservationPage() {
   return (
     <>
       <Meta {...meta} />
-      <Layout isAppBarExist={false} title={t('title')}>
+      <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <div css={desktopAppBar}>
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>
@@ -979,6 +987,69 @@ export default function ReservationPage() {
                     </Text>
                   </div>
                 </div>
+
+                <div css={policyCard}>
+                  <Text typo="title_M" color="text_primary">
+                    {t('payment.refundTitle')}
+                  </Text>
+                  <div css={policyBox}>
+                    <Text typo="body_M" color="text_secondary">
+                      {t('payment.refundIntro')}
+                    </Text>
+                    <ul css={policyList}>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule1')}
+                        </Text>
+                      </li>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule2')}
+                        </Text>
+                      </li>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule3')}
+                        </Text>
+                      </li>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule4')}
+                        </Text>
+                      </li>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule5')}
+                        </Text>
+                      </li>
+                      <li>
+                        <Text typo="body_M" color="text_secondary">
+                          {t('payment.refundRule6')}
+                        </Text>
+                      </li>
+                    </ul>
+                  </div>
+                  <button
+                    type="button"
+                    css={policyLink}
+                    onClick={() => window.open(REFUND_POLICY_URL, '_blank', 'noopener,noreferrer')}
+                  >
+                    <Text typo="body_M" color="text_primary">
+                      {t('payment.refundMore')}
+                    </Text>
+                  </button>
+                  <label css={policyAccept}>
+                    <input
+                      type="checkbox"
+                      checked={isPolicyAccepted}
+                      onChange={(event) => setIsPolicyAccepted(event.target.checked)}
+                      css={policyCheckbox}
+                    />
+                    <Text typo="body_M" color="text_primary">
+                      {t('payment.refundAccept')}
+                    </Text>
+                  </label>
+                </div>
               </div>
             </div>
           )}
@@ -990,6 +1061,7 @@ export default function ReservationPage() {
                 onClick={handleSubmit}
                 disabled={
                   isCreatingReservation ||
+                  !isPolicyAccepted ||
                   (paymentMethodChoice === 'toss' && (isPaymentOrderPending || !paymentOrder))
                 }
               >
@@ -1293,6 +1365,61 @@ const summaryValueRight = css`
 const summaryDivider = css`
   height: 1px;
   background: ${theme.colors.border_default};
+`;
+
+const policyCard = css`
+  margin: 12px 16px 8px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const policyBox = css`
+  background: ${theme.colors.bg_surface1};
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const policyList = css`
+  margin: 0;
+  padding-left: 18px;
+  color: ${theme.colors.text_secondary};
+
+  li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+`;
+
+const policyLink = css`
+  border: 1px solid ${theme.colors.border_default};
+  background: ${theme.colors.primary10Opacity40};
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const policyAccept = css`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const policyCheckbox = css`
+  width: 18px;
+  height: 18px;
+  accent-color: ${theme.colors.primary50};
+  cursor: pointer;
 `;
 
 const submitButtonWrapper = css`
