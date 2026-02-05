@@ -217,7 +217,7 @@ export default function ReservationPaymentPage() {
         );
       }
 
-      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`);
+      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`);
     } catch {
       showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
     }
@@ -238,7 +238,7 @@ export default function ReservationPaymentPage() {
     }
     if (typeof window === 'undefined') return;
 
-    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`;
+    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`;
     const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
 
     try {

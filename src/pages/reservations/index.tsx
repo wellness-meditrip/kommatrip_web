@@ -672,7 +672,7 @@ export default function ReservationPage() {
     if (typeof window === 'undefined') return;
 
     window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
-    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`;
+    const successUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`;
     const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
 
     try {
@@ -739,7 +739,7 @@ export default function ReservationPage() {
         );
       }
 
-      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_COMPLETE}`);
+      router.push(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`);
     } catch {
       showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
     }
@@ -756,7 +756,7 @@ export default function ReservationPage() {
   return (
     <>
       <Meta {...meta} />
-      <Layout isAppBarExist={false} title={t('title')}>
+      <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <div css={desktopAppBar}>
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>

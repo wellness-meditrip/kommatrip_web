@@ -32,7 +32,7 @@ export default function ReservationPaymentFailPage() {
   return (
     <>
       <Meta {...meta} />
-      <Layout isAppBarExist={false} title={t('payment.title')}>
+      <Layout isAppBarExist={false} title={t('payment.title')} showFooter={false}>
         {isDesktop ? (
           <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         ) : (
@@ -55,7 +55,7 @@ export default function ReservationPaymentFailPage() {
               <RoundButton
                 size="L"
                 fullWidth
-                onClick={() => router.replace(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT}`)}
+                onClick={() => router.replace(`/${currentLocale}${ROUTES.RESERVATIONS}`)}
               >
                 <Text typo="button_L" color="white">
                   {t('payment.tossFailedCta')}
