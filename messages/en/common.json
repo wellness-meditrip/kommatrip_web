@@ -18,7 +18,8 @@
     "previous": "Previous",
     "submit": "Submit",
     "search": "Search",
-    "reset": "Reset"
+    "reset": "Reset",
+    "home": "Go to home"
   },
   "loading": {
     "text": "Loading...",
@@ -28,7 +29,9 @@
     "title": "An error occurred",
     "tryAgain": "Please try again",
     "notFound": "Page not found",
-    "serverError": "Server error occurred"
+    "notFoundDescription": "The page you're looking for doesn't exist.",
+    "serverError": "Server error occurred",
+    "serverErrorDescription": "Please try again later."
   },
   "empty": {
     "noData": "No data",
