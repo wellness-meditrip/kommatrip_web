@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import axios from 'axios';
 import { css } from '@emotion/react';
 import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar, Loading } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
@@ -11,6 +12,9 @@ import { useTranslations } from 'next-intl';
 import { useMediaQuery } from '@/hooks';
 import { usePostConfirmPaymentMutation } from '@/queries/payment';
 import type { ReservationDataForPaymentConfirm } from '@/models/payment';
+import { useAuthStore } from '@/store/auth';
+import { getCookie } from '@/utils/cookie';
+import { waitForAuthReady } from '@/utils/auth-refresh';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -52,6 +56,17 @@ export default function ReservationPaymentSuccessPage() {
   const [isConfirming, setIsConfirming] = useState(false);
   const hasConfirmedRef = useRef(false);
   const { mutateAsync: confirmPayment } = usePostConfirmPaymentMutation();
+  const redirectToFail = useCallback(
+    (message?: string) => {
+      const basePath = `/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
+      if (message) {
+        router.replace({ pathname: basePath, query: { message } });
+        return;
+      }
+      router.replace(basePath);
+    },
+    [currentLocale, router]
+  );
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -64,58 +79,95 @@ export default function ReservationPaymentSuccessPage() {
       const storedDraft = window.sessionStorage.getItem('reservation_draft');
       if (!storedDraft) {
         setIsConfirming(false);
+        redirectToFail();
         return;
       }
 
-      let reservationData: ReservationDataForPaymentConfirm | null = null;
-      try {
-        const draft = JSON.parse(storedDraft);
-        reservationData = {
-          program_id: draft.program_id,
-          preferred_contact: draft.preferred_contact,
-          language_preference: draft.language_preference,
-          availability_options: draft.availability_options,
-          inquiries: draft.inquiries,
-          contact_line: draft.contact_line,
-          contact_whatsapp: draft.contact_whatsapp,
-          contact_kakao: draft.contact_kakao,
-          contact_phone: draft.contact_phone,
-        };
-        window.sessionStorage.setItem(
-          'reservation_complete',
-          JSON.stringify({
+      const confirmWithAuth = async () => {
+        let reservationData: ReservationDataForPaymentConfirm | null = null;
+        let completeData: ReservationCompleteData | null = null;
+        try {
+          const draft = JSON.parse(storedDraft);
+          reservationData = {
+            program_id: draft.program_id,
+            preferred_contact: draft.preferred_contact,
+            language_preference: draft.language_preference,
+            availability_options: draft.availability_options,
+            inquiries: draft.inquiries,
+            contact_line: draft.contact_line,
+            contact_whatsapp: draft.contact_whatsapp,
+            contact_kakao: draft.contact_kakao,
+            contact_phone: draft.contact_phone,
+          };
+          completeData = {
             company_name: draft.company_name,
             program_name: draft.program_name,
             program_duration_minutes: draft.program_duration_minutes,
             date: draft.availability_options?.[0]?.date ?? '',
             time: draft.availability_options?.[0]?.times?.[0] ?? '',
-          })
-        );
-      } catch {
-        setIsConfirming(false);
-        return;
-      }
+          };
+        } catch {
+          redirectToFail();
+          return;
+        }
 
-      const resolvedAmount = Number(Array.isArray(amount) ? amount[0] : amount);
-      if (!Number.isFinite(resolvedAmount) || !reservationData) {
-        setIsConfirming(false);
-        return;
-      }
+        const resolvedAmount = Number(Array.isArray(amount) ? amount[0] : amount);
+        if (!Number.isFinite(resolvedAmount) || !reservationData || !completeData) {
+          redirectToFail();
+          return;
+        }
 
-      setIsConfirming(true);
-      confirmPayment({
-        orderId: Array.isArray(orderId) ? orderId[0] : orderId,
-        paymentKey: Array.isArray(paymentKey) ? paymentKey[0] : paymentKey,
-        amount: resolvedAmount,
-        programId: reservationData.program_id,
-        reservationData,
-      })
-        .catch(() => {
-          // 실패 시에도 완료 페이지는 유지하되 데이터가 없으면 Empty로 표시됨
-        })
-        .finally(() => {
+        const ensureAccessToken = async () => {
+          let token = useAuthStore.getState().accessToken;
+          if (token) return token;
+          const refreshToken = getCookie('refreshToken');
+          if (!refreshToken) return null;
+          await waitForAuthReady();
+          for (let i = 0; i < 30; i += 1) {
+            token = useAuthStore.getState().accessToken;
+            if (token) return token;
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
+          return useAuthStore.getState().accessToken;
+        };
+
+        setIsConfirming(true);
+        const token = await ensureAccessToken();
+        if (!token) {
           setIsConfirming(false);
-        });
+          redirectToFail();
+          return;
+        }
+
+        confirmPayment({
+          orderId: Array.isArray(orderId) ? orderId[0] : orderId,
+          paymentKey: Array.isArray(paymentKey) ? paymentKey[0] : paymentKey,
+          amount: resolvedAmount,
+          programId: reservationData.program_id,
+          reservationData,
+        })
+          .then(() => {
+            window.sessionStorage.setItem('reservation_complete', JSON.stringify(completeData));
+            setData(completeData);
+          })
+          .catch((error) => {
+            window.sessionStorage.removeItem('reservation_complete');
+            const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+            if (status && status >= 500) {
+              router.replace(`/${currentLocale}/500`);
+              return;
+            }
+            const responseMessage =
+              axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message;
+            const fallbackMessage = status ? `HTTP ${status}` : undefined;
+            redirectToFail(responseMessage || fallbackMessage);
+          })
+          .finally(() => {
+            setIsConfirming(false);
+          });
+      };
+
+      void confirmWithAuth();
       return;
     }
 
@@ -126,7 +178,7 @@ export default function ReservationPaymentSuccessPage() {
     } catch {
       window.sessionStorage.removeItem('reservation_complete');
     }
-  }, [router.isReady, router.query, confirmPayment]);
+  }, [router.isReady, router.query, confirmPayment, redirectToFail, currentLocale, router]);
 
   useEffect(() => {
     if (isConfirming) return;
