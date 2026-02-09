@@ -13,6 +13,7 @@ import {
   FilterBar,
   GNB,
   DesktopAppBar,
+  PageErrorEmpty,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import type { GetServerSideProps } from 'next';
@@ -140,8 +141,12 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
     []
   );
 
-  const { data, isLoading, error } = useGetCompanySearchQuery(searchParams);
-  const { data: recommendedData } = useGetCompanySearchQuery(recommendedSearchParams);
+  const { data, isLoading, error } = useGetCompanySearchQuery(searchParams, {
+    suppressGlobalError: true,
+  });
+  const { data: recommendedData } = useGetCompanySearchQuery(recommendedSearchParams, {
+    suppressGlobalError: true,
+  });
 
   // API 응답에서 companies 추출 (guestApi 인터셉터가 response.data를 반환하므로)
   const companies = useMemo(() => {
@@ -426,7 +431,7 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
         <div css={wrapper}>
           {/* 로딩 상태 */}
           {isLoading && <Loading title={t('loadingList')} />}
-          {error && <Empty title={t('loadFail')} />}
+          {error && <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />}
 
           {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
           {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (

@@ -9,6 +9,10 @@ import { QUERY_KEYS } from '../query-keys';
 import { useQuery } from '@tanstack/react-query';
 import { getProgramCompany, getProgramCompanyList, getProgramDetail } from '@/apis';
 
+interface QueryOptions {
+  suppressGlobalError?: boolean;
+}
+
 export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
   return useQuery<GetProgramCompanyResponseParams>({
     queryKey: [
@@ -36,10 +40,11 @@ export const useGetProgramCompanyListQuery = (params: ProgramCompanyListParams) 
   });
 };
 
-export const useGetProgramDetailQuery = (programId: number) => {
+export const useGetProgramDetailQuery = (programId: number, options?: QueryOptions) => {
   return useQuery<GetProgramDetailResponse>({
     queryKey: [...QUERY_KEYS.GET_PROGRAM_DETAIL, programId],
     queryFn: () => getProgramDetail(programId),
     enabled: !!programId,
+    meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
