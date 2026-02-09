@@ -18,7 +18,8 @@
     "previous": "前へ",
     "submit": "送信",
     "search": "検索",
-    "reset": "リセット"
+    "reset": "リセット",
+    "home": "ホームへ"
   },
   "loading": {
     "text": "読み込み中...",
@@ -28,7 +29,9 @@
     "title": "エラーが発生しました",
     "tryAgain": "もう一度お試しください",
     "notFound": "ページが見つかりません",
-    "serverError": "サーバーエラーが発生しました"
+    "notFoundDescription": "お探しのページは存在しません。",
+    "serverError": "サーバーエラーが発生しました",
+    "serverErrorDescription": "しばらくしてから再度お試しください。"
   },
   "empty": {
     "noData": "データがありません",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast, useDialog } from '@/hooks';
+import { useToast, useErrorHandler } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -58,7 +58,7 @@ export default function ReviewPage() {
   const t = useTranslations('review');
   const tTags = useTranslations('review-list');
   const { showToast } = useToast();
-  const { open } = useDialog();
+  const { showErrorDialog } = useErrorHandler();
   const { mutate, isPending } = usePostClinicReviewMutation();
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
@@ -187,48 +187,6 @@ export default function ReviewPage() {
     }
   }, []);
 
-  const getErrorMessage = (error: unknown): string => {
-    if (typeof error === 'string') {
-      return error;
-    }
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { data?: unknown; status?: number } };
-
-      if (axiosError.response?.status === 422) {
-        if (
-          axiosError.response?.data &&
-          typeof axiosError.response.data === 'object' &&
-          'message' in axiosError.response.data
-        ) {
-          return String(axiosError.response.data.message);
-        }
-        return t('invalidInput');
-      } else if (axiosError.response?.status === 401) {
-        return t('loginRequired');
-      } else if (axiosError.response?.status === 403) {
-        return t('forbidden');
-      }
-    }
-    if (error && typeof error === 'object') {
-      if ('message' in error && typeof error.message === 'string') {
-        return error.message;
-      }
-      if ('detail' in error && typeof error.detail === 'string') {
-        return error.detail;
-      }
-      if ('error' in error && error.error && typeof error.error === 'object') {
-        const nested = error.error as { message?: unknown; detail?: unknown };
-        if (typeof nested.message === 'string') {
-          return nested.message;
-        }
-        if (typeof nested.detail === 'string') {
-          return nested.detail;
-        }
-      }
-    }
-    return t('unknownError');
-  };
-
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -256,11 +214,9 @@ export default function ReviewPage() {
           router.push(`/${currentLocale}`);
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error);
-          open({
-            type: 'confirm',
+          showErrorDialog(error, {
             title: t('createFail'),
-            description: errorMessage,
+            fallbackMessage: t('unknownError'),
             primaryActionLabel: t('confirm'),
           });
         },

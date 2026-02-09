@@ -13,8 +13,7 @@ import {
   CategoryMedicalBeauty,
 } from '@/icons';
 import { usePostInterestMutation } from '@/queries/auth';
-import { useMediaQuery, useToast } from '@/hooks';
-import { getErrorMessage } from '@/utils/error-handler';
+import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import type { Gender, AgeGroup } from '@/models/auth';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
@@ -62,6 +61,7 @@ export default function InterestPage() {
   const router = useRouter();
   const t = useTranslations('interest');
   const { showToast } = useToast();
+  const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { update } = useSession();
   const [inputValue, setInputValue] = useState('');
@@ -109,17 +109,17 @@ export default function InterestPage() {
     const filteredInterests = selectedInterests.filter((id) => id !== 'no-select');
 
     if (filteredInterests.length === 0) {
-      showToast({ title: 'Please select at least one interest', icon: 'exclaim' });
+      showToast({ title: t('toast.selectInterest'), icon: 'exclaim' });
       return;
     }
 
     if (!selectedGender || selectedGender === 'no-select') {
-      showToast({ title: 'Please select your gender', icon: 'exclaim' });
+      showToast({ title: t('toast.selectGender'), icon: 'exclaim' });
       return;
     }
 
     if (!selectedAgeGroup) {
-      showToast({ title: 'Please select your age group', icon: 'exclaim' });
+      showToast({ title: t('toast.selectAgeGroup'), icon: 'exclaim' });
       return;
     }
 
@@ -131,7 +131,7 @@ export default function InterestPage() {
       },
       {
         onSuccess: async () => {
-          showToast({ title: 'Interest settings saved successfully', icon: 'check' });
+          showToast({ title: t('toast.saved'), icon: 'check' });
           if (typeof window !== 'undefined') {
             window.sessionStorage.setItem('interest_done', '1');
           }
@@ -139,8 +139,7 @@ export default function InterestPage() {
           router.replace(ROUTES.HOME);
         },
         onError: (error: unknown) => {
-          const errorMessage = getErrorMessage(error, 'Failed to save interest settings');
-          showToast({ title: errorMessage, icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('toast.saveFailed') });
         },
       }
     );

@@ -10,12 +10,13 @@ import {
   Text,
   CompanyInfoCard,
   DesktopAppBar,
+  Loading,
 } from '@/components';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
-import { useToast, useMediaQuery } from '@/hooks';
+import { useToast, useMediaQuery, useRequireAuth, useErrorHandler } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { Dim } from '@/components/dim';
 import { PaymentLocation } from '@/icons';
@@ -55,11 +56,13 @@ type PaymentMethod = 'onsite' | 'toss';
 export default function ReservationPaymentPage() {
   const router = useRouter();
   const { showToast } = useToast();
+  const { showErrorToast } = useErrorHandler();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
+  const { isAuthenticated, isLoading: isAuthLoading } = useRequireAuth(false);
   const [draft, setDraft] = useState<ReservationDraft | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onsite');
@@ -105,6 +108,7 @@ export default function ReservationPaymentPage() {
   }, [draft]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     if (paymentMethodChoice !== 'toss' || !draft || paymentOrder) return;
     let isMounted = true;
     const createOrder = async () => {
@@ -113,9 +117,9 @@ export default function ReservationPaymentPage() {
         if (isMounted) {
           setPaymentOrder(response.order);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          showToast({ title: t('payment.toastPaymentOrderFailed'), icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('payment.toastPaymentOrderFailed') });
         }
       }
     };
@@ -123,9 +127,22 @@ export default function ReservationPaymentPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, draft, paymentOrder, createPaymentOrder, showToast, t]);
+  }, [
+    paymentMethodChoice,
+    draft,
+    paymentOrder,
+    createPaymentOrder,
+    showErrorToast,
+    t,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      paymentWidgetsRef.current = null;
+      setIsWidgetReady(false);
+      return;
+    }
     if (paymentMethodChoice !== 'toss') {
       paymentWidgetsRef.current = null;
       setIsWidgetReady(false);
@@ -172,7 +189,7 @@ export default function ReservationPaymentPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, draft, paymentOrder, showToast, t]);
+  }, [paymentMethodChoice, draft, paymentOrder, showToast, t, isAuthenticated]);
 
   const meta = createPageMeta({
     pageTitle: t('payment.title'),
@@ -182,6 +199,7 @@ export default function ReservationPaymentPage() {
   });
 
   const handleSubmit = async () => {
+    if (!isAuthenticated) return;
     if (!draft) {
       showToast({ title: t('payment.toastMissingDraft'), icon: 'exclaim' });
       return;
@@ -218,12 +236,13 @@ export default function ReservationPaymentPage() {
       }
 
       router.push(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`);
-    } catch {
-      showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
+    } catch (error) {
+      showErrorToast(error, { fallbackMessage: t('payment.toastFailed') });
     }
   };
 
   const handleTossPayment = async () => {
+    if (!isAuthenticated) return;
     if (!draft) {
       showToast({ title: t('payment.toastMissingDraft'), icon: 'exclaim' });
       return;
@@ -254,12 +273,24 @@ export default function ReservationPaymentPage() {
   };
 
   const handleActionClick = () => {
+    if (!isAuthenticated) return;
     if (paymentMethodChoice === 'toss') {
       handleTossPayment();
       return;
     }
     setIsModalOpen(true);
   };
+
+  if (isAuthLoading || !isAuthenticated) {
+    return (
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={t('payment.title')}>
+          <Loading title={t('loading')} fullHeight />
+        </Layout>
+      </>
+    );
+  }
 
   if (!draft) {
     return (

@@ -9,12 +9,11 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
-import { useMediaQuery, useToast } from '@/hooks';
+import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import { ROUTES } from '@/constants';
 import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
-import { getLocalizedErrorMessage } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 import { useAuthStore } from '@/store/auth';
@@ -31,6 +30,7 @@ export default function Login() {
   const t = useTranslations('auth.login');
   const tCommon = useTranslations('common');
   const { showToast } = useToast();
+  const { showErrorToast } = useErrorHandler();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [rememberMe, setRememberMe] = useState(false);
@@ -187,8 +187,7 @@ export default function Login() {
           }
         },
         onError: (error: unknown) => {
-          const errorMessage = getLocalizedErrorMessage(error, t('loginFailed'));
-          showToast({ title: errorMessage, icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('loginFailed') });
         },
       }
     );

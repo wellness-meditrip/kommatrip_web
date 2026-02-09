@@ -21,7 +21,7 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { PaymentLocation } from '@/icons';
 import { ANONYMOUS, loadTossPayments } from '@tosspayments/tosspayments-sdk';
-import { useRequireAuth, useToast, useMediaQuery } from '@/hooks';
+import { useRequireAuth, useToast, useMediaQuery, useErrorHandler } from '@/hooks';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useGetUserProfileQuery } from '@/queries/user';
@@ -69,6 +69,7 @@ export default function ReservationPage() {
   const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const { showToast } = useToast();
+  const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
@@ -260,9 +261,9 @@ export default function ReservationPage() {
         if (isMounted) {
           setPaymentOrder(response.order);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
-          showToast({ title: t('payment.toastPaymentOrderFailed'), icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('payment.toastPaymentOrderFailed') });
           lastOrderRequestRef.current = null;
         }
       } finally {
@@ -274,7 +275,7 @@ export default function ReservationPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, selectedProgramId, paymentOrder, createPaymentOrder, showToast, t]);
+  }, [paymentMethodChoice, selectedProgramId, paymentOrder, createPaymentOrder, showErrorToast, t]);
 
   useEffect(() => {
     if (paymentMethodChoice !== 'toss') return;
@@ -313,10 +314,10 @@ export default function ReservationPage() {
         if (isMounted) {
           setIsWidgetReady(true);
         }
-      } catch {
+      } catch (error) {
         if (isMounted) {
           setIsWidgetReady(false);
-          showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('payment.toastTossInitFailed') });
         }
       }
     };
@@ -325,7 +326,7 @@ export default function ReservationPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, paymentOrder, isPaymentWidgetOpen, showToast, t]);
+  }, [paymentMethodChoice, paymentOrder, isPaymentWidgetOpen, showToast, showErrorToast, t]);
 
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
@@ -686,8 +687,8 @@ export default function ReservationPage() {
         successUrl,
         failUrl,
       });
-    } catch {
-      showToast({ title: t('payment.toastTossRequestFailed'), icon: 'exclaim' });
+    } catch (error) {
+      showErrorToast(error, { fallbackMessage: t('payment.toastTossRequestFailed') });
     }
   };
 
@@ -748,8 +749,8 @@ export default function ReservationPage() {
       }
 
       router.push(`/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_SUCCESS}`);
-    } catch {
-      showToast({ title: t('payment.toastFailed'), icon: 'exclaim' });
+    } catch (error) {
+      showErrorToast(error, { fallbackMessage: t('payment.toastFailed') });
     }
   };
 

@@ -6,16 +6,15 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
-import { useMediaQuery, useToast } from '@/hooks';
+import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import { ROUTES } from '@/constants';
-import { AxiosError } from 'axios';
 import {
   usePostVerifyEmailCodeMutation,
   usePostConfirmEmailMutation,
   usePostSignupMutation,
 } from '@/queries/auth';
 
-import { getLocalizedErrorMessage, isSessionExpiredError } from '@/utils/error-handler';
+import { isSessionExpiredError, normalizeError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 
@@ -33,6 +32,7 @@ export default function Signup() {
   const tValidation = useTranslations('validation');
   const { showToast } = useToast();
   const [inputValue, setInputValue] = useState('');
+  const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -89,18 +89,19 @@ export default function Signup() {
         setEmailVerified(true);
       },
       onError: (error: unknown) => {
-        const axiosError = error as AxiosError;
-        const status = axiosError?.response?.status;
-        const errorData = axiosError?.response?.data as { detail?: string } | undefined;
-        const rawErrorMessage = errorData?.detail || '';
-        const errorMessage = getLocalizedErrorMessage(error, t('failedToSendCode'));
+        const normalized = normalizeError(error);
+        const status = normalized.status;
+        const rawErrorMessage =
+          typeof normalized.details === 'object' &&
+          normalized.details &&
+          'detail' in normalized.details
+            ? String((normalized.details as { detail?: unknown }).detail ?? '')
+            : '';
 
         if (status === 400 && rawErrorMessage.includes('이미 가입된 이메일')) {
-          // 이미 가입된 이메일 에러
           setError('email', { message: t('emailAlreadyRegistered') });
         } else {
-          // 기타 에러는 토스트만 표시
-          showToast({ title: errorMessage, icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('failedToSendCode') });
         }
       },
     });
@@ -141,8 +142,8 @@ export default function Signup() {
           setCodeVerified(true);
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError;
-          const status = axiosError?.response?.status;
+          const normalized = normalizeError(error);
+          const status = normalized.status;
 
           if (status === 400 && isSessionExpiredError(error)) {
             // 코드 만료 에러
@@ -192,8 +193,7 @@ export default function Signup() {
           router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
-          const errorMessage = getLocalizedErrorMessage(error, t('failedToCreateAccount'));
-          showToast({ title: errorMessage, icon: 'exclaim' });
+          showErrorToast(error, { fallbackMessage: t('failedToCreateAccount') });
         },
       }
     );

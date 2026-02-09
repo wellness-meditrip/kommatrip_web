@@ -5,7 +5,14 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, Loading, Empty, RoundButton, DesktopAppBar, LoginModal } from '@/components';
+import {
+  CTAButton,
+  Loading,
+  RoundButton,
+  DesktopAppBar,
+  LoginModal,
+  PageErrorEmpty,
+} from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
@@ -23,7 +30,9 @@ export default function ProgramDetailPage() {
   const tCommon = useTranslations('common');
   const { programId } = router.query;
   const programIdNumber = Number(programId);
-  const { data, isLoading } = useGetProgramDetailQuery(programIdNumber);
+  const { data, isLoading, error } = useGetProgramDetailQuery(programIdNumber, {
+    suppressGlobalError: true,
+  });
   const pageTitle = data?.program?.name || t('title');
   const appDescription = tCommon('app.description');
   const metaDescription = data?.program?.description?.trim() || appDescription;
@@ -161,6 +170,27 @@ export default function ProgramDetailPage() {
   }
 
   const program = data?.program;
+  if (error) {
+    return (
+      <>
+        <Meta {...meta} />
+        <Layout isAppBarExist={false} title={pageTitle}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
+              searchPlaceholder={tCommon('search.addressPlaceholder')}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar onBackClick={router.back} leftButton={true} />
+          </div>
+          <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />
+        </Layout>
+      </>
+    );
+  }
+
   if (!program) {
     return (
       <>
@@ -176,7 +206,11 @@ export default function ProgramDetailPage() {
           <div css={mobileAppBar}>
             <AppBar onBackClick={router.back} leftButton={true} />
           </div>
-          <Empty title={t('loadFail')} />
+          <PageErrorEmpty
+            fallbackMessage={t('loadFail')}
+            statusOverride={404}
+            messageOverride={tCommon('error.notFound')}
+          />
         </Layout>
       </>
     );

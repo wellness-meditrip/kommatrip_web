@@ -17,15 +17,23 @@ import {
   CompanyDetail,
 } from '@/models';
 
-export const useGetCompanyDetailQuery = (params: GetCompanyIdRequestParams) => {
+interface QueryOptions {
+  suppressGlobalError?: boolean;
+}
+
+export const useGetCompanyDetailQuery = (
+  params: GetCompanyIdRequestParams,
+  options?: QueryOptions
+) => {
   return useQuery<{ company: CompanyDetail }>({
     queryKey: [...QUERY_KEYS.GET_COMPANY_DETAIL, params.companyId],
     queryFn: () => getCompanyDetail(params),
     enabled: !!params.companyId,
+    meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
 
-export const useGetCompanySearchQuery = (params: SearchParams) => {
+export const useGetCompanySearchQuery = (params: SearchParams, options?: QueryOptions) => {
   return useQuery<GetCompanySearchResponseParams>({
     queryKey: [
       ...QUERY_KEYS.GET_COMPANY_SEARCH,
@@ -38,13 +46,15 @@ export const useGetCompanySearchQuery = (params: SearchParams) => {
       params.endDate,
     ],
     queryFn: () => getCompanySearch(params),
+    meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
 
-export const useGetCompanyAllQuery = () => {
+export const useGetCompanyAllQuery = (options?: QueryOptions) => {
   return useQuery<GetCompanyAllResponse>({
     queryKey: [...QUERY_KEYS.GET_COMPANY_ALL],
     queryFn: () => getCompanyAll(),
+    meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
 

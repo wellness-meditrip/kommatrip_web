@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
-import { useToast, useDialog } from '@/hooks';
+import { useToast, useErrorHandler } from '@/hooks';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import 'dayjs/locale/ko';
@@ -50,7 +50,7 @@ export default function ReviewEditPage() {
   const tTags = useTranslations('review-list');
   const tCommon = useTranslations('common');
   const { showToast } = useToast();
-  const { open } = useDialog();
+  const { showErrorDialog } = useErrorHandler();
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
 
@@ -118,10 +118,9 @@ export default function ReviewEditPage() {
       showToast({ title: t('updateSuccess') });
       router.push(ROUTES.MYPAGE_REVIEWS);
     } catch (error: unknown) {
-      open({
-        type: 'confirm',
+      showErrorDialog(error, {
         title: t('updateFail'),
-        description: String(error),
+        fallbackMessage: t('unknownError'),
         primaryActionLabel: tCommon('button.confirm'),
       });
     }

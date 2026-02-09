@@ -18,7 +18,7 @@ import {
   RoundButton,
   Loading,
   LoginModal,
-  Empty,
+  PageErrorEmpty,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
@@ -44,7 +44,7 @@ export default function ClinicDetailPage() {
     companyId: companyIdNumber,
   };
 
-  const { data, error } = useGetCompanyDetailQuery(params) as {
+  const { data, error } = useGetCompanyDetailQuery(params, { suppressGlobalError: true }) as {
     data: { company: CompanyDetailType } | undefined;
     error: Error | null;
   };
@@ -273,7 +273,7 @@ export default function ClinicDetailPage() {
       <>
         <Meta {...meta} />
         <Layout title={pageTitle}>
-          <Empty title={t('loadFail')} />
+          <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />
         </Layout>
       </>
     );
