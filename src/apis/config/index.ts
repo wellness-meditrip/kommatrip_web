@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { createHttpClient, HttpClient } from './createHttpClient';
+import { normalizeError } from '@/utils/error-handler';
 
 export const { api } = createHttpClient({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
@@ -19,5 +20,5 @@ export const guestApi: HttpClient = axios.create({
 guestApi.interceptors.response.use(
   // (response: AxiosResponse) => response.data?.response,
   (response: AxiosResponse) => response.data,
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(normalizeError(error))
 );

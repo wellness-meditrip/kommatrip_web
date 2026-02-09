@@ -3,6 +3,7 @@ import { ERROR_CODES } from '@/constants/error-codes';
 import { useAuthStore } from '@/store/auth';
 import { getCookie } from '@/utils/cookie';
 import { waitForAuthReady } from '@/utils/auth-refresh';
+import { normalizeError } from '@/utils/error-handler';
 import { PostTokenReissueResponse } from '@/models/auth';
 
 type Role = 'admin' | 'user';
@@ -129,14 +130,14 @@ export const createHttpClient = ({ baseURL }: Props) => {
         if (originalRequest._retry) {
           console.error('[HttpClient] Token refresh already attempted - clearing auth');
           useAuthStore.getState().clearAuth();
-          return Promise.reject(error);
+          return Promise.reject(normalizeError(error));
         }
 
         originalRequest._retry = true;
         return new Promise((resolve, reject) => {
           subscribeTokenRefresh((token, refreshError) => {
             if (refreshError || !token) {
-              return reject(refreshError ?? error);
+              return reject(normalizeError(refreshError ?? error));
             }
 
             const retryHeaders =
@@ -162,7 +163,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
               .catch((err) => {
                 console.error('[HttpClient] Token refresh failed in interceptor:', err);
                 useAuthStore.getState().clearAuth();
-                notifyRefreshFailure(err);
+                notifyRefreshFailure(normalizeError(err));
               })
               .finally(() => {
                 isRefreshing = false;
@@ -177,23 +178,23 @@ export const createHttpClient = ({ baseURL }: Props) => {
         const isMissingUserMessage = backendMessage === '사용자 정보를 확인할 수 없습니다.';
         if (isInvalidTokenMessage || isMissingUserMessage) {
           useAuthStore.getState().clearAuth();
-          return Promise.reject(error);
+          return Promise.reject(normalizeError(error));
         }
       }
 
       if (onyuError && onyuError.code) {
         if (onyuError.code === 1001) {
           useAuthStore.getState().clearAuth();
-          return Promise.reject(error);
+          return Promise.reject(normalizeError(error));
         }
 
         if (onyuError.code === ERROR_CODES.NO_USER_EXIST) {
           useAuthStore.getState().clearAuth();
-          return Promise.reject(error);
+          return Promise.reject(normalizeError(error));
         }
       }
 
-      return Promise.reject(error);
+      return Promise.reject(normalizeError(error));
     }
   );
 
