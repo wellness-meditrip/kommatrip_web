@@ -19,5 +19,6 @@ export const usePostConfirmPaymentMutation = () => {
   return useMutation<PostConfirmPaymentResponse, Error, PostConfirmPaymentRequest>({
     mutationKey: QUERY_KEYS.POST_PAYMENT_VALIDATE,
     mutationFn: postConfirmPayment,
+    meta: { suppressGlobalError: true },
   });
 };

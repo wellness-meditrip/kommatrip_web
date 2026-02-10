@@ -9,19 +9,17 @@ import { ROUTES } from '@/constants';
 import { Meta, createPageMeta } from '@/seo';
 import { useMediaQuery } from '@/hooks';
 
-export default function ReservationPaymentFailPage() {
+export default function ReservationPaymentPendingPage() {
   const router = useRouter();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
 
-  const errorMessage = useMemo(() => {
+  const message = useMemo(() => {
     const reason = router.query.reason;
     const code = Array.isArray(reason) ? reason[0] : reason;
     if (!code) return '';
-    if (code === 'auth_required') return t('payment.errorAuthRequired');
-    if (code === 'retryable_failure') return t('payment.errorRetryableFailure');
     if (code === 'generic_failure') return t('payment.errorGenericFailure');
     return '';
   }, [router.query.reason, t]);
@@ -29,7 +27,7 @@ export default function ReservationPaymentFailPage() {
   const meta = createPageMeta({
     pageTitle: t('payment.title'),
     description: tCommon('app.description'),
-    path: router.asPath || '/reservations/payment/fail',
+    path: router.asPath || '/reservations/payment/pending',
     noindex: true,
   });
 
@@ -45,24 +43,24 @@ export default function ReservationPaymentFailPage() {
         <div css={pageWrapper}>
           <div css={content}>
             <Text typo="title_M" color="text_primary">
-              {t('payment.tossFailedTitle')}
+              {t('payment.tossPendingTitle')}
             </Text>
             <Text typo="body_M" color="text_secondary">
-              {t('payment.tossFailedDescription')}
+              {t('payment.tossPendingDescription')}
             </Text>
-            {errorMessage && (
+            {message && (
               <Text typo="body_S" color="text_tertiary">
-                {errorMessage}
+                {message}
               </Text>
             )}
             <div css={action}>
               <RoundButton
                 size="L"
                 fullWidth
-                onClick={() => router.replace(`/${currentLocale}${ROUTES.RESERVATIONS}`)}
+                onClick={() => router.replace(`/${currentLocale}${ROUTES.HOME}`)}
               >
                 <Text typo="button_L" color="white">
-                  {t('payment.tossFailedCta')}
+                  {tCommon('button.home')}
                 </Text>
               </RoundButton>
             </div>

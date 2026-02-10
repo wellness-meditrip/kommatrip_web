@@ -21,11 +21,11 @@ export interface ReservationDataForPaymentConfirm {
   preferred_contact: string;
   language_preference: LanguagePreference;
   availability_options: AvailabilityOption[];
-  inquiries: string;
-  contact_line: string;
-  contact_whatsapp: string;
-  contact_kakao: string;
-  contact_phone: string;
+  inquiries?: string;
+  contact_line?: string;
+  contact_whatsapp?: string;
+  contact_kakao?: string;
+  contact_phone?: string;
 }
 
 export interface PostConfirmPaymentRequest {
@@ -37,7 +37,11 @@ export interface PostConfirmPaymentRequest {
 }
 
 export interface PostConfirmPaymentResponse {
+  success?: boolean;
+  status?: number;
+  error_code?: string;
   message: string;
+  payment_status?: string;
   payment?: {
     id?: number;
     order_id?: string;
