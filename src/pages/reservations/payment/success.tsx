@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
 import { css } from '@emotion/react';
 import { Layout, RoundButton, Text, Empty, AppBar, DesktopAppBar, Loading } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
@@ -15,6 +14,12 @@ import type { ReservationDataForPaymentConfirm } from '@/models/payment';
 import { useAuthStore } from '@/store/auth';
 import { getCookie } from '@/utils/cookie';
 import { waitForAuthReady } from '@/utils/auth-refresh';
+import {
+  extractConfirmPayload,
+  type PaymentReasonCode,
+  resolvePaymentReasonCode,
+  resolvePaymentResult,
+} from '@/utils/payment-confirm';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -57,10 +62,28 @@ export default function ReservationPaymentSuccessPage() {
   const hasConfirmedRef = useRef(false);
   const { mutateAsync: confirmPayment } = usePostConfirmPaymentMutation();
   const redirectToFail = useCallback(
-    (message?: string) => {
+    (reason?: PaymentReasonCode, retryable?: boolean) => {
       const basePath = `/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
-      if (message) {
-        router.replace({ pathname: basePath, query: { message } });
+      if (reason || retryable) {
+        router.replace({
+          pathname: basePath,
+          query: {
+            ...(reason ? { reason } : {}),
+            ...(retryable ? { retry: '1' } : {}),
+          },
+        });
+        return;
+      }
+      router.replace(basePath);
+    },
+    [currentLocale, router]
+  );
+
+  const redirectToPending = useCallback(
+    (reason?: PaymentReasonCode) => {
+      const basePath = `/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_PENDING}`;
+      if (reason) {
+        router.replace({ pathname: basePath, query: { reason } });
         return;
       }
       router.replace(basePath);
@@ -146,21 +169,31 @@ export default function ReservationPaymentSuccessPage() {
           programId: reservationData.program_id,
           reservationData,
         })
-          .then(() => {
-            window.sessionStorage.setItem('reservation_complete', JSON.stringify(completeData));
-            setData(completeData);
+          .then((response) => {
+            const payload = extractConfirmPayload(response);
+            const result = resolvePaymentResult(payload);
+            if (result === 'SUCCESS') {
+              window.sessionStorage.setItem('reservation_complete', JSON.stringify(completeData));
+              setData(completeData);
+              return;
+            }
+            const reason = resolvePaymentReasonCode(payload);
+            if (result === 'APPROVED_BUT_PENDING') {
+              redirectToPending(reason);
+              return;
+            }
+            redirectToFail(reason, result === 'RETRYABLE_FAILED');
           })
           .catch((error) => {
             window.sessionStorage.removeItem('reservation_complete');
-            const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-            if (status && status >= 500) {
-              router.replace(`/${currentLocale}/500`);
+            const payload = extractConfirmPayload(error);
+            const result = resolvePaymentResult(payload);
+            const reason = resolvePaymentReasonCode(payload);
+            if (result === 'APPROVED_BUT_PENDING') {
+              redirectToPending(reason);
               return;
             }
-            const responseMessage =
-              axios.isAxiosError<{ message?: string }>(error) && error.response?.data?.message;
-            const fallbackMessage = status ? `HTTP ${status}` : undefined;
-            redirectToFail(responseMessage || fallbackMessage);
+            redirectToFail(reason, result === 'RETRYABLE_FAILED');
           })
           .finally(() => {
             setIsConfirming(false);
@@ -178,7 +211,15 @@ export default function ReservationPaymentSuccessPage() {
     } catch {
       window.sessionStorage.removeItem('reservation_complete');
     }
-  }, [router.isReady, router.query, confirmPayment, redirectToFail, currentLocale, router]);
+  }, [
+    router.isReady,
+    router.query,
+    confirmPayment,
+    redirectToFail,
+    redirectToPending,
+    currentLocale,
+    router,
+  ]);
 
   useEffect(() => {
     if (isConfirming) return;
