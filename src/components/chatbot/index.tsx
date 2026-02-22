@@ -52,6 +52,7 @@ import { MessageRenderer } from './messages';
 import { useChatActions } from './hooks/useChatActions';
 
 const MESSAGE_LIMIT = 10;
+const ENABLE_CHATBOT = false;
 
 export function ChatbotLauncher() {
   const t = useTranslations('chatbot');
@@ -60,12 +61,20 @@ export function ChatbotLauncher() {
   const isLoggedIn = status === 'authenticated' || !!accessToken;
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isPreparingOpen, setIsPreparingOpen] = useState(false);
 
   const handleOpenChat = () => {
     if (!isLoggedIn) {
       setIsLoginOpen(true);
       return;
     }
+
+    // TODO(챗봇): 백엔드 수정 완료 후 ENABLE_CHATBOT=true로 바꿔 기존 챗봇 모달 동작을 복구한다.
+    if (!ENABLE_CHATBOT) {
+      setIsPreparingOpen(true);
+      return;
+    }
+
     setIsChatOpen(true);
   };
 
@@ -75,8 +84,47 @@ export function ChatbotLauncher() {
         <ReviewAi width={22} height={22} />
       </button>
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-      <ChatbotModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <ChatbotPreparingModal isOpen={isPreparingOpen} onClose={() => setIsPreparingOpen(false)} />
+      {/* TODO(챗봇): 백엔드 수정 완료 시 기존 ChatbotModal을 다시 기본 진입점으로 사용한다. */}
+      {ENABLE_CHATBOT ? (
+        <ChatbotModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      ) : null}
     </>
+  );
+}
+
+function ChatbotPreparingModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const t = useTranslations('chatbot');
+
+  if (!isOpen) return null;
+
+  return (
+    <Portal>
+      <Dim fullScreen onClick={onClose} />
+      <div css={modalWrapper} role="dialog" aria-modal="true">
+        <div css={modalHeader}>
+          <button css={headerButton} aria-label={t('buttons.back')} disabled />
+          <div css={headerTitle}>
+            <Text typo="title_S" color="text_primary">
+              {t('title')}
+            </Text>
+          </div>
+          <button css={headerButton} onClick={onClose} aria-label={t('buttons.close')}>
+            <Close width={14} height={14} />
+          </button>
+        </div>
+        <div css={modalBody}>
+          <div css={scrollArea}>
+            <Text typo="title_M" color="text_primary">
+              {t('maintenance.title')}
+            </Text>
+            <Text typo="body_M" color="text_secondary">
+              {t('maintenance.description')}
+            </Text>
+          </div>
+        </div>
+      </div>
+    </Portal>
   );
 }
 

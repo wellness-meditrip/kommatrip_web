@@ -43,6 +43,10 @@
     "back": "뒤로",
     "close": "닫기"
   },
+  "maintenance": {
+    "title": "AI 챗봇 서비스를 준비하고 있어요.",
+    "description": "더 나은 답변을 위해 점검 중이며, 곧 다시 이용하실 수 있습니다."
+  },
   "errors": {
     "loadSessions": "채팅 세션을 불러오지 못했습니다.",
     "loadSession": "채팅 기록을 불러오지 못했습니다.",

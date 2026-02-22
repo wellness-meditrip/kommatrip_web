@@ -43,6 +43,10 @@
     "back": "Back",
     "close": "Close"
   },
+  "maintenance": {
+    "title": "We are preparing the AI chatbot service.",
+    "description": "We are currently improving the experience and it will be available again soon."
+  },
   "errors": {
     "loadSessions": "Failed to load chat sessions.",
     "loadSession": "Failed to load chat history.",
