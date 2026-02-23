@@ -27,7 +27,13 @@ import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useGetUserProfileQuery } from '@/queries/user';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
-import { ROUTES } from '@/constants';
+import {
+  ROUTES,
+  PAYMENT_WIDGET_CONFIG,
+  PaymentMethod,
+  PaymentVariantKey,
+  isPayNowPaymentMethod,
+} from '@/constants';
 import { CompanyDetail } from '@/models';
 import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
@@ -59,8 +65,6 @@ interface ReservationDraft {
   contact_kakao: string;
   contact_phone: string;
 }
-
-type PaymentMethod = 'onsite' | 'toss';
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -169,7 +173,9 @@ export default function ReservationPage() {
   const [timeSelectionOpen, setTimeSelectionOpen] = useState<{ [key: string]: boolean }>({});
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<ReservationDraft | null>(null);
-  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onsite');
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onSite');
+  const isPayNowPayment = isPayNowPaymentMethod(paymentMethodChoice);
+  const paymentWidgetConfig = isPayNowPayment ? PAYMENT_WIDGET_CONFIG[paymentMethodChoice] : null;
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
   const [isWidgetReady, setIsWidgetReady] = useState(false);
   const paymentWidgetsRef = useRef<ReturnType<
@@ -235,7 +241,7 @@ export default function ReservationPage() {
   }, [profileData, selectedContactMethod]);
 
   useEffect(() => {
-    if (paymentMethodChoice !== 'toss') {
+    if (!isPayNowPayment) {
       paymentWidgetsRef.current = null;
       hasRenderedWidgetRef.current = false;
       setIsWidgetReady(false);
@@ -275,10 +281,18 @@ export default function ReservationPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, selectedProgramId, paymentOrder, createPaymentOrder, showErrorToast, t]);
+  }, [isPayNowPayment, selectedProgramId, paymentOrder, createPaymentOrder, showErrorToast, t]);
 
   useEffect(() => {
-    if (paymentMethodChoice !== 'toss') return;
+    if (!isPayNowPayment) return;
+    // Ensure widget gets re-rendered with the selected variant key (KOREA/PAYPAL).
+    paymentWidgetsRef.current = null;
+    hasRenderedWidgetRef.current = false;
+    setIsWidgetReady(false);
+  }, [paymentMethodChoice, isPayNowPayment]);
+
+  useEffect(() => {
+    if (!isPayNowPayment) return;
     if (!paymentOrder || !isPaymentWidgetOpen) return;
     if (!process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY) {
       showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
@@ -297,13 +311,13 @@ export default function ReservationPage() {
         const widgets = paymentWidgetsRef.current;
         if (!widgets) return;
         await widgets.setAmount({
-          currency: paymentOrder.currency ?? 'KRW',
+          currency: paymentWidgetConfig?.currency ?? paymentOrder.currency ?? 'KRW',
           value: paymentOrder.amount,
         });
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
             selector: '#reservation-payment-methods-modal',
-            variantKey: 'DEFAULT',
+            variantKey: paymentWidgetConfig?.variantKey ?? PaymentVariantKey.korea,
           });
           await widgets.renderAgreement({
             selector: '#reservation-payment-agreement-modal',
@@ -326,7 +340,15 @@ export default function ReservationPage() {
     return () => {
       isMounted = false;
     };
-  }, [paymentMethodChoice, paymentOrder, isPaymentWidgetOpen, showToast, showErrorToast, t]);
+  }, [
+    isPayNowPayment,
+    paymentOrder,
+    paymentWidgetConfig,
+    isPaymentWidgetOpen,
+    showToast,
+    showErrorToast,
+    t,
+  ]);
 
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
@@ -700,7 +722,7 @@ export default function ReservationPage() {
       return;
     }
 
-    if (paymentMethodChoice === 'toss') {
+    if (isPayNowPayment) {
       if (!paymentOrder) {
         showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
         return;
@@ -825,12 +847,10 @@ export default function ReservationPage() {
                       onClick={handleSubmit}
                       disabled={
                         isCreatingReservation ||
-                        (paymentMethodChoice === 'toss' && (isPaymentOrderPending || !paymentOrder))
+                        (isPayNowPayment && (isPaymentOrderPending || !paymentOrder))
                       }
                     >
-                      {paymentMethodChoice === 'toss'
-                        ? t('payment.payWithToss')
-                        : t('payment.bookNow')}
+                      {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
                     </CTAButton>
                   </div>
                 </div>
@@ -910,23 +930,34 @@ export default function ReservationPage() {
                     <button
                       type="button"
                       css={paymentMethodButton}
-                      data-selected={paymentMethodChoice === 'onsite'}
-                      onClick={() => setPaymentMethodChoice('onsite')}
+                      data-selected={paymentMethodChoice === 'payNowKrw'}
+                      onClick={() => setPaymentMethodChoice('payNowKrw')}
                     >
-                      <span css={radioDot(paymentMethodChoice === 'onsite')} />
+                      <span css={radioDot(paymentMethodChoice === 'payNowKrw')} />
                       <Text typo="body_M" color="text_primary">
-                        {t('payment.payOnSite')}
+                        Pay now(KRW)
                       </Text>
                     </button>
                     <button
                       type="button"
                       css={paymentMethodButton}
-                      data-selected={paymentMethodChoice === 'toss'}
-                      onClick={() => setPaymentMethodChoice('toss')}
+                      data-selected={paymentMethodChoice === 'payNowUsd'}
+                      onClick={() => setPaymentMethodChoice('payNowUsd')}
                     >
-                      <span css={radioDot(paymentMethodChoice === 'toss')} />
+                      <span css={radioDot(paymentMethodChoice === 'payNowUsd')} />
                       <Text typo="body_M" color="text_primary">
-                        {t('payment.tossPayments')}
+                        Pay now(USD)
+                      </Text>
+                    </button>
+                    <button
+                      type="button"
+                      css={paymentMethodButton}
+                      data-selected={paymentMethodChoice === 'onSite'}
+                      onClick={() => setPaymentMethodChoice('onSite')}
+                    >
+                      <span css={radioDot(paymentMethodChoice === 'onSite')} />
+                      <Text typo="body_M" color="text_primary">
+                        {t('payment.payOnSite')}
                       </Text>
                     </button>
                   </div>
@@ -1063,10 +1094,10 @@ export default function ReservationPage() {
                 disabled={
                   isCreatingReservation ||
                   !isPolicyAccepted ||
-                  (paymentMethodChoice === 'toss' && (isPaymentOrderPending || !paymentOrder))
+                  (isPayNowPayment && (isPaymentOrderPending || !paymentOrder))
                 }
               >
-                {paymentMethodChoice === 'toss' ? t('payment.payWithToss') : t('payment.bookNow')}
+                {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
               </CTAButton>
             </div>
           )}
