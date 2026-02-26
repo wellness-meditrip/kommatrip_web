@@ -9,6 +9,7 @@ export interface PaymentOrder {
 
 export interface PostCreatePaymentOrderRequest {
   programId: number;
+  currency: 'KRW' | 'USD';
 }
 
 export interface PostCreatePaymentOrderResponse {
