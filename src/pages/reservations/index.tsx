@@ -38,6 +38,7 @@ import { CompanyDetail } from '@/models';
 import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import { resolvePrice } from '@/utils/price';
 
 const REFUND_POLICY_URL =
   'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
@@ -181,8 +182,6 @@ export default function ReservationPage() {
   const paymentWidgetsRef = useRef<ReturnType<
     Awaited<ReturnType<typeof loadTossPayments>>['widgets']
   > | null>(null);
-  const lastOrderRequestRef = useRef<number | null>(null);
-  const isOrderRequestingRef = useRef(false);
   const [isPaymentWidgetOpen, setIsPaymentWidgetOpen] = useState(false);
   const hasRenderedWidgetRef = useRef(false);
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
@@ -246,42 +245,9 @@ export default function ReservationPage() {
       hasRenderedWidgetRef.current = false;
       setIsWidgetReady(false);
       setPaymentOrder(null);
-      lastOrderRequestRef.current = null;
-      isOrderRequestingRef.current = false;
       return;
     }
-    if (!selectedProgramId) return;
-    if (paymentOrder?.program_id === selectedProgramId) return;
-    if (lastOrderRequestRef.current === selectedProgramId || isOrderRequestingRef.current) return;
-
-    let isMounted = true;
-    setIsWidgetReady(false);
-    paymentWidgetsRef.current = null;
-    hasRenderedWidgetRef.current = false;
-    lastOrderRequestRef.current = selectedProgramId;
-    isOrderRequestingRef.current = true;
-
-    const createOrder = async () => {
-      try {
-        const response = await createPaymentOrder({ programId: selectedProgramId });
-        if (isMounted) {
-          setPaymentOrder(response.order);
-        }
-      } catch (error) {
-        if (isMounted) {
-          showErrorToast(error, { fallbackMessage: t('payment.toastPaymentOrderFailed') });
-          lastOrderRequestRef.current = null;
-        }
-      } finally {
-        isOrderRequestingRef.current = false;
-      }
-    };
-
-    createOrder();
-    return () => {
-      isMounted = false;
-    };
-  }, [isPayNowPayment, selectedProgramId, paymentOrder, createPaymentOrder, showErrorToast, t]);
+  }, [isPayNowPayment]);
 
   useEffect(() => {
     if (!isPayNowPayment) return;
@@ -293,7 +259,7 @@ export default function ReservationPage() {
 
   useEffect(() => {
     if (!isPayNowPayment) return;
-    if (!paymentOrder || !isPaymentWidgetOpen) return;
+    if (!pendingDraft || !isPaymentWidgetOpen) return;
     if (!process.env.NEXT_PUBLIC_TOSSPAYMENTS_CLIENT_KEY) {
       showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
       return;
@@ -311,8 +277,8 @@ export default function ReservationPage() {
         const widgets = paymentWidgetsRef.current;
         if (!widgets) return;
         await widgets.setAmount({
-          currency: paymentWidgetConfig?.currency ?? paymentOrder.currency ?? 'KRW',
-          value: paymentOrder.amount,
+          currency: paymentWidgetConfig?.currency ?? 'KRW',
+          value: pendingDraft.program_price,
         });
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
@@ -342,7 +308,7 @@ export default function ReservationPage() {
     };
   }, [
     isPayNowPayment,
-    paymentOrder,
+    pendingDraft,
     paymentWidgetConfig,
     isPaymentWidgetOpen,
     showToast,
@@ -540,9 +506,13 @@ export default function ReservationPage() {
     return `${minutes} ${t('form.programs.minutes')}`;
   };
 
-  const formatPrice = (price?: number) => {
-    if (!price && price !== 0) return '';
-    return `${new Intl.NumberFormat(locale).format(price)} ${t('payment.currency')}`;
+  const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
+    const krwPrice = resolvePrice({
+      currency: 'KRW',
+      priceInfo,
+    });
+    if (typeof krwPrice !== 'number') return '';
+    return `${new Intl.NumberFormat(locale).format(krwPrice)} ${t('payment.currency')}`;
   };
 
   const formatDateForRequest = (date: Date) => {
@@ -664,6 +634,14 @@ export default function ReservationPage() {
       showError('validation.companyNotFound');
       return null;
     }
+    const programPriceKrw = resolvePrice({
+      currency: 'KRW',
+      priceInfo: selectedProgram.price_info,
+    });
+    if (typeof programPriceKrw !== 'number') {
+      showError('validation.programNotFound');
+      return null;
+    }
 
     return {
       company_id: company.id,
@@ -674,7 +652,7 @@ export default function ReservationPage() {
       program_id: selectedProgram.id,
       program_name: selectedProgram.name,
       program_duration_minutes: selectedProgram.duration_minutes,
-      program_price: selectedProgram.price,
+      program_price: programPriceKrw,
       program_primary_image_url: selectedProgram.primary_image_url ?? '',
       preferred_contact: normalizedContact,
       language_preference: normalizeLanguage(language),
@@ -688,10 +666,6 @@ export default function ReservationPage() {
   };
 
   const handleTossPayment = async (draft: ReservationDraft) => {
-    if (!paymentOrder || paymentOrder.program_id !== draft.program_id) {
-      showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
-      return;
-    }
     if (!paymentWidgetsRef.current || !isWidgetReady) {
       showToast({ title: t('payment.toastTossInitFailed'), icon: 'exclaim' });
       return;
@@ -703,8 +677,19 @@ export default function ReservationPage() {
     const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
 
     try {
+      const selectedCurrency = paymentWidgetConfig?.currency ?? 'KRW';
+      let order = paymentOrder;
+      if (!order || order.program_id !== draft.program_id || order.currency !== selectedCurrency) {
+        const response = await createPaymentOrder({
+          programId: draft.program_id,
+          currency: selectedCurrency,
+        });
+        order = response.order;
+        setPaymentOrder(order);
+      }
+
       await paymentWidgetsRef.current.requestPayment({
-        orderId: paymentOrder.order_id,
+        orderId: order.order_id,
         orderName: draft.program_name,
         successUrl,
         failUrl,
@@ -723,10 +708,6 @@ export default function ReservationPage() {
     }
 
     if (isPayNowPayment) {
-      if (!paymentOrder) {
-        showToast({ title: t('payment.toastMissingPaymentInfo'), icon: 'exclaim' });
-        return;
-      }
       setPendingDraft(draft);
       setIsPaymentWidgetOpen(true);
       return;
@@ -781,8 +762,7 @@ export default function ReservationPage() {
   const summaryDateKey = summaryDate ? formatDateForRequest(summaryDate) : '';
   const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
   const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
-  const summaryPrice = selectedProgram?.price ?? null;
-  const summaryPriceText = summaryPrice == null ? '-' : formatPrice(summaryPrice);
+  const summaryPriceText = selectedProgram ? formatPrice(selectedProgram.price_info) || '-' : '-';
 
   return (
     <>
@@ -845,10 +825,7 @@ export default function ReservationPage() {
                   <div css={desktopSubmitWrapper}>
                     <CTAButton
                       onClick={handleSubmit}
-                      disabled={
-                        isCreatingReservation ||
-                        (isPayNowPayment && (isPaymentOrderPending || !paymentOrder))
-                      }
+                      disabled={isCreatingReservation || isPaymentOrderPending}
                     >
                       {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
                     </CTAButton>
@@ -1091,11 +1068,7 @@ export default function ReservationPage() {
             <div css={submitButtonWrapper}>
               <CTAButton
                 onClick={handleSubmit}
-                disabled={
-                  isCreatingReservation ||
-                  !isPolicyAccepted ||
-                  (isPayNowPayment && (isPaymentOrderPending || !paymentOrder))
-                }
+                disabled={isCreatingReservation || !isPolicyAccepted || isPaymentOrderPending}
               >
                 {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
               </CTAButton>
@@ -1159,7 +1132,7 @@ export default function ReservationPage() {
               <div css={paymentWidgetAction}>
                 <CTAButton
                   onClick={() => handleTossPayment(pendingDraft)}
-                  disabled={!isWidgetReady}
+                  disabled={!isWidgetReady || isPaymentOrderPending}
                 >
                   {t('payment.payWithToss')}
                 </CTAButton>

@@ -3,6 +3,7 @@ import { ProgramCard } from '../program-card';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
 import { Loading, Empty } from '@/components';
+import { resolvePrice } from '@/utils/price';
 
 import { container, wrapper } from './index.styles';
 
@@ -11,7 +12,8 @@ interface CompanyProgramProps {
   companyId: number;
 }
 
-const formatPrice = (price: number) => `${new Intl.NumberFormat('en-US').format(price)} KRW`;
+const formatPrice = (price?: number) =>
+  typeof price === 'number' ? `${new Intl.NumberFormat('en-US').format(price)} KRW` : '-';
 
 export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
   const t = useTranslations('program');
@@ -37,7 +39,12 @@ export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
               key={program.id}
               title={program.name}
               duration={t('duration', { minutes: program.duration_minutes })}
-              price={formatPrice(program.price)}
+              price={formatPrice(
+                resolvePrice({
+                  currency: 'KRW',
+                  priceInfo: program.price_info,
+                })
+              )}
               image={program.primary_image_url || program.image_urls?.[0] || '/default.png'}
               badges={badges}
               companyId={String(companyId)}

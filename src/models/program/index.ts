@@ -23,10 +23,15 @@ export interface ProgramCompanyListResponse {
   total: number;
 }
 
+export interface ProgramPriceInfo {
+  krw: number;
+  usd: number;
+}
+
 export interface ProgramListItem {
   id: number;
   name: string;
-  price: number;
+  price_info: ProgramPriceInfo;
   duration_minutes: number;
   status: string;
   process: string[];
@@ -42,7 +47,7 @@ export interface ProgramDetail {
   company_code: string;
   name: string;
   description: string;
-  price: number;
+  price_info: ProgramPriceInfo;
   guidelines: string;
   status: string;
   is_active: boolean;
@@ -71,7 +76,7 @@ export interface Program {
   tags: string[];
   description: string;
   time: string;
-  price: number;
+  price_info: ProgramPriceInfo;
   duration: number;
   notice: string;
   process: string;

@@ -14,7 +14,10 @@ import {
 interface ProgramListItem {
   id: number;
   name: string;
-  price: number;
+  price_info: {
+    krw: number;
+    usd: number;
+  };
   duration_minutes: number;
   primary_image_url: string;
 }
@@ -26,7 +29,7 @@ interface Props {
   selectedProgramId: number | null;
   onSelectProgram: (programId: number) => void;
   formatDuration: (minutes?: number) => string;
-  formatPrice: (price?: number) => string;
+  formatPrice: (priceInfo?: { krw: number; usd: number }) => string;
 }
 
 export function ProgramSection({
@@ -73,7 +76,7 @@ export function ProgramSection({
                   {program.name}
                 </Text>
                 <Text typo="body_S" color="text_tertiary">
-                  ⏱ {formatDuration(program.duration_minutes)} | {formatPrice(program.price)}
+                  ⏱ {formatDuration(program.duration_minutes)} | {formatPrice(program.price_info)}
                 </Text>
               </div>
             </div>
