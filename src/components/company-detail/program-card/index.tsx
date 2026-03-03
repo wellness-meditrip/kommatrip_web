@@ -2,6 +2,7 @@ import { Text } from '@/components/text';
 import { Clock } from '@/icons';
 import { useRouter } from 'next/router';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { ROUTES } from '@/constants';
 
 import {
   infoWrapper,
@@ -34,12 +35,8 @@ export function ProgramCard({
   const currentLocale = useCurrentLocale();
 
   const handleCardClick = () => {
-    if (companyId) {
-      router.push({
-        pathname: `/${currentLocale}/company/${companyId}/program`,
-        query: programId ? { programId } : undefined,
-      });
-    }
+    if (!companyId || !programId) return;
+    router.push(`/${currentLocale}${ROUTES.COMPANY_PROGRAM_DETAIL(Number(companyId), programId)}`);
   };
 
   return (

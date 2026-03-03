@@ -15,7 +15,8 @@ export const ROUTES = {
   COMPANY: '/company',
   COMPANY_DETAIL: (companyId: number) => `/company/${companyId}`,
   COMPANY_REVIEWS: (companyId: number) => `/company/${companyId}/reviews`,
-  COMPANY_PROGRAM: (companyId: number) => `/company/${companyId}/program`,
+  COMPANY_PROGRAM_DETAIL: (companyId: number, programId: number) =>
+    `/company/${companyId}/program/${programId}`,
 
   // Packages
   PACKAGES: '/packages',
