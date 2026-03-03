@@ -6,7 +6,7 @@ import { Card } from '@/components/reviews/card';
 import { useDialog, useToast } from '@/hooks';
 import { useTranslations } from 'next-intl';
 import { ROUTES } from '@/constants';
-import { Loading } from '@/components/common';
+import { ReviewCardSkeletonList } from '@/components/common';
 import { useDeleteReviewMutation, useGetMyReviewsQuery } from '@/queries';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/queries/query-keys';
@@ -159,7 +159,7 @@ export function MyReviewsPanel({ variant = 'page' }: Props) {
         </div>
 
         {isLoading ? (
-          <Loading title={tReviewList('loading')} />
+          <ReviewCardSkeletonList count={3} />
         ) : reviews.length === 0 ? (
           <div css={emptyState}>
             <Empty title={tReview('empty')} />

@@ -2,7 +2,7 @@ import { Text } from '@/components/text';
 import { ProgramCard } from '../program-card';
 import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
-import { Loading, Empty } from '@/components';
+import { ProgramCardSkeletonList, Empty } from '@/components';
 import { resolvePrice } from '@/utils/price';
 
 import { container, wrapper } from './index.styles';
@@ -32,7 +32,7 @@ export function CompanyProgram({ badges, companyId }: CompanyProgramProps) {
           {t('listTitle')}
         </Text>
         {isLoading ? (
-          <Loading title={t('loadingList')} />
+          <ProgramCardSkeletonList count={3} />
         ) : programs.length > 0 ? (
           programs.map((program) => (
             <ProgramCard
