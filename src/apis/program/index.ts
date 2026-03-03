@@ -30,3 +30,7 @@ export const getProgramCompanyList = async ({
 export const getProgramDetail = async (program_id: number) => {
   return await guestApi.get<GetProgramDetailResponse>(`/api/programs/${program_id}`);
 };
+
+export const getProgramDetailPublic = async (program_id: number) => {
+  return await guestApi.get<GetProgramDetailResponse>(`/api/programs/${program_id}`);
+};
