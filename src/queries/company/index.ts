@@ -19,6 +19,8 @@ import {
 
 interface QueryOptions {
   suppressGlobalError?: boolean;
+  enabled?: boolean;
+  initialData?: { company: CompanyDetail };
 }
 
 export const useGetCompanyDetailQuery = (
@@ -28,7 +30,8 @@ export const useGetCompanyDetailQuery = (
   return useQuery<{ company: CompanyDetail }>({
     queryKey: [...QUERY_KEYS.GET_COMPANY_DETAIL, params.companyId],
     queryFn: () => getCompanyDetail(params),
-    enabled: !!params.companyId,
+    enabled: options?.enabled ?? !!params.companyId,
+    initialData: options?.initialData,
     meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
