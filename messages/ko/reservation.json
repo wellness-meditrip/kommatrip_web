@@ -76,7 +76,7 @@
     "paymentAmountLabel": "결제 금액",
     "finalPaymentAmount": "최종 결제 금액",
     "bookNow": "예약하기",
-    "payWithToss": "토스페이먼츠로 결제",
+    "payNow": "지금 결제하기",
     "tossWidgetTitle": "결제 위젯",
     "tossPreparing": "결제 위젯을 준비 중입니다.",
     "tossModalHint": "결제 위젯은 버튼을 눌러 모달에서 진행됩니다.",

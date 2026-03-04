@@ -76,7 +76,7 @@
     "paymentAmountLabel": "Payment Amount",
     "finalPaymentAmount": "Final Payment Amount",
     "bookNow": "Book Now",
-    "payWithToss": "Pay with Toss Payments",
+    "payNow": "Pay Now",
     "tossWidgetTitle": "Payment Widget",
     "tossPreparing": "Preparing the payment widget.",
     "tossModalHint": "The payment widget opens in a modal when you continue.",

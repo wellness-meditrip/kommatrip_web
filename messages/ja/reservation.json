@@ -76,7 +76,7 @@
     "paymentAmountLabel": "支払い金額",
     "finalPaymentAmount": "最終支払い金額",
     "bookNow": "予約する",
-    "payWithToss": "Toss Paymentsで支払う",
+    "payNow": "今すぐ支払う",
     "tossWidgetTitle": "決済ウィジェット",
     "tossPreparing": "決済ウィジェットを準備中です。",
     "tossModalHint": "決済ウィジェットはモーダルで表示されます。",
