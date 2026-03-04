@@ -38,7 +38,7 @@ import { CompanyDetail } from '@/models';
 import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { resolvePrice } from '@/utils/price';
+import { resolvePrice, type CurrencyCode } from '@/utils/price';
 
 const REFUND_POLICY_URL =
   'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
@@ -66,6 +66,12 @@ interface ReservationDraft {
   contact_kakao: string;
   contact_phone: string;
 }
+
+const isDev = process.env.NODE_ENV !== 'production';
+const logPaymentInfo = (message: string, payload?: Record<string, unknown>) => {
+  if (!isDev) return;
+  console.info(message, payload);
+};
 
 export default function ReservationPage() {
   const router = useRouter();
@@ -255,6 +261,7 @@ export default function ReservationPage() {
     paymentWidgetsRef.current = null;
     hasRenderedWidgetRef.current = false;
     setIsWidgetReady(false);
+    setPaymentOrder(null);
   }, [paymentMethodChoice, isPayNowPayment]);
 
   useEffect(() => {
@@ -278,7 +285,7 @@ export default function ReservationPage() {
         if (!widgets) return;
         await widgets.setAmount({
           currency: paymentWidgetConfig?.currency ?? 'KRW',
-          value: pendingDraft.program_price,
+          value: paymentOrder?.amount ?? pendingDraft.program_price,
         });
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
@@ -309,6 +316,7 @@ export default function ReservationPage() {
   }, [
     isPayNowPayment,
     pendingDraft,
+    paymentOrder,
     paymentWidgetConfig,
     isPaymentWidgetOpen,
     showToast,
@@ -506,13 +514,20 @@ export default function ReservationPage() {
     return `${minutes} ${t('form.programs.minutes')}`;
   };
 
-  const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
-    const krwPrice = resolvePrice({
-      currency: 'KRW',
+  const formatPriceByCurrency = (
+    priceInfo: { krw: number; usd: number } | undefined,
+    currency: CurrencyCode
+  ) => {
+    const price = resolvePrice({
+      currency,
       priceInfo,
     });
-    if (typeof krwPrice !== 'number') return '';
-    return `${new Intl.NumberFormat(locale).format(krwPrice)} ${t('payment.currency')}`;
+    if (typeof price !== 'number') return '';
+    return `${new Intl.NumberFormat(locale).format(price)} ${currency}`;
+  };
+
+  const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
+    return formatPriceByCurrency(priceInfo, 'KRW');
   };
 
   const formatDateForRequest = (date: Date) => {
@@ -688,6 +703,29 @@ export default function ReservationPage() {
         setPaymentOrder(order);
       }
 
+      logPaymentInfo('[payment][request] prepared order', {
+        programId: draft.program_id,
+        selectedCurrency,
+        orderId: order.order_id,
+        orderCurrency: order.currency,
+        orderAmount: order.amount,
+      });
+
+      // Keep widget amount in sync with the order that will be confirmed on backend.
+      await paymentWidgetsRef.current.setAmount({
+        currency: selectedCurrency,
+        value: order.amount,
+      });
+      window.sessionStorage.setItem(
+        'reservation_payment_context',
+        JSON.stringify({
+          orderId: order.order_id,
+          amount: order.amount,
+          currency: selectedCurrency,
+          programId: draft.program_id,
+        })
+      );
+
       await paymentWidgetsRef.current.requestPayment({
         orderId: order.order_id,
         orderName: draft.program_name,
@@ -758,11 +796,14 @@ export default function ReservationPage() {
   };
 
   const selectedProgram = programs.find((program) => program.id === selectedProgramId);
+  const selectedPaymentCurrency: CurrencyCode = paymentMethodChoice === 'payNowUsd' ? 'USD' : 'KRW';
   const summaryDate = selectedDates[0];
   const summaryDateKey = summaryDate ? formatDateForRequest(summaryDate) : '';
   const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
   const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
-  const summaryPriceText = selectedProgram ? formatPrice(selectedProgram.price_info) || '-' : '-';
+  const summaryPriceText = selectedProgram
+    ? formatPriceByCurrency(selectedProgram.price_info, selectedPaymentCurrency) || '-'
+    : '-';
 
   return (
     <>
@@ -827,7 +868,7 @@ export default function ReservationPage() {
                       onClick={handleSubmit}
                       disabled={isCreatingReservation || isPaymentOrderPending}
                     >
-                      {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
+                      {isPayNowPayment ? t('payment.payNow') : t('payment.bookNow')}
                     </CTAButton>
                   </div>
                 </div>
@@ -1070,7 +1111,7 @@ export default function ReservationPage() {
                 onClick={handleSubmit}
                 disabled={isCreatingReservation || !isPolicyAccepted || isPaymentOrderPending}
               >
-                {isPayNowPayment ? t('payment.payWithToss') : t('payment.bookNow')}
+                {isPayNowPayment ? t('payment.payNow') : t('payment.bookNow')}
               </CTAButton>
             </div>
           )}
@@ -1134,7 +1175,7 @@ export default function ReservationPage() {
                   onClick={() => handleTossPayment(pendingDraft)}
                   disabled={!isWidgetReady || isPaymentOrderPending}
                 >
-                  {t('payment.payWithToss')}
+                  {t('payment.payNow')}
                 </CTAButton>
               </div>
             </div>
