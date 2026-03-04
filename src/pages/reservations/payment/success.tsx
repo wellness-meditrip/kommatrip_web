@@ -20,6 +20,7 @@ import {
   resolvePaymentReasonCode,
   resolvePaymentResult,
 } from '@/utils/payment-confirm';
+import { normalizeError } from '@/utils/error-handler';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -28,6 +29,29 @@ interface ReservationCompleteData {
   date: string;
   time: string;
 }
+
+interface ReservationPaymentContext {
+  orderId: string;
+  amount: number;
+  currency: 'KRW' | 'USD';
+  programId: number;
+}
+
+const isDev = process.env.NODE_ENV !== 'production';
+const logPaymentInfo = (message: string, payload?: Record<string, unknown>) => {
+  if (!isDev) return;
+  console.info(message, payload);
+};
+
+const maskValue = (value: string, left = 6, right = 4) => {
+  if (value.length <= left + right) return value;
+  return `${value.slice(0, left)}...${value.slice(-right)}`;
+};
+
+const isSameAmount = (expected: number, actual: number, currency: 'KRW' | 'USD') => {
+  const epsilon = currency === 'USD' ? 0.01 : 0;
+  return Math.abs(expected - actual) <= epsilon;
+};
 
 const formatConfirmationDate = (
   date: string,
@@ -96,8 +120,55 @@ export default function ReservationPaymentSuccessPage() {
     if (typeof window === 'undefined') return;
     const { paymentKey, orderId, amount } = router.query;
     const hasPaymentQuery = !!paymentKey && !!orderId && !!amount;
+    if (hasPaymentQuery) {
+      const paymentKeyText = Array.isArray(paymentKey) ? paymentKey[0] : paymentKey;
+      const orderIdText = Array.isArray(orderId) ? orderId[0] : orderId;
+      const amountText = Array.isArray(amount) ? amount[0] : amount;
+      logPaymentInfo('[payment][success] query detected', {
+        orderId: orderIdText,
+        paymentKey: typeof paymentKeyText === 'string' ? maskValue(paymentKeyText) : paymentKeyText,
+        amount: amountText,
+      });
+    }
 
     if (hasPaymentQuery && !hasConfirmedRef.current) {
+      const orderIdText = Array.isArray(orderId) ? orderId[0] : orderId;
+      const amountText = Array.isArray(amount) ? amount[0] : amount;
+      const queryAmount = Number(amountText);
+      const paymentContextRaw = window.sessionStorage.getItem('reservation_payment_context');
+      if (paymentContextRaw) {
+        try {
+          const paymentContext = JSON.parse(paymentContextRaw) as ReservationPaymentContext;
+          const isOrderMatched = paymentContext.orderId === orderIdText;
+          const isAmountMatched = Number.isFinite(queryAmount)
+            ? isSameAmount(paymentContext.amount, queryAmount, paymentContext.currency)
+            : false;
+          if (!isOrderMatched || !isAmountMatched) {
+            console.error('[payment][confirm] context mismatch', {
+              expectedOrderId: paymentContext.orderId,
+              actualOrderId: orderIdText,
+              expectedAmount: paymentContext.amount,
+              actualAmount: queryAmount,
+              currency: paymentContext.currency,
+            });
+            window.sessionStorage.removeItem('reservation_payment_context');
+            redirectToFail('generic_failure');
+            return;
+          }
+          logPaymentInfo('[payment][confirm] context validated', {
+            orderId: paymentContext.orderId,
+            amount: paymentContext.amount,
+            currency: paymentContext.currency,
+            programId: paymentContext.programId,
+          });
+        } catch {
+          console.error('[payment][confirm] invalid reservation_payment_context');
+          window.sessionStorage.removeItem('reservation_payment_context');
+          redirectToFail('generic_failure');
+          return;
+        }
+      }
+
       hasConfirmedRef.current = true;
       const storedDraft = window.sessionStorage.getItem('reservation_draft');
       if (!storedDraft) {
@@ -162,18 +233,37 @@ export default function ReservationPaymentSuccessPage() {
           return;
         }
 
-        confirmPayment({
+        const confirmRequest = {
           orderId: Array.isArray(orderId) ? orderId[0] : orderId,
           paymentKey: Array.isArray(paymentKey) ? paymentKey[0] : paymentKey,
           amount: resolvedAmount,
           programId: reservationData.program_id,
           reservationData,
-        })
+        };
+        logPaymentInfo('[payment][confirm] request', {
+          orderId: confirmRequest.orderId,
+          paymentKey:
+            typeof confirmRequest.paymentKey === 'string'
+              ? maskValue(confirmRequest.paymentKey)
+              : confirmRequest.paymentKey,
+          amount: confirmRequest.amount,
+          programId: confirmRequest.programId,
+        });
+
+        confirmPayment(confirmRequest)
           .then((response) => {
             const payload = extractConfirmPayload(response);
             const result = resolvePaymentResult(payload);
+            logPaymentInfo('[payment][confirm] response', {
+              result,
+              status: payload.status,
+              error_code: payload.error_code,
+              message: payload.message,
+              payment_status: payload.payment_status,
+            });
             if (result === 'SUCCESS') {
               window.sessionStorage.setItem('reservation_complete', JSON.stringify(completeData));
+              window.sessionStorage.removeItem('reservation_payment_context');
               setData(completeData);
               return;
             }
@@ -186,9 +276,22 @@ export default function ReservationPaymentSuccessPage() {
           })
           .catch((error) => {
             window.sessionStorage.removeItem('reservation_complete');
+            window.sessionStorage.removeItem('reservation_payment_context');
             const payload = extractConfirmPayload(error);
+            const normalized = normalizeError(error);
             const result = resolvePaymentResult(payload);
             const reason = resolvePaymentReasonCode(payload);
+            console.error('[payment][confirm] error', {
+              result,
+              reason,
+              status: payload.status,
+              error_code: payload.error_code,
+              message: payload.message,
+              payment_status: payload.payment_status,
+              raw_status: normalized.status,
+              raw_code: normalized.code,
+              raw_details: normalized.details,
+            });
             if (result === 'APPROVED_BUT_PENDING') {
               redirectToPending(reason);
               return;
