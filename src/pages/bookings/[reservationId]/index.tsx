@@ -308,7 +308,7 @@ export default function BookingDetailPage() {
 
   if (!isAuthenticated) {
     return (
-      <Layout isAppBarExist={false} title={t('title')}>
+      <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <AppBar logo="light" backgroundColor="green" />
         <LoginModal
           isOpen={showLoginModal}
@@ -321,7 +321,7 @@ export default function BookingDetailPage() {
 
   if (!accessToken) {
     return (
-      <Layout isAppBarExist={false} title={t('title')}>
+      <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <AppBar logo="light" backgroundColor="green" />
         <LoginModal
           isOpen={showLoginModal}
@@ -333,7 +333,7 @@ export default function BookingDetailPage() {
   }
 
   return (
-    <Layout isAppBarExist={false} title={t('title')}>
+    <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
       <AppBar
         leftButton
         buttonType="dark"
