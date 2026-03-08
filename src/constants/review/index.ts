@@ -153,3 +153,5 @@ export const CLINIC_REVIEW_KEYWORDS = [
     is_positive: true,
   },
 ];
+
+export * from './report-reasons';
