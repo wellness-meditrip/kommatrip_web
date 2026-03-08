@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { AppBar, Layout, LoginModal, Text, GNB } from '@/components';
-import { ReportModal } from '@/components/reviews/report-modal';
+import { ReasonModal } from '@/components/reviews/report-modal';
 import Image from 'next/image';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
@@ -11,11 +11,7 @@ import { useAuthStore } from '@/store/auth';
 import { useDeleteReservationMutation, useGetReservationDetailQuery } from '@/queries/reservation';
 import type { LanguagePreference, ReservationDetail } from '@/models/reservation';
 import { ChevronRight } from '@/icons';
-import {
-  RESERVATION_CANCELLATION_REASONS,
-  ReservationCancellationReasonKey,
-  ROUTES,
-} from '@/constants';
+import { RESERVATION_CANCELLATION_REASONS, ROUTES } from '@/constants';
 
 type BookingStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 
@@ -322,22 +318,14 @@ export default function BookingDetailPage() {
         : 'text_secondary';
 
   const { mutate: deleteReservation, isPending: isDeleting } = useDeleteReservationMutation();
-  const cancellationReasonLabelMap = useMemo(() => {
-    return RESERVATION_CANCELLATION_REASONS.reduce<
-      Partial<Record<ReservationCancellationReasonKey, string>>
-    >((acc, item) => {
-      acc[item.key] = t(item.labelKey);
-      return acc;
-    }, {});
-  }, [t]);
 
   const cancellationReasons = useMemo(
     () =>
       RESERVATION_CANCELLATION_REASONS.map((item) => ({
         value: item.key,
-        label: cancellationReasonLabelMap[item.key] ?? t(item.labelKey),
+        label: t(item.labelKey),
       })),
-    [cancellationReasonLabelMap, t]
+    [t]
   );
 
   const ctaButtons = useMemo(() => {
@@ -621,7 +609,7 @@ export default function BookingDetailPage() {
           ))}
         </div>
       </div>
-      <ReportModal
+      <ReasonModal
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
         title={t('cancelModal.title')}
@@ -632,10 +620,8 @@ export default function BookingDetailPage() {
         showDetailField={false}
         onSubmit={({ reason }) => {
           if (!reservationId) return;
-          const cancellationReason =
-            cancellationReasonLabelMap[reason as ReservationCancellationReasonKey] ?? '';
           deleteReservation(
-            { reservationId, reason: cancellationReason },
+            { reservationId, reason },
             {
               onSuccess: () => {
                 setDetail((prev) => (prev ? { ...prev, status: 'canceled' } : prev));
