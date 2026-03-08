@@ -56,6 +56,11 @@ export interface GetReservationsResponse {
 }
 
 export interface ReservationProgramInfo {
+  price_info?: {
+    krw?: number;
+    usd?: number;
+    [currency: string]: number | undefined;
+  };
   id?: number;
   company_code?: string;
   name?: string;
@@ -98,6 +103,9 @@ export interface ReservationDetail {
   visit_date?: string | null;
   availability_options?: AvailabilityOption[];
   status?: string;
+  currency?: string;
+  display_order_id?: string;
+  refund_info?: string | null;
   admin_notes?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -106,13 +114,15 @@ export interface ReservationDetail {
   cancellation_reason?: string | null;
 }
 
-export interface GetReservationDetailResponse {
-  reservation: ReservationDetail;
-}
+export type GetReservationDetailResponse =
+  | {
+      reservation: ReservationDetail;
+    }
+  | ReservationDetail;
 
 export interface DeleteReservationRequest {
   reservationId: number | string;
-  reason?: string | null;
+  reason?: string;
 }
 
 export interface DeleteReservationResponse {

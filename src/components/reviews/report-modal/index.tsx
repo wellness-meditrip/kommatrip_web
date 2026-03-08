@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Portal, Dim, Text } from '@/components';
 import { useTranslations } from 'next-intl';
 import type { ReportReviewReason } from '@/models';
+import { REVIEW_REPORT_REASONS } from '@/constants';
 import {
   modalWrapper,
   closeButton,
-  title,
+  title as titleStyle,
   optionList,
   optionRow,
   radio,
@@ -13,28 +14,52 @@ import {
   submitButton,
 } from './index.styles';
 
-interface ReportModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit?: (payload: { reason: ReportReviewReason; detail: string }) => void;
+interface ReasonOption<TReason extends string> {
+  value: TReason;
+  label: string;
 }
 
-export function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
+interface ReasonModalProps<TReason extends string = ReportReviewReason> {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  closeAriaLabel?: string;
+  submitLabel?: string;
+  reasons?: readonly ReasonOption<TReason>[];
+  radioName?: string;
+  showDetailField?: boolean;
+  detailPlaceholder?: string;
+  otherReasonValue?: TReason;
+  onSubmit?: (payload: { reason: TReason; detail: string }) => void;
+}
+
+export function ReasonModal<TReason extends string = ReportReviewReason>({
+  isOpen,
+  onClose,
+  title,
+  closeAriaLabel,
+  submitLabel,
+  reasons,
+  radioName = 'report-reason',
+  showDetailField = true,
+  detailPlaceholder,
+  otherReasonValue,
+  onSubmit,
+}: ReasonModalProps<TReason>) {
   const t = useTranslations('review');
-  const [selectedReason, setSelectedReason] = useState<ReportReviewReason | ''>('');
+  const [selectedReason, setSelectedReason] = useState<TReason | ''>('');
   const [detail, setDetail] = useState('');
 
-  const reasons = useMemo(
+  const defaultReasons = useMemo(
     () =>
-      [
-        { value: 'commercial_promotional', label: t('report.reasons.commercial') },
-        { value: 'pornographic_harmful', label: t('report.reasons.harmful') },
-        { value: 'personal_attack_offensive', label: t('report.reasons.offensive') },
-        { value: 'personal_information_exposure', label: t('report.reasons.privacy') },
-        { value: 'other', label: t('report.reasons.other') },
-      ] as const,
+      REVIEW_REPORT_REASONS.map((item) => ({
+        value: item.value,
+        label: t(item.labelKey),
+      })) as readonly ReasonOption<ReportReviewReason>[],
     [t]
   );
+  const resolvedReasons = (reasons ?? defaultReasons) as readonly ReasonOption<TReason>[];
+  const resolvedOtherReasonValue = (otherReasonValue ?? ('other' as TReason)) as TReason;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,12 +69,13 @@ export function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
 
   if (!isOpen) return null;
 
-  const isOtherSelected = selectedReason === 'other';
-  const isSubmitDisabled = !selectedReason || (isOtherSelected && !detail.trim());
+  const isOtherSelected = selectedReason === resolvedOtherReasonValue;
+  const isSubmitDisabled =
+    !selectedReason || (showDetailField && isOtherSelected && !detail.trim());
 
   const handleSubmit = () => {
     if (!selectedReason) return;
-    if (isOtherSelected && !detail.trim()) return;
+    if (showDetailField && isOtherSelected && !detail.trim()) return;
     onSubmit?.({ reason: selectedReason, detail: detail.trim() });
     onClose();
   };
@@ -58,20 +84,24 @@ export function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
     <Portal>
       <Dim fullScreen onClick={onClose} />
       <div css={modalWrapper} role="dialog" aria-modal="true">
-        <button css={closeButton} aria-label={t('report.close')} onClick={onClose}>
+        <button
+          css={closeButton}
+          aria-label={closeAriaLabel ?? t('report.close')}
+          onClick={onClose}
+        >
           X
         </button>
-        <div css={title}>
+        <div css={titleStyle}>
           <Text typo="title_M" color="text_primary">
-            {t('report.title')}
+            {title ?? t('report.title')}
           </Text>
         </div>
         <div css={optionList}>
-          {reasons.map((reason) => (
+          {resolvedReasons.map((reason) => (
             <label key={reason.value} css={optionRow}>
               <input
                 type="radio"
-                name="report-reason"
+                name={radioName}
                 value={reason.value}
                 checked={selectedReason === reason.value}
                 onChange={() => setSelectedReason(reason.value)}
@@ -83,18 +113,23 @@ export function ReportModal({ isOpen, onClose, onSubmit }: ReportModalProps) {
             </label>
           ))}
         </div>
-        <textarea
-          css={textarea}
-          placeholder={t('report.placeholder')}
-          value={detail}
-          onChange={(event) => setDetail(event.target.value)}
-        />
+        {showDetailField && (
+          <textarea
+            css={textarea}
+            placeholder={detailPlaceholder ?? t('report.placeholder')}
+            value={detail}
+            onChange={(event) => setDetail(event.target.value)}
+          />
+        )}
         <button css={submitButton} onClick={handleSubmit} disabled={isSubmitDisabled}>
           <Text typo="button_M" color="white">
-            {t('report.submit')}
+            {submitLabel ?? t('report.submit')}
           </Text>
         </button>
       </div>
     </Portal>
   );
 }
+
+// Backward compatibility for existing imports
+export const ReportModal = ReasonModal;
