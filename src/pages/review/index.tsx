@@ -72,7 +72,11 @@ export default function ReviewPage() {
     parsedReservationId,
     Boolean(parsedReservationId && accessToken)
   );
-  const reservationDetail = reservationDetailResponse?.reservation;
+  const reservationDetail = reservationDetailResponse
+    ? 'reservation' in reservationDetailResponse
+      ? reservationDetailResponse.reservation
+      : reservationDetailResponse
+    : undefined;
   const resolvedReservationId = parsedReservationId || reservationDetail?.id;
   const resolvedProgramId = programId ?? reservationDetail?.program_id;
 

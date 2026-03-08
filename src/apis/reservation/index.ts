@@ -36,10 +36,9 @@ export const getReservationDetail = async (reservationId: number | string) => {
 
 // 예약 취소
 export const deleteReservation = async ({ reservationId, reason }: DeleteReservationRequest) => {
+  const trimmedReason = typeof reason === 'string' ? reason.trim() : '';
   return await api.delete<DeleteReservationResponse>(`/api/reservations/${reservationId}`, {
     baseURL: '',
-    data: {
-      reason: reason ?? null,
-    },
+    ...(trimmedReason ? { params: { reason: trimmedReason } } : {}),
   });
 };

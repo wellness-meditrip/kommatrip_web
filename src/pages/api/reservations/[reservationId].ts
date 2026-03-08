@@ -1,6 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 
+const getSingleQueryString = (value: string | string[] | undefined): string => {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value[0] ?? '';
+  return '';
+};
+
+const normalizeReservationId = (value: string): string | null => {
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  return trimmed;
+};
+
+const normalizeReason = (value: string): string | null => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!req.method || !['GET', 'DELETE'].includes(req.method)) {
     res.setHeader('Allow', ['GET', 'DELETE']);
@@ -9,7 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const authHeader = req.headers.authorization;
-    const { reservationId } = req.query;
+    const reservationIdValue = getSingleQueryString(req.query.reservationId);
+    const reservationId = normalizeReservationId(reservationIdValue);
+    if (!reservationId) {
+      return res.status(400).json({ detail: '유효하지 않은 예약 ID입니다.' });
+    }
+
     const baseConfig = {
       headers: {
         ...(authHeader ? { Authorization: authHeader } : {}),
@@ -24,11 +46,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(backendResponse.status).json(backendResponse.data);
     }
 
+    const reasonValue = getSingleQueryString(req.query.reason);
+    const reason = normalizeReason(reasonValue);
     const backendResponse = await axios.delete(
       `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/${reservationId}`,
       {
         ...baseConfig,
-        data: req.body ?? { reason: null },
+        ...(reason ? { params: { reason } } : {}),
       }
     );
     return res.status(backendResponse.status).json(backendResponse.data);
