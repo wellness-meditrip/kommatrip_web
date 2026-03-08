@@ -1,0 +1,6 @@
+{
+  "title": "Write a review",
+  "placeholder": "Write your review",
+  "minLengthError": "Please write at least 10 characters.",
+  "imageLimit": "You can upload up to {count} images."
+}

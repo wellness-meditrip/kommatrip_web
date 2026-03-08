@@ -1,0 +1,49 @@
+{
+  "title": "詳細",
+  "status": {
+    "request": "リクエスト",
+    "confirmed": "確定",
+    "canceled": "キャンセル",
+    "completed": "完了"
+  },
+  "meta": {
+    "requestDate": "申請日時"
+  },
+  "sections": {
+    "bookingInfo": "予約情報",
+    "guestInfo": "予約者情報",
+    "provider": "提供先",
+    "paymentInfo": "決済情報"
+  },
+  "labels": {
+    "id": "ID",
+    "date": "日付",
+    "time": "時間",
+    "name": "名前",
+    "contact": "連絡先",
+    "language": "言語",
+    "paymentMethod": "支払い方法",
+    "payOnline": "オンライン決済({currency})",
+    "paymentAmount": "決済金額",
+    "finalPaymentAmount": "最終決済金額"
+  },
+  "cta": {
+    "cancel": "キャンセル",
+    "bookAgain": "もう一度予約",
+    "writeReview": "レビューを書く"
+  },
+  "cancelModal": {
+    "title": "キャンセル理由",
+    "close": "キャンセル理由モーダルを閉じる",
+    "submit": "キャンセルを送信",
+    "reasons": {
+      "personalReasons": "個人的な事情",
+      "updateBookingInfo": "予約情報の変更が必要",
+      "providerIssues": "提供側の都合でサービス提供不可",
+      "betterPrice": "より安い価格を見つけた",
+      "serviceQuality": "サービス品質に不満",
+      "unavoidableCircumstances": "やむを得ない事情",
+      "other": "その他"
+    }
+  }
+}

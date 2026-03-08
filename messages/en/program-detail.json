@@ -1,0 +1,17 @@
+{
+  "title": "Program",
+  "loading": "Loading program...",
+  "loadFail": "Unable to load program information.",
+  "programInfo": "Program Information",
+  "duration": "{minutes} mins",
+  "process": "Process",
+  "details": "Details",
+  "notice": "Notice",
+  "bookingInfo": "Booking Information",
+  "refundPolicy": "Refund Policy",
+  "infoPending": "Information is being prepared.",
+  "bookNow": "Book Now",
+  "imageAlt": "Program image",
+  "detailImageAlt": "Program details image",
+  "step": "Step {number}"
+}

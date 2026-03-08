@@ -1,0 +1,10 @@
+{
+  "title": "관심사",
+  "toast": {
+    "selectInterest": "관심사를 최소 1개 이상 선택해주세요",
+    "selectGender": "성별을 선택해주세요",
+    "selectAgeGroup": "연령대를 선택해주세요",
+    "saved": "관심사 설정이 저장되었습니다",
+    "saveFailed": "관심사 설정 저장에 실패했습니다"
+  }
+}

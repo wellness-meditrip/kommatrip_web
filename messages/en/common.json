@@ -1,0 +1,58 @@
+{
+  "app": {
+    "name": "kommatrip",
+    "title": "Korean Wellness & K-beauty Tours in Seoul",
+    "description": "kommatrip is your guide to Korean Wellness & K-beauty tours in Seoul"
+  },
+  "button": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "search": "Search",
+    "reset": "Reset",
+    "home": "Go to home"
+  },
+  "loading": {
+    "text": "Loading...",
+    "pleaseWait": "Please wait"
+  },
+  "error": {
+    "title": "An error occurred",
+    "tryAgain": "Please try again",
+    "notFound": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist.",
+    "serverError": "Server error occurred",
+    "serverErrorDescription": "Please try again later."
+  },
+  "empty": {
+    "noData": "No data",
+    "noResults": "No results"
+  },
+  "success": {
+    "saved": "Saved",
+    "deleted": "Deleted",
+    "updated": "Updated"
+  },
+  "home": {
+    "heroTitle": "Discover Authentic Korean Wellness",
+    "heroSubtitle": "Curated experiences that heal your body and mind",
+    "searchPlaceholder": "Start your search",
+    "recommendedTitle": "Recommended for You",
+    "loadingRecommended": "Loading recommended companies...",
+    "loadingRecent": "Loading recently viewed companies...",
+    "recentlyViewed": "Recently Viewed",
+    "noRecommendedCompanies": "No recommended companies available"
+  },
+  "search": {
+    "addressPlaceholder": "Search for address, location"
+  }
+}

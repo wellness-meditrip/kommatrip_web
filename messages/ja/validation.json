@@ -1,0 +1,42 @@
+{
+  "email": {
+    "required": "メールアドレスを入力してください",
+    "invalid": "有効なメールアドレスを入力してください"
+  },
+  "password": {
+    "required": "パスワードを入力してください",
+    "length": "パスワードは8文字以上16文字以下である必要があります",
+    "invalidChar": "パスワードに無効な文字が含まれています",
+    "missingCase": "パスワードには、大文字、小文字、数字をそれぞれ1文字以上含める必要があります",
+    "missingSpecial": "パスワードには、少なくとも1つの特殊文字を含める必要があります（例：!, @, #, $, %, &, *, -, _）"
+  },
+  "verificationCode": {
+    "required": "認証コードを入力してください"
+  },
+  "confirmPassword": {
+    "required": "パスワードを確認してください",
+    "mismatch": "パスワードが一致しません"
+  },
+  "country": {
+    "required": "国を選択してください"
+  },
+  "username": {
+    "required": "ユーザー名を入力してください",
+    "invalid": "ユーザー名は2〜10文字の英数字で入力してください"
+  },
+  "contact": {
+    "required": "連絡先情報を入力してください",
+    "line": {
+      "invalid": "Line IDの形式が正しくありません"
+    },
+    "kakao": {
+      "invalid": "Kakao IDの形式が正しくありません"
+    },
+    "phone": {
+      "invalid": "電話番号の形式が正しくありません"
+    },
+    "whatsapp": {
+      "invalid": "WhatsApp番号の形式が正しくありません"
+    }
+  }
+}

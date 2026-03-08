@@ -1,0 +1,125 @@
+{
+  "title": "予約",
+  "loading": "読み込み中...",
+  "emptyCompany": "予約できる店舗情報がありません。",
+  "submitPayment": "予約する",
+  "form": {
+    "programs": {
+      "title": "プログラム",
+      "empty": "表示できるプログラムがありません。",
+      "minutes": "分"
+    },
+    "contact": {
+      "title": "連絡先情報",
+      "email": "メール",
+      "emailPlaceholder": "Elena123@email.com",
+      "preferredMethod": "連絡方法",
+      "contactPlaceholder": "連絡先をご入力ください。",
+      "language": "言語",
+      "languages": {
+        "korean": "韓国語",
+        "english": "英語",
+        "chinese": "中国語",
+        "japanese": "日本語"
+      },
+      "methods": {
+        "line": "Line",
+        "whatsapp": "Whats App",
+        "kakao": "Kakao",
+        "phone": "電話"
+      }
+    },
+    "inquiries": {
+      "title": "お問い合わせ",
+      "subtitle": "ご要望を教えてください（任意）",
+      "concernsTitle": "海外のお客様から多いご相談:",
+      "placeholder": "ご要望を入力してください",
+      "concerns": {
+        "firstTime": "韓国のクリニックは初めてです",
+        "sensitiveSkin": "敏感肌/アレルギーがあります",
+        "needEnglish": "施術中に英語の説明が必要です",
+        "gentlePressure": "マッサージはやさしめ希望です",
+        "specificAreas": "特定の部位が気になります"
+      }
+    },
+    "schedule": {
+      "title": "予約",
+      "selectDates": "01. 希望日を最大2つ選択してください",
+      "selectTimes": "02. 可能な時間を最大3つ選択してください",
+      "emptyDatePrompt": "まず希望日を選択してください。",
+      "selectTimesPlaceholder": "時間を選択"
+    }
+  },
+  "validation": {
+    "selectProgram": "プログラムを選択してください。",
+    "selectContact": "連絡方法を選択してください。",
+    "enterContact": "連絡先情報を入力してください。",
+    "selectDate": "希望日を1つ以上選択してください。",
+    "pastDate": "過去の日付は選択できません。",
+    "selectTimesPerDate": "選択した日ごとに時間を選択してください。",
+    "selectTimeSlot": "訪問時間帯を選択してください。",
+    "duplicateTimes": "同じ時間帯は選択できません。",
+    "programNotFound": "選択したプログラムが見つかりません。",
+    "companyNotFound": "店舗情報を読み込めませんでした。"
+  },
+  "payment": {
+    "title": "お支払い",
+    "missingDraft": "お支払い情報が見つかりません。",
+    "bookingInfo": "予約情報",
+    "date": "日付",
+    "time": "時間",
+    "program": "プログラム",
+    "paymentMethod": "支払い方法",
+    "payNowKrw": "今すぐ支払う(KRW)",
+    "payNowUsd": "今すぐ支払う(USD)",
+    "payOnSite": "現地で支払い",
+    "tossPayments": "Toss Payments",
+    "paymentAmount": "支払い金額",
+    "paymentAmountLabel": "支払い金額",
+    "finalPaymentAmount": "最終支払い金額",
+    "bookNow": "予約する",
+    "payNow": "今すぐ支払う",
+    "tossWidgetTitle": "決済ウィジェット",
+    "tossPreparing": "決済ウィジェットを準備中です。",
+    "tossModalHint": "決済ウィジェットはモーダルで表示されます。",
+    "submitTitle": "予約を送信しますか？",
+    "submitDescription": "予約内容を確認してください。送信後、提供先にリクエストが送られます。",
+    "cancel": "キャンセル",
+    "submit": "送信",
+    "toastMissingDraft": "予約情報が見つかりません。",
+    "toastFailed": "予約の送信に失敗しました。もう一度お試しください。",
+    "toastPaymentOrderFailed": "決済注文の作成に失敗しました。もう一度お試しください。",
+    "toastTossInitFailed": "Toss Paymentsを読み込めませんでした。もう一度お試しください。",
+    "toastMissingPaymentInfo": "お支払い情報が見つかりません。",
+    "toastTossRequestFailed": "決済のリクエストに失敗しました。もう一度お試しください。",
+    "tossProcessingTitle": "決済を確認しています。",
+    "tossFailedTitle": "決済に失敗しました。",
+    "tossFailedDescription": "決済情報を確認できませんでした。もう一度お試しください。",
+    "tossFailedCta": "支払いページに戻る",
+    "tossPendingTitle": "決済は完了しました。",
+    "tossPendingDescription": "予約処理中に問題が発生したため、確認しています。",
+    "errorAuthRequired": "ログインが必要です。",
+    "errorRetryableFailure": "一時的な決済処理エラーが発生しました。しばらくしてから再度お試しください。",
+    "errorGenericFailure": "決済処理中に問題が発生しました。",
+    "refundTitle": "キャンセル / 返金規定",
+    "refundIntro": "一部の提携施設は独自のキャンセル/返金規定を運用しています。",
+    "refundRule1": "施設の規定がKOMMAより厳しい場合は、施設の規定が優先されます。",
+    "refundRule2": "予約前に施設プロフィールの規定をご確認ください。",
+    "refundRule3": "3日前（72時間以上）: 100%返金 / 1回変更可",
+    "refundRule4": "2日前（48〜71時間）: 80%返金 / 1回変更可",
+    "refundRule5": "1日前（24〜47時間）: 50%返金 / 変更不可",
+    "refundRule6": "当日/無断キャンセル（0〜23時間）: 返金不可 / 変更不可",
+    "refundMore": "返金規定を詳しく見る",
+    "refundAccept": "キャンセル・返金規定に同意します。",
+    "refundAcceptRequired": "キャンセル・返金規定に同意してください。",
+    "currency": "KRW",
+    "minutes": "分"
+  },
+  "complete": {
+    "title": "予約完了",
+    "subtitle": "確認後にご連絡します。",
+    "missingData": "予約情報が見つかりません。",
+    "cta": "予約履歴",
+    "dateTime": "{date} {time}"
+  }
+}

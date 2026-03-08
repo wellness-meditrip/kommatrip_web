@@ -1,0 +1,34 @@
+{
+  "title": "Review",
+  "aiSummaryTitle": "AI Review Summary",
+  "aiSummaryEmpty": "We're gathering more reviews...",
+  "reviewCount": "{count} Reviews",
+  "withPhotos": "With photos",
+  "myCountryOnly": "My Country only",
+  "loading": "Loading reviews...",
+  "emptyFilter": "No reviews match your filters.",
+  "anonymous": "Anonymous",
+  "tagCategories": {
+    "transport": "Transport & Location",
+    "service": "Service & Price",
+    "space": "Space Features"
+  },
+  "tags": {
+    "nearSubway": "Near subway",
+    "easyToFind": "Easy to find",
+    "easyByBus": "Easy by bus",
+    "pickupService": "Offering pick-up service",
+    "convenientParking": "Convenient parking",
+    "englishSupport": "English Support",
+    "japaneseSupport": "Japanese Support",
+    "chineseSupport": "Chinese Support",
+    "friendlySkilled": "Friendly staff Highly skilled",
+    "noHardSell": "No hard sell",
+    "reasonablePrice": "Reasonable price",
+    "priceyWorthIt": "Pricey but worth it",
+    "greatAtmosphere": "Great atmosphere",
+    "veryClean": "Very clean",
+    "traditionalKorean": "Traditional Korean Style",
+    "willVisitAgain": "Will visit again"
+  }
+}

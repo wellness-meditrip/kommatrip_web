@@ -3,29 +3,78 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky",
+    "svgr:icons": "rm -rf src/icons/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/icons --no-dimensions --typescript --out-dir src/icons",
+    "svgr:images": "rm -rf src/images/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/images --no-dimensions --typescript --out-dir src/images",
+    "svgr": "pnpm svgr:icons && pnpm svgr:images",
+    "lint:styles": "stylelint \"**/*.styles.ts\""
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json}": [
+      "prettier --write"
+    ],
+    "**/*.styles.ts": "stylelint --fix"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.859.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "next": "15.4.4",
+    "@google/genai": "^1.12.0",
+    "@googlemaps/js-api-loader": "^1.16.10",
+    "@mui/x-date-pickers": "^8.9.2",
+    "@tanstack/react-query": "^5.84.1",
+    "@tosspayments/tosspayments-sdk": "^2.5.0",
+    "@types/lodash.debounce": "^4.0.9",
+    "axios": "^1.11.0",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.2.1",
+    "framer-motion": "^12.23.12",
+    "lodash.debounce": "^4.0.8",
+    "lottie-react": "^2.4.1",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.5",
+    "next": "15.4.8",
+    "next-auth": "^4.24.13",
+    "next-intl": "^4.6.1",
     "react": "19.1.0",
+    "react-day-picker": "^9.13.0",
     "react-dom": "19.1.0",
+    "react-hook-form": "^7.62.0",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@commitlint/types": "^19.8.1",
     "@eslint/eslintrc": "^3",
+    "@locator/runtime": "^0.4.4",
+    "@stylelint/postcss-css-in-js": "^0.38.0",
+    "@svgr/webpack": "^8.1.0",
+    "@types/google.maps": "^3.58.1",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.4.4",
+    "eslint-config-next": "15.4.8",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "prettier": "3.6.2",
+    "stylelint": "^15.11.0",
+    "stylelint-config-prettier": "^9.0.0",
+    "stylelint-config-standard": "^29.0.0",
+    "stylelint-order": "^5.0.0",
     "typescript": "^5"
   }
 }

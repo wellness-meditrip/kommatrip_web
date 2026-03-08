@@ -1,0 +1,10 @@
+{
+  "title": "興味",
+  "toast": {
+    "selectInterest": "少なくとも1つの興味を選択してください",
+    "selectGender": "性別を選択してください",
+    "selectAgeGroup": "年齢層を選択してください",
+    "saved": "興味の設定が保存されました",
+    "saveFailed": "興味の設定の保存に失敗しました"
+  }
+}

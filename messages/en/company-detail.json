@@ -1,0 +1,28 @@
+{
+  "title": "Company Details",
+  "loading": "Loading company details...",
+  "loadFail": "Unable to load company information.",
+  "infoPending": "Information is being prepared.",
+  "editorComment": "Editor's Comment",
+  "officialRecognition": "Official Recognition",
+  "gettingHere": "Getting Here",
+  "highlights": "Highlights",
+  "operationInfo": "Operation Information",
+  "open": "Open",
+  "closed": "Closed",
+  "website": "Website",
+  "instagram": "Instagram",
+  "whatsapp": "WhatsApp",
+  "location": "Location",
+  "facilities": "Facilities",
+  "noticeTitle": "Notice",
+  "bookingInfo": "Booking information",
+  "refundRegulation": "Refund regulation",
+  "tabs": {
+    "info": "Information",
+    "program": "Programs",
+    "review": "Reviews",
+    "notice": "Notice"
+  },
+  "bookNow": "Book Now"
+}

@@ -1,0 +1,125 @@
+{
+  "title": "Reservation",
+  "loading": "Loading...",
+  "emptyCompany": "No company information available for reservation.",
+  "submitPayment": "Book Now",
+  "form": {
+    "programs": {
+      "title": "Programs",
+      "empty": "No programs available.",
+      "minutes": "min"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "email": "Email",
+      "emailPlaceholder": "Elena123@email.com",
+      "preferredMethod": "Preferred Contact Method",
+      "contactPlaceholder": "Please enter your contact details.",
+      "language": "Language Preference",
+      "languages": {
+        "korean": "Korean",
+        "english": "English",
+        "chinese": "Chinese",
+        "japanese": "Japanese"
+      },
+      "methods": {
+        "line": "Line",
+        "whatsapp": "Whats App",
+        "kakao": "Kakao",
+        "phone": "Phone"
+      }
+    },
+    "inquiries": {
+      "title": "Inquiries",
+      "subtitle": "Tell us about your needs (Optional)",
+      "concernsTitle": "Common concerns for international visitors:",
+      "placeholder": "Write about your needs",
+      "concerns": {
+        "firstTime": "This is my first time at a Korean clinic",
+        "sensitiveSkin": "I have sensitive skin/allergies",
+        "needEnglish": "I need English explanation during treatment",
+        "gentlePressure": "I prefer gentle pressure during massage",
+        "specificAreas": "I have specific areas of concern"
+      }
+    },
+    "schedule": {
+      "title": "Reservation",
+      "selectDates": "01. Select up to 2 preferred dates",
+      "selectTimes": "02. Select up to 3 available times",
+      "emptyDatePrompt": "Please select your first preferred date.",
+      "selectTimesPlaceholder": "Select times"
+    }
+  },
+  "validation": {
+    "selectProgram": "Please select a program.",
+    "selectContact": "Please choose a contact method.",
+    "enterContact": "Please enter your contact info.",
+    "selectDate": "Please select at least one preferred date.",
+    "pastDate": "You can't select past dates.",
+    "selectTimesPerDate": "Please select times for each chosen date.",
+    "selectTimeSlot": "Please select visit time slots.",
+    "duplicateTimes": "You can't select duplicate time slots.",
+    "programNotFound": "Unable to find the selected program.",
+    "companyNotFound": "Unable to load company information."
+  },
+  "payment": {
+    "title": "Payment",
+    "missingDraft": "Payment information not found.",
+    "bookingInfo": "Booking Info",
+    "date": "Date",
+    "time": "Time",
+    "program": "Program",
+    "paymentMethod": "Payment Method",
+    "payNowKrw": "Pay now(KRW)",
+    "payNowUsd": "Pay now(USD)",
+    "payOnSite": "Pay on site",
+    "tossPayments": "Toss Payments",
+    "paymentAmount": "Payment Amount",
+    "paymentAmountLabel": "Payment Amount",
+    "finalPaymentAmount": "Final Payment Amount",
+    "bookNow": "Book Now",
+    "payNow": "Pay Now",
+    "tossWidgetTitle": "Payment Widget",
+    "tossPreparing": "Preparing the payment widget.",
+    "tossModalHint": "The payment widget opens in a modal when you continue.",
+    "submitTitle": "Submit Your Reservation?",
+    "submitDescription": "Please make sure your reservation details are correct. Once submitted, the request will be sent to the provider.",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "toastMissingDraft": "Reservation details not found.",
+    "toastFailed": "Failed to submit reservation. Please try again.",
+    "toastPaymentOrderFailed": "Failed to create the payment order. Please try again.",
+    "toastTossInitFailed": "Unable to load Toss Payments. Please try again.",
+    "toastMissingPaymentInfo": "Payment information not found.",
+    "toastTossRequestFailed": "Failed to request payment. Please try again.",
+    "tossProcessingTitle": "Confirming your payment.",
+    "tossFailedTitle": "Payment Failed",
+    "tossFailedDescription": "We couldn't verify your payment. Please try again.",
+    "tossFailedCta": "Back to Payment",
+    "tossPendingTitle": "Payment completed.",
+    "tossPendingDescription": "We are checking your reservation due to a processing issue.",
+    "errorAuthRequired": "You need to sign in.",
+    "errorRetryableFailure": "A temporary payment processing error occurred. Please try again shortly.",
+    "errorGenericFailure": "There was a problem processing your payment.",
+    "refundTitle": "Cancellation / Refund Policy",
+    "refundIntro": "Some partner clinics and professionals maintain their own cancellation/refund policies.",
+    "refundRule1": "If a provider’s policy is stricter than KOMMA’s, the provider’s policy prevails.",
+    "refundRule2": "Please review the provider’s profile before booking.",
+    "refundRule3": "3 days before (72+ hours): 100% refund / Up to 1 change",
+    "refundRule4": "2 days before (48–71 hours): 80% refund / Up to 1 change",
+    "refundRule5": "1 day before (24–47 hours): 50% refund / No changes",
+    "refundRule6": "Same day / No-show (0–23 hours): No refund / No changes",
+    "refundMore": "Learn More About Refund Policy",
+    "refundAccept": "I accept the Cancellation and Refund Policy.",
+    "refundAcceptRequired": "Please accept the cancellation/refund policy.",
+    "currency": "KRW",
+    "minutes": "min"
+  },
+  "complete": {
+    "title": "Reservation Complete",
+    "subtitle": "We will confirm it after review.",
+    "missingData": "Reservation details not found.",
+    "cta": "My Bookings",
+    "dateTime": "{date} at {time}"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "title": "예약 상세",
+  "status": {
+    "request": "요청",
+    "confirmed": "확정",
+    "canceled": "취소",
+    "completed": "완료"
+  },
+  "meta": {
+    "requestDate": "요청 일시"
+  },
+  "sections": {
+    "bookingInfo": "예약 정보",
+    "guestInfo": "예약자 정보",
+    "provider": "제공자",
+    "paymentInfo": "결제 정보"
+  },
+  "labels": {
+    "id": "ID",
+    "date": "날짜",
+    "time": "시간",
+    "name": "이름",
+    "contact": "연락처",
+    "language": "언어",
+    "paymentMethod": "결제 수단",
+    "payOnline": "온라인 결제({currency})",
+    "paymentAmount": "결제 금액",
+    "finalPaymentAmount": "최종 결제 금액"
+  },
+  "cta": {
+    "cancel": "취소",
+    "bookAgain": "다시 예약",
+    "writeReview": "리뷰 작성"
+  },
+  "cancelModal": {
+    "title": "예약 취소 사유",
+    "close": "예약 취소 사유 모달 닫기",
+    "submit": "취소 요청하기",
+    "reasons": {
+      "personalReasons": "개인 사정",
+      "updateBookingInfo": "예약 정보 변경 필요",
+      "providerIssues": "제공자 사유로 서비스 제공 불가",
+      "betterPrice": "더 좋은 가격 발견",
+      "serviceQuality": "서비스 품질 불만족",
+      "unavoidableCircumstances": "불가피한 상황",
+      "other": "기타"
+    }
+  }
+}

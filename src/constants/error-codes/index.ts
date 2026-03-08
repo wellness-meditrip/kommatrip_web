@@ -1,0 +1,5 @@
+export const ERROR_CODES = {
+  TOKEN_EXPIRED: 1003,
+  FORBIDDEN: 1101,
+  NO_USER_EXIST: 2001,
+} as const;

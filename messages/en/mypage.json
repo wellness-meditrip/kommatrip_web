@@ -1,0 +1,91 @@
+{
+  "title": "My Page",
+  "points": {
+    "title": "Points",
+    "balance": "Balance"
+  },
+  "reservations": {
+    "title": "Reservations",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "filters": {
+      "total": "Total",
+      "request": "Request",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled",
+      "completed": "Completed"
+    },
+    "status": {
+      "request": "Request",
+      "confirmed": "Confirmed",
+      "canceled": "Canceled",
+      "completed": "Completed"
+    },
+    "loading": "Loading reservations...",
+    "empty": "No reservations yet",
+    "emptyState": {
+      "title": "Nothing booked yet!",
+      "subtitle": "Start exploring your wellness journey",
+      "cta": "Start exploring"
+    },
+    "bookAgain": "Book Again",
+    "viewReview": "View My Review",
+    "writeReview": "Write a Review",
+    "fallback": {
+      "program": "Program",
+      "clinic": "Clinic"
+    }
+  },
+  "reviews": {
+    "title": "Reviews",
+    "myReviews": "My Reviews"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "notifications": "Notifications"
+  },
+  "menu": {
+    "userInfo": "My Information",
+    "reservations": "Reservations",
+    "reviews": "My Reviews",
+    "settings": "Settings",
+    "privacy": "Service Improvement",
+    "terms": "Terms of Use"
+  },
+  "detail": {
+    "userInfo": "My Information",
+    "reservations": "Reservations",
+    "reviews": "My Reviews",
+    "settings": "Settings",
+    "privacy": "Service Improvement",
+    "terms": "Terms of Use",
+    "description": "Check the details for the selected menu.",
+    "goToPage": "Go to details"
+  },
+  "profile": {
+    "manage": "My Information",
+    "fallbackName": "ONYU Member",
+    "imageAlt": "Profile image"
+  },
+  "improvement": {
+    "title": "Help Improve ONYU",
+    "subtitle": "Help us refine your experience."
+  },
+  "sections": {
+    "myServices": "My Services",
+    "support": "Customer Support"
+  },
+  "iframe": {
+    "improvementTitle": "ONYU service improvement form",
+    "termsTitle": "ONYU terms of use"
+  },
+  "toast": {
+    "profileUpdated": "Your profile has been updated.",
+    "profileImageUploaded": "Your profile image has been uploaded.",
+    "profileImageDeleted": "Your profile image has been deleted.",
+    "profileImageTypeError": "Please upload an image in JPG, PNG, or WEBP format.",
+    "profileImageSizeError": "Please upload an image that is 5MB or smaller.",
+    "marketingConsentUpdated": "Your marketing consent has been updated."
+  }
+}

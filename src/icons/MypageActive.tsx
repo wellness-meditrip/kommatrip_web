@@ -1,0 +1,10 @@
+import * as React from 'react';
+import type { SVGProps } from 'react';
+export const MypageActive = (props: SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" {...props}>
+    <path
+      fill="#FFF"
+      d="M12 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7M12 14.5c-2.9 0-6.5 1.7-7.7 4.6-.2.5.2 1 .8 1h13.8c.6 0 1-.5.8-1-1.2-2.9-4.8-4.6-7.7-4.6"
+    />
+  </svg>
+);

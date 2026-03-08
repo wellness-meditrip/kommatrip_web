@@ -1,0 +1,10 @@
+{
+  "title": "Interests",
+  "toast": {
+    "selectInterest": "Please select at least one interest",
+    "selectGender": "Please select your gender",
+    "selectAgeGroup": "Please select your age group",
+    "saved": "Interest settings saved successfully",
+    "saveFailed": "Failed to save interest settings"
+  }
+}
