@@ -77,16 +77,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(backendResponse.status).json(backendResponse.data);
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      console.error('[api/payments/confirm] backend error', {
-        status: error.response.status,
-        data: error.response.data,
-      });
+      if (isDev) {
+        console.error('[api/payments/confirm] backend error', {
+          status: error.response.status,
+          data: error.response.data,
+        });
+      } else {
+        console.error('[api/payments/confirm] backend error', {
+          status: error.response.status,
+        });
+      }
       return res.status(error.response.status).json({
         success: false,
         status: error.response.status,
         error_code: toErrorCode(error.response.data),
         message: toErrorMessage(error.response.data, 'Payment confirm failed'),
-        detail: error.response.data,
       });
     }
     console.error('[api/payments/confirm] unexpected error', error);
