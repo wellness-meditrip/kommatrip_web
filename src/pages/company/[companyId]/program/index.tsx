@@ -7,6 +7,7 @@ import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
 import {
   CTAButton,
+  HeroImage,
   Loading,
   RoundButton,
   DesktopAppBar,
@@ -18,7 +19,6 @@ import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import { useMediaQuery } from '@/hooks';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
@@ -86,10 +86,10 @@ export default function ProgramDetailPage() {
 
   const displayImageUrl = useMemo(() => {
     const program = data?.program;
-    if (!program) return '/default.png';
+    if (!program) return '';
     const primaryImageUrl = program.primary_image_url || '';
     const fallbackImageUrl = program.image_urls?.[0] || '';
-    return primaryImageUrl || fallbackImageUrl || '/default.png';
+    return primaryImageUrl || fallbackImageUrl || '';
   }, [data]);
 
   const detailImageUrl = useMemo(() => {
@@ -98,31 +98,7 @@ export default function ProgramDetailPage() {
     return program.primary_image_url || '';
   }, [data]);
 
-  const [imageSrc, setImageSrc] = useState('/default.png');
   const [detailImageSrc, setDetailImageSrc] = useState('');
-  const isSasImage = imageSrc?.includes('meditripstorage.blob.core.windows.net')
-    ? imageSrc.includes('sig=')
-    : false;
-  const isOptimizableImage = (url: string) => {
-    if (!url) return false;
-    if (url.startsWith('/')) return true;
-    try {
-      const parsedUrl = new URL(url);
-      if (parsedUrl.protocol !== 'https:') return false;
-      return [
-        'drive.google.com',
-        'meditrip.s3.ap-northeast-2.amazonaws.com',
-        'meditripstorage.blob.core.windows.net',
-      ].includes(parsedUrl.hostname);
-    } catch {
-      return false;
-    }
-  };
-  const shouldUseNextImage = isOptimizableImage(imageSrc);
-
-  useEffect(() => {
-    setImageSrc(displayImageUrl);
-  }, [displayImageUrl]);
 
   useEffect(() => {
     setDetailImageSrc(detailImageUrl);
@@ -247,27 +223,11 @@ export default function ProgramDetailPage() {
             <div css={mainContent}>
               <div css={headerRow}>
                 <div css={imageSection}>
-                  {shouldUseNextImage ? (
-                    <Image
-                      src={imageSrc}
-                      alt={t('imageAlt')}
-                      width={1200}
-                      height={800}
-                      sizes="100vw"
-                      quality={90}
-                      priority
-                      unoptimized={isSasImage}
-                      css={mainImage}
-                      onError={() => setImageSrc('/default.png')}
-                    />
-                  ) : (
-                    <img
-                      src={imageSrc}
-                      alt={t('imageAlt')}
-                      css={mainImage}
-                      onError={() => setImageSrc('/default.png')}
-                    />
-                  )}
+                  <HeroImage
+                    src={displayImageUrl}
+                    alt={t('imageAlt')}
+                    fallbackText={t('infoPending')}
+                  />
                 </div>
 
                 <Text typo="title_L" color="text_primary" css={programTitle}>
@@ -392,8 +352,10 @@ export default function ProgramDetailPage() {
 }
 
 const imageSection = css`
+  position: relative;
   width: 100%;
   height: clamp(200px, 45vw, 300px);
+  background: ${theme.colors.bg_default};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     width: 420px;
@@ -458,12 +420,6 @@ const bookingCard = css`
   border-radius: 16px;
 
   box-shadow: 0 8px 20px 0 rgb(15 23 42 / 8%);
-`;
-
-const mainImage = css`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 `;
 
 const programSection = css`
