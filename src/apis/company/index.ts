@@ -1,5 +1,4 @@
 import { api, guestApi } from '@/apis';
-import { postTokenReissue } from '@/apis/auth';
 import {
   GetRecentCompanyResponse,
   GetRecommendedCompanyResponse,
@@ -9,15 +8,6 @@ import {
   GetCompanyAllResponse,
   CompanyDetail,
 } from '@/models/company';
-import { useAuthStore } from '@/store/auth';
-import {
-  beginAuthRefresh,
-  isAuthRefreshInFlight,
-  rejectAuthRefresh,
-  resolveAuthRefresh,
-  waitForAuthReady,
-} from '@/utils/auth-refresh';
-import { getCookie } from '@/utils/cookie';
 
 export const getRecentCompany = async (): Promise<GetRecentCompanyResponse[]> => {
   try {
@@ -104,40 +94,8 @@ export const getCompanySearch = async (params: SearchParams) => {
 export const getCompanyDetail = async ({
   companyId,
 }: GetCompanyIdRequestParams): Promise<{ company: CompanyDetail }> => {
-  const accessToken = useAuthStore.getState().accessToken;
-  const hasRefreshToken = !!getCookie('refreshToken');
-
-  if (!accessToken && hasRefreshToken) {
-    if (!isAuthRefreshInFlight()) {
-      beginAuthRefresh();
-      postTokenReissue()
-        .then((response) => {
-          const newAccessToken = response.tokens.access_token;
-          if (newAccessToken) {
-            useAuthStore.getState().setAccessToken(newAccessToken);
-          }
-          resolveAuthRefresh();
-        })
-        .catch((error) => {
-          console.error('[getCompanyDetail] Token refresh failed', error);
-          useAuthStore.getState().clearAuth();
-          rejectAuthRefresh(error);
-        });
-    }
-
-    try {
-      await waitForAuthReady();
-    } catch {
-      // fallback to guest request if refresh failed
-    }
-  }
-
-  const effectiveToken = useAuthStore.getState().accessToken;
-  const headers = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : undefined;
-
-  return await guestApi.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`, {
-    headers,
-  });
+  // api 클라이언트 인터셉터에서 Authorization/토큰 재발급을 처리
+  return await api.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`);
 };
 
 export const getCompanyAll = async () => {
