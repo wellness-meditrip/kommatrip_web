@@ -16,8 +16,8 @@ interface CompanyNoticeProps {
 
 export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyNoticeProps) {
   const t = useTranslations('company-detail');
-  const formattedBookingInformation = bookingInformation?.replace(/\\n/g, '\n').trim() ?? '';
-  const formattedRefundRegulation = refundRegulation?.replace(/\\n/g, '\n').trim() ?? '';
+  const formattedBookingInformation = (bookingInformation ?? '').replace(/\\n/g, '\n').trim();
+  const formattedRefundRegulation = (refundRegulation ?? '').replace(/\\n/g, '\n').trim();
 
   return (
     <div css={noticeWrapper}>
