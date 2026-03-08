@@ -1,9 +1,10 @@
 import { Tag } from '@/components/tag';
 import { Text } from '@/components/text';
 import { ChevronLeft, Copy } from '@/icons';
-import Image from 'next/image';
+import { HeroImage } from '@/components/common';
 import { useState } from 'react';
 import { useToast } from '@/hooks';
+import { useTranslations } from 'next-intl';
 import {
   wrapper,
   profileWrapper,
@@ -18,8 +19,6 @@ import {
   carouselDots,
   carouselDot,
   carouselDotActive,
-  imageLoadingOverlay,
-  imageLoadingSpinner,
 } from './index.styles';
 
 interface Props {
@@ -38,35 +37,25 @@ export default function CompanyDetail({
   badges,
   images = [],
 }: Props) {
-  const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isImageLoading, setIsImageLoading] = useState(false);
   const { showToast } = useToast();
+  const t = useTranslations('company-detail');
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
   const imageList = images.length > 0 ? images : [companyImage];
   const currentImageUrl = imageList[currentImageIndex];
 
-  const handleImageError = () => {
-    console.log('Image load failed, falling back to default image');
-    setImageError(true);
-    setIsImageLoading(false);
-  };
-
   const handleDotClick = (index: number) => {
-    setIsImageLoading(true);
     setCurrentImageIndex(index);
   };
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsImageLoading(true);
     setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsImageLoading(true);
     setCurrentImageIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
   };
 
@@ -93,80 +82,47 @@ export default function CompanyDetail({
 
   return (
     <div css={wrapper}>
-      {imageList.length > 1 ? (
-        <div css={profileWrapper}>
-          {currentImageUrl && !imageError ? (
-            <Image
-              src={currentImageUrl}
-              alt="프로필 이미지"
-              fill
-              sizes="100vw"
-              quality={90}
-              onError={handleImageError}
-              onLoadingComplete={() => setIsImageLoading(false)}
-            />
-          ) : (
-            <img src="/default.png" alt="기본 이미지" onLoad={() => setIsImageLoading(false)} />
-          )}
-          {isImageLoading && (
-            <div css={imageLoadingOverlay}>
-              <div css={imageLoadingSpinner} aria-hidden="true" />
-            </div>
-          )}
+      <div css={profileWrapper}>
+        <HeroImage
+          src={currentImageUrl}
+          alt={`${companyName} 프로필 이미지`}
+          fallbackText={t('infoPending')}
+        />
+        {imageList.length > 1 && (
+          <>
+            {/* 캐러셀 네비게이션 버튼 */}
+            <button
+              css={[carouselNavButton, carouselNavLeft]}
+              onClick={handlePrevImage}
+              aria-label="이전 이미지"
+            >
+              <ChevronLeft width={24} height={24} />
+            </button>
+            <button
+              css={[carouselNavButton, carouselNavRight]}
+              onClick={handleNextImage}
+              aria-label="다음 이미지"
+            >
+              <ChevronLeft width={24} height={24} style={{ transform: 'rotate(180deg)' }} />
+            </button>
 
-          {/* 캐러셀 네비게이션 버튼 */}
-          <button
-            css={[carouselNavButton, carouselNavLeft]}
-            onClick={handlePrevImage}
-            aria-label="이전 이미지"
-          >
-            <ChevronLeft width={24} height={24} />
-          </button>
-          <button
-            css={[carouselNavButton, carouselNavRight]}
-            onClick={handleNextImage}
-            aria-label="다음 이미지"
-          >
-            <ChevronLeft width={24} height={24} style={{ transform: 'rotate(180deg)' }} />
-          </button>
-
-          {/* 캐러셀 도트 인디케이터 */}
-          <div css={carouselDots}>
-            {imageList.map((_, index) => (
-              <button
-                key={index}
-                css={index === currentImageIndex ? carouselDotActive : carouselDot}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDotClick(index);
-                }}
-                aria-label={`이미지 ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div css={profileWrapper}>
-          {currentImageUrl && !imageError ? (
-            <Image
-              src={currentImageUrl}
-              alt="프로필 이미지"
-              fill
-              sizes="100vw"
-              quality={90}
-              onError={handleImageError}
-              onLoadingComplete={() => setIsImageLoading(false)}
-            />
-          ) : (
-            <img src="/default.png" alt="기본 이미지" onLoad={() => setIsImageLoading(false)} />
-          )}
-          {isImageLoading && (
-            <div css={imageLoadingOverlay}>
-              <div css={imageLoadingSpinner} aria-hidden="true" />
+            {/* 캐러셀 도트 인디케이터 */}
+            <div css={carouselDots}>
+              {imageList.map((_, index) => (
+                <button
+                  key={index}
+                  css={index === currentImageIndex ? carouselDotActive : carouselDot}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDotClick(index);
+                  }}
+                  aria-label={`이미지 ${index + 1}`}
+                />
+              ))}
             </div>
-          )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
       <div css={DetailsWrapper}>
         <Text typo="title_M" color="text_primary">
           {companyName}
