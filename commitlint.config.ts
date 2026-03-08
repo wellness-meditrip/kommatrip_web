@@ -13,7 +13,7 @@ const Configuration: UserConfig = {
 
     'scope-enum': [1, 'always', ['storybook', 'design-system', 'services', 'utils', 'README']],
     'scope-case': [2, 'always', 'kebab-case'],
-    'scope-empty': [2, 'always'],
+    'scope-empty': [0, 'always'],
 
     'subject-case': [0, 'always', []],
     'subject-empty': [2, 'never'],

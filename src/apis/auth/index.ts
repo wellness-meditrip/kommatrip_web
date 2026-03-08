@@ -107,150 +107,38 @@ export const postResetPasswordComplete = async (data: PostResetPasswordCompleteR
 
 // 소셜 로그인(google)
 export const postUserAuthGoogle = async (data: PostUserAuthGoogleRequest) => {
-  console.log('[postUserAuthGoogle] Request start', {
-    idTokenLength: data.idToken?.length,
-    country: data.country,
-    marketing_consent: data.marketing_consent,
-    url: 'user/non/auth/google',
-  });
-
-  try {
-    const response = await guestApi.post<PostUserAuthGoogleResponse>(
-      'user/non/auth/google',
-      {
-        idToken: data.idToken,
-        country: data.country,
-        marketing_consent: data.marketing_consent,
+  return await guestApi.post<PostUserAuthGoogleResponse>(
+    'user/non/auth/google',
+    {
+      idToken: data.idToken,
+      country: data.country,
+      marketing_consent: data.marketing_consent,
+    },
+    {
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-      {
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const isObject = typeof response === 'object' && response !== null;
-    const responseRecord = isObject ? (response as { user?: unknown; tokens?: unknown }) : null;
-    console.log('[postUserAuthGoogle] Response received', {
-      hasResponse: !!response,
-      responseType: typeof response,
-      responseKeys: isObject ? Object.keys(response as object) : [],
-      hasUser: !!responseRecord?.user,
-      hasTokens: !!responseRecord?.tokens,
-    });
-
-    // 백엔드 응답 구조 확인 (response.data.response 형태일 수 있음)
-    if (response && typeof response === 'object' && 'response' in response) {
-      const wrapped = response as { response?: PostUserAuthGoogleResponse };
-      const unwrapped = wrapped.response;
-      console.log('[postUserAuthGoogle] Unwrapped response', {
-        hasUser: !!unwrapped?.user,
-        hasTokens: !!unwrapped?.tokens,
-      });
-      if (unwrapped) {
-        return unwrapped;
-      }
     }
-
-    console.log('[postUserAuthGoogle] Returning response as-is');
-    return response;
-  } catch (error: unknown) {
-    const axiosError = error as {
-      response?: {
-        status?: number;
-        statusText?: string;
-        data?: unknown;
-      };
-      message?: string;
-    };
-    // 에러 상세 정보 로깅
-    console.error('[postUserAuthGoogle] error details', {
-      status: axiosError?.response?.status,
-      statusText: axiosError?.response?.statusText,
-      data: axiosError?.response?.data,
-      errorMessage: axiosError?.message,
-      requestData: {
-        idTokenLength: data.idToken?.length,
-        country: data.country,
-        marketing_consent: data.marketing_consent,
-      },
-    });
-    throw axiosError;
-  }
+  );
 };
 
 // 소셜 로그인(apple)
 export const postUserAuthApple = async (data: PostUserAuthAppleRequest) => {
-  console.log('[postUserAuthApple] Request start', {
-    idTokenLength: data.idToken?.length,
-    country: data.country,
-    marketing_consent: data.marketing_consent,
-    url: 'user/non/auth/apple',
-  });
-
-  try {
-    const response = await guestApi.post<PostUserAuthAppleResponse>(
-      'user/non/auth/apple',
-      {
-        idToken: data.idToken,
-        country: data.country,
-        marketing_consent: data.marketing_consent,
+  return await guestApi.post<PostUserAuthAppleResponse>(
+    'user/non/auth/apple',
+    {
+      idToken: data.idToken,
+      country: data.country,
+      marketing_consent: data.marketing_consent,
+    },
+    {
+      headers: {
+        accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-      {
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const isObject = typeof response === 'object' && response !== null;
-    const responseRecord = isObject ? (response as { user?: unknown; tokens?: unknown }) : null;
-    console.log('[postUserAuthApple] Response received', {
-      hasResponse: !!response,
-      responseType: typeof response,
-      responseKeys: isObject ? Object.keys(response as object) : [],
-      hasUser: !!responseRecord?.user,
-      hasTokens: !!responseRecord?.tokens,
-    });
-
-    if (response && typeof response === 'object' && 'response' in response) {
-      const wrapped = response as { response?: PostUserAuthAppleResponse };
-      const unwrapped = wrapped.response;
-      console.log('[postUserAuthApple] Unwrapped response', {
-        hasUser: !!unwrapped?.user,
-        hasTokens: !!unwrapped?.tokens,
-      });
-      if (unwrapped) {
-        return unwrapped;
-      }
     }
-
-    console.log('[postUserAuthApple] Returning response as-is');
-    return response;
-  } catch (error: unknown) {
-    const axiosError = error as {
-      response?: {
-        status?: number;
-        statusText?: string;
-        data?: unknown;
-      };
-      message?: string;
-    };
-    console.error('[postUserAuthApple] error details', {
-      status: axiosError?.response?.status,
-      statusText: axiosError?.response?.statusText,
-      data: axiosError?.response?.data,
-      errorMessage: axiosError?.message,
-      requestData: {
-        idTokenLength: data.idToken?.length,
-        country: data.country,
-        marketing_consent: data.marketing_consent,
-      },
-    });
-    throw axiosError;
-  }
+  );
 };
 
 // 토큰 재발급 (쿠키에서 refreshToken 자동 전송)
@@ -276,6 +164,5 @@ export const postInterest = async (
       accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    withCredentials: false,
   });
 };
