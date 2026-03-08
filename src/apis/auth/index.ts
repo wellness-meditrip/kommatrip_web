@@ -164,6 +164,5 @@ export const postInterest = async (
       accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    withCredentials: false,
   });
 };
