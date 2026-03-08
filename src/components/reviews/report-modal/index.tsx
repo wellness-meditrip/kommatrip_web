@@ -19,7 +19,7 @@ interface ReasonOption<TReason extends string> {
   label: string;
 }
 
-interface ReportModalProps<TReason extends string = ReportReviewReason> {
+interface ReasonModalProps<TReason extends string = ReportReviewReason> {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -33,7 +33,7 @@ interface ReportModalProps<TReason extends string = ReportReviewReason> {
   onSubmit?: (payload: { reason: TReason; detail: string }) => void;
 }
 
-export function ReportModal<TReason extends string = ReportReviewReason>({
+export function ReasonModal<TReason extends string = ReportReviewReason>({
   isOpen,
   onClose,
   title,
@@ -45,7 +45,7 @@ export function ReportModal<TReason extends string = ReportReviewReason>({
   detailPlaceholder,
   otherReasonValue,
   onSubmit,
-}: ReportModalProps<TReason>) {
+}: ReasonModalProps<TReason>) {
   const t = useTranslations('review');
   const [selectedReason, setSelectedReason] = useState<TReason | ''>('');
   const [detail, setDetail] = useState('');
@@ -130,3 +130,6 @@ export function ReportModal<TReason extends string = ReportReviewReason>({
     </Portal>
   );
 }
+
+// Backward compatibility for existing imports
+export const ReportModal = ReasonModal;

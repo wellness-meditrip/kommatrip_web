@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Empty, Text, Loading } from '@/components';
 import { Card } from '@/components/reviews/card';
-import { ReportModal } from '@/components/reviews/report-modal';
+import { ReasonModal } from '@/components/reviews/report-modal';
 import { useIntersectionLoad } from '@/hooks/review';
 import { useToast } from '@/hooks';
 import { ReviewAi, ReviewTooltip } from '@/icons';
@@ -133,7 +133,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
       </div>
 
       <div ref={loadMoreRef} css={bottom} />
-      <ReportModal
+      <ReasonModal
         isOpen={isReportOpen}
         onClose={() => {
           setIsReportOpen(false);
