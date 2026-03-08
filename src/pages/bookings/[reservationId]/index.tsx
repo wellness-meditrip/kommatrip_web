@@ -11,7 +11,11 @@ import { useAuthStore } from '@/store/auth';
 import { useDeleteReservationMutation, useGetReservationDetailQuery } from '@/queries/reservation';
 import type { LanguagePreference, ReservationDetail } from '@/models/reservation';
 import { ChevronRight } from '@/icons';
-import { RESERVATION_CANCELLATION_REASONS, ROUTES } from '@/constants';
+import {
+  RESERVATION_CANCELLATION_REASONS,
+  type ReservationCancellationReasonKey,
+  ROUTES,
+} from '@/constants';
 
 type BookingStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 
@@ -318,14 +322,23 @@ export default function BookingDetailPage() {
         : 'text_secondary';
 
   const { mutate: deleteReservation, isPending: isDeleting } = useDeleteReservationMutation();
+  const cancellationReasonLabelMap = useMemo(() => {
+    return RESERVATION_CANCELLATION_REASONS.reduce(
+      (acc, item) => {
+        acc[item.key] = t(item.labelKey);
+        return acc;
+      },
+      {} as Record<ReservationCancellationReasonKey, string>
+    );
+  }, [t]);
 
   const cancellationReasons = useMemo(
     () =>
       RESERVATION_CANCELLATION_REASONS.map((item) => ({
         value: item.key,
-        label: t(item.labelKey),
+        label: cancellationReasonLabelMap[item.key],
       })),
-    [t]
+    [cancellationReasonLabelMap]
   );
 
   const ctaButtons = useMemo(() => {
