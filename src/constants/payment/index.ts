@@ -1,16 +1,16 @@
 export type PaymentMethod = 'onSite' | 'payNowKrw' | 'payNowUsd';
 
 export enum PaymentVariantKey {
-  korea = 'KOREA',
-  paypal = 'PAYPAL',
+  KOREA = 'KOREA',
+  PAYPAL = 'PAYPAL',
 }
 
 export const PAYMENT_WIDGET_CONFIG: Record<
   Exclude<PaymentMethod, 'onSite'>,
   { variantKey: PaymentVariantKey; currency: 'KRW' | 'USD' }
 > = {
-  payNowKrw: { variantKey: PaymentVariantKey.korea, currency: 'KRW' },
-  payNowUsd: { variantKey: PaymentVariantKey.paypal, currency: 'USD' },
+  payNowKrw: { variantKey: PaymentVariantKey.KOREA, currency: 'KRW' },
+  payNowUsd: { variantKey: PaymentVariantKey.PAYPAL, currency: 'USD' },
 };
 
 export const isPayNowPaymentMethod = (

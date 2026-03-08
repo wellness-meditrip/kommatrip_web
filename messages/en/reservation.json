@@ -70,6 +70,8 @@
     "time": "Time",
     "program": "Program",
     "paymentMethod": "Payment Method",
+    "payNowKrw": "Pay now(KRW)",
+    "payNowUsd": "Pay now(USD)",
     "payOnSite": "Pay on site",
     "tossPayments": "Toss Payments",
     "paymentAmount": "Payment Amount",

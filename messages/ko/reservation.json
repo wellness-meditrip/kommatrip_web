@@ -70,6 +70,8 @@
     "time": "시간",
     "program": "프로그램",
     "paymentMethod": "결제 방법",
+    "payNowKrw": "즉시 결제(KRW)",
+    "payNowUsd": "즉시 결제(USD)",
     "payOnSite": "현장 결제",
     "tossPayments": "토스페이먼츠",
     "paymentAmount": "결제 금액",

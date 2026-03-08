@@ -203,7 +203,7 @@ export default function ReservationPaymentPage() {
         });
         await widgets.renderPaymentMethods({
           selector: '#toss-payment-methods',
-          variantKey: paymentWidgetConfig?.variantKey ?? PaymentVariantKey.korea,
+          variantKey: paymentWidgetConfig?.variantKey ?? PaymentVariantKey.KOREA,
         });
         await widgets.renderAgreement({
           selector: '#toss-payment-agreement',
@@ -451,7 +451,7 @@ export default function ReservationPaymentPage() {
                     >
                       <span css={radioDot(paymentMethodChoice === 'payNowKrw')} />
                       <Text typo="body_M" color="text_primary">
-                        Pay now(KRW)
+                        {t('payment.payNowKrw')}
                       </Text>
                     </button>
                     <button
@@ -462,7 +462,7 @@ export default function ReservationPaymentPage() {
                     >
                       <span css={radioDot(paymentMethodChoice === 'payNowUsd')} />
                       <Text typo="body_M" color="text_primary">
-                        Pay now(USD)
+                        {t('payment.payNowUsd')}
                       </Text>
                     </button>
                     <button

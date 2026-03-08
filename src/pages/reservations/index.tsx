@@ -290,7 +290,7 @@ export default function ReservationPage() {
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
             selector: '#reservation-payment-methods-modal',
-            variantKey: paymentWidgetConfig?.variantKey ?? PaymentVariantKey.korea,
+            variantKey: paymentWidgetConfig?.variantKey ?? PaymentVariantKey.KOREA,
           });
           await widgets.renderAgreement({
             selector: '#reservation-payment-agreement-modal',
@@ -953,7 +953,7 @@ export default function ReservationPage() {
                     >
                       <span css={radioDot(paymentMethodChoice === 'payNowKrw')} />
                       <Text typo="body_M" color="text_primary">
-                        Pay now(KRW)
+                        {t('payment.payNowKrw')}
                       </Text>
                     </button>
                     <button
@@ -964,7 +964,7 @@ export default function ReservationPage() {
                     >
                       <span css={radioDot(paymentMethodChoice === 'payNowUsd')} />
                       <Text typo="body_M" color="text_primary">
-                        Pay now(USD)
+                        {t('payment.payNowUsd')}
                       </Text>
                     </button>
                     <button
