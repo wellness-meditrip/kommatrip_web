@@ -18,7 +18,6 @@ export const guestApi: HttpClient = axios.create({
 });
 
 guestApi.interceptors.response.use(
-  // (response: AxiosResponse) => response.data?.response,
-  (response: AxiosResponse) => response.data,
+  (response: AxiosResponse) => response.data?.response ?? response.data,
   (error) => Promise.reject(normalizeError(error))
 );
