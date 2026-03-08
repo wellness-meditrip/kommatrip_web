@@ -16,14 +16,8 @@ interface CompanyNoticeProps {
 
 export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyNoticeProps) {
   const t = useTranslations('company-detail');
-  const hasBookingInfo = !!bookingInformation?.trim();
-  const hasRefundRegulation = !!refundRegulation?.trim();
-  const formattedBookingInformation = bookingInformation?.replace(/\\n/g, '\n') ?? '';
-  const formattedRefundRegulation = refundRegulation?.replace(/\\n/g, '\n') ?? '';
-
-  if (!hasBookingInfo && !hasRefundRegulation) {
-    return null;
-  }
+  const formattedBookingInformation = bookingInformation?.replace(/\\n/g, '\n').trim() ?? '';
+  const formattedRefundRegulation = refundRegulation?.replace(/\\n/g, '\n').trim() ?? '';
 
   return (
     <div css={noticeWrapper}>
@@ -31,36 +25,32 @@ export function CompanyNotice({ bookingInformation, refundRegulation }: CompanyN
         {t('noticeTitle')}
       </Text>
       <div css={noticeInfoWrapper}>
-        {hasBookingInfo && (
-          <div css={noticeRow}>
-            <div css={noticeTextBlock}>
-              <div css={titleWrapper}>
-                <Text typo="title_S" color="text_primary">
-                  {t('bookingInfo')}
-                </Text>
-              </div>
-              <Text typo="body_M" color="text_secondary" css={noticeContent}>
-                {formattedBookingInformation}
+        <div css={noticeRow}>
+          <div css={noticeTextBlock}>
+            <div css={titleWrapper}>
+              <Text typo="title_S" color="text_primary">
+                {t('bookingInfo')}
               </Text>
             </div>
+            <Text typo="body_M" color="text_secondary" css={noticeContent}>
+              {formattedBookingInformation || t('infoPending')}
+            </Text>
           </div>
-        )}
+        </div>
       </div>
       <div css={noticeInfoWrapper}>
-        {hasRefundRegulation && (
-          <div css={noticeRow}>
-            <div css={noticeTextBlock}>
-              <div css={titleWrapper}>
-                <Text typo="title_S" color="text_primary">
-                  {t('refundRegulation')}
-                </Text>
-              </div>
-              <Text typo="body_M" color="text_secondary" css={noticeContent}>
-                {formattedRefundRegulation}
+        <div css={noticeRow}>
+          <div css={noticeTextBlock}>
+            <div css={titleWrapper}>
+              <Text typo="title_S" color="text_primary">
+                {t('refundRegulation')}
               </Text>
             </div>
+            <Text typo="body_M" color="text_secondary" css={noticeContent}>
+              {formattedRefundRegulation || t('infoPending')}
+            </Text>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
