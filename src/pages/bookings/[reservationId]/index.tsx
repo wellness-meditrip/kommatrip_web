@@ -142,12 +142,8 @@ export default function BookingDetailPage() {
   const resolveProgramPrice = useCallback((reservation: ReservationDetail): number | undefined => {
     const currency = (reservation.currency ?? '').toLowerCase();
     const priceInfo = reservation.program_info?.price_info;
-    if (priceInfo && currency && typeof priceInfo[currency] === 'number') {
-      return priceInfo[currency];
-    }
-    if (typeof reservation.program_info?.price === 'number') {
-      return reservation.program_info.price;
-    }
+    if (!priceInfo) return undefined;
+    if (currency === 'usd' && typeof priceInfo.usd === 'number') return priceInfo.usd;
     if (typeof priceInfo?.krw === 'number') return priceInfo.krw;
     if (typeof priceInfo?.usd === 'number') return priceInfo.usd;
     return undefined;

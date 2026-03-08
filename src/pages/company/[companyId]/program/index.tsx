@@ -23,6 +23,7 @@ import { useMediaQuery } from '@/hooks';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { resolvePrice } from '@/utils/price';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
@@ -216,7 +217,12 @@ export default function ProgramDetailPage() {
     );
   }
 
-  const formattedPrice = `${new Intl.NumberFormat('en-US').format(program.price)} KRW`;
+  const krwPrice = resolvePrice({
+    currency: 'KRW',
+    priceInfo: program.price_info,
+  });
+  const formattedPrice =
+    typeof krwPrice === 'number' ? `${new Intl.NumberFormat('en-US').format(krwPrice)} KRW` : '-';
   const bookingInfo = program.booking_information?.replace(/\\n/g, '\n') ?? '';
   const refundInfo = program.refund_regulation?.replace(/\\n/g, '\n') ?? '';
   const processItems = program.process ?? [];

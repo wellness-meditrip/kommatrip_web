@@ -5,8 +5,10 @@ export interface ApiErrorResponse {
     message?: string;
     code?: string | number;
   };
+  error_code?: string | number;
+  code?: string | number;
   message?: string;
-  detail?: string;
+  detail?: string | { message?: string; error_code?: string | number; code?: string | number };
 }
 
 export type AppError = {
@@ -19,8 +21,37 @@ export type AppError = {
   source?: 'API' | 'QUERY' | 'UI';
 };
 
-const extractMessage = (data?: ApiErrorResponse | null) =>
-  data?.error?.message || data?.message || data?.detail || 'Unexpected error';
+const extractMessage = (data?: ApiErrorResponse | null): string => {
+  if (!data) return 'Unexpected error';
+  if (typeof data.error?.message === 'string' && data.error.message.trim().length > 0) {
+    return data.error.message;
+  }
+  if (typeof data.message === 'string' && data.message.trim().length > 0) {
+    return data.message;
+  }
+  if (typeof data.detail === 'string' && data.detail.trim().length > 0) {
+    return data.detail;
+  }
+  if (data.detail && typeof data.detail === 'object') {
+    const detailMessage = data.detail.message;
+    if (typeof detailMessage === 'string' && detailMessage.trim().length > 0) {
+      return detailMessage;
+    }
+  }
+  return 'Unexpected error';
+};
+
+const extractCode = (data?: ApiErrorResponse | null): string | number | undefined => {
+  if (!data) return undefined;
+  if (typeof data.error?.code !== 'undefined') return data.error.code;
+  if (typeof data.error_code !== 'undefined') return data.error_code;
+  if (typeof data.code !== 'undefined') return data.code;
+  if (data.detail && typeof data.detail === 'object') {
+    if (typeof data.detail.error_code !== 'undefined') return data.detail.error_code;
+    if (typeof data.detail.code !== 'undefined') return data.detail.code;
+  }
+  return undefined;
+};
 
 const containsHangul = (message: string): boolean => /[가-힣]/.test(message);
 
@@ -34,7 +65,7 @@ export const normalizeError = (error: unknown): AppError => {
     const message = extractMessage(error.response?.data) || error.message || 'Unexpected error';
     return {
       status,
-      code: error.response?.data?.error?.code,
+      code: extractCode(error.response?.data),
       message,
       details: error.response?.data,
       url: error.config?.url,
