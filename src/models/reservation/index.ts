@@ -59,16 +59,11 @@ export interface ReservationProgramInfo {
   price_info?: {
     krw?: number;
     usd?: number;
-    [currency: string]: number | undefined;
   };
   id?: number;
   company_code?: string;
   name?: string;
   description?: string;
-  price_info?: {
-    krw: number;
-    usd: number;
-  };
   guidelines?: string;
   status?: string;
   is_active?: boolean;
