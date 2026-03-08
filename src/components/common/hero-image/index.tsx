@@ -13,17 +13,36 @@ interface HeroImageProps {
   quality?: number;
 }
 
+const OPTIMIZABLE_IMAGE_HOSTNAMES = [
+  'drive.google.com',
+  'meditrip.s3.ap-northeast-2.amazonaws.com',
+  'meditripstorage.blob.core.windows.net',
+] as const;
+
+const normalizeSafeSrc = (rawSrc?: string | null): string => {
+  const value = rawSrc?.trim() ?? '';
+  if (!value) return '';
+  if (value.startsWith('/')) return value;
+  try {
+    const parsedUrl = new URL(value);
+    if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+      return value;
+    }
+    return '';
+  } catch {
+    return '';
+  }
+};
+
 const isOptimizableImage = (url: string) => {
   if (!url) return false;
   if (url.startsWith('/')) return true;
   try {
     const parsedUrl = new URL(url);
     if (parsedUrl.protocol !== 'https:') return false;
-    return [
-      'drive.google.com',
-      'meditrip.s3.ap-northeast-2.amazonaws.com',
-      'meditripstorage.blob.core.windows.net',
-    ].includes(parsedUrl.hostname);
+    return OPTIMIZABLE_IMAGE_HOSTNAMES.includes(
+      parsedUrl.hostname as (typeof OPTIMIZABLE_IMAGE_HOSTNAMES)[number]
+    );
   } catch {
     return false;
   }
@@ -40,9 +59,18 @@ export function HeroImage({
   const [imageSrc, setImageSrc] = useState('');
   const [isImageLoading, setIsImageLoading] = useState(false);
   const [isImageReady, setIsImageReady] = useState(false);
+  const handleImageError = () => {
+    setImageSrc('');
+    setIsImageLoading(false);
+    setIsImageReady(false);
+  };
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
+    setIsImageReady(true);
+  };
 
   useEffect(() => {
-    const nextSrc = src?.trim() ?? '';
+    const nextSrc = normalizeSafeSrc(src);
     setImageSrc(nextSrc);
     setIsImageLoading(Boolean(nextSrc));
     setIsImageReady(false);
@@ -61,30 +89,16 @@ export function HeroImage({
             quality={quality}
             priority={priority}
             css={[mainImage, !isImageReady && hiddenImage]}
-            onError={() => {
-              setImageSrc('');
-              setIsImageLoading(false);
-              setIsImageReady(false);
-            }}
-            onLoadingComplete={() => {
-              setIsImageLoading(false);
-              setIsImageReady(true);
-            }}
+            onError={handleImageError}
+            onLoadingComplete={handleImageLoad}
           />
         ) : (
           <img
             src={imageSrc}
             alt={alt}
             css={[mainImage, !isImageReady && hiddenImage]}
-            onError={() => {
-              setImageSrc('');
-              setIsImageLoading(false);
-              setIsImageReady(false);
-            }}
-            onLoad={() => {
-              setIsImageLoading(false);
-              setIsImageReady(true);
-            }}
+            onError={handleImageError}
+            onLoad={handleImageLoad}
           />
         ))}
       {isImageLoading && (
