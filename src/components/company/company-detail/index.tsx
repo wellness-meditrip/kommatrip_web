@@ -83,7 +83,11 @@ export default function CompanyDetail({
   return (
     <div css={wrapper}>
       <div css={profileWrapper}>
-        <HeroImage src={currentImageUrl} alt="프로필 이미지" fallbackText={t('infoPending')} />
+        <HeroImage
+          src={currentImageUrl}
+          alt={`${companyName} 프로필 이미지`}
+          fallbackText={t('infoPending')}
+        />
         {imageList.length > 1 && (
           <>
             {/* 캐러셀 네비게이션 버튼 */}
