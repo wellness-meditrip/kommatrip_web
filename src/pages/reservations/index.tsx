@@ -107,7 +107,7 @@ export default function ReservationPage() {
   const { mutateAsync: createPaymentOrder, isPending: isPaymentOrderPending } =
     usePostCreatePaymentOrderMutation();
   const company = companyData?.company ?? prefetchedCompany;
-  const programs = programList?.programs ?? [];
+  const programs = useMemo(() => programList?.programs ?? [], [programList?.programs]);
   const contactMethods = useMemo(
     () => [
       { value: 'line', label: t('form.contact.methods.line') },
@@ -283,9 +283,17 @@ export default function ReservationPage() {
         }
         const widgets = paymentWidgetsRef.current;
         if (!widgets) return;
+        const selectedCurrency = paymentWidgetConfig?.currency ?? 'KRW';
+        const programPriceByCurrency = resolvePrice({
+          currency: selectedCurrency,
+          priceInfo: programs.find((program) => program.id === pendingDraft.program_id)?.price_info,
+        });
         await widgets.setAmount({
-          currency: paymentWidgetConfig?.currency ?? 'KRW',
-          value: paymentOrder?.amount ?? pendingDraft.program_price,
+          currency: selectedCurrency,
+          value:
+            typeof programPriceByCurrency === 'number'
+              ? programPriceByCurrency
+              : pendingDraft.program_price,
         });
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
@@ -316,8 +324,8 @@ export default function ReservationPage() {
   }, [
     isPayNowPayment,
     pendingDraft,
-    paymentOrder,
     paymentWidgetConfig,
+    programs,
     isPaymentWidgetOpen,
     showToast,
     showErrorToast,
