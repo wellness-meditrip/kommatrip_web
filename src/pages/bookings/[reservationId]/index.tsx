@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { AppBar, Layout, LoginModal, Text, GNB } from '@/components';
+import { ReportModal } from '@/components/reviews/report-modal';
 import Image from 'next/image';
 import { theme } from '@/styles';
 import { useRouter } from 'next/router';
@@ -10,12 +11,17 @@ import { useAuthStore } from '@/store/auth';
 import { useDeleteReservationMutation, useGetReservationDetailQuery } from '@/queries/reservation';
 import type { LanguagePreference, ReservationDetail } from '@/models/reservation';
 import { ChevronRight } from '@/icons';
-import { ROUTES } from '@/constants';
+import {
+  RESERVATION_CANCELLATION_REASONS,
+  ReservationCancellationReasonKey,
+  ROUTES,
+} from '@/constants';
 
 type BookingStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 
 interface BookingDetailData {
   id: number;
+  displayOrderId?: string;
   companyId?: number;
   programId?: number;
   status: BookingStatus | string;
@@ -26,7 +32,7 @@ interface BookingDetailData {
   bookingDates?: { date?: string; time?: string }[];
   guestInfo?: { name?: string; contact?: string; contactMethod?: string; language?: string };
   providerInfo?: { id?: number; name?: string; address?: string; image?: string };
-  paymentInfo?: { amount?: string; finalAmount?: string };
+  paymentInfo?: { method?: string; amount?: string; finalAmount?: string };
   hasReview?: boolean;
 }
 
@@ -49,6 +55,7 @@ export default function BookingDetailPage() {
     useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [detail, setDetail] = useState<BookingDetailData | null>(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const reservationId = useMemo(() => {
     if (typeof router.query.reservationId === 'string') {
@@ -120,15 +127,31 @@ export default function BookingDetailPage() {
     [formatDateWithWeekday, formatTimeFromDate]
   );
 
-  const currencyLabel = tReservation('payment.currency');
-
   const formatAmount = useCallback(
-    (value?: number | null) => {
+    (value?: number | null, currency?: string | null) => {
       if (typeof value !== 'number') return '-';
-      return `${value.toLocaleString(locale)} ${currencyLabel}`;
+      const currencyCode =
+        typeof currency === 'string' && currency.trim() ? currency.trim().toUpperCase() : 'KRW';
+      if (currencyCode === 'KRW') return `${Math.round(value).toLocaleString(locale)} KRW`;
+      if (currencyCode === 'USD') return `${value.toLocaleString(locale)} USD`;
+      return `${value.toLocaleString(locale)} ${currencyCode}`;
     },
-    [currencyLabel, locale]
+    [locale]
   );
+
+  const resolveProgramPrice = useCallback((reservation: ReservationDetail): number | undefined => {
+    const currency = (reservation.currency ?? '').toLowerCase();
+    const priceInfo = reservation.program_info?.price_info;
+    if (priceInfo && currency && typeof priceInfo[currency] === 'number') {
+      return priceInfo[currency];
+    }
+    if (typeof reservation.program_info?.price === 'number') {
+      return reservation.program_info.price;
+    }
+    if (typeof priceInfo?.krw === 'number') return priceInfo.krw;
+    if (typeof priceInfo?.usd === 'number') return priceInfo.usd;
+    return undefined;
+  }, []);
 
   const languageLabelMap = useMemo<Record<LanguagePreference, string>>(
     () => ({
@@ -208,9 +231,16 @@ export default function BookingDetailPage() {
   );
 
   useEffect(() => {
-    if (!reservationDetailResponse?.reservation) return;
-    const reservation = reservationDetailResponse.reservation;
+    if (!reservationDetailResponse) return;
+    const reservation =
+      'reservation' in reservationDetailResponse
+        ? reservationDetailResponse.reservation
+        : reservationDetailResponse;
     const programInfo = reservation.program_info;
+    const paymentCurrency =
+      typeof reservation.currency === 'string' && reservation.currency.trim()
+        ? reservation.currency.trim().toUpperCase()
+        : 'KRW';
     const languagePreference = reservation.language_preference;
     const guestLanguage = isLanguagePreference(languagePreference)
       ? languageLabelMap[languagePreference]
@@ -222,6 +252,8 @@ export default function BookingDetailPage() {
         programInfo?.primary_image_url || programInfo?.image_urls?.[0] || fallbackImage;
       return {
         id: reservation.id,
+        displayOrderId:
+          reservation.display_order_id || reservation.reservation_code || `${reservation.id}`,
         companyId: reservation.company_id,
         programId: programInfo?.id,
         status: reservation.status ?? prev?.status ?? 'request',
@@ -243,8 +275,9 @@ export default function BookingDetailPage() {
           image: prev?.providerInfo?.image || heroImage,
         },
         paymentInfo: {
-          amount: formatAmount(programInfo?.price),
-          finalAmount: formatAmount(programInfo?.price),
+          method: t('labels.payOnline', { currency: paymentCurrency }),
+          amount: formatAmount(resolveProgramPrice(reservation), paymentCurrency),
+          finalAmount: formatAmount(resolveProgramPrice(reservation), paymentCurrency),
         },
         hasReview: prev?.hasReview ?? false,
       };
@@ -253,6 +286,8 @@ export default function BookingDetailPage() {
     reservationDetailResponse,
     formatDateTimeString,
     formatAmount,
+    resolveProgramPrice,
+    t,
     buildBookingDates,
     buildContactValue,
     formatContactMethodLabel,
@@ -264,6 +299,7 @@ export default function BookingDetailPage() {
   const bookingDates = detail?.bookingDates?.length
     ? detail.bookingDates
     : [{ date: '-', time: '-' }];
+  const displayOrderId = detail?.displayOrderId || '-';
   const guestInfo = detail?.guestInfo ?? {};
   const contactValue = guestInfo.contact || '-';
   const contactMethodLabel = guestInfo.contactMethod;
@@ -286,6 +322,23 @@ export default function BookingDetailPage() {
         : 'text_secondary';
 
   const { mutate: deleteReservation, isPending: isDeleting } = useDeleteReservationMutation();
+  const cancellationReasonLabelMap = useMemo(() => {
+    return RESERVATION_CANCELLATION_REASONS.reduce<
+      Partial<Record<ReservationCancellationReasonKey, string>>
+    >((acc, item) => {
+      acc[item.key] = t(item.labelKey);
+      return acc;
+    }, {});
+  }, [t]);
+
+  const cancellationReasons = useMemo(
+    () =>
+      RESERVATION_CANCELLATION_REASONS.map((item) => ({
+        value: item.key,
+        label: cancellationReasonLabelMap[item.key] ?? t(item.labelKey),
+      })),
+    [cancellationReasonLabelMap, t]
+  );
 
   const ctaButtons = useMemo(() => {
     switch (status) {
@@ -367,6 +420,14 @@ export default function BookingDetailPage() {
               {t('sections.bookingInfo')}
             </Text>
             <div css={sectionBody}>
+              <div css={infoRow}>
+                <Text typo="body_M" color="text_tertiary">
+                  {t('labels.id')}
+                </Text>
+                <Text typo="body_M" color="text_primary">
+                  {displayOrderId}
+                </Text>
+              </div>
               {bookingDates.map((item, index) => (
                 <div key={`${item.date}-${item.time}-${index}`} css={infoBlock}>
                   <div css={infoRow}>
@@ -478,6 +539,14 @@ export default function BookingDetailPage() {
             <div css={sectionBody}>
               <div css={infoRow}>
                 <Text typo="body_M" color="text_tertiary">
+                  {t('labels.paymentMethod')}
+                </Text>
+                <Text typo="body_M" color="text_primary">
+                  {paymentInfo.method || '-'}
+                </Text>
+              </div>
+              <div css={infoRow}>
+                <Text typo="body_M" color="text_tertiary">
                   {t('labels.paymentAmount')}
                 </Text>
                 <Text typo="body_M" color="text_primary">
@@ -539,15 +608,7 @@ export default function BookingDetailPage() {
                   return;
                 }
                 if (button.key !== 'cancel') return;
-                if (!reservationId) return;
-                deleteReservation(
-                  { reservationId, reason: null },
-                  {
-                    onSuccess: () => {
-                      setDetail((prev) => (prev ? { ...prev, status: 'canceled' } : prev));
-                    },
-                  }
-                );
+                setIsCancelModalOpen(true);
               }}
             >
               <Text
@@ -560,6 +621,30 @@ export default function BookingDetailPage() {
           ))}
         </div>
       </div>
+      <ReportModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        title={t('cancelModal.title')}
+        closeAriaLabel={t('cancelModal.close')}
+        submitLabel={t('cancelModal.submit')}
+        reasons={cancellationReasons}
+        radioName="reservation-cancel-reason"
+        showDetailField={false}
+        onSubmit={({ reason }) => {
+          if (!reservationId) return;
+          const cancellationReason =
+            cancellationReasonLabelMap[reason as ReservationCancellationReasonKey] ?? '';
+          deleteReservation(
+            { reservationId, reason: cancellationReason },
+            {
+              onSuccess: () => {
+                setDetail((prev) => (prev ? { ...prev, status: 'canceled' } : prev));
+                setIsCancelModalOpen(false);
+              },
+            }
+          );
+        }}
+      />
       {!isDesktop && <GNB />}
     </Layout>
   );

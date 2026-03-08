@@ -16,11 +16,14 @@
     "paymentInfo": "Payment Information"
   },
   "labels": {
+    "id": "ID",
     "date": "Date",
     "time": "Time",
     "name": "Name",
     "contact": "Contact",
     "language": "Language",
+    "paymentMethod": "Payment Method",
+    "payOnline": "Pay Online({currency})",
     "paymentAmount": "Payment Amount",
     "finalPaymentAmount": "Final Payment Amount"
   },
@@ -28,5 +31,19 @@
     "cancel": "Cancel",
     "bookAgain": "Book Again",
     "writeReview": "Write a Review"
+  },
+  "cancelModal": {
+    "title": "Reason for Cancellation",
+    "close": "Close cancellation reason modal",
+    "submit": "Submit Cancellation",
+    "reasons": {
+      "personalReasons": "Personal Reasons",
+      "updateBookingInfo": "Need to Update Booking Information",
+      "providerIssues": "Service Not Provided Due to Provider Issues",
+      "betterPrice": "Found a Better Price",
+      "serviceQuality": "Dissatisfied with Service Quality",
+      "unavoidableCircumstances": "Unavoidable Circumstances",
+      "other": "Other"
+    }
   }
 }
