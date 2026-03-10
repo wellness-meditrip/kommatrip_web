@@ -36,6 +36,7 @@ import { useState, useRef, useEffect } from 'react';
 import type { Locale } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
+import { isAuthRefreshInFlight } from '@/utils/auth-refresh';
 
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
@@ -68,6 +69,7 @@ export function DesktopAppBar({
   const { status } = useSession();
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthLoading = status === 'loading';
+  const isAuthRefreshing = isAuthRefreshInFlight();
   const isLoggedIn = status === 'authenticated' || !!accessToken;
   const changeLocale = useChangeLocale();
   const currentLocale = useCurrentLocale();
@@ -127,7 +129,8 @@ export function DesktopAppBar({
       '/company/[companyId]/program',
     ]);
 
-    if (isAuthLoading) return;
+    // 세션 로딩 또는 토큰 재발급 중에는 로그인 모달 판정을 보류
+    if (isAuthLoading || (isAuthRefreshing && !accessToken)) return;
 
     if (isLoggedIn || guestAccessiblePathnames.has(router.pathname)) {
       setShowLoginModal(false);
@@ -135,7 +138,7 @@ export function DesktopAppBar({
     }
 
     setShowLoginModal(true);
-  }, [isAuthLoading, isLoggedIn, router.isReady, router.pathname]);
+  }, [isAuthLoading, isAuthRefreshing, accessToken, isLoggedIn, router.isReady, router.pathname]);
 
   return (
     <div css={wrapper({ variant, sticky })}>
