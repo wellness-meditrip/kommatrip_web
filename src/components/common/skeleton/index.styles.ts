@@ -135,3 +135,47 @@ export const reviewTags = css`
   display: flex;
   gap: 8px;
 `;
+
+export const reservationList = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  width: 100%;
+`;
+
+export const reservationCard = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+
+  background-color: ${theme.colors.white};
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+`;
+
+export const reservationCardRow = css`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const reservationThumb = css`
+  width: 80px;
+  min-width: 80px;
+  border-radius: 8px;
+`;
+
+export const reservationContent = css`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+`;
+
+export const reservationButtonRow = css`
+  width: 100%;
+`;

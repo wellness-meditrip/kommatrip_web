@@ -21,6 +21,12 @@ import {
   reviewCard,
   reviewHeader,
   reviewTags,
+  reservationList,
+  reservationCard,
+  reservationCardRow,
+  reservationThumb,
+  reservationContent,
+  reservationButtonRow,
 } from './index.styles';
 
 interface SkeletonProps {
@@ -49,6 +55,10 @@ interface ProgramCardSkeletonListProps {
 }
 
 interface ReviewCardSkeletonListProps {
+  count?: number;
+}
+
+interface ReservationCardSkeletonListProps {
   count?: number;
 }
 
@@ -171,6 +181,30 @@ export function ReviewCardSkeletonList({ count = 2 }: ReviewCardSkeletonListProp
           </div>
           <SkeletonText lines={3} lineHeight={12} lastLineWidth="85%" />
           <ReactSkeleton height={160} borderRadius={10} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function ReservationCardSkeletonList({ count = 3 }: ReservationCardSkeletonListProps) {
+  return (
+    <div css={reservationList}>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} css={reservationCard}>
+          <div css={reservationCardRow}>
+            <div css={reservationThumb}>
+              <ReactSkeleton width={80} height={80} borderRadius={8} />
+            </div>
+            <div css={reservationContent}>
+              <ReactSkeleton width="62%" height={18} />
+              <ReactSkeleton width="44%" height={14} />
+              <ReactSkeleton width="52%" height={14} />
+            </div>
+          </div>
+          <div css={reservationButtonRow}>
+            <ReactSkeleton width="100%" height={22} borderRadius={4} />
+          </div>
         </div>
       ))}
     </div>
