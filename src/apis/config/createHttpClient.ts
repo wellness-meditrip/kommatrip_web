@@ -108,7 +108,8 @@ export const createHttpClient = ({ baseURL }: Props) => {
       const responseData = error.response?.data;
       const onyuError = responseData?.error;
       const backendDetail = responseData?.detail;
-      const backendMessage = onyuError?.message ?? backendDetail;
+      const backendMessageField = responseData?.message;
+      const backendMessage = onyuError?.message ?? backendDetail ?? backendMessageField;
 
       // 498(토큰 만료) 또는 TOKEN_EXPIRED 코드면 재발급 시도
       const statusCode = error.response?.status;
@@ -122,6 +123,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
         isTokenExpiredStatus ||
         isTokenExpiredCode ||
         isTokenExpiredMessage ||
+        (statusCode === 400 && isNotAuthenticatedMessage && hasRefreshToken) ||
         (statusCode === 401 && isInvalidTokenMessage && hasRefreshToken) ||
         (statusCode === 403 && isNotAuthenticatedMessage && hasRefreshToken);
 
