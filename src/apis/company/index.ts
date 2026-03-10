@@ -94,8 +94,7 @@ export const getCompanySearch = async (params: SearchParams) => {
 export const getCompanyDetail = async ({
   companyId,
 }: GetCompanyIdRequestParams): Promise<{ company: CompanyDetail }> => {
-  // api 클라이언트 인터셉터에서 Authorization/토큰 재발급을 처리
-  return await api.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`);
+  return await guestApi.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`);
 };
 
 export const getCompanyAll = async () => {
