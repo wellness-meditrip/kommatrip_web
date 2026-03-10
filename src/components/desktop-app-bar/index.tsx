@@ -129,7 +129,6 @@ export function DesktopAppBar({
       '/company/[companyId]/program',
     ]);
 
-    // 세션 로딩 또는 토큰 재발급 중에는 로그인 모달 판정을 보류
     if (isAuthLoading || (isAuthRefreshing && !accessToken)) return;
 
     if (isLoggedIn || guestAccessiblePathnames.has(router.pathname)) {
@@ -139,6 +138,7 @@ export function DesktopAppBar({
 
     setShowLoginModal(true);
   }, [isAuthLoading, isAuthRefreshing, accessToken, isLoggedIn, router.isReady, router.pathname]);
+
 
   return (
     <div css={wrapper({ variant, sticky })}>
