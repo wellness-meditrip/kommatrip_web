@@ -263,7 +263,7 @@ export default function ProgramDetailPage() {
                   </div>
                   <div css={processGrid}>
                     {processItems.map((step, index) => (
-                      <div key={`${step}-${index}`} css={processCard}>
+                      <div key={index} css={processCard}>
                         <Text typo="body_M" color="primary30">
                           {t('step', { number: String(index + 1).padStart(2, '0') })}
                         </Text>

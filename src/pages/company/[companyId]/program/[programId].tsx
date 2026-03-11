@@ -18,7 +18,7 @@ import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { GetStaticPaths } from 'next';
 import { ProgramDetail } from '@/models/program';
-import { getProgramDetailPublic } from '@/apis';
+import { getProgramDetail } from '@/apis';
 import { withI18nGsp } from '@/i18n/page-props';
 import { normalizeError } from '@/utils/error-handler';
 import { resolvePrice } from '@/utils/price';
@@ -248,7 +248,7 @@ export default function ProgramDetailPage({
                   </div>
                   <div css={processGrid}>
                     {processItems.map((step, index) => (
-                      <div key={`${step}-${index}`} css={processCard}>
+                      <div key={index} css={processCard}>
                         <Text typo="body_M" color="primary30">
                           {t('step', { number: String(index + 1).padStart(2, '0') })}
                         </Text>
@@ -357,7 +357,7 @@ export const getStaticProps = withI18nGsp<ProgramDetailPageProps>(async ({ param
   }
 
   try {
-    const response = await getProgramDetailPublic(programId);
+    const response = await getProgramDetail(programId);
     if (!response?.program) {
       return { notFound: true };
     }

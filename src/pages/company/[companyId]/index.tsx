@@ -24,7 +24,7 @@ import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
-import { getCompanyDetailPublic } from '@/apis/company';
+import { getCompanyDetail } from '@/apis/company';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
@@ -539,7 +539,7 @@ export const getStaticProps = withI18nGsp<ClinicDetailPageProps>(async ({ params
   }
 
   try {
-    const response = await getCompanyDetailPublic(companyId);
+    const response = await getCompanyDetail({ companyId });
     if (!response?.company) {
       return { notFound: true };
     }

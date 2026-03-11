@@ -97,12 +97,6 @@ export const getCompanyDetail = async ({
   return await guestApi.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`);
 };
 
-export const getCompanyDetailPublic = async (
-  companyId: number
-): Promise<{ company: CompanyDetail }> => {
-  return await guestApi.get<{ company: CompanyDetail }>(`/api/companies/${companyId}`);
-};
-
 export const getCompanyAll = async () => {
   return await guestApi.get<GetCompanyAllResponse>('/api/companies/all', {
     params: { status: 'active' },
