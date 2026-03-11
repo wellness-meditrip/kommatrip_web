@@ -52,7 +52,7 @@ import { MessageRenderer } from './messages';
 import { useChatActions } from './hooks/useChatActions';
 
 const MESSAGE_LIMIT = 10;
-const ENABLE_CHATBOT = false;
+const ENABLE_CHATBOT = true;
 
 export function ChatbotLauncher() {
   const t = useTranslations('chatbot');
@@ -69,7 +69,7 @@ export function ChatbotLauncher() {
       return;
     }
 
-    // TODO(챗봇): 백엔드 수정 완료 후 ENABLE_CHATBOT=true로 바꿔 기존 챗봇 모달 동작을 복구한다.
+    // 차단 해제: 기존 챗봇 모달 진입 경로를 사용한다.
     if (!ENABLE_CHATBOT) {
       setIsPreparingOpen(true);
       return;
