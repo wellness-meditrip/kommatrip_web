@@ -4,7 +4,7 @@ import { css } from '@emotion/react';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
-import type { GetStaticPaths } from 'next';
+import type { GetServerSideProps } from 'next';
 
 import {
   AppBar,
@@ -29,7 +29,7 @@ import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
-import { withI18nGsp } from '@/i18n/page-props';
+import { withI18nGssp } from '@/i18n/page-props';
 import { normalizeError } from '@/utils/error-handler';
 
 interface ClinicDetailPageProps extends Record<string, unknown> {
@@ -522,47 +522,43 @@ export const youWillAlsoLikeWrapper = css`
   align-self: stretch;
 `;
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
-};
+export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
+  withI18nGssp<ClinicDetailPageProps>(
+    async ({ params }) => {
+      const companyIdParam = params?.companyId;
+      const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
+      const companyId = Number(rawCompanyId);
 
-export const getStaticProps = withI18nGsp<ClinicDetailPageProps>(async ({ params }) => {
-  const companyIdParam = params?.companyId;
-  const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
-  const companyId = Number(rawCompanyId);
+      if (!companyId || Number.isNaN(companyId)) {
+        return { notFound: true };
+      }
 
-  if (!companyId || Number.isNaN(companyId)) {
-    return { notFound: true };
-  }
+      try {
+        const response = await getCompanyDetail({ companyId });
+        if (!response?.company) {
+          return { notFound: true };
+        }
 
-  try {
-    const response = await getCompanyDetail({ companyId });
-    if (!response?.company) {
-      return { notFound: true };
-    }
+        const canonicalPath = `/company/${companyId}`;
 
-    const canonicalPath = `/company/${companyId}`;
+        return {
+          props: {
+            companyId,
+            initialCompany: response.company,
+            initialCanonicalPath: canonicalPath,
+          },
+        };
+      } catch (error) {
+        const normalizedError = normalizeError(error);
 
-    return {
-      props: {
-        companyId,
-        initialCompany: response.company,
-        initialCanonicalPath: canonicalPath,
-      },
-      revalidate: 3600,
-    };
-  } catch (error) {
-    const normalizedError = normalizeError(error);
+        if (normalizedError.status === 404) {
+          return { notFound: true };
+        }
 
-    if (normalizedError.status === 404) {
-      return { notFound: true };
-    }
-
-    // 5xx/network 등 일시 오류는 404로 고정하지 않고 예외를 던져
-    // ISR에서 기존 정상 페이지를 유지하도록 한다.
-    throw error;
-  }
-});
+        // 5xx/network 등 일시 오류는 404로 고정하지 않고 예외를 던져
+        // ISR에서 기존 정상 페이지를 유지하도록 한다.
+        throw error;
+      }
+    },
+    ['company-detail', 'common']
+  );

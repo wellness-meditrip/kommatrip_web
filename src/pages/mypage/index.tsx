@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { routing, type Locale } from '@/i18n/routing';
 import { MyReviewsPanel } from '@/components/mypage/reviews-panel';
 import { ReservationsPanel } from '@/components/mypage/reservations-panel';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 type MenuItemConfig = {
   id: string;
@@ -606,3 +607,5 @@ const detailFrame = css`
   transform: scale(0.9);
   transform-origin: top left;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['mypage']);

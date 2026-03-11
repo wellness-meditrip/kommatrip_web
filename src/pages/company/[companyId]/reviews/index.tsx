@@ -11,6 +11,7 @@ import { useGetGuestCompanyReviewsInfiniteQuery } from '@/queries/review';
 import { Card } from '@/components/reviews/card';
 import { TagFilterButton } from '@/components/reviews';
 import { useTranslations } from 'next-intl';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 export default function CompanyReviewListPage() {
   const router = useRouter();
@@ -314,3 +315,5 @@ const emptyState = css`
   min-height: 200px;
   text-align: center;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['review-list']);

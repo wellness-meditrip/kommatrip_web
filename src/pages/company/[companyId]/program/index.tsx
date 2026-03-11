@@ -24,6 +24,7 @@ import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { resolvePrice } from '@/utils/price';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 export default function ProgramDetailPage() {
   const router = useRouter();
@@ -571,3 +572,5 @@ const noticeText = css`
 const titleWrapper = css`
   margin: 0 0 12px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['program-detail']);

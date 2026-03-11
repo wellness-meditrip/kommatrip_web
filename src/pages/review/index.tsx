@@ -36,6 +36,7 @@ import { Loading } from '@/components/common';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/auth';
 import { useGetReservationDetailQuery } from '@/queries/reservation';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 interface ReviewDraft {
   reservationId?: number;
@@ -365,3 +366,5 @@ export default function ReviewPage() {
     </Layout>
   );
 }
+
+export const getServerSideProps = getI18nServerSideProps(['review', 'review-list']);
