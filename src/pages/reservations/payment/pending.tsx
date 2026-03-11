@@ -8,6 +8,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 import { ROUTES } from '@/constants';
 import { Meta, createPageMeta } from '@/seo';
 import { useMediaQuery } from '@/hooks';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 export default function ReservationPaymentPendingPage() {
   const router = useRouter();
@@ -90,3 +91,5 @@ const content = css`
 const action = css`
   margin-top: 16px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['reservation']);

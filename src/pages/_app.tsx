@@ -17,6 +17,9 @@ import { Meta, createPageMeta, type MetaProps } from '@/seo';
 import { ChatbotLauncher } from '@/components';
 import { SkeletonTheme } from 'react-loading-skeleton';
 
+const warnedMissingMessages = new Set<string>();
+const EMPTY_MESSAGES: Record<string, unknown> = {};
+
 /**
  * NextAuth 세션과 zustand auth store 동기화
  * 토큰 재발급은 API 인터셉터에서 401 + TOKEN_EXPIRED 발생 시 자동 처리
@@ -30,11 +33,12 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const router = useRouter();
   const initialPageProps = pageProps as Partial<I18nPageProps>;
   const initialLocale = initialPageProps.locale ?? routing.defaultLocale;
+  const pageMessages = initialPageProps.messages as Record<string, unknown> | undefined;
+  const initialMessages = pageMessages ?? EMPTY_MESSAGES;
+  const pageLocale = initialPageProps.locale ?? routing.defaultLocale;
   const [messageCache, setMessageCache] = useState<
     Partial<Record<Locale, Record<string, unknown>>>
-  >(() => (initialPageProps.messages ? { [initialLocale]: initialPageProps.messages } : {}));
-  const [locale, setLocale] = useState<Locale>(initialLocale);
-  const [isLocaleReady, setIsLocaleReady] = useState(false);
+  >(() => ({ [initialLocale]: initialMessages }));
   const defaultAppName = 'kommatrip';
   const defaultAppTitle = 'Korean Wellness & K-beauty Tours in Seoul';
   const defaultAppDescription =
@@ -42,51 +46,31 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
-    if (!router.isReady) return;
-    const pathLocale = router.asPath.split('/')[1];
-    const resolvedLocale =
-      pathLocale && routing.locales.includes(pathLocale as Locale)
-        ? (pathLocale as Locale)
-        : routing.defaultLocale;
-    setLocale(resolvedLocale);
-    setIsLocaleReady(true);
-  }, [router.asPath, router.isReady]);
-
-  useEffect(() => {
     const pageLocale = initialPageProps.locale;
     const pageMessages = initialPageProps.messages;
     if (!pageLocale || !pageMessages) return;
 
     setMessageCache((prev) => {
-      if (prev[pageLocale]) return prev;
-      return { ...prev, [pageLocale]: pageMessages };
+      const existingMessages = prev[pageLocale] ?? {};
+      const hasAllNamespaces = Object.keys(pageMessages).every((key) =>
+        Object.prototype.hasOwnProperty.call(existingMessages, key)
+      );
+
+      if (hasAllNamespaces) return prev;
+
+      return {
+        ...prev,
+        [pageLocale]: {
+          ...existingMessages,
+          ...pageMessages,
+        },
+      };
     });
   }, [initialPageProps.locale, initialPageProps.messages]);
 
-  // 클라이언트 사이드 메시지 로드는 비차단으로 처리하고, 기존 화면은 유지한다.
-  useEffect(() => {
-    if (!isLocaleReady) return;
-    if (messageCache[locale]) return;
-
-    const loadMessages = async () => {
-      try {
-        const response = await fetch(`/api/i18n/${locale}`);
-        if (!response.ok) return;
-        const data = (await response.json()) as { messages?: Record<string, unknown> };
-        if (!data.messages) return;
-
-        setMessageCache((prev) => ({ ...prev, [locale]: data.messages! }));
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-      }
-    };
-
-    loadMessages();
-  }, [locale, isLocaleReady, messageCache]);
-
   const messages = useMemo(
-    () => messageCache[locale] ?? initialPageProps.messages ?? {},
-    [initialPageProps.messages, locale, messageCache]
+    () => messageCache[pageLocale] ?? pageMessages ?? EMPTY_MESSAGES,
+    [messageCache, pageLocale, pageMessages]
   );
 
   const appName =
@@ -140,7 +124,34 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       <Meta {...resolvedMeta} />
       <SessionProvider session={session}>
         <AuthSync />
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider
+          locale={pageLocale}
+          messages={messages}
+          onError={(error) => {
+            if ((error as { code?: string })?.code === 'MISSING_MESSAGE') {
+              if (process.env.NODE_ENV !== 'production') {
+                const missingError = error as {
+                  namespace?: string;
+                  key?: string;
+                  message?: string;
+                };
+                const namespace = missingError.namespace ?? 'unknown';
+                const key = missingError.key ?? missingError.message ?? 'unknown';
+                const dedupeKey = `${pageLocale}:${namespace}:${key}`;
+                if (!warnedMissingMessages.has(dedupeKey)) {
+                  warnedMissingMessages.add(dedupeKey);
+                  console.warn(`[i18n] Missing message (${pageLocale}): ${namespace}.${key}`);
+                }
+              }
+              return;
+            }
+            console.error(error);
+          }}
+          getMessageFallback={({ namespace, key }) => {
+            const prefix = namespace ? `${namespace}.` : '';
+            return `${prefix}${key}`;
+          }}
+        >
           <QueryProvider>
             <SkeletonTheme
               baseColor={theme.colors.gray200}

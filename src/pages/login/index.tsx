@@ -18,6 +18,7 @@ import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 import { useAuthStore } from '@/store/auth';
 import { setCookie } from '@/utils/cookie';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 interface LoginFormData {
   email: string;
@@ -599,3 +600,5 @@ const termsSection = css`
   flex-wrap: wrap;
   gap: 4px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['auth.login']);

@@ -39,6 +39,7 @@ import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { resolvePrice, type CurrencyCode } from '@/utils/price';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 const REFUND_POLICY_URL =
   'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
@@ -1578,3 +1579,5 @@ const modalSubmit = css`
 const emptyContainer = css`
   margin: 24px 16px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['reservation']);

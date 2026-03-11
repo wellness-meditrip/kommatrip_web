@@ -21,6 +21,7 @@ import {
   resolvePaymentResult,
 } from '@/utils/payment-confirm';
 import { normalizeError } from '@/utils/error-handler';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 interface ReservationCompleteData {
   company_name: string;
@@ -513,3 +514,5 @@ const actionBar = css`
     box-shadow: none;
   }
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['reservation']);

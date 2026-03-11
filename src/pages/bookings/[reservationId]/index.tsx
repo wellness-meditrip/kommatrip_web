@@ -16,6 +16,7 @@ import {
   type ReservationCancellationReasonKey,
   ROUTES,
 } from '@/constants';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 type BookingStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 
@@ -846,3 +847,5 @@ const ctaSecondaryButton = css`
     cursor: default;
   }
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['booking-detail', 'reservation']);

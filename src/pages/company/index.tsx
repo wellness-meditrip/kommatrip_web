@@ -547,19 +547,21 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
   );
 }
 
-export const getServerSideProps: GetServerSideProps<CompanyPageProps> = withI18nGssp(
-  async ({ query, resolvedUrl }) => {
-    const q = typeof query.q === 'string' ? query.q.trim() : '';
-    const canonicalPath = resolvedUrl.split('?')[0] || '/company';
+export const getServerSideProps: GetServerSideProps<CompanyPageProps> =
+  withI18nGssp<CompanyPageProps>(
+    async ({ query, resolvedUrl }) => {
+      const q = typeof query.q === 'string' ? query.q.trim() : '';
+      const canonicalPath = resolvedUrl.split('?')[0] || '/company';
 
-    return {
-      props: {
-        initialKeyword: q,
-        initialCanonicalPath: canonicalPath,
-      },
-    };
-  }
-);
+      return {
+        props: {
+          initialKeyword: q,
+          initialCanonicalPath: canonicalPath,
+        },
+      };
+    },
+    ['company', 'common']
+  );
 
 export const wrapper = css`
   display: flex;

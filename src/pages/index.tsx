@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import {
   Layout,
   HeroSection,
@@ -22,7 +22,7 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
-import { withI18nGsp } from '@/i18n/page-props';
+import { withI18nGssp } from '@/i18n/page-props';
 
 interface HomePageProps {
   heroImages: string[];
@@ -263,28 +263,29 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getStaticProps: GetStaticProps<HomePageProps> = withI18nGsp(async () => {
-  const path = await import('node:path');
-  const { readdir } = await import('node:fs/promises');
+export const getServerSideProps: GetServerSideProps<HomePageProps> =
+  withI18nGssp<HomePageProps>(async () => {
+    const path = await import('node:path');
+    const { readdir } = await import('node:fs/promises');
 
-  const dir = path.join(process.cwd(), 'public', 'images', 'hero');
-  let heroImages: string[] = [];
+    const dir = path.join(process.cwd(), 'public', 'images', 'hero');
+    let heroImages: string[] = [];
 
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    heroImages = entries
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .filter((name) => ALLOWED_EXTS.has(path.extname(name).toLowerCase()))
-      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
-      .map((name) => `/images/hero/${name}`);
-  } catch {
-    heroImages = [];
-  }
+    try {
+      const entries = await readdir(dir, { withFileTypes: true });
+      heroImages = entries
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name)
+        .filter((name) => ALLOWED_EXTS.has(path.extname(name).toLowerCase()))
+        .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+        .map((name) => `/images/hero/${name}`);
+    } catch {
+      heroImages = [];
+    }
 
-  return {
-    props: {
-      heroImages,
-    },
-  };
-});
+    return {
+      props: {
+        heroImages,
+      },
+    };
+  }, ['common']);

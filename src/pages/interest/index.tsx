@@ -17,6 +17,7 @@ import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import type { Gender, AgeGroup } from '@/models/auth';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 // 관심사 옵션
 const INTEREST_OPTIONS = [
@@ -365,3 +366,5 @@ const submitButtonStyle = css`
     max-width: 480px;
   }
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['interest']);

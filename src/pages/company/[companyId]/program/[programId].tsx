@@ -16,10 +16,10 @@ import { useMediaQuery } from '@/hooks';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
-import { GetStaticPaths } from 'next';
+import type { GetServerSideProps } from 'next';
 import { ProgramDetail } from '@/models/program';
 import { getProgramDetail } from '@/apis';
-import { withI18nGsp } from '@/i18n/page-props';
+import { withI18nGssp } from '@/i18n/page-props';
 import { normalizeError } from '@/utils/error-handler';
 import { resolvePrice } from '@/utils/price';
 
@@ -336,49 +336,45 @@ export default function ProgramDetailPage({
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
-};
+export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
+  withI18nGssp<ProgramDetailPageProps>(
+    async ({ params }) => {
+      const companyIdParam = params?.companyId;
+      const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
+      const companyId = Number(rawCompanyId);
 
-export const getStaticProps = withI18nGsp<ProgramDetailPageProps>(async ({ params }) => {
-  const companyIdParam = params?.companyId;
-  const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
-  const companyId = Number(rawCompanyId);
+      const programIdParam = params?.programId;
+      const rawProgramId = Array.isArray(programIdParam) ? programIdParam[0] : programIdParam;
+      const programId = Number(rawProgramId);
 
-  const programIdParam = params?.programId;
-  const rawProgramId = Array.isArray(programIdParam) ? programIdParam[0] : programIdParam;
-  const programId = Number(rawProgramId);
+      if (!companyId || Number.isNaN(companyId) || !programId || Number.isNaN(programId)) {
+        return { notFound: true };
+      }
 
-  if (!companyId || Number.isNaN(companyId) || !programId || Number.isNaN(programId)) {
-    return { notFound: true };
-  }
+      try {
+        const response = await getProgramDetail(programId);
+        if (!response?.program) {
+          return { notFound: true };
+        }
 
-  try {
-    const response = await getProgramDetail(programId);
-    if (!response?.program) {
-      return { notFound: true };
-    }
+        return {
+          props: {
+            programId,
+            initialProgram: response.program,
+            initialCanonicalPath: `/company/${companyId}/program/${programId}`,
+          },
+        };
+      } catch (error) {
+        const normalizedError = normalizeError(error);
+        if (normalizedError.status === 404) {
+          return { notFound: true };
+        }
 
-    return {
-      props: {
-        programId,
-        initialProgram: response.program,
-        initialCanonicalPath: `/company/${companyId}/program/${programId}`,
-      },
-      revalidate: 3600,
-    };
-  } catch (error) {
-    const normalizedError = normalizeError(error);
-    if (normalizedError.status === 404) {
-      return { notFound: true };
-    }
-
-    throw error;
-  }
-});
+        throw error;
+      }
+    },
+    ['program-detail', 'common']
+  );
 
 const imageSection = css`
   width: 100%;
