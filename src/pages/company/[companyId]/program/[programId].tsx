@@ -21,6 +21,7 @@ import { ProgramDetail } from '@/models/program';
 import { getProgramDetailPublic } from '@/apis';
 import { withI18nGsp } from '@/i18n/page-props';
 import { normalizeError } from '@/utils/error-handler';
+import { resolvePrice } from '@/utils/price';
 
 interface ProgramDetailPageProps extends Record<string, unknown> {
   programId: number;
@@ -161,7 +162,12 @@ export default function ProgramDetailPage({
     );
   }
 
-  const formattedPrice = `${new Intl.NumberFormat('en-US').format(program.price)} KRW`;
+  const krwPrice = resolvePrice({
+    currency: 'KRW',
+    priceInfo: program.price_info,
+  });
+  const formattedPrice =
+    typeof krwPrice === 'number' ? `${new Intl.NumberFormat('en-US').format(krwPrice)} KRW` : '-';
   const bookingInfo = program.booking_information?.replace(/\\n/g, '\n') ?? '';
   const refundInfo = program.refund_regulation?.replace(/\\n/g, '\n') ?? '';
   const processItems = program.process ?? [];
