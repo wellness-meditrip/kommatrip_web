@@ -5,7 +5,6 @@ import {
   Layout,
   CTAButton,
   LoginModal,
-  Loading,
   Empty,
   CompanyInfoCard,
   ProgramSection,
@@ -14,6 +13,7 @@ import {
   ScheduleSection,
   Text,
   Dim,
+  Skeleton,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { useRouter } from 'next/router';
@@ -39,6 +39,7 @@ import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { resolvePrice, type CurrencyCode } from '@/utils/price';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 const REFUND_POLICY_URL =
   'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
@@ -101,13 +102,16 @@ export default function ReservationPage() {
   const { data: programList, isLoading: isProgramLoading } = useGetProgramCompanyListQuery({
     company_id: resolvedCompanyId,
   });
-  const { data: profileData } = useGetUserProfileQuery();
+  const { data: profileData, isLoading: isProfileLoading } = useGetUserProfileQuery();
   const { mutateAsync: createReservation, isPending: isCreatingReservation } =
     usePostCreateReservationMutation();
   const { mutateAsync: createPaymentOrder, isPending: isPaymentOrderPending } =
     usePostCreatePaymentOrderMutation();
   const company = companyData?.company ?? prefetchedCompany;
   const programs = useMemo(() => programList?.programs ?? [], [programList?.programs]);
+  const shouldShowCompanySkeleton = hasValidCompanyId && !company && isCompanyLoading;
+  const isProgramSectionLoading = hasValidCompanyId && isProgramLoading;
+  const isContactSectionLoading = hasValidCompanyId && isProfileLoading;
   const contactMethods = useMemo(
     () => [
       { value: 'line', label: t('form.contact.methods.line') },
@@ -845,12 +849,6 @@ export default function ReservationPage() {
               <Empty title={t('emptyCompany')} />
             </div>
           )}
-          {hasValidCompanyId && (isCompanyLoading || isProgramLoading) && (
-            <div css={loadingContainer}>
-              <Loading title={t('loading')} />
-            </div>
-          )}
-
           {hasValidCompanyId && (
             <div css={contentGrid}>
               <div css={sideColumn}>
@@ -871,6 +869,20 @@ export default function ReservationPage() {
                       />
                     </div>
                   )}
+                  {shouldShowCompanySkeleton && (
+                    <div css={companyInfoCard}>
+                      <Skeleton width="100%" height={160} radius={12} />
+                      <div css={sideCardSkeletonContent}>
+                        <Skeleton width="65%" height={24} />
+                        <Skeleton width="85%" height={16} />
+                        <div css={sideCardSkeletonTags}>
+                          <Skeleton width={64} height={24} radius={999} />
+                          <Skeleton width={72} height={24} radius={999} />
+                          <Skeleton width={58} height={24} radius={999} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div css={desktopSubmitWrapper}>
                     <CTAButton
                       onClick={handleSubmit}
@@ -887,6 +899,7 @@ export default function ReservationPage() {
                 <ProgramSection
                   isOpen={isProgramsOpen}
                   onToggle={() => setIsProgramsOpen((prev) => !prev)}
+                  isLoading={isProgramSectionLoading}
                   programs={programs}
                   selectedProgramId={selectedProgramId}
                   onSelectProgram={(programId) =>
@@ -900,6 +913,7 @@ export default function ReservationPage() {
                 <ContactSection
                   isOpen={isContactOpen}
                   onToggle={() => setIsContactOpen((prev) => !prev)}
+                  isLoading={isContactSectionLoading}
                   contactMethods={contactMethods}
                   selectedContactMethod={selectedContactMethod}
                   onSelectMethod={handleSelectContactMethod}
@@ -1306,6 +1320,19 @@ const companyImage = css`
   border-radius: 12px;
 `;
 
+const sideCardSkeletonContent = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 4px 2px;
+`;
+
+const sideCardSkeletonTags = css`
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
 const paymentSection = css`
   margin: 12px 16px 8px;
   padding: 20px 18px;
@@ -1549,10 +1576,8 @@ const modalSubmit = css`
   background: ${theme.colors.primary50};
 `;
 
-const loadingContainer = css`
-  margin: 24px 16px;
-`;
-
 const emptyContainer = css`
   margin: 24px 16px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['reservation']);

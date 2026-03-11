@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { messages } = await getI18nConfig(validLocale);
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=86400');
     return res.status(200).json({ messages, locale: validLocale });
   } catch (error) {
     console.error('Failed to load messages:', error);

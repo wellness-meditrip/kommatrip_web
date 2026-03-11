@@ -5,45 +5,52 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import {
-  CTAButton,
-  HeroImage,
-  Loading,
-  RoundButton,
-  DesktopAppBar,
-  LoginModal,
-  PageErrorEmpty,
-} from '@/components';
+import { CTAButton, RoundButton, DesktopAppBar, LoginModal, PageErrorEmpty } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useMediaQuery } from '@/hooks';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
+import type { GetServerSideProps } from 'next';
+import { ProgramDetail } from '@/models/program';
+import { getProgramDetail } from '@/apis';
+import { withI18nGssp } from '@/i18n/page-props';
+import { normalizeError } from '@/utils/error-handler';
 import { resolvePrice } from '@/utils/price';
-import { getI18nServerSideProps } from '@/i18n/page-props';
 
-export default function ProgramDetailPage() {
+interface ProgramDetailPageProps extends Record<string, unknown> {
+  programId: number;
+  initialProgram: ProgramDetail;
+  initialCanonicalPath: string;
+}
+
+export default function ProgramDetailPage({
+  programId,
+  initialProgram,
+  initialCanonicalPath,
+}: ProgramDetailPageProps) {
   const router = useRouter();
   const t = useTranslations('program-detail');
   const tCommon = useTranslations('common');
-  const { programId } = router.query;
-  const programIdNumber = Number(programId);
-  const { data, isLoading, error } = useGetProgramDetailQuery(programIdNumber, {
+  const { data, error } = useGetProgramDetailQuery(programId, {
     suppressGlobalError: true,
+    initialData: { program: initialProgram },
+    enabled: !!programId,
   });
-  const pageTitle = data?.program?.name || t('title');
+  const program = data?.program ?? initialProgram;
+  const pageTitle = program?.name || t('title');
   const appDescription = tCommon('app.description');
-  const metaDescription = data?.program?.description?.trim() || appDescription;
-  const ogImage =
-    data?.program?.image_urls?.[0] || data?.program?.primary_image_url || '/og/OG_image.jpg';
+  const metaDescription = program?.description?.trim() || appDescription;
+  const ogImage = program?.image_urls?.[0] || program?.primary_image_url || '/og/OG_image.jpg';
   const meta = createPageMeta({
     pageTitle,
     description: metaDescription,
-    path: router.asPath,
+    path: router.asPath || initialCanonicalPath,
     image: ogImage,
   });
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -74,7 +81,6 @@ export default function ProgramDetailPage() {
   };
 
   const detailsText = useMemo(() => {
-    const program = data?.program;
     if (!program) return '';
 
     const formattedDescription = program.description?.replace(/\\n/g, '\n') ?? '';
@@ -83,90 +89,52 @@ export default function ProgramDetailPage() {
       return `${formattedDescription}\n\n${formattedGuidelines}`;
     }
     return formattedDescription || formattedGuidelines;
-  }, [data]);
+  }, [program]);
 
   const displayImageUrl = useMemo(() => {
-    const program = data?.program;
-    if (!program) return '';
+    if (!program) return '/default.png';
     const primaryImageUrl = program.primary_image_url || '';
     const fallbackImageUrl = program.image_urls?.[0] || '';
-    return primaryImageUrl || fallbackImageUrl || '';
-  }, [data]);
+    return primaryImageUrl || fallbackImageUrl || '/default.png';
+  }, [program]);
 
   const detailImageUrl = useMemo(() => {
-    const program = data?.program;
     if (!program) return '';
     return program.primary_image_url || '';
-  }, [data]);
+  }, [program]);
 
+  const [imageSrc, setImageSrc] = useState('/default.png');
   const [detailImageSrc, setDetailImageSrc] = useState('');
+  const isSasImage = imageSrc?.includes('meditripstorage.blob.core.windows.net')
+    ? imageSrc.includes('sig=')
+    : false;
+  const isOptimizableImage = (url: string) => {
+    if (!url) return false;
+    if (url.startsWith('/')) return true;
+    try {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.protocol !== 'https:') return false;
+      return [
+        'drive.google.com',
+        'meditrip.s3.ap-northeast-2.amazonaws.com',
+        'meditripstorage.blob.core.windows.net',
+      ].includes(parsedUrl.hostname);
+    } catch {
+      return false;
+    }
+  };
+  const shouldUseNextImage = isOptimizableImage(imageSrc);
+
+  useEffect(() => {
+    setImageSrc(displayImageUrl);
+  }, [displayImageUrl]);
 
   useEffect(() => {
     setDetailImageSrc(detailImageUrl);
   }, [detailImageUrl]);
 
-  if (!router.isReady || !programIdNumber) {
-    return (
-      <>
-        <Meta {...meta} />
-        <Layout isAppBarExist={false} title={pageTitle}>
-          <div css={desktopAppBar}>
-            <DesktopAppBar
-              onSearchChange={handleSearchChange}
-              onSearch={handleSearch}
-              searchPlaceholder={tCommon('search.addressPlaceholder')}
-            />
-          </div>
-          <div css={mobileAppBar}>
-            <AppBar onBackClick={router.back} leftButton={true} />
-          </div>
-          <Loading title={t('loading')} />
-        </Layout>
-      </>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <>
-        <Meta {...meta} />
-        <Layout isAppBarExist={false} title={pageTitle}>
-          <div css={desktopAppBar}>
-            <DesktopAppBar
-              onSearchChange={handleSearchChange}
-              onSearch={handleSearch}
-              searchPlaceholder={tCommon('search.addressPlaceholder')}
-            />
-          </div>
-          <div css={mobileAppBar}>
-            <AppBar onBackClick={router.back} leftButton={true} />
-          </div>
-          <Loading title={t('loading')} />
-        </Layout>
-      </>
-    );
-  }
-
-  const program = data?.program;
   if (error) {
-    return (
-      <>
-        <Meta {...meta} />
-        <Layout isAppBarExist={false} title={pageTitle}>
-          <div css={desktopAppBar}>
-            <DesktopAppBar
-              onSearchChange={handleSearchChange}
-              onSearch={handleSearch}
-              searchPlaceholder={tCommon('search.addressPlaceholder')}
-            />
-          </div>
-          <div css={mobileAppBar}>
-            <AppBar onBackClick={router.back} leftButton={true} />
-          </div>
-          <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />
-        </Layout>
-      </>
-    );
+    console.error('[ProgramDetailPage] program detail query error', error);
   }
 
   if (!program) {
@@ -224,11 +192,27 @@ export default function ProgramDetailPage() {
             <div css={mainContent}>
               <div css={headerRow}>
                 <div css={imageSection}>
-                  <HeroImage
-                    src={displayImageUrl}
-                    alt={t('imageAlt')}
-                    fallbackText={t('infoPending')}
-                  />
+                  {shouldUseNextImage ? (
+                    <Image
+                      src={imageSrc}
+                      alt={t('imageAlt')}
+                      width={1200}
+                      height={800}
+                      sizes="100vw"
+                      quality={90}
+                      priority
+                      unoptimized={isSasImage}
+                      css={mainImage}
+                      onError={() => setImageSrc('/default.png')}
+                    />
+                  ) : (
+                    <img
+                      src={imageSrc}
+                      alt={t('imageAlt')}
+                      css={mainImage}
+                      onError={() => setImageSrc('/default.png')}
+                    />
+                  )}
                 </div>
 
                 <Text typo="title_L" color="text_primary" css={programTitle}>
@@ -352,11 +336,49 @@ export default function ProgramDetailPage() {
   );
 }
 
+export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
+  withI18nGssp<ProgramDetailPageProps>(
+    async ({ params }) => {
+      const companyIdParam = params?.companyId;
+      const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
+      const companyId = Number(rawCompanyId);
+
+      const programIdParam = params?.programId;
+      const rawProgramId = Array.isArray(programIdParam) ? programIdParam[0] : programIdParam;
+      const programId = Number(rawProgramId);
+
+      if (!companyId || Number.isNaN(companyId) || !programId || Number.isNaN(programId)) {
+        return { notFound: true };
+      }
+
+      try {
+        const response = await getProgramDetail(programId);
+        if (!response?.program) {
+          return { notFound: true };
+        }
+
+        return {
+          props: {
+            programId,
+            initialProgram: response.program,
+            initialCanonicalPath: `/company/${companyId}/program/${programId}`,
+          },
+        };
+      } catch (error) {
+        const normalizedError = normalizeError(error);
+        if (normalizedError.status === 404) {
+          return { notFound: true };
+        }
+
+        throw error;
+      }
+    },
+    ['program-detail', 'common']
+  );
+
 const imageSection = css`
-  position: relative;
   width: 100%;
   height: clamp(200px, 45vw, 300px);
-  background: ${theme.colors.bg_default};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     width: 420px;
@@ -421,6 +443,12 @@ const bookingCard = css`
   border-radius: 16px;
 
   box-shadow: 0 8px 20px 0 rgb(15 23 42 / 8%);
+`;
+
+const mainImage = css`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 `;
 
 const programSection = css`
@@ -572,5 +600,3 @@ const noticeText = css`
 const titleWrapper = css`
   margin: 0 0 12px;
 `;
-
-export const getServerSideProps = getI18nServerSideProps(['program-detail']);

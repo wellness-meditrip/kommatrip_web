@@ -1,19 +1,20 @@
 import { routing } from './routing';
 import { getMergedMessages } from './getMergedMessages';
 import type { Locale } from './routing';
+import type { MessageNamespace } from './namespaces';
 
 /**
  * Pages Router용 request config
  * getServerSideProps/getStaticProps에서 사용
  */
-export const getI18nConfig = async (locale?: string) => {
+export const getI18nConfig = async (locale?: string, namespaces?: readonly MessageNamespace[]) => {
   // 유효하지 않은 로케일이면 기본 로케일 사용
   const validLocale: Locale =
     locale && routing.locales.includes(locale as Locale)
       ? (locale as Locale)
       : routing.defaultLocale;
 
-  const messages = await getMergedMessages(validLocale);
+  const messages = await getMergedMessages(validLocale, namespaces);
 
   return {
     locale: validLocale,

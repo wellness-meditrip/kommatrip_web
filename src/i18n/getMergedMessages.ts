@@ -1,6 +1,10 @@
 import type { Locale } from './routing';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { MESSAGE_NAMESPACES, type MessageNamespace } from './namespaces';
+
+const messageCache = new Map<string, Record<string, unknown>>();
+const pendingLoads = new Map<string, Promise<Record<string, unknown>>>();
 
 /**
  * 메시지 병합 로직
@@ -22,56 +26,16 @@ const getFallbackChain = (locale: Locale): Locale[] => {
 /**
  * 메시지 파일을 동적으로 로드하고 병합
  */
-const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> => {
+const loadMessages = async (
+  locale: Locale,
+  namespaces: readonly MessageNamespace[]
+): Promise<Record<string, unknown>> => {
   const fallbackChain = getFallbackChain(locale);
   const mergedMessages: Record<string, Record<string, unknown>> = {};
 
   // Fallback 체인을 순서대로 순회: 요청한 로케일을 먼저 로드하고, 없으면 fallback 사용
   for (const fallbackLocale of fallbackChain) {
     try {
-      // 네임스페이스별로 메시지 로드
-      const namespaces = [
-        'common',
-        'header',
-        'footer',
-        'mypage',
-        'company',
-        'program',
-        'reservation',
-        'review',
-        'search',
-        'booking',
-        'error',
-        'auth',
-        'validation',
-        'calendar',
-        'category',
-        'categories',
-        'filter',
-        'map',
-        'review-form',
-        'review-list',
-        'company-detail',
-        'program-detail',
-        'reservation-detail',
-        'booking-detail',
-        'user-info',
-        'settings',
-        'notification',
-        'payment',
-        'success',
-        'confirm',
-        'cancel',
-        'delete',
-        'save',
-        'edit',
-        'create',
-        'update',
-        'loading',
-        'empty',
-        'chatbot',
-      ];
-
       for (const namespace of namespaces) {
         try {
           const filePath = path.join(
@@ -125,7 +89,36 @@ const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> =>
  * next-intl 서버 설정
  * Pages Router에서 getServerSideProps/getStaticProps에서 사용
  */
-export const getMergedMessages = async (locale: Locale) => {
-  const messages = await loadMessages(locale);
-  return messages;
+export const getMergedMessages = async (
+  locale: Locale,
+  namespaces?: readonly MessageNamespace[]
+) => {
+  const resolvedNamespaces = [
+    ...(namespaces && namespaces.length > 0 ? namespaces : MESSAGE_NAMESPACES),
+  ].sort() as MessageNamespace[];
+  const cacheKey = `${locale}:${resolvedNamespaces.join(',')}`;
+
+  const cached = messageCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const pending = pendingLoads.get(cacheKey);
+  if (pending) {
+    return pending;
+  }
+
+  const task = loadMessages(locale, resolvedNamespaces)
+    .then((messages) => {
+      messageCache.set(cacheKey, messages);
+      pendingLoads.delete(cacheKey);
+      return messages;
+    })
+    .catch((error) => {
+      pendingLoads.delete(cacheKey);
+      throw error;
+    });
+
+  pendingLoads.set(cacheKey, task);
+  return task;
 };

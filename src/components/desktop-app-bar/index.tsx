@@ -126,7 +126,7 @@ export function DesktopAppBar({
       ROUTES.SIGNUP,
       ROUTES.TERMS_OF_USE,
       '/company/[companyId]',
-      '/company/[companyId]/program',
+      '/company/[companyId]/program/[programId]',
     ]);
 
     if (isAuthLoading || (isAuthRefreshing && !accessToken)) return;

@@ -30,6 +30,7 @@ import { useTranslations } from 'next-intl';
 import { Meta, createPageMeta } from '@/seo';
 import type { PaymentOrder } from '@/models/payment';
 import type { CurrencyCode } from '@/utils/price';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 interface ReservationDraft {
   company_id: number;
@@ -767,3 +768,5 @@ const modalSubmit = css`
 const emptyContainer = css`
   padding: 40px 16px;
 `;
+
+export const getServerSideProps = getI18nServerSideProps(['reservation']);

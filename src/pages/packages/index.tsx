@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import { useTranslations } from 'next-intl';
+import { getI18nServerSideProps } from '@/i18n/page-props';
 
 // 패키지 리스트 페이지
 export default function PackageListPage() {
@@ -16,3 +17,5 @@ export default function PackageListPage() {
     </>
   );
 }
+
+export const getServerSideProps = getI18nServerSideProps(['packages']);

@@ -4,6 +4,7 @@ import { css } from '@emotion/react';
 import { useSession } from 'next-auth/react';
 import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
+import type { GetServerSideProps } from 'next';
 
 import {
   AppBar,
@@ -18,36 +19,51 @@ import {
   RoundButton,
   Loading,
   LoginModal,
-  PageErrorEmpty,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
 import { useGetCompanyDetailQuery } from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
+import { getCompanyDetail } from '@/apis/company';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { withI18nGssp } from '@/i18n/page-props';
+import { normalizeError } from '@/utils/error-handler';
 
-export default function ClinicDetailPage() {
+interface ClinicDetailPageProps extends Record<string, unknown> {
+  companyId: number;
+  initialCompany: CompanyDetailType;
+  initialCanonicalPath: string;
+}
+
+export default function ClinicDetailPage({
+  companyId,
+  initialCompany,
+  initialCanonicalPath,
+}: ClinicDetailPageProps) {
   const router = useRouter();
-  const { companyId } = router.query;
   const t = useTranslations('company-detail');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
   const [searchValue, setSearchValue] = useState('');
 
-  const companyIdNumber = Number(companyId);
+  const companyIdNumber = companyId;
 
   const params = {
     companyId: companyIdNumber,
   };
 
-  const { data, error } = useGetCompanyDetailQuery(params, { suppressGlobalError: true }) as {
+  const { data, error } = useGetCompanyDetailQuery(params, {
+    suppressGlobalError: true,
+    initialData: { company: initialCompany },
+  }) as {
     data: { company: CompanyDetailType } | undefined;
     error: Error | null;
   };
+  const company = data?.company ?? initialCompany;
   const [activeTab, setActiveTab] = useState<string>('info');
 
   // 각 섹션에 대한 ref 생성
@@ -103,7 +119,7 @@ export default function ClinicDetailPage() {
 
   // IntersectionObserver로 현재 섹션 감지
   useEffect(() => {
-    if (!data?.company) return;
+    if (!company) return;
 
     const mainElement = document.querySelector('main');
     if (!mainElement) {
@@ -159,7 +175,7 @@ export default function ClinicDetailPage() {
     });
 
     return () => observer.disconnect();
-  }, [data, router, companyIdNumber, currentLocale]);
+  }, [company, router, companyIdNumber, currentLocale]);
 
   const handleTabClick = useCallback(
     (tabId: string) => {
@@ -205,7 +221,7 @@ export default function ClinicDetailPage() {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: data?.company?.name || t('title'),
+          title: company?.name || t('title'),
           url: shareUrl,
         });
         return;
@@ -234,8 +250,8 @@ export default function ClinicDetailPage() {
       setShowLoginModal(true);
       return;
     }
-    if (typeof window !== 'undefined' && data?.company) {
-      window.sessionStorage.setItem('reservation_company', JSON.stringify(data.company));
+    if (typeof window !== 'undefined' && company) {
+      window.sessionStorage.setItem('reservation_company', JSON.stringify(company));
     }
     // 회원인 경우 예약 페이지로 이동
     router.push({
@@ -244,24 +260,41 @@ export default function ClinicDetailPage() {
     });
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
-  const companyName = data?.company?.name?.trim();
+  const companyName = company?.name?.trim();
   const pageTitle = companyName || t('title');
-  const companyDescription = data?.company?.description?.trim() || '';
+  const companyDescription = company?.description?.trim() || '';
   const metaDescription = companyDescription || tCommon('app.description');
-  const ogImage =
-    data?.company?.image_urls?.[0] || data?.company?.primary_image_url || '/og/OG_image.jpg';
+  const ogImage = company?.image_urls?.[0] || company?.primary_image_url || '/og/OG_image.jpg';
   const meta = createPageMeta({
     pageTitle,
     description: metaDescription,
-    path: router.asPath,
+    path: router.asPath || initialCanonicalPath,
     image: ogImage,
   });
 
-  if (!router.isReady || !companyId || isNaN(companyIdNumber)) {
+  if (!company) {
     return (
       <>
         <Meta {...meta} />
-        <Layout title={pageTitle}>
+        <Layout isAppBarExist={false} title={pageTitle}>
+          <div css={desktopAppBar}>
+            <DesktopAppBar
+              onSearchChange={handleSearchChange}
+              onSearch={handleSearch}
+              searchPlaceholder={tCommon('search.addressPlaceholder')}
+            />
+          </div>
+          <div css={mobileAppBar}>
+            <AppBar
+              onBackClick={router.back}
+              leftButton={true}
+              rightButton={true}
+              buttonType="dark"
+              rightButtonType="share"
+              onRightButtonClick={handleShare}
+              backgroundColor="bg_surface1"
+            />
+          </div>
           <Loading title={t('loading')} />
         </Layout>
       </>
@@ -269,25 +302,7 @@ export default function ClinicDetailPage() {
   }
 
   if (error) {
-    return (
-      <>
-        <Meta {...meta} />
-        <Layout title={pageTitle}>
-          <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />
-        </Layout>
-      </>
-    );
-  }
-
-  if (!data) {
-    return (
-      <>
-        <Meta {...meta} />
-        <Layout title={pageTitle}>
-          <Loading title={t('loading')} />
-        </Layout>
-      </>
-    );
+    console.error('[ClinicDetailPage] company detail query error', error);
   }
 
   return (
@@ -315,15 +330,13 @@ export default function ClinicDetailPage() {
         <div css={pageContainer}>
           <div css={contentLayout}>
             <div css={mainContent}>
-              {data?.company && (
-                <CompanyDetail
-                  badges={data.company.tags || []}
-                  companyImage={data.company.primary_image_url || '/default.png'}
-                  companyName={data.company.name}
-                  companyAddress={data.company.address}
-                  images={data.company.image_urls || []}
-                />
-              )}
+              <CompanyDetail
+                badges={company.tags || []}
+                companyImage={company.primary_image_url || '/default.png'}
+                companyName={company.name}
+                companyAddress={company.address}
+                images={company.image_urls || []}
+              />
 
               <section css={wrapper}>
                 {/* 고정된 탭 헤더 */}
@@ -342,22 +355,11 @@ export default function ClinicDetailPage() {
                 {/* 모든 컨텐츠를 한 번에 렌더링 */}
                 <div css={content}>
                   <div ref={infoRef} data-section="info" css={section}>
-                    {data?.company ? (
-                      <CompanyInfo data={data.company} />
-                    ) : (
-                      <Loading title={t('loading')} />
-                    )}
+                    <CompanyInfo data={company} />
                   </div>
 
                   <div ref={programRef} data-section="program" css={section}>
-                    {data?.company ? (
-                      <CompanyProgram
-                        badges={data.company.tags || []}
-                        companyId={companyIdNumber}
-                      />
-                    ) : (
-                      <Loading title={t('loading')} />
-                    )}
+                    <CompanyProgram badges={company.tags || []} companyId={companyIdNumber} />
                   </div>
 
                   <div ref={reviewRef} data-section="review" css={section}>
@@ -365,12 +367,10 @@ export default function ClinicDetailPage() {
                   </div>
 
                   <div ref={noticeRef} data-section="notice" css={section}>
-                    {data?.company && (
-                      <CompanyNotice
-                        bookingInformation={data.company.booking_information}
-                        refundRegulation={data.company.refund_regulation}
-                      />
-                    )}
+                    <CompanyNotice
+                      bookingInformation={company.booking_information}
+                      refundRegulation={company.refund_regulation}
+                    />
                   </div>
 
                   {/* <div css={youWillAlsoLikeWrapper}>
@@ -521,3 +521,44 @@ export const youWillAlsoLikeWrapper = css`
   padding: 24px 24px 80px;
   align-self: stretch;
 `;
+
+export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
+  withI18nGssp<ClinicDetailPageProps>(
+    async ({ params }) => {
+      const companyIdParam = params?.companyId;
+      const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
+      const companyId = Number(rawCompanyId);
+
+      if (!companyId || Number.isNaN(companyId)) {
+        return { notFound: true };
+      }
+
+      try {
+        const response = await getCompanyDetail({ companyId });
+        if (!response?.company) {
+          return { notFound: true };
+        }
+
+        const canonicalPath = `/company/${companyId}`;
+
+        return {
+          props: {
+            companyId,
+            initialCompany: response.company,
+            initialCanonicalPath: canonicalPath,
+          },
+        };
+      } catch (error) {
+        const normalizedError = normalizeError(error);
+
+        if (normalizedError.status === 404) {
+          return { notFound: true };
+        }
+
+        // 5xx/network 등 일시 오류는 404로 고정하지 않고 예외를 던져
+        // ISR에서 기존 정상 페이지를 유지하도록 한다.
+        throw error;
+      }
+    },
+    ['company-detail', 'program', 'review', 'common']
+  );

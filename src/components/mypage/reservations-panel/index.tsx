@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, Loading, LoginModal } from '@/components';
+import { Text, LoginModal, ReservationCardSkeletonList } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import Image from 'next/image';
@@ -230,8 +230,8 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
 
       <div css={contentContainer(isEmbedded)}>
         {isReservationsLoading && (
-          <div css={stateContainer(isEmbedded)}>
-            <Loading title={t('loading')} fullHeight={!isEmbedded} />
+          <div css={skeletonContainer}>
+            <ReservationCardSkeletonList count={isEmbedded ? 2 : 3} />
           </div>
         )}
         {!isReservationsLoading && filteredReservations.length === 0 && (
@@ -524,11 +524,8 @@ const contentContainer = (isEmbedded: boolean) => css`
   }
 `;
 
-const stateContainer = (isEmbedded: boolean) => css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: ${isEmbedded ? '200px' : `calc(100vh - ${theme.size.appBarHeight})`};
+const skeletonContainer = css`
+  width: 100%;
 `;
 
 const emptyStateWrap = css`

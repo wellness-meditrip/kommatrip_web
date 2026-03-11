@@ -2,17 +2,23 @@ import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DialogProvider, ToastProvider } from '@/hooks';
-import { GlobalStyle } from '@/styles';
+import { GlobalStyle, theme } from '@/styles';
 import { QueryProvider } from '@/providers';
 import { routing, type Locale } from '@/i18n/routing';
+import type { I18nPageProps } from '@/i18n';
 import '@/styles/normalize.css';
+import 'react-loading-skeleton/dist/skeleton.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 
 import Head from 'next/head';
 import { Meta, createPageMeta, type MetaProps } from '@/seo';
-import { ChatbotLauncher, Loading } from '@/components';
+import { ChatbotLauncher } from '@/components';
+import { SkeletonTheme } from 'react-loading-skeleton';
+
+const warnedMissingMessages = new Set<string>();
+const EMPTY_MESSAGES: Record<string, unknown> = {};
 
 /**
  * NextAuth 세션과 zustand auth store 동기화
@@ -25,10 +31,14 @@ function AuthSync() {
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
-  const [messages, setMessages] = useState<Record<string, unknown>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [locale, setLocale] = useState<Locale>(routing.defaultLocale);
-  const [isLocaleReady, setIsLocaleReady] = useState(false);
+  const initialPageProps = pageProps as Partial<I18nPageProps>;
+  const initialLocale = initialPageProps.locale ?? routing.defaultLocale;
+  const pageMessages = initialPageProps.messages as Record<string, unknown> | undefined;
+  const initialMessages = pageMessages ?? EMPTY_MESSAGES;
+  const pageLocale = initialPageProps.locale ?? routing.defaultLocale;
+  const [messageCache, setMessageCache] = useState<
+    Partial<Record<Locale, Record<string, unknown>>>
+  >(() => ({ [initialLocale]: initialMessages }));
   const defaultAppName = 'kommatrip';
   const defaultAppTitle = 'Korean Wellness & K-beauty Tours in Seoul';
   const defaultAppDescription =
@@ -36,46 +46,32 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
-    if (!router.isReady) return;
-    const pathLocale = router.asPath.split('/')[1];
-    const resolvedLocale =
-      pathLocale && routing.locales.includes(pathLocale as Locale)
-        ? (pathLocale as Locale)
-        : routing.defaultLocale;
-    setLocale(resolvedLocale);
-    setIsLocaleReady(true);
-  }, [router.asPath, router.isReady]);
+    const pageLocale = initialPageProps.locale;
+    const pageMessages = initialPageProps.messages;
+    if (!pageLocale || !pageMessages) return;
 
-  const loadingMessageByLocale: Record<Locale, string> = {
-    en: 'Loading...',
-    ko: '로딩 중...',
-  };
+    setMessageCache((prev) => {
+      const existingMessages = prev[pageLocale] ?? {};
+      const hasAllNamespaces = Object.keys(pageMessages).every((key) =>
+        Object.prototype.hasOwnProperty.call(existingMessages, key)
+      );
 
-  // 클라이언트 사이드에서 메시지 로드
-  useEffect(() => {
-    if (!isLocaleReady) return;
-    const loadMessages = async () => {
-      setIsLoading(true);
-      try {
-        // API 라우트를 통해 메시지 로드
-        const response = await fetch(`/api/i18n/${locale}`);
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data.messages || {});
-        } else {
-          console.error('Failed to load messages from API');
-          setMessages({});
-        }
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-        setMessages({});
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      if (hasAllNamespaces) return prev;
 
-    loadMessages();
-  }, [locale, isLocaleReady]);
+      return {
+        ...prev,
+        [pageLocale]: {
+          ...existingMessages,
+          ...pageMessages,
+        },
+      };
+    });
+  }, [initialPageProps.locale, initialPageProps.messages]);
+
+  const messages = useMemo(
+    () => messageCache[pageLocale] ?? pageMessages ?? EMPTY_MESSAGES,
+    [messageCache, pageLocale, pageMessages]
+  );
 
   const appName =
     (messages?.common as { app?: { name?: string } } | undefined)?.app?.name || defaultAppName;
@@ -128,22 +124,52 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       <Meta {...resolvedMeta} />
       <SessionProvider session={session}>
         <AuthSync />
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider
+          locale={pageLocale}
+          messages={messages}
+          onError={(error) => {
+            if ((error as { code?: string })?.code === 'MISSING_MESSAGE') {
+              if (process.env.NODE_ENV !== 'production') {
+                const missingError = error as {
+                  namespace?: string;
+                  key?: string;
+                  message?: string;
+                };
+                const namespace = missingError.namespace ?? 'unknown';
+                const key = missingError.key ?? missingError.message ?? 'unknown';
+                const dedupeKey = `${pageLocale}:${namespace}:${key}`;
+                if (!warnedMissingMessages.has(dedupeKey)) {
+                  warnedMissingMessages.add(dedupeKey);
+                  console.warn(`[i18n] Missing message (${pageLocale}): ${namespace}.${key}`);
+                }
+              }
+              return;
+            }
+            console.error(error);
+          }}
+          getMessageFallback={({ namespace, key }) => {
+            const prefix = namespace ? `${namespace}.` : '';
+            return `${prefix}${key}`;
+          }}
+        >
           <QueryProvider>
-            <GlobalStyle>
-              <DialogProvider>
-                <ToastProvider>
-                  {isLoading ? (
-                    <Loading title={loadingMessageByLocale[locale]} />
-                  ) : (
+            <SkeletonTheme
+              baseColor={theme.colors.gray200}
+              highlightColor={theme.colors.gray100}
+              borderRadius={8}
+              duration={1.4}
+            >
+              <GlobalStyle>
+                <DialogProvider>
+                  <ToastProvider>
                     <>
                       <Component {...pageProps} />
                       <ChatbotLauncher />
                     </>
-                  )}
-                </ToastProvider>
-              </DialogProvider>
-            </GlobalStyle>
+                  </ToastProvider>
+                </DialogProvider>
+              </GlobalStyle>
+            </SkeletonTheme>
           </QueryProvider>
         </NextIntlClientProvider>
       </SessionProvider>

@@ -7,13 +7,13 @@ import {
   SearchBar,
   CompanyCard,
   CompanyList,
-  Loading,
   Empty,
   NoResults,
   FilterBar,
   GNB,
   DesktopAppBar,
   PageErrorEmpty,
+  CompanyCardSkeletonList,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import type { GetServerSideProps } from 'next';
@@ -28,11 +28,22 @@ import { useCurrentLocale } from '@/i18n/navigation';
 import { useMediaQuery } from '@/hooks';
 import { GnbCalendarActive, GnbSearchActive } from '@/icons';
 import { CATEGORIES } from '@/constants/commons/categories';
+import { withI18nGssp } from '@/i18n/page-props';
 
 interface CompanyPageProps {
   initialKeyword: string;
   initialCanonicalPath: string;
 }
+
+const DEFAULT_MOBILE_SKELETON_COUNT = 4;
+const DEFAULT_DESKTOP_SKELETON_COUNT = 6;
+const MAX_LIST_SKELETON_COUNT = 20;
+const DEFAULT_RECOMMENDED_SKELETON_COUNT = 4;
+
+const normalizeSkeletonCount = (count: number, fallback: number) => {
+  if (count <= 0) return 0;
+  return Math.min(MAX_LIST_SKELETON_COUNT, Math.max(1, count || fallback));
+};
 
 // 업체 리스트 페이지
 export default function CompanyPage({ initialKeyword, initialCanonicalPath }: CompanyPageProps) {
@@ -61,6 +72,7 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
     start: null,
     end: null,
   });
+  const [lastResolvedResultCount, setLastResolvedResultCount] = useState<number | null>(null);
 
   // URL 쿼리 파라미터에서 필터 정보 읽어오기
   useEffect(() => {
@@ -144,9 +156,12 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
   const { data, isLoading, error } = useGetCompanySearchQuery(searchParams, {
     suppressGlobalError: true,
   });
-  const { data: recommendedData } = useGetCompanySearchQuery(recommendedSearchParams, {
-    suppressGlobalError: true,
-  });
+  const { data: recommendedData, isLoading: isRecommendedLoading } = useGetCompanySearchQuery(
+    recommendedSearchParams,
+    {
+      suppressGlobalError: true,
+    }
+  );
 
   // API 응답에서 companies 추출 (guestApi 인터셉터가 response.data를 반환하므로)
   const companies = useMemo(() => {
@@ -207,6 +222,33 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
 
   const hasActiveFilters =
     keyword.trim().length > 0 || selectedCategories.length > 0 || Boolean(selectedRange.start);
+  const defaultSkeletonCount = isDesktop
+    ? DEFAULT_DESKTOP_SKELETON_COUNT
+    : DEFAULT_MOBILE_SKELETON_COUNT;
+
+  useEffect(() => {
+    if (isLoading || error) return;
+    setLastResolvedResultCount(filteredCompanies.length);
+  }, [isLoading, error, filteredCompanies.length]);
+
+  const companySkeletonCount = useMemo(() => {
+    if (lastResolvedResultCount === null) return defaultSkeletonCount;
+    return normalizeSkeletonCount(lastResolvedResultCount, defaultSkeletonCount);
+  }, [defaultSkeletonCount, lastResolvedResultCount]);
+
+  const shouldKeepNoResultsVisibleWhileLoading =
+    hasActiveFilters && lastResolvedResultCount === 0 && filteredCompanies.length === 0;
+  const shouldShowCompanyLoadingSkeleton =
+    isLoading && !shouldKeepNoResultsVisibleWhileLoading && companySkeletonCount > 0;
+  const shouldShowNoResults =
+    !error &&
+    hasActiveFilters &&
+    filteredCompanies.length === 0 &&
+    (!isLoading || shouldKeepNoResultsVisibleWhileLoading);
+  const recommendedSkeletonCount = normalizeSkeletonCount(
+    recommendedCompanies.length || DEFAULT_RECOMMENDED_SKELETON_COUNT,
+    DEFAULT_RECOMMENDED_SKELETON_COUNT
+  );
 
   // 디버깅: API 응답 구조 확인
   useEffect(() => {
@@ -430,11 +472,13 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
 
         <div css={wrapper}>
           {/* 로딩 상태 */}
-          {isLoading && <Loading title={t('loadingList')} />}
+          {shouldShowCompanyLoadingSkeleton && (
+            <CompanyCardSkeletonList size="default" layout="grid" count={companySkeletonCount} />
+          )}
           {error && <PageErrorEmpty error={error} fallbackMessage={t('loadFail')} />}
 
           {/* 검색 결과가 없을 때 (키워드가 있고 필터링 결과가 없을 때) */}
-          {!isLoading && !error && filteredCompanies.length === 0 && hasActiveFilters && (
+          {shouldShowNoResults && (
             <div css={recommendedSection}>
               <NoResults
                 title={
@@ -442,21 +486,30 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
                 }
                 subtitle={t('noResultsSubtitle')}
               />
-              <CompanyList
-                title={tCommon('home.recommendedTitle')}
-                containerCss={recommendedList}
-                cardSize="compact"
-                companies={recommendedCompanies.map((company) => ({
-                  hospital_id: company.id,
-                  hospital_name: company.name,
-                  address: company.address,
-                  rating: Number(company.rating_average || 0),
-                  image_url: company.photos?.[0] || '/default.png',
-                  images: company.photos || [],
-                  departments: company.tags,
-                  is_exclusive: company.is_exclusive,
-                }))}
-              />
+              {isRecommendedLoading ? (
+                <CompanyCardSkeletonList
+                  title={tCommon('home.recommendedTitle')}
+                  count={recommendedSkeletonCount}
+                  size="compact"
+                  layout="horizontal"
+                />
+              ) : (
+                <CompanyList
+                  title={tCommon('home.recommendedTitle')}
+                  containerCss={recommendedList}
+                  cardSize="compact"
+                  companies={recommendedCompanies.map((company) => ({
+                    hospital_id: company.id,
+                    hospital_name: company.name,
+                    address: company.address,
+                    rating: Number(company.rating_average || 0),
+                    image_url: company.photos?.[0] || '/default.png',
+                    images: company.photos || [],
+                    departments: company.tags,
+                    is_exclusive: company.is_exclusive,
+                  }))}
+                />
+              )}
             </div>
           )}
 
@@ -494,20 +547,21 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
   );
 }
 
-export const getServerSideProps: GetServerSideProps<CompanyPageProps> = async ({
-  query,
-  resolvedUrl,
-}) => {
-  const q = typeof query.q === 'string' ? query.q.trim() : '';
-  const canonicalPath = resolvedUrl.split('?')[0] || '/company';
+export const getServerSideProps: GetServerSideProps<CompanyPageProps> =
+  withI18nGssp<CompanyPageProps>(
+    async ({ query, resolvedUrl }) => {
+      const q = typeof query.q === 'string' ? query.q.trim() : '';
+      const canonicalPath = resolvedUrl.split('?')[0] || '/company';
 
-  return {
-    props: {
-      initialKeyword: q,
-      initialCanonicalPath: canonicalPath,
+      return {
+        props: {
+          initialKeyword: q,
+          initialCanonicalPath: canonicalPath,
+        },
+      };
     },
-  };
-};
+    ['company', 'common']
+  );
 
 export const wrapper = css`
   display: flex;

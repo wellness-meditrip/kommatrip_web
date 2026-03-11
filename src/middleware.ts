@@ -112,8 +112,13 @@ export async function middleware(request: NextRequest) {
     // 내부적으로 경로를 변환 (rewrite)
     const url = request.nextUrl.clone();
     url.pathname = actualPath;
-
-    const response = NextResponse.rewrite(url);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-locale', locale);
+    const response = NextResponse.rewrite(url, {
+      request: {
+        headers: requestHeaders,
+      },
+    });
 
     // 쿠키에 로케일 저장
     response.cookies.set(LOCALE_COOKIE_NAME, locale, {
@@ -121,9 +126,6 @@ export async function middleware(request: NextRequest) {
       path: '/',
       sameSite: 'lax',
     });
-
-    // 헤더에 로케일 정보 추가 (페이지에서 사용할 수 있도록)
-    response.headers.set('x-locale', locale);
 
     return response;
   }

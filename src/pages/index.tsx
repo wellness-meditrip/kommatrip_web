@@ -3,8 +3,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { GetStaticProps } from 'next';
-import { Layout, HeroSection, Text, CompanyCard, GNB, CompanyList, Loading } from '@/components';
+import type { GetServerSideProps } from 'next';
+import {
+  Layout,
+  HeroSection,
+  Text,
+  CompanyCard,
+  GNB,
+  CompanyList,
+  CompanyCardSkeletonList,
+} from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { useMediaQuery } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
@@ -14,12 +22,24 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
+import { withI18nGssp } from '@/i18n/page-props';
 
 interface HomePageProps {
   heroImages: string[];
 }
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+const MAX_RECENT_SKELETON_COUNT = 6;
+
+const normalizeSkeletonCount = (count: number) => {
+  if (count <= 0) return 0;
+  return Math.min(MAX_RECENT_SKELETON_COUNT, Math.max(1, count));
+};
+
+const getRecentCount = (value: unknown) => {
+  if (!Array.isArray(value)) return null;
+  return value.length;
+};
 
 // 홈 페이지 (루트 경로)
 export default function HomePage({ heroImages }: HomePageProps) {
@@ -31,6 +51,10 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
   const isLoggedIn = status === 'authenticated' || !!accessToken;
   const queryClient = useQueryClient();
+  const [recentSkeletonCount, setRecentSkeletonCount] = useState<number>(() => {
+    const cachedCount = getRecentCount(queryClient.getQueryData(QUERY_KEYS.GET_RECENT_COMPANY));
+    return normalizeSkeletonCount(cachedCount ?? 0);
+  });
   const appName = t('app.name');
   const appTitle = t('app.title');
   const appDescription = t('app.description');
@@ -62,6 +86,25 @@ export default function HomePage({ heroImages }: HomePageProps) {
     if (isLoggedIn) return;
     queryClient.removeQueries({ queryKey: QUERY_KEYS.GET_RECENT_COMPANY });
   }, [isLoggedIn, queryClient]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setRecentSkeletonCount(0);
+      return;
+    }
+
+    if (Array.isArray(recentCompanies)) {
+      const nextCount = normalizeSkeletonCount(recentCompanies.length);
+      setRecentSkeletonCount((prev) => (prev === nextCount ? prev : nextCount));
+      return;
+    }
+
+    const cachedCount = getRecentCount(queryClient.getQueryData(QUERY_KEYS.GET_RECENT_COMPANY));
+    if (cachedCount === null) return;
+
+    const nextCount = normalizeSkeletonCount(cachedCount);
+    setRecentSkeletonCount((prev) => (prev === nextCount ? prev : nextCount));
+  }, [isLoggedIn, recentCompanies, queryClient]);
 
   // API 응답을 CompanyList 형식으로 변환
   const formattedRecentCompanies = useMemo(() => {
@@ -130,8 +173,13 @@ export default function HomePage({ heroImages }: HomePageProps) {
 
         <div css={wrapper}>
           {/* 최근 본 업체 섹션 */}
-          {isRecentLoading ? (
-            <Loading title={t('home.loadingRecent')} />
+          {isRecentLoading && recentSkeletonCount > 0 ? (
+            <CompanyCardSkeletonList
+              title={t('home.recentlyViewed')}
+              size="compact"
+              layout="horizontal"
+              count={recentSkeletonCount}
+            />
           ) : formattedRecentCompanies.length > 0 ? (
             <CompanyList
               title={t('home.recentlyViewed')}
@@ -145,7 +193,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
           </Text>
 
           {isRecommendedLoading ? (
-            <Loading title={t('home.loadingRecommended')} />
+            <CompanyCardSkeletonList size="default" layout="grid" count={isDesktop ? 6 : 3} />
           ) : formattedRecommendedCompanies.length > 0 ? (
             <div css={cardsGrid}>
               {formattedRecommendedCompanies.map((company) => (
@@ -215,28 +263,29 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getStaticProps: GetStaticProps<HomePageProps> = async () => {
-  const path = await import('node:path');
-  const { readdir } = await import('node:fs/promises');
+export const getServerSideProps: GetServerSideProps<HomePageProps> =
+  withI18nGssp<HomePageProps>(async () => {
+    const path = await import('node:path');
+    const { readdir } = await import('node:fs/promises');
 
-  const dir = path.join(process.cwd(), 'public', 'images', 'hero');
-  let heroImages: string[] = [];
+    const dir = path.join(process.cwd(), 'public', 'images', 'hero');
+    let heroImages: string[] = [];
 
-  try {
-    const entries = await readdir(dir, { withFileTypes: true });
-    heroImages = entries
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .filter((name) => ALLOWED_EXTS.has(path.extname(name).toLowerCase()))
-      .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
-      .map((name) => `/images/hero/${name}`);
-  } catch {
-    heroImages = [];
-  }
+    try {
+      const entries = await readdir(dir, { withFileTypes: true });
+      heroImages = entries
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name)
+        .filter((name) => ALLOWED_EXTS.has(path.extname(name).toLowerCase()))
+        .sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))
+        .map((name) => `/images/hero/${name}`);
+    } catch {
+      heroImages = [];
+    }
 
-  return {
-    props: {
-      heroImages,
-    },
-  };
-};
+    return {
+      props: {
+        heroImages,
+      },
+    };
+  }, ['common']);
