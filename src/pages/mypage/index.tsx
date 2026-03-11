@@ -608,4 +608,4 @@ const detailFrame = css`
   transform-origin: top left;
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['mypage']);
+export const getServerSideProps = getI18nServerSideProps(['mypage', 'review', 'review-list']);

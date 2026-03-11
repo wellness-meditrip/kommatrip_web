@@ -316,4 +316,4 @@ const emptyState = css`
   text-align: center;
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['review-list']);
+export const getServerSideProps = getI18nServerSideProps(['review-list', 'review']);

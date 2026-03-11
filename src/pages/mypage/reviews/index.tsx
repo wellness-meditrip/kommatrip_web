@@ -34,4 +34,4 @@ export default function MyPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['mypage']);
+export const getServerSideProps = getI18nServerSideProps(['mypage', 'review', 'review-list']);

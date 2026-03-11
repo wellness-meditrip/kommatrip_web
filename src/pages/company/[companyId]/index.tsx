@@ -560,5 +560,5 @@ export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
         throw error;
       }
     },
-    ['company-detail', 'common']
+    ['company-detail', 'program', 'review', 'common']
   );
