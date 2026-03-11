@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "check:i18n": "node scripts/check-i18n-keys.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "prepare": "husky",
     "svgr:icons": "rm -rf src/icons/* && pnpm dlx @svgr/cli --template svgr.template.js --index-template svgr.index.template.js public/icons --no-dimensions --typescript --out-dir src/icons",
