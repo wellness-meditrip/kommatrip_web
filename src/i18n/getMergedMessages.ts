@@ -2,6 +2,9 @@ import type { Locale } from './routing';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+const messageCache = new Map<Locale, Record<string, unknown>>();
+const pendingLoads = new Map<Locale, Promise<Record<string, unknown>>>();
+
 /**
  * 메시지 병합 로직
  * Fallback 체인:
@@ -126,6 +129,27 @@ const loadMessages = async (locale: Locale): Promise<Record<string, unknown>> =>
  * Pages Router에서 getServerSideProps/getStaticProps에서 사용
  */
 export const getMergedMessages = async (locale: Locale) => {
-  const messages = await loadMessages(locale);
-  return messages;
+  const cached = messageCache.get(locale);
+  if (cached) {
+    return cached;
+  }
+
+  const pending = pendingLoads.get(locale);
+  if (pending) {
+    return pending;
+  }
+
+  const task = loadMessages(locale)
+    .then((messages) => {
+      messageCache.set(locale, messages);
+      pendingLoads.delete(locale);
+      return messages;
+    })
+    .catch((error) => {
+      pendingLoads.delete(locale);
+      throw error;
+    });
+
+  pendingLoads.set(locale, task);
+  return task;
 };

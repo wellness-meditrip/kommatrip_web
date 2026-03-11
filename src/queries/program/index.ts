@@ -11,6 +11,10 @@ import { getProgramCompany, getProgramCompanyList, getProgramDetail } from '@/ap
 
 interface QueryOptions {
   suppressGlobalError?: boolean;
+  enabled?: boolean;
+  initialData?: GetProgramDetailResponse;
+  staleTime?: number;
+  retry?: number;
 }
 
 export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
@@ -44,7 +48,11 @@ export const useGetProgramDetailQuery = (programId: number, options?: QueryOptio
   return useQuery<GetProgramDetailResponse>({
     queryKey: [...QUERY_KEYS.GET_PROGRAM_DETAIL, programId],
     queryFn: () => getProgramDetail(programId),
-    enabled: !!programId,
+    enabled: options?.enabled ?? !!programId,
+    initialData: options?.initialData,
+    staleTime: options?.staleTime ?? 1000 * 60 * 10,
+    retry: options?.retry ?? 1,
+    refetchOnWindowFocus: false,
     meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };

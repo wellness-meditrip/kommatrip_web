@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Empty, Text, Loading } from '@/components';
+import { Empty, Text, ReviewCardSkeletonList } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { ReasonModal } from '@/components/reviews/report-modal';
 import { useIntersectionLoad } from '@/hooks/review';
@@ -92,7 +92,7 @@ export function CompanyReview({ companyId }: CompanyReviewProps) {
 
       <div css={content}>
         {isLoading ? (
-          <Loading title={t('loading')} />
+          <ReviewCardSkeletonList count={2} />
         ) : reviewList.length > 0 ? (
           reviewList.map((review) => {
             const reviewId = review.id ?? (review as { review_id?: number }).review_id;

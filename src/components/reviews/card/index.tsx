@@ -73,10 +73,8 @@ export function Card({
 
   const handleProgramClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
-    if (!companyId) return;
-    const pathname = ROUTES.COMPANY_PROGRAM(companyId);
-    const query = programId ? { programId } : undefined;
-    router.push({ pathname, query });
+    if (!companyId || !programId) return;
+    router.push(ROUTES.COMPANY_PROGRAM_DETAIL(companyId, programId));
   };
 
   const formattedPrice =
