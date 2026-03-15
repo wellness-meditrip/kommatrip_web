@@ -1,16 +1,13 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { GNB as ONYUGNB } from '../../gnb';
 import { LoginModal } from '@/components';
 import { MENUS } from '@/constants/commons';
-import { useAuthStore } from '@/store/auth';
+import { useAuthState } from '@/hooks';
 
 export function GNB() {
   const router = useRouter();
-  const { status } = useSession();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const { isAuthenticated } = useAuthState();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleMenuClick = (path: string) => {
@@ -18,7 +15,7 @@ export function GNB() {
 
     if (!item) return;
 
-    if (!item.canGuest && !isLoggedIn) {
+    if (!item.canGuest && !isAuthenticated) {
       setShowLoginModal(true);
       return;
     }

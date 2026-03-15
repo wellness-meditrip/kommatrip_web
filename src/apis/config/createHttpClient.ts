@@ -1,16 +1,33 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ERROR_CODES } from '@/constants/error-codes';
 import { useAuthStore } from '@/store/auth';
-import { getCookie } from '@/utils/cookie';
+import { deleteCookie, getCookie } from '@/utils/cookie';
 import { waitForAuthReady } from '@/utils/auth-refresh';
 import { normalizeError } from '@/utils/error-handler';
 import { PostTokenReissueResponse } from '@/models/auth';
+import { AUTH_COOKIE_KEYS } from '@/constants';
 
 type Role = 'admin' | 'user';
 interface Props {
   baseURL: string;
   role: Role;
 }
+
+const resolveTokenReissuePayload = (payload: unknown): PostTokenReissueResponse => {
+  if (payload && typeof payload === 'object') {
+    const data = (payload as { data?: unknown }).data;
+    if (data && typeof data === 'object') {
+      return data as PostTokenReissueResponse;
+    }
+
+    const response = (payload as { response?: unknown }).response;
+    if (response && typeof response === 'object') {
+      return response as PostTokenReissueResponse;
+    }
+  }
+
+  return payload as PostTokenReissueResponse;
+};
 
 export const createHttpClient = ({ baseURL }: Props) => {
   const axiosInstance = axios.create({ baseURL, timeout: 5000, withCredentials: true });
@@ -33,11 +50,19 @@ export const createHttpClient = ({ baseURL }: Props) => {
     refreshSubscribers = [];
   };
 
+  const clearRefreshCookieState = () => {
+    deleteCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
+    void axios
+      .post('/api/auth/logout', {}, { withCredentials: true })
+      .catch((err) => console.error('[HttpClient] failed to clear refresh cookies', err));
+  };
+
   const getNewAccessToken = async (): Promise<string> => {
     try {
       // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
-      const response = await axios.post<PostTokenReissueResponse>('/api/users/token/reissue', {});
-      const accessToken = response.data.tokens.access_token;
+      const response = await axios.post('/api/auth/token/reissue', {});
+      const payload = resolveTokenReissuePayload(response.data);
+      const accessToken = payload?.tokens?.access_token;
 
       if (!accessToken) {
         console.error('[HttpClient] No access token in response', response.data);
@@ -78,7 +103,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
         ? (headers as { get: (key: string) => string | null }).get('Authorization')
         : (headers as { Authorization?: string; authorization?: string }).Authorization ||
           (headers as { Authorization?: string; authorization?: string }).authorization;
-    const hasRefreshToken = !!getCookie('refreshToken');
+    const hasRefreshToken = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
     if (!token && !authHeader && hasRefreshToken) {
       try {
         await waitForAuthReady();
@@ -118,7 +143,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
       const isTokenExpiredMessage = backendMessage === '토큰이 만료되었습니다.';
       const isInvalidTokenMessage = backendMessage === '유효하지 않은 토큰입니다.';
       const isNotAuthenticatedMessage = backendMessage === 'Not authenticated';
-      const hasRefreshToken = !!getCookie('refreshToken');
+      const hasRefreshToken = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
       const shouldRefresh =
         isTokenExpiredStatus ||
         isTokenExpiredCode ||
@@ -132,6 +157,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
         if (originalRequest._retry) {
           console.error('[HttpClient] Token refresh already attempted - clearing auth');
           useAuthStore.getState().clearAuth();
+          clearRefreshCookieState();
           return Promise.reject(normalizeError(error));
         }
 
@@ -165,6 +191,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
               .catch((err) => {
                 console.error('[HttpClient] Token refresh failed in interceptor:', err);
                 useAuthStore.getState().clearAuth();
+                clearRefreshCookieState();
                 notifyRefreshFailure(normalizeError(err));
               })
               .finally(() => {
@@ -180,6 +207,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
         const isMissingUserMessage = backendMessage === '사용자 정보를 확인할 수 없습니다.';
         if (isInvalidTokenMessage || isMissingUserMessage) {
           useAuthStore.getState().clearAuth();
+          clearRefreshCookieState();
           return Promise.reject(normalizeError(error));
         }
       }
@@ -187,11 +215,13 @@ export const createHttpClient = ({ baseURL }: Props) => {
       if (onyuError && onyuError.code) {
         if (onyuError.code === 1001) {
           useAuthStore.getState().clearAuth();
+          clearRefreshCookieState();
           return Promise.reject(normalizeError(error));
         }
 
         if (onyuError.code === ERROR_CODES.NO_USER_EXIST) {
           useAuthStore.getState().clearAuth();
+          clearRefreshCookieState();
           return Promise.reject(normalizeError(error));
         }
       }

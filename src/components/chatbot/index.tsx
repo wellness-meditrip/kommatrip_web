@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { nanoid } from 'nanoid';
 import { ChatSessionMetadataResponse } from '@/models/chat';
 import { getChatSessionDetail, getChatSessions } from '@/apis/chat';
-import { useAuthStore } from '@/store/auth';
-import { useToast } from '@/hooks';
+import { useToast, useAuthState } from '@/hooks';
 import { Dim, LoginModal, Portal, Text } from '@/components';
 import { Chatbot, ChevronLeft, ChevronRight, Close, Clock, ReviewAi } from '@/icons';
 import {
@@ -56,15 +54,13 @@ const ENABLE_CHATBOT = true;
 
 export function ChatbotLauncher() {
   const t = useTranslations('chatbot');
-  const { status } = useSession();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const { isAuthenticated } = useAuthState();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPreparingOpen, setIsPreparingOpen] = useState(false);
 
   const handleOpenChat = () => {
-    if (!isLoggedIn) {
+    if (!isAuthenticated) {
       setIsLoginOpen(true);
       return;
     }

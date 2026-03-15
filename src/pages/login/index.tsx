@@ -17,7 +17,6 @@ import { usePostLoginMutation } from '@/queries';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 import { useAuthStore } from '@/store/auth';
-import { setCookie } from '@/utils/cookie';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 
 interface LoginFormData {
@@ -156,24 +155,16 @@ export default function Login() {
       {
         onSuccess: (response) => {
           const accessToken = response?.tokens?.access_token;
-          const refreshToken = response?.tokens?.refresh_token;
 
           if (accessToken) {
             console.log('[Login] Email login success - storing tokens', {
               hasAccessToken: !!accessToken,
               accessTokenLength: accessToken.length,
-              hasRefreshToken: !!refreshToken,
             });
 
             // accessToken을 zustand store에 저장 (메모리)
             useAuthStore.getState().setAccessToken(accessToken);
             console.log('[Login] accessToken stored in zustand store');
-
-            // refreshToken을 쿠키에 저장
-            if (refreshToken) {
-              setCookie('refreshToken', refreshToken, 7); // 7일
-              console.log('[Login] refreshToken stored in cookie');
-            }
 
             showToast({ title: t('loginSuccessful'), icon: 'check' });
 
@@ -601,4 +592,4 @@ const termsSection = css`
   gap: 4px;
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['auth.login']);
+export const getServerSideProps = getI18nServerSideProps(['auth.login', 'validation']);

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 const getSingleQueryString = (value: string | string[] | undefined): string => {
   if (typeof value === 'string') return value;
@@ -26,6 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const authHeader = req.headers.authorization;
+    const backendBaseUrl = getBackendBaseUrl();
     const reservationIdValue = getSingleQueryString(req.query.reservationId);
     const reservationId = normalizeReservationId(reservationIdValue);
     if (!reservationId) {
@@ -40,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'GET') {
       const backendResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/${reservationId}`,
+        `${backendBaseUrl}/api/reservations/${reservationId}`,
         baseConfig
       );
       return res.status(backendResponse.status).json(backendResponse.data);
@@ -49,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const reasonValue = getSingleQueryString(req.query.reason);
     const reason = normalizeReason(reasonValue);
     const backendResponse = await axios.delete(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/${reservationId}`,
+      `${backendBaseUrl}/api/reservations/${reservationId}`,
       {
         ...baseConfig,
         ...(reason ? { params: { reason } } : {}),

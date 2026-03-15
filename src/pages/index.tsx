@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useSession } from 'next-auth/react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { GetServerSideProps } from 'next';
 import {
@@ -14,7 +13,7 @@ import {
   CompanyCardSkeletonList,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
-import { useMediaQuery } from '@/hooks';
+import { useMediaQuery, useAuthState } from '@/hooks';
 import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
 import { QUERY_KEYS } from '@/queries/query-keys';
@@ -47,9 +46,9 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const t = useTranslations('common');
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const { status } = useSession();
+  const { isAuthenticated } = useAuthState();
   const accessToken = useAuthStore((state) => state.accessToken);
-  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const isLoggedIn = isAuthenticated;
   const queryClient = useQueryClient();
   const [recentSkeletonCount, setRecentSkeletonCount] = useState<number>(() => {
     const cachedCount = getRecentCount(queryClient.getQueryData(QUERY_KEYS.GET_RECENT_COMPANY));

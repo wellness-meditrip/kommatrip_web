@@ -1,10 +1,21 @@
 import { PropsWithChildren } from 'react';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { emitToast } from '@/utils/toast-bus';
+import { useAuthStore } from '@/store/auth';
+import { isAuthRefreshInFlight } from '@/utils/auth-refresh';
 import { getErrorAction, getUserMessage, normalizeError } from '@/utils/error-handler';
+
+const shouldSuppressAuthToast = (status?: number): boolean => {
+  if (status !== 401 && status !== 403) return false;
+  const authState = useAuthStore.getState().authState;
+  if (authState === 'hydrating' || authState === 'refreshing') return true;
+  if (isAuthRefreshInFlight()) return true;
+  return false;
+};
 
 const handleGlobalError = (error: unknown) => {
   const normalized = normalizeError(error);
+  if (shouldSuppressAuthToast(normalized.status)) return;
   const action = getErrorAction(normalized);
   if (action === 'toast') {
     emitToast({ title: getUserMessage(normalized), icon: 'exclaim' });

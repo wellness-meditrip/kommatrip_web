@@ -7,6 +7,12 @@ export const { api } = createHttpClient({
   role: 'user',
 });
 
+// same-origin BFF(`/api/**`) 전용 클라이언트
+export const { api: bffApi } = createHttpClient({
+  baseURL: '',
+  role: 'user',
+});
+
 // export const api: HttpClient = axios.create({
 //   baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
 // });

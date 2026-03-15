@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -9,16 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const authHeader = req.headers.authorization;
-    const backendResponse = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/payments/orders`,
-      req.body,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authHeader ? { Authorization: authHeader } : {}),
-        },
-      }
-    );
+    const backendBaseUrl = getBackendBaseUrl();
+    const backendResponse = await axios.post(`${backendBaseUrl}/api/payments/orders`, req.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    });
 
     return res.status(backendResponse.status).json(backendResponse.data);
   } catch (error: unknown) {
