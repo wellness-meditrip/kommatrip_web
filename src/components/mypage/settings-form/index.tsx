@@ -11,7 +11,7 @@ import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { deleteCookie } from '@/utils/cookie';
-import { ROUTES } from '@/constants';
+import { AUTH_COOKIE_KEYS, ROUTES } from '@/constants';
 import { useTranslations } from 'next-intl';
 
 type Variant = 'page' | 'embedded';
@@ -56,7 +56,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
 
   const handleLogout = async () => {
     useAuthStore.getState().clearAuth();
-    deleteCookie('refreshToken');
+    deleteCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
 
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });

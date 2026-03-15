@@ -181,7 +181,6 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
             hasBackendUser: !!token.backendUser,
             hasBackendTokens: !!token.backendTokens,
             hasAccessToken: !!token.backendTokens?.access_token,
-            hasRefreshToken: !!token.backendTokens?.refresh_token,
             sessionUserExists: !!session.user,
           });
 
@@ -212,16 +211,10 @@ export function authOptions(req: NextApiRequest): NextAuthOptions {
             session.accessToken = token.backendTokens.access_token;
           }
 
-          // refreshToken도 세션에 포함 (클라이언트에서 쿠키에 저장하기 위해)
-          if (token.backendTokens?.refresh_token) {
-            session.refreshToken = token.backendTokens.refresh_token;
-          }
-
           console.log('[next-auth][session] Session callback success', {
             hasUser: !!session.user,
             userId: session.user?.id,
             hasAccessToken: !!session.accessToken,
-            hasRefreshToken: !!session.refreshToken,
           });
 
           return session;
