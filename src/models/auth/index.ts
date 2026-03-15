@@ -62,7 +62,7 @@ export interface User {
 
 export interface Token {
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
   token_type: 'Bearer' | 'bearer';
 }
 

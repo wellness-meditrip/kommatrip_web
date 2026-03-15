@@ -2,50 +2,34 @@ import { useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/store/auth';
-import { deleteCookie, getCookie, setCookie } from '@/utils/cookie';
-import { ROUTES } from '@/constants';
+import { deleteCookie, getCookie } from '@/utils/cookie';
+import { AUTH_COOKIE_KEYS, ROUTES } from '@/constants';
 import { postTokenReissue } from '@/apis/auth';
 import { beginAuthRefresh, rejectAuthRefresh, resolveAuthRefresh } from '@/utils/auth-refresh';
+import { parseJwtPayload } from '@/utils/auth-token';
 
 /**
  * NextAuth 세션과 zustand auth store를 동기화하는 훅
- * Google 로그인 성공 시 accessToken을 zustand에 저장하고 refreshToken을 쿠키에 저장
+ * access token 메모리 동기화 및 refresh 재발급 흐름 관리
  */
 export function useAuthSync() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const refreshAttempted = useRef(false);
   const refreshFromSessionAttempted = useRef(false);
-
-  const parseJwtPayload = (token: string) => {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
-          .join('')
-      );
-      return JSON.parse(jsonPayload) as { exp?: number; type?: string };
-    } catch {
-      return null;
-    }
+  const clearRefreshCookies = () => {
+    deleteCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
+    void fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch((error) => {
+      console.error('[AuthSync] failed to clear refresh cookies', error);
+    });
   };
 
-  // Google 로그인 성공 시 토큰 저장
+  // 소셜 로그인 성공 시 access token을 메모리 스토어로 동기화
   useEffect(() => {
     if (status === 'loading') return;
     if (!session?.accessToken) return;
 
-    // accessToken을 zustand store에 저장
     useAuthStore.getState().setAccessToken(session.accessToken);
-
-    // refreshToken을 쿠키에 저장 (세션에서 가져오기)
-    const refreshToken = session.refreshToken;
-    if (refreshToken) {
-      setCookie('refreshToken', refreshToken, 7); // 7일
-    }
   }, [session, status]);
 
   // Google 로그인 세션도 accessToken 만료 시 재발급
@@ -73,21 +57,21 @@ export function useAuthSync() {
         .catch((error) => {
           console.error('[AuthSync] session token reissue failed', error);
           useAuthStore.getState().clearAuth();
-          deleteCookie('refreshToken');
+          clearRefreshCookies();
           rejectAuthRefresh(error);
         });
     }
   }, [session, status]);
 
-  // 이메일 로그인: refreshToken 쿠키가 있으면 accessToken 복원
+  // 이메일 로그인: refresh marker가 있으면 access token 복원 시도
   useEffect(() => {
     if (status === 'loading') return;
     if (session?.accessToken) return;
     if (refreshAttempted.current) return;
 
     const hasAccessToken = !!useAuthStore.getState().accessToken;
-    const refreshToken = getCookie('refreshToken');
-    if (hasAccessToken || !refreshToken) return;
+    const hasRefreshMarker = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
+    if (hasAccessToken || !hasRefreshMarker) return;
 
     refreshAttempted.current = true;
     beginAuthRefresh();
@@ -102,7 +86,7 @@ export function useAuthSync() {
       .catch((error) => {
         console.error('[AuthSync] refresh token reissue failed', error);
         useAuthStore.getState().clearAuth();
-        deleteCookie('refreshToken');
+        clearRefreshCookies();
         rejectAuthRefresh(error);
       });
   }, [session, status]);

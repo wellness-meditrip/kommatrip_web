@@ -16,11 +16,24 @@ import {
   PostMarketingConsentResponse,
   PostUserProfileImageResponse,
 } from '@/models/user';
+import { useAuthStore } from '@/store/auth';
+import { isUsableAccessToken } from '@/utils/auth-token';
 
-export const useGetUserProfileQuery = () => {
+interface UseGetUserProfileQueryOptions {
+  enabled?: boolean;
+}
+
+export const useGetUserProfileQuery = (options?: UseGetUserProfileQueryOptions) => {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const authState = useAuthStore((state) => state.authState);
+  const hasUsableToken = isUsableAccessToken(accessToken, 10);
+  const isDefaultEnabled = authState === 'authenticated' && hasUsableToken;
+  const enabled = options?.enabled ?? isDefaultEnabled;
+
   return useQuery<GetUserProfileResponse>({
     queryKey: QUERY_KEYS.GET_USER_PROFILE,
     queryFn: getUserProfile,
+    enabled,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
