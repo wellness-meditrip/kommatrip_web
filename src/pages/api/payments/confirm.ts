@@ -1,6 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getBackendBaseUrl } from '@/server/config/backend-url';
+import { postBackend, resolveBackendPayload } from '@/server/http/backend-client';
+import {
+  buildErrorContract,
+  buildSuccessContract,
+  extractContractCode,
+  extractContractMessage,
+  resolveTraceId,
+} from '@/server/http/api-contract';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -9,34 +16,27 @@ const maskValue = (value: string, left = 6, right = 4) => {
   return `${value.slice(0, left)}...${value.slice(-right)}`;
 };
 
-const toErrorCode = (data: unknown): string | undefined => {
-  if (!data || typeof data !== 'object') return undefined;
-  const errorCode = (data as { error_code?: unknown }).error_code;
-  if (typeof errorCode === 'string' && errorCode.trim().length > 0) return errorCode;
-  const code = (data as { code?: unknown }).code;
-  if (typeof code === 'string' && code.trim().length > 0) return code;
-  const nestedCode = (data as { error?: { code?: unknown } }).error?.code;
-  if (typeof nestedCode === 'string' && nestedCode.trim().length > 0) return nestedCode;
-  if (typeof nestedCode === 'number') return String(nestedCode);
-  return undefined;
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const toErrorMessage = (data: unknown, fallback: string): string => {
-  if (typeof data === 'string' && data.trim().length > 0) return data;
-  if (!data || typeof data !== 'object') return fallback;
-  const detail = (data as { detail?: unknown }).detail;
-  if (typeof detail === 'string' && detail.trim().length > 0) return detail;
-  const message = (data as { message?: unknown }).message;
-  if (typeof message === 'string' && message.trim().length > 0) return message;
-  const nestedMessage = (data as { error?: { message?: unknown } }).error?.message;
-  if (typeof nestedMessage === 'string' && nestedMessage.trim().length > 0) return nestedMessage;
-  return fallback;
+const resolveSuccessFlag = (payload: unknown): boolean => {
+  if (!isRecord(payload)) return true;
+  if (typeof payload.success === 'boolean') return payload.success;
+  return true;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const traceId = resolveTraceId(req);
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
-    return res.status(405).json({ message: 'Method Not Allowed' });
+    return res.status(405).json(
+      buildErrorContract({
+        traceId,
+        code: 'METHOD_NOT_ALLOWED',
+        message: 'Method Not Allowed',
+      })
+    );
   }
 
   try {
@@ -47,6 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       amount?: number;
       programId?: number;
     };
+
     if (isDev) {
       console.info('[api/payments/confirm] incoming', {
         orderId: payload?.orderId,
@@ -55,49 +56,97 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         programId: payload?.programId,
       });
     }
-    const backendBaseUrl = getBackendBaseUrl();
-    const backendResponse = await axios.post(`${backendBaseUrl}/api/payments/confirm`, req.body, {
+
+    const backendResponse = await postBackend('api/payments/confirm', req.body, {
       headers: {
         'Content-Type': 'application/json',
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
     });
+
+    const backendPayload = resolveBackendPayload(backendResponse.data);
+    const successFlag = resolveSuccessFlag(backendPayload);
+    const code = extractContractCode(
+      backendPayload,
+      successFlag ? 'PAYMENT_CONFIRM_SUCCESS' : 'PAYMENT_CONFIRM_FAILED'
+    );
+    const message = extractContractMessage(
+      backendPayload,
+      successFlag ? 'Payment confirmed' : 'Payment confirm failed'
+    );
+
     if (isDev) {
-      console.info('[api/payments/confirm] backend success', {
+      console.info('[api/payments/confirm] backend response', {
         status: backendResponse.status,
-        success: backendResponse.data?.success,
-        error_code: backendResponse.data?.error_code,
-        message: backendResponse.data?.message,
-        payment_status: backendResponse.data?.payment_status,
+        success: successFlag,
+        code,
+        message,
       });
     }
 
-    return res.status(backendResponse.status).json(backendResponse.data);
+    return res.status(backendResponse.status).json(
+      buildSuccessContract({
+        traceId,
+        code,
+        message,
+        success: successFlag,
+        data: backendPayload,
+        mergeData: true,
+      })
+    );
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
+      const backendPayload = resolveBackendPayload(error.response.data);
+      const code = extractContractCode(backendPayload, 'PAYMENT_CONFIRM_FAILED');
+      const message = extractContractMessage(backendPayload, 'Payment confirm failed');
+      const legacyFields = isRecord(backendPayload) ? backendPayload : {};
+      const errorData = {
+        ...legacyFields,
+        status:
+          typeof legacyFields.status === 'number' ? legacyFields.status : error.response.status,
+        error_code:
+          typeof legacyFields.error_code === 'string' && legacyFields.error_code.trim().length > 0
+            ? legacyFields.error_code
+            : code,
+      };
+
       if (isDev) {
         console.error('[api/payments/confirm] backend error', {
           status: error.response.status,
+          code,
+          message,
           data: error.response.data,
         });
       } else {
         console.error('[api/payments/confirm] backend error', {
           status: error.response.status,
+          code,
         });
       }
-      return res.status(error.response.status).json({
-        success: false,
-        status: error.response.status,
-        error_code: toErrorCode(error.response.data),
-        message: toErrorMessage(error.response.data, 'Payment confirm failed'),
-      });
+
+      return res.status(error.response.status).json(
+        buildErrorContract({
+          traceId,
+          code,
+          message,
+          data: errorData,
+          mergeData: true,
+        })
+      );
     }
+
     console.error('[api/payments/confirm] unexpected error', error);
-    return res.status(500).json({
-      success: false,
-      status: 500,
-      error_code: 'PAYMENT_CONFIRM_PROXY_FAILED',
-      message: 'Payment confirm failed',
-    });
+    return res.status(500).json(
+      buildErrorContract({
+        traceId,
+        code: 'PAYMENT_CONFIRM_PROXY_FAILED',
+        message: 'Payment confirm failed',
+        data: {
+          status: 500,
+          error_code: 'PAYMENT_CONFIRM_PROXY_FAILED',
+        },
+        mergeData: true,
+      })
+    );
   }
 }
