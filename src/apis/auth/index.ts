@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { api, guestApi } from '@/apis/config';
+import { bffApi, guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
   PostConfirmEmailResponse,
@@ -166,7 +166,7 @@ export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
 export const postInterest = async (
   data: PostInterestRequestBody
 ): Promise<PostInterestResponse> => {
-  return await api.post<PostInterestResponse>('/api/users/interest', data, {
+  return await bffApi.post<PostInterestResponse>('/api/users/interest', data, {
     headers: {
       accept: 'application/json',
       'Content-Type': 'application/json',
