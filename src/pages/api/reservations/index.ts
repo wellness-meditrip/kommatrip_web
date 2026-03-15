@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // TODO: 백엔드 CORS 수정 후 프록시 제거할 것.
@@ -11,29 +12,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const authHeader = req.headers.authorization;
+    const backendBaseUrl = getBackendBaseUrl();
     if (req.method === 'GET') {
-      const backendResponse = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/`,
-        {
-          params: req.query,
-          headers: {
-            ...(authHeader ? { Authorization: authHeader } : {}),
-          },
-        }
-      );
+      const backendResponse = await axios.get(`${backendBaseUrl}/api/reservations/`, {
+        params: req.query,
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+      });
       return res.status(backendResponse.status).json(backendResponse.data);
     }
 
-    const backendResponse = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/reservations/`,
-      req.body,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authHeader ? { Authorization: authHeader } : {}),
-        },
-      }
-    );
+    const backendResponse = await axios.post(`${backendBaseUrl}/api/reservations/`, req.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    });
 
     return res.status(backendResponse.status).json(backendResponse.data);
   } catch (error: unknown) {

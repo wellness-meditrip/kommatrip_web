@@ -1,4 +1,4 @@
-import { api } from '@/apis/config';
+import { bffApi } from '@/apis/config';
 import {
   PostConfirmPaymentRequest,
   PostConfirmPaymentResponse,
@@ -7,7 +7,7 @@ import {
 } from '@/models/payment';
 
 export const postCreatePaymentOrder = async (data: PostCreatePaymentOrderRequest) => {
-  return await api.post<PostCreatePaymentOrderResponse>('/api/payments/orders', data, {
+  return await bffApi.post<PostCreatePaymentOrderResponse>('/api/payments/orders', data, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -15,7 +15,7 @@ export const postCreatePaymentOrder = async (data: PostCreatePaymentOrderRequest
 };
 
 export const postConfirmPayment = async (data: PostConfirmPaymentRequest) => {
-  return await api.post<PostConfirmPaymentResponse>('/api/payments/confirm', data, {
+  return await bffApi.post<PostConfirmPaymentResponse>('/api/payments/confirm', data, {
     headers: {
       'Content-Type': 'application/json',
     },

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -54,16 +55,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         programId: payload?.programId,
       });
     }
-    const backendResponse = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/payments/confirm`,
-      req.body,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authHeader ? { Authorization: authHeader } : {}),
-        },
-      }
-    );
+    const backendBaseUrl = getBackendBaseUrl();
+    const backendResponse = await axios.post(`${backendBaseUrl}/api/payments/confirm`, req.body, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    });
     if (isDev) {
       console.info('[api/payments/confirm] backend success', {
         status: backendResponse.status,

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { getToken } from 'next-auth/jwt';
 import { AUTH_COOKIE_KEYS } from '@/constants';
 import { createRefreshTokenCookies } from '@/server/auth/cookies';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 type TokenReissueResponse =
   | { accessToken: string }
@@ -66,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ? null
       : await getRefreshTokenFromSession(req);
     const refreshToken = refreshTokenFromCookie || refreshTokenFromSession || undefined;
-    const baseURL = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const baseURL = getBackendBaseUrl();
     const backendResponse = await axios.post<TokenReissueResponse>(
       `${baseURL}/api/users/token/reissue`,
       {

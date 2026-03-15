@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { createRefreshTokenCookies } from '@/server/auth/cookies';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 
 const BACKEND_LOGIN_PATH = 'user/non/login/customer';
 const isDev = process.env.NODE_ENV !== 'production';
@@ -50,10 +51,7 @@ const buildDebugResponseBody = (body: unknown, debug: { baseURL?: string; path?:
 };
 
 const postLoginToBackend = async (body: unknown) => {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL ?? '';
-  if (!baseURL) {
-    throw new Error('Missing NEXT_PUBLIC_API_URL');
-  }
+  const baseURL = getBackendBaseUrl();
 
   const path = normalizePath(process.env.BACKEND_LOGIN_PATH ?? BACKEND_LOGIN_PATH);
   const response = await axios.post(path, body, {
@@ -85,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (isDev) {
       console.info('[login/customer] success', {
         status: backendResponse.status,
-        baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
+        baseURL: getBackendBaseUrl(),
         usedPath,
       });
     }
@@ -117,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? {
               detail: error.message,
               code: error.code,
-              baseURL: process.env.NEXT_PUBLIC_API_URL ?? '',
+              baseURL: getBackendBaseUrl(),
             }
           : {}),
       });
