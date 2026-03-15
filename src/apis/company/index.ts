@@ -11,7 +11,7 @@ import {
 
 export const getRecentCompany = async (): Promise<GetRecentCompanyResponse[]> => {
   try {
-    const response = await bffApi.get<GetRecentCompanyResponse[]>('/api/non/company/recent');
+    const response = await bffApi.get<GetRecentCompanyResponse[]>('/api/companies/recent');
     // bffApi는 인터셉터에서 response.data?.response를 반환
     // 응답이 배열인지 확인하고 반환
     if (Array.isArray(response)) {

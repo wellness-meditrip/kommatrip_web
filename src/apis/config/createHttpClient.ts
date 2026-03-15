@@ -13,6 +13,22 @@ interface Props {
   role: Role;
 }
 
+const resolveTokenReissuePayload = (payload: unknown): PostTokenReissueResponse => {
+  if (payload && typeof payload === 'object') {
+    const data = (payload as { data?: unknown }).data;
+    if (data && typeof data === 'object') {
+      return data as PostTokenReissueResponse;
+    }
+
+    const response = (payload as { response?: unknown }).response;
+    if (response && typeof response === 'object') {
+      return response as PostTokenReissueResponse;
+    }
+  }
+
+  return payload as PostTokenReissueResponse;
+};
+
 export const createHttpClient = ({ baseURL }: Props) => {
   const axiosInstance = axios.create({ baseURL, timeout: 5000, withCredentials: true });
   const api: HttpClient = axiosInstance;
@@ -44,8 +60,9 @@ export const createHttpClient = ({ baseURL }: Props) => {
   const getNewAccessToken = async (): Promise<string> => {
     try {
       // refreshToken은 쿠키에서 자동으로 전송됨 (withCredentials: true)
-      const response = await axios.post<PostTokenReissueResponse>('/api/users/token/reissue', {});
-      const accessToken = response.data.tokens.access_token;
+      const response = await axios.post('/api/auth/token/reissue', {});
+      const payload = resolveTokenReissuePayload(response.data);
+      const accessToken = payload?.tokens?.access_token;
 
       if (!accessToken) {
         console.error('[HttpClient] No access token in response', response.data);

@@ -22,6 +22,18 @@ import {
   PostInterestResponse,
 } from '@/models/auth';
 
+const unwrapApiPayload = <T>(payload: unknown): T => {
+  if (payload && typeof payload === 'object') {
+    const data = (payload as { data?: unknown }).data;
+    if (typeof data !== 'undefined') return data as T;
+
+    const response = (payload as { response?: unknown }).response;
+    if (typeof response !== 'undefined') return response as T;
+  }
+
+  return payload as T;
+};
+
 // 이메일 인증 코드 전송
 export const postVerifyEmailCode = async (email: string) => {
   return await guestApi.post<PostVerifyEmailCodeResponse>(
@@ -57,17 +69,13 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
   return axios
-    .post<PostLoginResponse>('/api/user/non/login/customer', data, {
+    .post('/api/auth/login/customer', data, {
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
     })
-    .then((response) =>
-      response.data && typeof response.data === 'object' && 'response' in response.data
-        ? (response.data as { response: PostLoginResponse }).response
-        : response.data
-    );
+    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data));
 };
 
 // 비밀번호 재설정 코드 발송
@@ -152,14 +160,14 @@ export const postUserAuthApple = async (data: PostUserAuthAppleRequest) => {
 export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
   // refreshToken은 브라우저 쿠키에 저장되므로 same-origin API를 호출해야 전송됨
   return axios
-    .post<PostTokenReissueResponse>(
-      '/api/users/token/reissue',
+    .post(
+      '/api/auth/token/reissue',
       {},
       {
         withCredentials: true,
       }
     )
-    .then((response) => response.data);
+    .then((response) => unwrapApiPayload<PostTokenReissueResponse>(response.data));
 };
 
 // 관심사 등록

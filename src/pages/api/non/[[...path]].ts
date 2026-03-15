@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { proxyJsonToBackend, validateMethod } from '@/server/http/bff-proxy';
+import { validateMethod } from '@/server/http/bff-proxy';
+import { handleRecentCompany } from '@/server/api/companies/recent-handler';
 
 const isNonEmpty = (value: string | undefined): value is string => !!value && value.length > 0;
 
@@ -8,7 +9,7 @@ const resolveBackendPath = (
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 ): string | null => {
   if (pathSegments.length === 2 && pathSegments[0] === 'company' && pathSegments[1] === 'recent') {
-    return method === 'GET' ? '/non/company/recent' : null;
+    return method === 'GET' ? 'COMPANY_RECENT_ALIAS' : null;
   }
   return null;
 };
@@ -21,16 +22,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const pathSegments = Array.isArray(pathParam) ? pathParam.filter(isNonEmpty) : [];
   const backendPath = resolveBackendPath(pathSegments, method);
 
-  if (!backendPath) {
-    return res.status(404).json({ message: 'Not Found' });
+  if (backendPath === 'COMPANY_RECENT_ALIAS') {
+    return handleRecentCompany(req, res, { omitQueryKeys: ['path'] });
   }
 
-  return proxyJsonToBackend({
-    req,
-    res,
-    method,
-    backendPath,
-    omitQueryKeys: ['path'],
-    errorMessage: 'Non-member proxy failed',
-  });
+  return res.status(404).json({ message: 'Not Found' });
 }
