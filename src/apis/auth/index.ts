@@ -56,11 +56,18 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
-  return await guestApi.post<PostLoginResponse>('user/non/login/customer', data, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  return axios
+    .post<PostLoginResponse>('/api/user/non/login/customer', data, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) =>
+      response.data && typeof response.data === 'object' && 'response' in response.data
+        ? (response.data as { response: PostLoginResponse }).response
+        : response.data
+    );
 };
 
 // 비밀번호 재설정 코드 발송
