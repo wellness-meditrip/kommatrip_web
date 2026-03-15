@@ -19,9 +19,7 @@ import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { useGetProgramDetailQuery } from '@/queries/program';
 import { useTranslations } from 'next-intl';
-import { useMediaQuery } from '@/hooks';
-import { useSession } from 'next-auth/react';
-import { useAuthStore } from '@/store/auth';
+import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { resolvePrice } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
@@ -51,9 +49,7 @@ export default function ProgramDetailPage() {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
   const currentLocale = useCurrentLocale();
-  const { status } = useSession();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const { isAuthenticated: isLoggedIn } = useAuthState();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {

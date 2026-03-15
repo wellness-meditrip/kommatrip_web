@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Text, LoginModal, ReservationCardSkeletonList } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
@@ -9,7 +9,6 @@ import { useTranslations } from 'next-intl';
 import { useGetReservationsQuery } from '@/queries/reservation';
 import { useRequireAuth } from '@/hooks';
 import { ReservationListItem } from '@/models/reservation';
-import { useAuthStore } from '@/store/auth';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
@@ -42,9 +41,9 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
   const currentLocale = useCurrentLocale();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
+  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const isEmbedded = variant === 'embedded';
 
   const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
     () => [
@@ -62,14 +61,8 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
       skip: 0,
       limit: 20,
     },
-    !!accessToken
+    isAuthenticated
   );
-
-  useEffect(() => {
-    if (isAuthenticated && !accessToken) {
-      setShowLoginModal(true);
-    }
-  }, [isAuthenticated, accessToken, setShowLoginModal]);
 
   const formatReservationDate = useCallback((date?: string, time?: string) => {
     if (!date) return '-';
@@ -138,7 +131,6 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
 
   const upcomingReservations = filteredReservations.filter((r) => r.status !== 'completed');
   const completedReservations = filteredReservations.filter((r) => r.status === 'completed');
-  const isEmbedded = variant === 'embedded';
 
   const handleReservationClick = useCallback(
     (reservation: ReservationCard) => {
@@ -187,7 +179,15 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
     }
   };
 
-  if (!isAuthenticated || !accessToken) {
+  if (isLoading) {
+    return (
+      <div css={skeletonContainer}>
+        <ReservationCardSkeletonList count={isEmbedded ? 2 : 3} />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
     return (
       <LoginModal
         isOpen={showLoginModal}

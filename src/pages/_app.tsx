@@ -11,6 +11,7 @@ import type { I18nPageProps } from '@/i18n';
 import '@/styles/normalize.css';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
 
 import Head from 'next/head';
 import { Meta, createPageMeta, type MetaProps } from '@/seo';
@@ -25,6 +26,7 @@ const EMPTY_MESSAGES: Record<string, unknown> = {};
  * 토큰 재발급은 API 인터셉터에서 401 + TOKEN_EXPIRED 발생 시 자동 처리
  */
 function AuthSync() {
+  useAuthState();
   useAuthSync();
   return null;
 }
