@@ -109,9 +109,11 @@
     "refundRule4": "2 days before (48–71 hours): 80% refund / Up to 1 change",
     "refundRule5": "1 day before (24–47 hours): 50% refund / No changes",
     "refundRule6": "Same day / No-show (0–23 hours): No refund / No changes",
-    "refundMore": "Learn More About Refund Policy",
+    "refundMore": "Review Cancellation & Refund Policy",
     "refundAccept": "I accept the Cancellation and Refund Policy.",
     "refundAcceptRequired": "Please accept the cancellation/refund policy.",
+    "refundNoticeTitle": "Notice",
+    "refundNoticeDescription": "While we initiate refunds promptly, it may take up to 10 business days for the funds to reflect in your account.",
     "currency": "KRW",
     "minutes": "min"
   },

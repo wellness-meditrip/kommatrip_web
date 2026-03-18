@@ -109,9 +109,11 @@
     "refundRule4": "2일 전 (48~71시간): 80% 환불 / 1회 변경 가능",
     "refundRule5": "1일 전 (24~47시간): 50% 환불 / 변경 불가",
     "refundRule6": "당일/노쇼 (0~23시간): 환불 불가 / 변경 불가",
-    "refundMore": "환불 규정 더 알아보기",
+    "refundMore": "취소 및 환불 규정 확인하기",
     "refundAccept": "취소 및 환불 규정을 확인했습니다.",
     "refundAcceptRequired": "취소 및 환불 규정에 동의해 주세요.",
+    "refundNoticeTitle": "안내",
+    "refundNoticeDescription": "환불은 빠르게 진행되지만, 실제 결제 수단에 반영되기까지 최대 10영업일이 소요될 수 있습니다.",
     "currency": "KRW",
     "minutes": "분"
   },
