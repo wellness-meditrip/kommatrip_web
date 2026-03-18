@@ -23,6 +23,7 @@ import {
   PostInterestRequestBody,
   PostInterestResponse,
 } from '@/models/auth';
+import { normalizeError } from '@/utils/error-handler';
 
 const unwrapApiPayload = <T>(payload: unknown): T => {
   if (payload && typeof payload === 'object') {
@@ -77,7 +78,8 @@ export const postLogin = async (data: PostLoginRequestBody) => {
         'Content-Type': 'application/json',
       },
     })
-    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data));
+    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data))
+    .catch((error) => Promise.reject(normalizeError(error)));
 };
 
 export const postSocialLogin = async (data: PostSocialLoginRequestBody) => {
@@ -97,7 +99,8 @@ export const postSocialLogin = async (data: PostSocialLoginRequestBody) => {
         },
       }
     )
-    .then((response) => unwrapApiPayload<PostSocialLoginResponse>(response.data));
+    .then((response) => unwrapApiPayload<PostSocialLoginResponse>(response.data))
+    .catch((error) => Promise.reject(normalizeError(error)));
 };
 
 // 비밀번호 재설정 코드 발송
