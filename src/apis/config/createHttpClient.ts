@@ -1,8 +1,10 @@
 import axios, { AxiosHeaders, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ERROR_CODES } from '@/constants/error-codes';
 import { useAuthStore } from '@/store/auth';
+import { openLoginModal } from '@/utils/auth-modal';
 import { waitForAuthReady } from '@/utils/auth-refresh';
-import { normalizeError } from '@/utils/error-handler';
+import { emitSessionExpiredToast } from '@/utils/auth-toast';
+import { AppError, normalizeError } from '@/utils/error-handler';
 import { PostTokenReissueResponse } from '@/models/auth';
 import { applyAuthSession, clearClientAuthSession } from '@/utils/auth-session';
 
@@ -11,6 +13,8 @@ interface Props {
   baseURL: string;
   role: Role;
 }
+
+const AUTH_SESSION_EXPIRED_CODE = 'AUTH_SESSION_EXPIRED';
 
 const resolveTokenReissuePayload = (payload: unknown): PostTokenReissueResponse => {
   if (payload && typeof payload === 'object') {
@@ -47,6 +51,22 @@ export const createHttpClient = ({ baseURL }: Props) => {
   const notifyRefreshFailure = (error: unknown) => {
     refreshSubscribers.forEach((callback) => callback(null, error));
     refreshSubscribers = [];
+  };
+
+  const createExpiredAuthError = (): AppError => ({
+    status: 401,
+    code: AUTH_SESSION_EXPIRED_CODE,
+    message: 'Session expired',
+    source: 'API',
+  });
+
+  const handleExpiredAuth = (withToast = false) => {
+    void clearClientAuthSession();
+    if (withToast) {
+      emitSessionExpiredToast();
+    }
+    openLoginModal({ reason: 'session_expired' });
+    return createExpiredAuthError();
   };
 
   const getNewAccessToken = async (): Promise<string> => {
@@ -147,8 +167,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
         // 이미 재시도한 요청이면 무한 루프 방지
         if (originalRequest._retry) {
           console.error('[HttpClient] Token refresh already attempted - clearing auth');
-          void clearClientAuthSession();
-          return Promise.reject(normalizeError(error));
+          return Promise.reject(handleExpiredAuth(true));
         }
 
         originalRequest._retry = true;
@@ -180,8 +199,7 @@ export const createHttpClient = ({ baseURL }: Props) => {
               })
               .catch((err) => {
                 console.error('[HttpClient] Token refresh failed in interceptor:', err);
-                void clearClientAuthSession();
-                notifyRefreshFailure(normalizeError(err));
+                notifyRefreshFailure(handleExpiredAuth(true));
               })
               .finally(() => {
                 isRefreshing = false;
@@ -195,20 +213,17 @@ export const createHttpClient = ({ baseURL }: Props) => {
         const isInvalidTokenMessage = backendMessage === '유효하지 않은 토큰입니다.';
         const isMissingUserMessage = backendMessage === '사용자 정보를 확인할 수 없습니다.';
         if (isInvalidTokenMessage || isMissingUserMessage) {
-          void clearClientAuthSession();
-          return Promise.reject(normalizeError(error));
+          return Promise.reject(handleExpiredAuth(true));
         }
       }
 
       if (onyuError && onyuError.code) {
         if (onyuError.code === 1001) {
-          void clearClientAuthSession();
-          return Promise.reject(normalizeError(error));
+          return Promise.reject(handleExpiredAuth(true));
         }
 
         if (onyuError.code === ERROR_CODES.NO_USER_EXIST) {
-          void clearClientAuthSession();
-          return Promise.reject(normalizeError(error));
+          return Promise.reject(handleExpiredAuth(true));
         }
       }
 
