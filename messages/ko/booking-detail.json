@@ -24,6 +24,7 @@
     "language": "언어",
     "paymentMethod": "결제 수단",
     "payOnline": "온라인 결제({currency})",
+    "payOnSite": "현장 결제",
     "paymentAmount": "결제 금액",
     "finalPaymentAmount": "최종 결제 금액"
   },
