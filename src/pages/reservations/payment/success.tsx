@@ -9,11 +9,10 @@ import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useMediaQuery } from '@/hooks';
+import { useSession } from 'next-auth/react';
 import { usePostConfirmPaymentMutation } from '@/queries/payment';
 import type { ReservationDataForPaymentConfirm } from '@/models/payment';
-import { useAuthStore } from '@/store/auth';
-import { getCookie } from '@/utils/cookie';
-import { waitForAuthReady } from '@/utils/auth-refresh';
+import { ensureAccessToken } from '@/utils/ensure-access-token';
 import {
   extractConfirmPayload,
   type PaymentReasonCode,
@@ -77,6 +76,7 @@ const formatConfirmationDate = (
 
 export default function ReservationPaymentSuccessPage() {
   const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -119,6 +119,7 @@ export default function ReservationPaymentSuccessPage() {
   useEffect(() => {
     if (!router.isReady) return;
     if (typeof window === 'undefined') return;
+    if (sessionStatus === 'loading') return;
     const { paymentKey, orderId, amount } = router.query;
     const hasPaymentQuery = !!paymentKey && !!orderId && !!amount;
     if (hasPaymentQuery) {
@@ -173,8 +174,9 @@ export default function ReservationPaymentSuccessPage() {
       hasConfirmedRef.current = true;
       const storedDraft = window.sessionStorage.getItem('reservation_draft');
       if (!storedDraft) {
+        console.error('[payment][confirm] reservation_draft missing on success redirect');
         setIsConfirming(false);
-        redirectToFail();
+        redirectToFail('retryable_failure');
         return;
       }
 
@@ -208,31 +210,33 @@ export default function ReservationPaymentSuccessPage() {
 
         const resolvedAmount = Number(Array.isArray(amount) ? amount[0] : amount);
         if (!Number.isFinite(resolvedAmount) || !reservationData || !completeData) {
-          redirectToFail();
+          console.error('[payment][confirm] invalid confirm payload derived from query/draft', {
+            amount,
+            hasReservationData: !!reservationData,
+            hasCompleteData: !!completeData,
+          });
+          redirectToFail('generic_failure');
           return;
         }
-
-        const ensureAccessToken = async () => {
-          let token = useAuthStore.getState().accessToken;
-          if (token) return token;
-          const refreshToken = getCookie('refreshToken');
-          if (!refreshToken) return null;
-          await waitForAuthReady();
-          for (let i = 0; i < 30; i += 1) {
-            token = useAuthStore.getState().accessToken;
-            if (token) return token;
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          }
-          return useAuthStore.getState().accessToken;
-        };
 
         setIsConfirming(true);
-        const token = await ensureAccessToken();
-        if (!token) {
+        const tokenResult = await ensureAccessToken({
+          sessionAccessToken: session?.accessToken,
+          staleWindowSeconds: 10,
+        });
+
+        if (!tokenResult.token) {
+          console.error('[payment][confirm] failed to resolve access token', {
+            reason: tokenResult.reason,
+            hasSessionToken: !!session?.accessToken,
+            sessionStatus,
+            error: tokenResult.error,
+          });
           setIsConfirming(false);
-          redirectToFail();
+          redirectToFail('auth_required');
           return;
         }
+        logPaymentInfo('[payment][confirm] access token ready', { source: tokenResult.reason });
 
         const confirmRequest = {
           orderId: Array.isArray(orderId) ? orderId[0] : orderId,
@@ -318,6 +322,8 @@ export default function ReservationPaymentSuccessPage() {
   }, [
     router.isReady,
     router.query,
+    session?.accessToken,
+    sessionStatus,
     confirmPayment,
     redirectToFail,
     redirectToPending,
@@ -361,7 +367,7 @@ export default function ReservationPaymentSuccessPage() {
       >
         {isDesktop ? (
           <div css={desktopAppBarWrap}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
           </div>
         ) : (
           <AppBar logo="dark" />

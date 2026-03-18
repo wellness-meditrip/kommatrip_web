@@ -39,7 +39,7 @@ export default function ReservationPaymentFailPage() {
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('payment.title')} showFooter={false}>
         {isDesktop ? (
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
         ) : (
           <AppBar onBackClick={router.back} leftButton={true} buttonType="dark" />
         )}

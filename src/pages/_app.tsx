@@ -11,11 +11,13 @@ import type { I18nPageProps } from '@/i18n';
 import '@/styles/normalize.css';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useAuthSync } from '@/hooks/auth/use-auth-sync';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
 
 import Head from 'next/head';
 import { Meta, createPageMeta, type MetaProps } from '@/seo';
 import { ChatbotLauncher } from '@/components';
 import { SkeletonTheme } from 'react-loading-skeleton';
+import { AdminShell } from '@/components/admin/admin-shell';
 
 const warnedMissingMessages = new Set<string>();
 const EMPTY_MESSAGES: Record<string, unknown> = {};
@@ -25,12 +27,15 @@ const EMPTY_MESSAGES: Record<string, unknown> = {};
  * 토큰 재발급은 API 인터셉터에서 401 + TOKEN_EXPIRED 발생 시 자동 처리
  */
 function AuthSync() {
+  useAuthState();
   useAuthSync();
   return null;
 }
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
+  const isAdminRoute = router.pathname.startsWith('/admin');
+  const isAdminLoginRoute = router.pathname === '/admin/login';
   const initialPageProps = pageProps as Partial<I18nPageProps>;
   const initialLocale = initialPageProps.locale ?? routing.defaultLocale;
   const pageMessages = initialPageProps.messages as Record<string, unknown> | undefined;
@@ -123,7 +128,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       </Head>
       <Meta {...resolvedMeta} />
       <SessionProvider session={session}>
-        <AuthSync />
+        {!isAdminRoute && <AuthSync />}
         <NextIntlClientProvider
           locale={pageLocale}
           messages={messages}
@@ -162,10 +167,16 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
               <GlobalStyle>
                 <DialogProvider>
                   <ToastProvider>
-                    <>
-                      <Component {...pageProps} />
-                      <ChatbotLauncher />
-                    </>
+                    {isAdminRoute && !isAdminLoginRoute ? (
+                      <AdminShell>
+                        <Component {...pageProps} />
+                      </AdminShell>
+                    ) : (
+                      <>
+                        <Component {...pageProps} />
+                        {!isAdminRoute && <ChatbotLauncher />}
+                      </>
+                    )}
                   </ToastProvider>
                 </DialogProvider>
               </GlobalStyle>

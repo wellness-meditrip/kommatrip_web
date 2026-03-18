@@ -7,3 +7,4 @@ export * from './program';
 export * from './user';
 export * from './chat';
 export * from './payment';
+export * from './admin';

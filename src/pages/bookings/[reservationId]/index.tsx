@@ -52,7 +52,7 @@ export default function BookingDetailPage() {
   const t = useTranslations('booking-detail');
   const tReservation = useTranslations('reservation');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const { showLoginModal, setShowLoginModal, isAuthenticated, handleDismissModal } =
+  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
     useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [detail, setDetail] = useState<BookingDetailData | null>(null);
@@ -357,20 +357,15 @@ export default function BookingDetailPage() {
 
   const statusLabel = t(`status.${status}`);
 
-  if (!isAuthenticated) {
+  if (isLoading || (isAuthenticated && !accessToken)) {
     return (
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <AppBar logo="light" backgroundColor="green" />
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onCancel={handleDismissModal}
-        />
       </Layout>
     );
   }
 
-  if (!accessToken) {
+  if (!isAuthenticated) {
     return (
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <AppBar logo="light" backgroundColor="green" />

@@ -24,7 +24,14 @@ export interface PostCreateReservationResponse {
   message?: string;
 }
 
-export type ReservationStatus = 'request' | 'confirmed' | 'canceled' | 'completed' | string;
+export type ReservationStatus =
+  | 'request'
+  | 'confirmed'
+  | 'canceled'
+  | 'completed'
+  | 'rejected'
+  | 'no_show'
+  | string;
 
 export interface ReservationListItem {
   id: number;

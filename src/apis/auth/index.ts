@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { api, guestApi } from '@/apis/config';
+import { bffApi, guestApi } from '@/apis/config';
 import {
   PostConfirmEmailRequest,
   PostConfirmEmailResponse,
@@ -21,6 +21,18 @@ import {
   PostInterestRequestBody,
   PostInterestResponse,
 } from '@/models/auth';
+
+const unwrapApiPayload = <T>(payload: unknown): T => {
+  if (payload && typeof payload === 'object') {
+    const data = (payload as { data?: unknown }).data;
+    if (typeof data !== 'undefined') return data as T;
+
+    const response = (payload as { response?: unknown }).response;
+    if (typeof response !== 'undefined') return response as T;
+  }
+
+  return payload as T;
+};
 
 // 이메일 인증 코드 전송
 export const postVerifyEmailCode = async (email: string) => {
@@ -56,11 +68,14 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
-  return await guestApi.post<PostLoginResponse>('user/non/login/customer', data, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  return axios
+    .post('/api/auth/login/customer', data, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data));
 };
 
 // 비밀번호 재설정 코드 발송
@@ -145,21 +160,21 @@ export const postUserAuthApple = async (data: PostUserAuthAppleRequest) => {
 export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
   // refreshToken은 브라우저 쿠키에 저장되므로 same-origin API를 호출해야 전송됨
   return axios
-    .post<PostTokenReissueResponse>(
-      '/api/users/token/reissue',
+    .post(
+      '/api/auth/token/reissue',
       {},
       {
         withCredentials: true,
       }
     )
-    .then((response) => response.data);
+    .then((response) => unwrapApiPayload<PostTokenReissueResponse>(response.data));
 };
 
 // 관심사 등록
 export const postInterest = async (
   data: PostInterestRequestBody
 ): Promise<PostInterestResponse> => {
-  return await api.post<PostInterestResponse>('/api/users/interest', data, {
+  return await bffApi.post<PostInterestResponse>('/api/users/interest', data, {
     headers: {
       accept: 'application/json',
       'Content-Type': 'application/json',

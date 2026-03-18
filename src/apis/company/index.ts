@@ -1,4 +1,4 @@
-import { api, guestApi } from '@/apis';
+import { bffApi, guestApi } from '@/apis';
 import {
   GetRecentCompanyResponse,
   GetRecommendedCompanyResponse,
@@ -11,9 +11,8 @@ import {
 
 export const getRecentCompany = async (): Promise<GetRecentCompanyResponse[]> => {
   try {
-    // 인증이 필요한 API이므로 api 사용 (Authorization 헤더 포함)
-    const response = await api.get<GetRecentCompanyResponse[]>('/non/company/recent');
-    // api는 인터셉터에서 response.data?.response를 반환
+    const response = await bffApi.get<GetRecentCompanyResponse[]>('/api/companies/recent');
+    // bffApi는 인터셉터에서 response.data?.response를 반환
     // 응답이 배열인지 확인하고 반환
     if (Array.isArray(response)) {
       return response;

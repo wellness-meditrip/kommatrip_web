@@ -304,6 +304,7 @@ export default function ReservationPaymentPage() {
     const failUrl = `${window.location.origin}/${currentLocale}${ROUTES.RESERVATIONS_PAYMENT_FAIL}`;
 
     try {
+      window.sessionStorage.setItem('reservation_draft', JSON.stringify(draft));
       logPaymentInfo('[payment][request] prepared order', {
         programId: draft.program_id,
         selectedCurrency: selectedPaymentCurrency,
@@ -361,7 +362,7 @@ export default function ReservationPaymentPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('payment.title')}>
           {isDesktop ? (
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
           ) : (
             <AppBar
               onBackClick={router.back}
@@ -384,7 +385,7 @@ export default function ReservationPaymentPage() {
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('payment.title')}>
         {isDesktop ? (
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
         ) : (
           <AppBar
             onBackClick={router.back}

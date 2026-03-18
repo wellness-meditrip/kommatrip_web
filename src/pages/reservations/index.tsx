@@ -355,7 +355,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -378,7 +378,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -822,7 +822,7 @@ export default function ReservationPage() {
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <div css={desktopAppBar}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
         </div>
         <div css={mobileAppBar}>
           <AppBar

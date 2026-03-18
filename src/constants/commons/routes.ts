@@ -46,4 +46,20 @@ export const ROUTES = {
 
   // INTEREST
   INTEREST: '/interest',
+
+  // ADMIN
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_COMPANIES: '/admin/companies',
+  ADMIN_RESERVATIONS: '/admin/reservations',
+  ADMIN_REVIEWS: '/admin/reviews',
+  ADMIN_COMPANY_NEW: '/admin/companies/new',
+  ADMIN_COMPANY_EDIT: (companyId: number | string) => `/admin/companies/${companyId}/edit`,
+  ADMIN_COMPANY_PROGRAMS: (companyId: number | string) => `/admin/companies/${companyId}/programs`,
+  ADMIN_COMPANY_REVIEWS: (companyId: number | string) => `/admin/companies/${companyId}/reviews`,
+  ADMIN_COMPANY_PROGRAM_NEW: (companyId: number | string) =>
+    `/admin/companies/${companyId}/programs/new`,
+  ADMIN_COMPANY_PROGRAM_EDIT: (companyId: number | string, programId: number | string) =>
+    `/admin/companies/${companyId}/programs/${programId}/edit`,
 } as const;

@@ -1,8 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { css } from '@emotion/react';
-import { useSession } from 'next-auth/react';
-import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
 import type { GetServerSideProps } from 'next';
 
@@ -27,7 +25,7 @@ import { CompanyDetail as CompanyDetailType } from '@/models';
 import { getCompanyDetail } from '@/apis/company';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
-import { useMediaQuery } from '@/hooks';
+import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
 import { normalizeError } from '@/utils/error-handler';
@@ -239,9 +237,7 @@ export default function ClinicDetailPage({
     router.push(`/${currentLocale}${ROUTES.SEARCH}${query}`);
   };
 
-  const { status } = useSession();
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const isLoggedIn = status === 'authenticated' || !!accessToken;
+  const { isAuthenticated: isLoggedIn } = useAuthState();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
