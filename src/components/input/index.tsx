@@ -12,6 +12,7 @@ export interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'pref
   suffix?: ReactNode;
   confirmMessage?: string;
   errorMessage?: string;
+  tone?: 'default' | 'dark';
 }
 
 export const Input = forwardRef<InputRef, Props>(
@@ -26,6 +27,7 @@ export const Input = forwardRef<InputRef, Props>(
       suffix,
       confirmMessage,
       errorMessage,
+      tone = 'default',
       required,
       ...props
     },
@@ -38,7 +40,7 @@ export const Input = forwardRef<InputRef, Props>(
       <div css={wrapper}>
         {label && (
           <>
-            <Text typo="subtitle3" css={labelCss}>
+            <Text typo="subtitle3" css={labelCss(tone)}>
               {label}{' '}
               {required && (
                 <Text typo="body12" color="red200">
@@ -57,7 +59,7 @@ export const Input = forwardRef<InputRef, Props>(
             spellCheck={spellCheck}
             autoComplete={autoComplete}
             disabled={disabled}
-            css={input({ errorMessage })}
+            css={input({ errorMessage, tone })}
             {...props}
           />
           {suffix && suffix}
