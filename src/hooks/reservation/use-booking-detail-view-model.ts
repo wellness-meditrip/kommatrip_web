@@ -80,6 +80,7 @@ export function useBookingDetailViewModel(): BookingDetailViewModel {
         previousDetail,
         formatters,
         payOnlineLabel: (currency) => t('labels.payOnline', { currency }),
+        payOnSiteLabel: t('labels.payOnSite'),
       });
     },
     [formatters, t]

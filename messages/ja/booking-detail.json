@@ -24,6 +24,7 @@
     "language": "言語",
     "paymentMethod": "支払い方法",
     "payOnline": "オンライン決済({currency})",
+    "payOnSite": "現地で支払い",
     "paymentAmount": "決済金額",
     "finalPaymentAmount": "最終決済金額"
   },

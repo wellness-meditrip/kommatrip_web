@@ -11,6 +11,7 @@ interface BuildBookingDetailDataParams {
   previousDetail: BookingDetailData | null;
   formatters: BookingDetailFormatters;
   payOnlineLabel: (currency: string) => string;
+  payOnSiteLabel: string;
 }
 
 export function buildBookingDetailData({
@@ -18,7 +19,9 @@ export function buildBookingDetailData({
   previousDetail,
   formatters,
   payOnlineLabel,
+  payOnSiteLabel,
 }: BuildBookingDetailDataParams): BookingDetailData {
+  const hasOnlinePayment = Boolean(reservation.display_order_id?.trim());
   const programInfo = reservation.program_info;
   const paymentCurrency =
     typeof reservation.currency === 'string' && reservation.currency.trim()
@@ -58,8 +61,8 @@ export function buildBookingDetailData({
       image: previousDetail?.providerInfo?.image || heroImage,
     },
     paymentInfo: {
-      method: payOnlineLabel(paymentCurrency),
-      currency: reservation.currency ?? previousDetail?.paymentInfo?.currency ?? null,
+      method: hasOnlinePayment ? payOnlineLabel(paymentCurrency) : payOnSiteLabel,
+      currency: hasOnlinePayment ? (reservation.currency ?? 'KRW') : null,
       amount: formatters.formatAmount(programPrice, paymentCurrency),
       finalAmount: formatters.formatAmount(programPrice, paymentCurrency),
     },
