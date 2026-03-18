@@ -109,9 +109,11 @@
     "refundRule4": "2日前（48〜71時間）: 80%返金 / 1回変更可",
     "refundRule5": "1日前（24〜47時間）: 50%返金 / 変更不可",
     "refundRule6": "当日/無断キャンセル（0〜23時間）: 返金不可 / 変更不可",
-    "refundMore": "返金規定を詳しく見る",
+    "refundMore": "キャンセル / 返金規定を確認する",
     "refundAccept": "キャンセル・返金規定に同意します。",
     "refundAcceptRequired": "キャンセル・返金規定に同意してください。",
+    "refundNoticeTitle": "お知らせ",
+    "refundNoticeDescription": "返金手続きは速やかに進めますが、口座への反映まで最大10営業日かかる場合があります。",
     "currency": "KRW",
     "minutes": "分"
   },
