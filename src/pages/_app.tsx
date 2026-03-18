@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { AuthBootstrap } from '@/components/auth/AuthBootstrap';
+import { GlobalLoginModal } from '@/components/auth/GlobalLoginModal';
 import { DialogProvider, ToastProvider } from '@/hooks';
 import { GlobalStyle, theme } from '@/styles';
 import { QueryProvider } from '@/providers';
@@ -174,6 +175,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                     <AuthBootstrap>
                       <>
                         <Component {...pageProps} />
+                        <GlobalLoginModal />
                         {!isAdminRoute && <ChatbotLauncher />}
                       </>
                     </AuthBootstrap>

@@ -1,64 +1,71 @@
-import { useRouter } from 'next/router';
-import { Dim, Portal, Text } from '@/components';
-import { ROUTES } from '@/constants';
 import { css } from '@emotion/react';
-import { theme } from '@/styles';
 import { useTranslations } from 'next-intl';
-import { Smile } from '@/icons';
+import { useRouter } from 'next/router';
+import { Close } from '@/icons';
+import { Dim } from '@/components/dim';
+import { Portal } from '@/components/portal';
+import { Text } from '@/components/text';
+import { LoginForm } from '@/components/auth/LoginForm';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
+import { theme } from '@/styles';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCancel?: () => void;
+  callbackUrl?: string;
+  dismissRedirectUrl?: string | null;
 }
 
-export function LoginModal({ isOpen, onClose, onCancel }: LoginModalProps) {
+export function LoginModal({
+  isOpen,
+  onClose,
+  onCancel,
+  callbackUrl,
+  dismissRedirectUrl,
+}: LoginModalProps) {
   const router = useRouter();
   const t = useTranslations('auth.loginModal');
+  const { isAuthenticated } = useAuthState();
 
   if (!isOpen) return null;
 
-  const handleLogin = () => {
-    router.push(ROUTES.LOGIN);
+  const handleClose = async () => {
     onClose();
-  };
+    onCancel?.();
 
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      onClose();
-    }
+    if (!dismissRedirectUrl || isAuthenticated) return;
+    await router.replace(dismissRedirectUrl);
   };
 
   return (
     <Portal>
-      <Dim fullScreen onClick={handleCancel} />
-      <div css={modalWrapper}>
-        <div css={iconContainer}>
-          <Smile width={40} height={40} />
+      <Dim fullScreen onClick={() => void handleClose()} />
+      <div css={modalWrapper} role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+        <div css={modalHeader}>
+          <div>
+            <Text id="login-modal-title" tag="h2" typo="title_L" color="text_primary">
+              {t('title')}
+            </Text>
+            <Text tag="p" typo="body_M" color="text_secondary" css={description}>
+              {t('description')}
+            </Text>
+          </div>
+          <button type="button" css={closeButton} onClick={() => void handleClose()}>
+            <Close width={18} height={18} />
+          </button>
         </div>
 
-        <div css={contentContainer}>
-          <Text typo="title_M" color="text_primary" css={title}>
-            {t('title')}
-          </Text>
-          <Text typo="body_M" color="text_secondary" css={description}>
-            {t('description')}
-          </Text>
-        </div>
-
-        <div css={buttonContainer}>
-          <button css={cancelButton} onClick={handleCancel}>
-            <Text typo="button_M" color="primary50">
-              {t('cancel')}
-            </Text>
-          </button>
-          <button css={loginButton} onClick={handleLogin}>
-            <Text typo="button_M" color="white">
-              {t('login')}
-            </Text>
-          </button>
+        <div css={formWrapper}>
+          <LoginForm
+            variant="modal"
+            callbackUrl={callbackUrl}
+            onNavigateAway={onClose}
+            onSuccess={async (redirectUrl) => {
+              onClose();
+              await router.replace(redirectUrl);
+            }}
+          />
         </div>
       </div>
     </Portal>
@@ -72,78 +79,45 @@ const modalWrapper = css`
   transform: translate(-50%, -50%);
   z-index: ${theme.zIndex.dialog};
 
-  width: calc(100% - 40px);
-  max-width: 400px;
-  border-radius: 20px;
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border-radius: 24px;
   background: ${theme.colors.white};
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.2);
 `;
 
-const iconContainer = css`
+const modalHeader = css`
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 28px 20px;
+`;
+
+const closeButton = css`
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  padding-top: 40px;
-  padding-bottom: 24px;
-`;
-
-const contentContainer = css`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 0 24px 32px;
-  text-align: center;
-`;
-
-const title = css`
-  font-weight: 600;
-`;
-
-const description = css`
-  line-height: 1.5;
-  white-space: pre-line;
-`;
-
-const buttonContainer = css`
-  display: flex;
-  border-top: 1px solid ${theme.colors.border_default};
-`;
-
-const cancelButton = css`
-  flex: 1;
-  padding: 20px 0;
-  background: ${theme.colors.white};
+  width: 36px;
+  height: 36px;
   border: none;
-  border-right: 1px solid ${theme.colors.border_default};
-  border-top: 1px solid ${theme.colors.border_default};
+  border-radius: 50%;
+  background: ${theme.colors.bg_surface1};
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  color: ${theme.colors.text_secondary};
 
   &:hover {
     background: ${theme.colors.bg_default};
   }
-
-  &:active {
-    background: ${theme.colors.bg_surface1};
-  }
 `;
 
-const loginButton = css`
-  flex: 1;
-  padding: 20px 0;
-  background: ${theme.colors.primary50};
-  border: none;
-  border-top: 1px solid ${theme.colors.border_default};
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+const description = css`
+  margin-top: 8px;
+  line-height: 1.6;
+  white-space: pre-line;
+`;
 
-  &:hover {
-    background: ${theme.colors.primary60};
-  }
-
-  &:active {
-    background: ${theme.colors.primary70};
-  }
+const formWrapper = css`
+  padding: 0 28px 28px;
 `;
