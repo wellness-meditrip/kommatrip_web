@@ -17,6 +17,7 @@ import Head from 'next/head';
 import { Meta, createPageMeta, type MetaProps } from '@/seo';
 import { ChatbotLauncher } from '@/components';
 import { SkeletonTheme } from 'react-loading-skeleton';
+import { AdminShell } from '@/components/admin/admin-shell';
 
 const warnedMissingMessages = new Set<string>();
 const EMPTY_MESSAGES: Record<string, unknown> = {};
@@ -33,6 +34,8 @@ function AuthSync() {
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
+  const isAdminRoute = router.pathname.startsWith('/admin');
+  const isAdminLoginRoute = router.pathname === '/admin/login';
   const initialPageProps = pageProps as Partial<I18nPageProps>;
   const initialLocale = initialPageProps.locale ?? routing.defaultLocale;
   const pageMessages = initialPageProps.messages as Record<string, unknown> | undefined;
@@ -125,7 +128,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
       </Head>
       <Meta {...resolvedMeta} />
       <SessionProvider session={session}>
-        <AuthSync />
+        {!isAdminRoute && <AuthSync />}
         <NextIntlClientProvider
           locale={pageLocale}
           messages={messages}
@@ -164,10 +167,16 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
               <GlobalStyle>
                 <DialogProvider>
                   <ToastProvider>
-                    <>
-                      <Component {...pageProps} />
-                      <ChatbotLauncher />
-                    </>
+                    {isAdminRoute && !isAdminLoginRoute ? (
+                      <AdminShell>
+                        <Component {...pageProps} />
+                      </AdminShell>
+                    ) : (
+                      <>
+                        <Component {...pageProps} />
+                        {!isAdminRoute && <ChatbotLauncher />}
+                      </>
+                    )}
                   </ToastProvider>
                 </DialogProvider>
               </GlobalStyle>

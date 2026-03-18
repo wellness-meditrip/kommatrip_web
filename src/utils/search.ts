@@ -7,6 +7,11 @@ export const normalizeSearchTerm = (term?: string) => {
     .toLowerCase();
 };
 
+export const toSearchableText = (value: unknown) => {
+  if (typeof value !== 'string') return '';
+  return normalizeSearchTerm(value);
+};
+
 // 유연한 검색 매칭 함수
 export const isFlexibleMatch = (text: string, searchTerm: string) => {
   if (text.includes(searchTerm)) return true;
