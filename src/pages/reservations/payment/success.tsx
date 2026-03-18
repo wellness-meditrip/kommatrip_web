@@ -359,7 +359,7 @@ export default function ReservationPaymentSuccessPage() {
       >
         {isDesktop ? (
           <div css={desktopAppBarWrap}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
         ) : (
           <AppBar logo="dark" />

@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslations } from 'next-intl';
-import { AppBar, GNB, Layout, LoginModal, ReservationPolicyPanel, Text } from '@/components';
+import { AppBar, GNB, Layout, ReservationPolicyPanel, Text } from '@/components';
 import {
   type BookingDetailActionKey,
   BookingDetailActionBar,
@@ -27,8 +27,7 @@ export default function BookingDetailPage() {
   const t = useTranslations('booking-detail');
   const tReservation = useTranslations('reservation');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
-    useRequireAuth(true);
+  const { isAuthenticated, isLoading } = useRequireAuth(true);
   const accessToken = useAuthStore((state) => state.accessToken);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const {
@@ -123,11 +122,6 @@ export default function BookingDetailPage() {
     return (
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <AppBar logo="light" backgroundColor="green" />
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onCancel={handleDismissModal}
-        />
       </Layout>
     );
   }
