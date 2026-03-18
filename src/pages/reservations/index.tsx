@@ -195,6 +195,17 @@ export default function ReservationPage() {
   const hasRenderedWidgetRef = useRef(false);
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
 
+  const closePaymentWidgetModal = () => {
+    if (typeof document !== 'undefined') {
+      document.getElementById('reservation-payment-methods-modal')?.replaceChildren();
+      document.getElementById('reservation-payment-agreement-modal')?.replaceChildren();
+    }
+    paymentWidgetsRef.current = null;
+    hasRenderedWidgetRef.current = false;
+    setIsWidgetReady(false);
+    setIsPaymentWidgetOpen(false);
+  };
+
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -1139,17 +1150,13 @@ export default function ReservationPage() {
         )}
         {isPaymentWidgetOpen && pendingDraft && (
           <>
-            <Dim fullScreen onClick={() => setIsPaymentWidgetOpen(false)} />
+            <Dim fullScreen onClick={closePaymentWidgetModal} />
             <div css={paymentWidgetModal}>
               <div css={paymentWidgetHeader}>
                 <Text typo="title_M" color="text_primary">
                   {t('payment.tossWidgetTitle')}
                 </Text>
-                <button
-                  type="button"
-                  css={modalClose}
-                  onClick={() => setIsPaymentWidgetOpen(false)}
-                >
+                <button type="button" css={modalClose} onClick={closePaymentWidgetModal}>
                   ×
                 </button>
               </div>
