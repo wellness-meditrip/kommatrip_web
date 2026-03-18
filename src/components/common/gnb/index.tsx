@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { GNB as ONYUGNB } from '../../gnb';
 import { LoginModal } from '@/components';
-import { MENUS } from '@/constants/commons';
+import { MENUS } from '@/constants/commons/gnb';
 import { useAuthState } from '@/hooks';
 
 export function GNB() {

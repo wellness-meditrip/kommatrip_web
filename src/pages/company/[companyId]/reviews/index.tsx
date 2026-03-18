@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useSession } from 'next-auth/react';
 import { css } from '@emotion/react';
 import { AppBar, Loading, Text, Empty } from '@/components';
 import { Layout } from '@/components/layout';
@@ -12,18 +11,19 @@ import { Card } from '@/components/reviews/card';
 import { TagFilterButton } from '@/components/reviews';
 import { useTranslations } from 'next-intl';
 import { getI18nServerSideProps } from '@/i18n/page-props';
+import { useAuthStore } from '@/store/auth';
 
 export default function CompanyReviewListPage() {
   const router = useRouter();
   const t = useTranslations('review-list');
-  const { data: session } = useSession();
+  const authUser = useAuthStore((state) => state.user);
   const companyId = Number(router.query.companyId);
 
   const [withPhotos, setWithPhotos] = useState(false);
   const [myCountryOnly, setMyCountryOnly] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const country = session?.user?.country || '';
+  const country = authUser?.country || '';
 
   const queryParams = useMemo(
     () => ({

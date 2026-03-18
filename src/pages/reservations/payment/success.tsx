@@ -9,7 +9,6 @@ import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useMediaQuery } from '@/hooks';
-import { useSession } from 'next-auth/react';
 import { usePostConfirmPaymentMutation } from '@/queries/payment';
 import type { ReservationDataForPaymentConfirm } from '@/models/payment';
 import { ensureAccessToken } from '@/utils/ensure-access-token';
@@ -76,7 +75,6 @@ const formatConfirmationDate = (
 
 export default function ReservationPaymentSuccessPage() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -119,7 +117,6 @@ export default function ReservationPaymentSuccessPage() {
   useEffect(() => {
     if (!router.isReady) return;
     if (typeof window === 'undefined') return;
-    if (sessionStatus === 'loading') return;
     const { paymentKey, orderId, amount } = router.query;
     const hasPaymentQuery = !!paymentKey && !!orderId && !!amount;
     if (hasPaymentQuery) {
@@ -221,15 +218,12 @@ export default function ReservationPaymentSuccessPage() {
 
         setIsConfirming(true);
         const tokenResult = await ensureAccessToken({
-          sessionAccessToken: session?.accessToken,
           staleWindowSeconds: 10,
         });
 
         if (!tokenResult.token) {
           console.error('[payment][confirm] failed to resolve access token', {
             reason: tokenResult.reason,
-            hasSessionToken: !!session?.accessToken,
-            sessionStatus,
             error: tokenResult.error,
           });
           setIsConfirming(false);
@@ -322,8 +316,6 @@ export default function ReservationPaymentSuccessPage() {
   }, [
     router.isReady,
     router.query,
-    session?.accessToken,
-    sessionStatus,
     confirmPayment,
     redirectToFail,
     redirectToPending,

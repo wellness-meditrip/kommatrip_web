@@ -35,6 +35,7 @@ import { useChangeLocale, useCurrentLocale } from '@/i18n/navigation';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Locale } from '@/i18n/routing';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
+import { isLogoutRedirectPending } from '@/utils/auth-session';
 
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
@@ -68,6 +69,7 @@ export function DesktopAppBar({
   const router = useRouter();
   const { authState, isAuthenticated } = useAuthState();
   const isLoggedIn = isAuthenticated;
+  const shouldSuppressAuthModal = isLogoutRedirectPending();
   const changeLocale = useChangeLocale();
   const currentLocale = useCurrentLocale();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -139,6 +141,7 @@ export function DesktopAppBar({
   const shouldAutoShowLoginModal =
     router.isReady &&
     !disableAuthModal &&
+    !shouldSuppressAuthModal &&
     authState === 'guest' &&
     !guestAccessiblePathnames.has(router.pathname) &&
     !hasDismissedAuthModal;

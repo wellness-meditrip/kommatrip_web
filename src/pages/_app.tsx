@@ -1,8 +1,8 @@
 import type { AppProps } from 'next/app';
-import { SessionProvider } from 'next-auth/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
+import { AuthBootstrap } from '@/components/auth/AuthBootstrap';
 import { DialogProvider, ToastProvider } from '@/hooks';
 import { GlobalStyle, theme } from '@/styles';
 import { QueryProvider } from '@/providers';
@@ -32,7 +32,7 @@ function AuthSync() {
   return null;
 }
 
-export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isAdminRoute = router.pathname.startsWith('/admin');
   const isAdminLoginRoute = router.pathname === '/admin/login';
@@ -127,63 +127,63 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         />
       </Head>
       <Meta {...resolvedMeta} />
-      <SessionProvider session={session}>
-        {!isAdminRoute && <AuthSync />}
-        <NextIntlClientProvider
-          locale={pageLocale}
-          messages={messages}
-          onError={(error) => {
-            if ((error as { code?: string })?.code === 'MISSING_MESSAGE') {
-              if (process.env.NODE_ENV !== 'production') {
-                const missingError = error as {
-                  namespace?: string;
-                  key?: string;
-                  message?: string;
-                };
-                const namespace = missingError.namespace ?? 'unknown';
-                const key = missingError.key ?? missingError.message ?? 'unknown';
-                const dedupeKey = `${pageLocale}:${namespace}:${key}`;
-                if (!warnedMissingMessages.has(dedupeKey)) {
-                  warnedMissingMessages.add(dedupeKey);
-                  console.warn(`[i18n] Missing message (${pageLocale}): ${namespace}.${key}`);
-                }
+      {!isAdminRoute && <AuthSync />}
+      <NextIntlClientProvider
+        locale={pageLocale}
+        messages={messages}
+        onError={(error) => {
+          if ((error as { code?: string })?.code === 'MISSING_MESSAGE') {
+            if (process.env.NODE_ENV !== 'production') {
+              const missingError = error as {
+                namespace?: string;
+                key?: string;
+                message?: string;
+              };
+              const namespace = missingError.namespace ?? 'unknown';
+              const key = missingError.key ?? missingError.message ?? 'unknown';
+              const dedupeKey = `${pageLocale}:${namespace}:${key}`;
+              if (!warnedMissingMessages.has(dedupeKey)) {
+                warnedMissingMessages.add(dedupeKey);
+                console.warn(`[i18n] Missing message (${pageLocale}): ${namespace}.${key}`);
               }
-              return;
             }
-            console.error(error);
-          }}
-          getMessageFallback={({ namespace, key }) => {
-            const prefix = namespace ? `${namespace}.` : '';
-            return `${prefix}${key}`;
-          }}
-        >
-          <QueryProvider>
-            <SkeletonTheme
-              baseColor={theme.colors.gray200}
-              highlightColor={theme.colors.gray100}
-              borderRadius={8}
-              duration={1.4}
-            >
-              <GlobalStyle>
-                <DialogProvider>
-                  <ToastProvider>
-                    {isAdminRoute && !isAdminLoginRoute ? (
-                      <AdminShell>
-                        <Component {...pageProps} />
-                      </AdminShell>
-                    ) : (
+            return;
+          }
+          console.error(error);
+        }}
+        getMessageFallback={({ namespace, key }) => {
+          const prefix = namespace ? `${namespace}.` : '';
+          return `${prefix}${key}`;
+        }}
+      >
+        <QueryProvider>
+          <SkeletonTheme
+            baseColor={theme.colors.gray200}
+            highlightColor={theme.colors.gray100}
+            borderRadius={8}
+            duration={1.4}
+          >
+            <GlobalStyle>
+              <DialogProvider>
+                <ToastProvider>
+                  {isAdminRoute && !isAdminLoginRoute ? (
+                    <AdminShell>
+                      <Component {...pageProps} />
+                    </AdminShell>
+                  ) : (
+                    <AuthBootstrap>
                       <>
                         <Component {...pageProps} />
                         {!isAdminRoute && <ChatbotLauncher />}
                       </>
-                    )}
-                  </ToastProvider>
-                </DialogProvider>
-              </GlobalStyle>
-            </SkeletonTheme>
-          </QueryProvider>
-        </NextIntlClientProvider>
-      </SessionProvider>
+                    </AuthBootstrap>
+                  )}
+                </ToastProvider>
+              </DialogProvider>
+            </GlobalStyle>
+          </SkeletonTheme>
+        </QueryProvider>
+      </NextIntlClientProvider>
     </>
   );
 }

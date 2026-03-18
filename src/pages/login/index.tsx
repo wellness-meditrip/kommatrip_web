@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { signIn, useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
@@ -15,9 +14,13 @@ import Link from 'next/link';
 import { AppleLogo, GoogleLogo } from '@/icons';
 import { usePostLoginMutation } from '@/queries';
 import { Input } from '@/components/input';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
 import { useAuthStore } from '@/store/auth';
 import { getI18nServerSideProps } from '@/i18n/page-props';
+import { applyAuthSession, resolveSafeAuthRedirect } from '@/utils/auth-session';
+import { getAuthFeedback, resolveLoginErrorFeedbackCode } from '@/utils/auth-feedback';
+import { startSocialLogin } from '@/utils/social-auth';
 
 interface LoginFormData {
   email: string;
@@ -26,11 +29,12 @@ interface LoginFormData {
 
 export default function Login() {
   const router = useRouter();
-  const { data: session, status } = useSession();
   const t = useTranslations('auth.login');
   const tCommon = useTranslations('common');
   const { showToast } = useToast();
   const { showErrorToast } = useErrorHandler();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
+  const authUser = useAuthStore((state) => state.user);
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [rememberMe, setRememberMe] = useState(false);
@@ -45,93 +49,58 @@ export default function Login() {
   const hasHandledError = useRef(false);
   const hasRedirected = useRef(false);
 
-  // NextAuth 에러 처리 및 세션 확인
   useEffect(() => {
-    // 이미 처리했거나 리다이렉트했으면 무시
-    if (hasRedirected.current) return;
+    if (!router.isReady || hasRedirected.current) return;
+    if (isAuthLoading || !isAuthenticated || !authUser) return;
 
-    const { error, callbackUrl } = router.query;
+    const callbackUrl = resolveSafeAuthRedirect(router.query.callbackUrl);
+    const redirectUrl = authUser.InterestSetting === false ? ROUTES.INTEREST : callbackUrl;
 
-    // 세션이 있고 에러가 없으면 리다이렉트
-    if (status === 'authenticated' && session && !error) {
-      hasRedirected.current = true;
-      const redirectUrl = typeof callbackUrl === 'string' ? callbackUrl : ROUTES.HOME;
-      router.push(redirectUrl);
+    hasRedirected.current = true;
+    void router.replace(redirectUrl);
+  }, [authUser, isAuthenticated, isAuthLoading, router, router.isReady, router.query.callbackUrl]);
+
+  useEffect(() => {
+    if (!router.isReady || hasHandledError.current) return;
+
+    const error = router.query.error;
+    if (typeof error !== 'string') return;
+
+    hasHandledError.current = true;
+    showToast(getAuthFeedback(t, resolveLoginErrorFeedbackCode(error)));
+
+    const newQuery = { ...router.query };
+    delete newQuery.error;
+    void router.replace(
+      {
+        pathname: router.pathname,
+        query: newQuery,
+      },
+      undefined,
+      { shallow: true }
+    );
+  }, [router, router.isReady, router.query, showToast, t]);
+
+  const beginSocialAuth = (provider: 'google' | 'apple') => {
+    const callbackUrl = resolveSafeAuthRedirect(router.query.callbackUrl);
+
+    try {
+      setLoading(true);
+      startSocialLogin({
+        provider,
+        country,
+        marketingConsent: marketing,
+        callbackUrl,
+      });
       return;
-    }
-
-    // 에러가 있으면 처리 (한 번만)
-    if (error === 'Callback' && !hasHandledError.current) {
-      hasHandledError.current = true;
-
-      // 세션이 있으면 성공으로 간주하고 리다이렉트
-      if (status === 'authenticated' && session?.accessToken) {
-        console.log('[Login] Google login succeeded despite callback error', {
-          hasSession: !!session,
-          hasAccessToken: !!session?.accessToken,
-        });
-        hasRedirected.current = true;
-        const redirectUrl = typeof callbackUrl === 'string' ? callbackUrl : ROUTES.HOME;
-        router.replace(redirectUrl);
-      } else if (status === 'unauthenticated') {
-        // 실제 에러인 경우 (한 번만 로그)
-        console.error('[Login] Google login callback error', { error, status });
-        showToast({
-          title: t('loginFailed'),
-          icon: 'exclaim',
-        });
-        // 에러 쿼리 파라미터 제거
-        const newQuery = { ...router.query };
-        delete newQuery.error;
-        delete newQuery.callbackUrl;
-        router.replace(
-          {
-            pathname: router.pathname,
-            query: newQuery,
-          },
-          undefined,
-          { shallow: true }
-        );
-      }
-    }
-  }, [router, status, session, showToast, t]);
-
-  const onGoogle = async () => {
-    setLoading(true);
-
-    // 1) 리다이렉트 전에 메타를 httpOnly 쿠키로 저장
-    const r = await fetch('/api/auth/google-meta', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ country, marketing_consent: marketing }),
-    });
-
-    if (!r.ok) {
+    } catch (error) {
+      console.error('[Login] failed to start social auth', {
+        provider,
+        error,
+      });
       setLoading(false);
-      showToast({ title: t('prepareLoginFailed'), icon: 'exclaim' });
-      return;
+      showToast(getAuthFeedback(t, 'social_login_prepare_failed'));
     }
-
-    // 2) 구글 로그인 시작
-    await signIn('google', { callbackUrl: ROUTES.HOME });
-  };
-
-  const onApple = async () => {
-    setLoading(true);
-
-    const r = await fetch('/api/auth/google-meta', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ country, marketing_consent: marketing }),
-    });
-
-    if (!r.ok) {
-      setLoading(false);
-      showToast({ title: t('prepareLoginFailed'), icon: 'exclaim' });
-      return;
-    }
-
-    await signIn('apple', { callbackUrl: ROUTES.HOME });
   };
 
   const {
@@ -154,28 +123,19 @@ export default function Login() {
       { email: data.email, password: data.password },
       {
         onSuccess: (response) => {
-          const accessToken = response?.tokens?.access_token;
+          const callbackUrl = resolveSafeAuthRedirect(router.query.callbackUrl);
+          const isApplied = applyAuthSession(response);
 
-          if (accessToken) {
-            console.log('[Login] Email login success - storing tokens', {
-              hasAccessToken: !!accessToken,
-              accessTokenLength: accessToken.length,
-            });
+          if (isApplied) {
+            showToast(getAuthFeedback(t, 'login_success'));
 
-            // accessToken을 zustand store에 저장 (메모리)
-            useAuthStore.getState().setAccessToken(accessToken);
-            console.log('[Login] accessToken stored in zustand store');
-
-            showToast({ title: t('loginSuccessful'), icon: 'check' });
-
-            // InterestSetting이 false이면 관심사 등록 페이지로 리다이렉트
             if (response?.user && !response.user.InterestSetting) {
-              router.push(ROUTES.INTEREST);
+              void router.replace(ROUTES.INTEREST);
             } else {
-              router.push(ROUTES.HOME);
+              void router.replace(callbackUrl);
             }
           } else {
-            showToast({ title: t('failedToGetToken'), icon: 'exclaim' });
+            showToast(getAuthFeedback(t, 'token_missing'));
           }
         },
         onError: (error: unknown) => {
@@ -186,11 +146,11 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    onGoogle();
+    beginSocialAuth('google');
   };
 
   const handleAppleLogin = () => {
-    onApple();
+    beginSocialAuth('apple');
   };
 
   const handleValueChange = (value: string) => {
@@ -336,7 +296,12 @@ export default function Login() {
                 </button>
 
                 {/* Apple 로그인 버튼 */}
-                <button type="button" css={socialButton} onClick={handleAppleLogin}>
+                <button
+                  type="button"
+                  css={socialButton}
+                  onClick={handleAppleLogin}
+                  disabled={loading}
+                >
                   <AppleLogo width="24px" height="24px" />
                 </button>
               </div>

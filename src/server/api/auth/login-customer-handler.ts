@@ -1,11 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { createRefreshTokenCookies } from '@/server/auth/cookies';
-import {
-  extractRefreshToken,
-  resolvePayload,
-  sanitizeTokenPayload,
-} from '@/server/auth/token-payload';
 import { postBackend } from '@/server/http/backend-client';
 import {
   buildErrorContract,
@@ -14,6 +8,7 @@ import {
   extractContractMessage,
   resolveTraceId,
 } from '@/server/http/api-contract';
+import { applyRefreshTokenCookies, sanitizeAuthPayload } from './auth-proxy-utils';
 
 const BACKEND_LOGIN_PATH = 'user/non/login/customer';
 const isDev = process.env.NODE_ENV !== 'production';
@@ -44,13 +39,8 @@ export const handleCustomerLogin = async (req: NextApiRequest, res: NextApiRespo
       timeout: 7000,
     });
 
-    const payload = resolvePayload(backendResponse.data);
-    const refreshToken = extractRefreshToken(payload);
-    if (refreshToken) {
-      res.setHeader('Set-Cookie', createRefreshTokenCookies(refreshToken));
-    }
-
-    const sanitizedPayload = sanitizeTokenPayload(payload);
+    applyRefreshTokenCookies(res, backendResponse.data);
+    const sanitizedPayload = sanitizeAuthPayload(backendResponse.data);
     const message = extractContractMessage(sanitizedPayload, 'Login successful');
 
     if (isDev) {
@@ -72,7 +62,7 @@ export const handleCustomerLogin = async (req: NextApiRequest, res: NextApiRespo
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        const payload = sanitizeTokenPayload(resolvePayload(error.response.data));
+        const payload = sanitizeAuthPayload(error.response.data);
         const code = extractContractCode(payload, 'LOGIN_BACKEND_ERROR');
         const message = extractContractMessage(payload, 'Login failed');
 

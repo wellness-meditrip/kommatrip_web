@@ -45,6 +45,7 @@ export interface PostLoginResponse {
 }
 
 type LoginMethod = 'email' | 'google' | 'apple';
+export type SocialProvider = Exclude<LoginMethod, 'email'>;
 export interface User {
   id: number;
   email: string;
@@ -123,6 +124,19 @@ export interface PostUserAuthAppleRequest {
 }
 
 export interface PostUserAuthAppleResponse {
+  message?: string;
+  user: User;
+  tokens: Token;
+}
+
+export interface PostSocialLoginRequestBody {
+  provider: SocialProvider;
+  idToken: string;
+  country: string;
+  marketing_consent: boolean;
+}
+
+export interface PostSocialLoginResponse {
   message?: string;
   user: User;
   tokens: Token;

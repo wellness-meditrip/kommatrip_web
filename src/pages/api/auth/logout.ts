@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { createExpiredAuthCookies, createExpiredGoogleMetaCookie } from '@/server/auth/cookies';
+import { createExpiredAuthCookies } from '@/server/auth/cookies';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  res.setHeader('Set-Cookie', [createExpiredGoogleMetaCookie(), ...createExpiredAuthCookies()]);
+  res.setHeader('Set-Cookie', createExpiredAuthCookies());
 
   return res.status(200).json({ success: true });
 }
