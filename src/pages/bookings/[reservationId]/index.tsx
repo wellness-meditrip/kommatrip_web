@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
-import { AppBar, Layout, LoginModal, Text, GNB } from '@/components';
+import { AppBar, Layout, LoginModal, ReservationPolicyPanel, Text, GNB } from '@/components';
 import { ReasonModal } from '@/components/reviews/report-modal';
 import Image from 'next/image';
 import { theme } from '@/styles';
@@ -17,6 +17,12 @@ import {
   ROUTES,
 } from '@/constants';
 import { getI18nServerSideProps } from '@/i18n/page-props';
+import {
+  normalizeReservationStatus,
+  RESERVATION_REFUND_POLICY_URL,
+  shouldShowReservationRefundNotice,
+  shouldShowReservationRefundPolicy,
+} from '@/utils/reservation-policy';
 
 type BookingStatus = 'request' | 'confirmed' | 'canceled' | 'completed';
 
@@ -33,19 +39,14 @@ interface BookingDetailData {
   bookingDates?: { date?: string; time?: string }[];
   guestInfo?: { name?: string; contact?: string; contactMethod?: string; language?: string };
   providerInfo?: { id?: number; name?: string; address?: string; image?: string };
-  paymentInfo?: { method?: string; amount?: string; finalAmount?: string };
+  paymentInfo?: {
+    method?: string;
+    currency?: string | null;
+    amount?: string;
+    finalAmount?: string;
+  };
   hasReview?: boolean;
 }
-
-const normalizeStatus = (status?: string): BookingStatus => {
-  const value = (status ?? '').toLowerCase();
-  if (value.includes('confirm')) return 'confirmed';
-  if (value.includes('cancel')) return 'canceled';
-  if (value.includes('complete') || value.includes('done')) return 'completed';
-  if (value.includes('pending') || value.includes('wait')) return 'request';
-  if (value.includes('request')) return 'request';
-  return 'request';
-};
 
 export default function BookingDetailPage() {
   const router = useRouter();
@@ -244,9 +245,11 @@ export default function BookingDetailPage() {
       : languagePreference || '-';
 
     setDetail((prev) => {
+      const resolvedCurrency = reservation.currency ?? prev?.paymentInfo?.currency ?? null;
       const fallbackImage = prev?.image || '/default.png';
       const heroImage =
         programInfo?.primary_image_url || programInfo?.image_urls?.[0] || fallbackImage;
+
       return {
         id: reservation.id,
         displayOrderId:
@@ -273,6 +276,7 @@ export default function BookingDetailPage() {
         },
         paymentInfo: {
           method: t('labels.payOnline', { currency: paymentCurrency }),
+          currency: resolvedCurrency,
           amount: formatAmount(resolveProgramPrice(reservation), paymentCurrency),
           finalAmount: formatAmount(resolveProgramPrice(reservation), paymentCurrency),
         },
@@ -290,9 +294,11 @@ export default function BookingDetailPage() {
     formatContactMethodLabel,
     languageLabelMap,
     isLanguagePreference,
+    tReservation,
   ]);
 
-  const status = normalizeStatus(detail?.status);
+  const normalizedStatus = normalizeReservationStatus(detail?.status);
+  const status: BookingStatus = normalizedStatus === 'unknown' ? 'request' : normalizedStatus;
   const bookingDates = detail?.bookingDates?.length
     ? detail.bookingDates
     : [{ date: '-', time: '-' }];
@@ -311,6 +317,14 @@ export default function BookingDetailPage() {
   const providerImage = providerInfo.image || detail?.image || '/default.png';
   const providerAddress = providerInfo.address || '-';
   const providerId = providerInfo.id;
+  const shouldShowRefundPolicy = shouldShowReservationRefundPolicy({
+    currency: paymentInfo.currency,
+    status: detail?.status,
+  });
+  const shouldShowRefundNotice = shouldShowReservationRefundNotice({
+    currency: paymentInfo.currency,
+    status: detail?.status,
+  });
   const statusTextColor =
     status === 'canceled'
       ? 'text_disabled'
@@ -337,6 +351,10 @@ export default function BookingDetailPage() {
       })),
     [cancellationReasonLabelMap]
   );
+  const handleOpenRefundPolicy = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.open(RESERVATION_REFUND_POLICY_URL, '_blank', 'noopener,noreferrer');
+  }, []);
 
   const ctaButtons = useMemo(() => {
     switch (status) {
@@ -556,6 +574,25 @@ export default function BookingDetailPage() {
               </div>
             </div>
           </section>
+
+          {shouldShowRefundPolicy && (
+            <section css={sectionCard}>
+              <ReservationPolicyPanel
+                title={tReservation('payment.refundTitle')}
+                actionLabel={tReservation('payment.refundMore')}
+                onActionClick={handleOpenRefundPolicy}
+              />
+            </section>
+          )}
+
+          {shouldShowRefundNotice && (
+            <section css={sectionCard}>
+              <ReservationPolicyPanel
+                title={tReservation('payment.refundNoticeTitle')}
+                notice={tReservation('payment.refundNoticeDescription')}
+              />
+            </section>
+          )}
         </div>
       </div>
 
@@ -642,24 +679,28 @@ export default function BookingDetailPage() {
 }
 
 const pageWrapper = css`
-  background: ${theme.colors.bg_surface1};
   min-height: 100vh;
+
+  background: ${theme.colors.bg_surface1};
 `;
 
 const contentWrapper = (hasGnb: boolean) => css`
   display: flex;
   flex-direction: column;
   gap: 24px;
+
   padding: 16px 16px
     calc(${theme.size.ctaButtonHeight} + ${hasGnb ? theme.size.gnbHeight : '0px'} + 32px);
 `;
 
 const heroImageWrapper = css`
   position: relative;
+  overflow: hidden;
+
   width: 100%;
   height: 240px;
   border-radius: 16px;
-  overflow: hidden;
+
   background: ${theme.colors.gray100};
 `;
 
@@ -669,48 +710,55 @@ const heroImageStyle = css`
 
 const metaRow = css`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
 `;
 
 const statusChip = (status: BookingStatus) => css`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   padding: 6px 14px;
-  border-radius: 20px;
   border: 1px solid ${theme.colors.border_default};
+  border-radius: 20px;
+
   background: ${theme.colors.white};
 
   ${status === 'confirmed' &&
   css`
-    background: ${theme.colors.primary50};
     border: none;
+
+    background: ${theme.colors.primary50};
   `}
 
   ${status === 'completed' &&
   css`
-    background: ${theme.colors.primary50};
     border: none;
+
+    background: ${theme.colors.primary50};
   `}
 
   ${status === 'canceled' &&
   css`
-    background: ${theme.colors.gray200};
     border: none;
+
+    background: ${theme.colors.gray200};
   `}
 `;
 
 const sectionCard = css`
-  background: ${theme.colors.white};
-  border-radius: 16px;
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  padding: 16px;
+  border-radius: 16px;
+
+  background: ${theme.colors.white};
+  box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
 `;
 
 const sectionBody = css`
@@ -727,8 +775,8 @@ const infoBlock = css`
 
 const infoRow = css`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
 `;
 
@@ -740,13 +788,15 @@ const contactTextRow = css`
 
 const divider = css`
   height: 1px;
+
   background: ${theme.colors.border_default};
 `;
 
 const providerCard = css`
   padding: 12px;
-  border-radius: 12px;
   border: 1px solid ${theme.colors.border_default};
+  border-radius: 12px;
+
   background: ${theme.colors.bg_surface2};
 `;
 
@@ -754,11 +804,14 @@ const providerButton = css`
   display: flex;
   align-items: center;
   gap: 12px;
+
   width: 100%;
-  border: none;
   padding: 0;
+  border: none;
+
   background: transparent;
   text-align: left;
+
   cursor: pointer;
 
   &:disabled {
@@ -767,12 +820,13 @@ const providerButton = css`
 `;
 
 const providerImageWrapper = css`
+  flex-shrink: 0;
   position: relative;
+  overflow: hidden;
+
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  overflow: hidden;
-  flex-shrink: 0;
 `;
 
 const providerImageStyle = css`
@@ -782,8 +836,8 @@ const providerImageStyle = css`
 const providerInfoWrapper = css`
   display: flex;
   flex-direction: column;
-  gap: 4px;
   flex: 1;
+  gap: 4px;
 `;
 
 const providerTitleRow = css`
@@ -795,9 +849,10 @@ const providerTitleRow = css`
 
 const actionBar = (hasGnb: boolean) => css`
   position: fixed;
-  left: 0;
   right: 0;
   bottom: ${hasGnb ? theme.size.gnbHeight : '0'};
+  left: 0;
+
   padding: 16px 18px 24px;
 `;
 
@@ -811,9 +866,12 @@ const ctaPrimaryButton = css`
   padding: 16px 0;
   border: none;
   border-radius: 28px;
+
   background: ${theme.colors.primary50};
-  cursor: pointer;
+
   transition: opacity 0.2s ease;
+
+  cursor: pointer;
 
   &:hover {
     opacity: 0.9;
@@ -821,17 +879,21 @@ const ctaPrimaryButton = css`
 
   &:disabled {
     opacity: 0.5;
+
     cursor: default;
   }
 `;
 
 const ctaSecondaryButton = css`
   padding: 16px 0;
-  border-radius: 28px;
   border: 1px solid ${theme.colors.border_default};
+  border-radius: 28px;
+
   background: ${theme.colors.white};
-  cursor: pointer;
+
   transition: border-color 0.2s ease;
+
+  cursor: pointer;
 
   &:hover {
     border-color: ${theme.colors.primary50};
@@ -839,6 +901,7 @@ const ctaSecondaryButton = css`
 
   &:disabled {
     opacity: 0.5;
+
     cursor: default;
   }
 `;
