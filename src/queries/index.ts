@@ -4,3 +4,4 @@ export * from './review';
 export * from './reservation';
 export * from './user';
 export * from './payment';
+export * from './admin';

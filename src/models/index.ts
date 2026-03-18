@@ -1,4 +1,5 @@
 export * from './auth';
+export * from './admin';
 export * from './company';
 export * from './review';
 export * from './reservation';
