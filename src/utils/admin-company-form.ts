@@ -224,6 +224,8 @@ export const validateAdminCompanyForm = (params: {
   const errors: AdminCompanyFieldErrors = {};
 
   if (values.name.trim().length < 2) errors.name = '업체명은 2자 이상 입력해주세요.';
+  if (values.simpleplace.trim().length < 2)
+    errors.simpleplace = '간편 주소는 2자 이상 입력해주세요.';
   if (values.address.trim().length < 5) errors.address = '주소는 5자 이상 입력해주세요.';
   if (values.phone.trim().length < 10) errors.phone = '전화번호는 10자 이상 입력해주세요.';
   if (values.description.length > 2000) errors.description = '소개는 2000자 이하로 입력해주세요.';
@@ -307,8 +309,7 @@ export const buildAdminCompanyCreateFormData = (
   const formData = new FormData();
 
   appendStringField(formData, 'name', values.name.trim());
-  if (hasValue(values.simpleplace))
-    appendStringField(formData, 'simpleplace', values.simpleplace.trim());
+  appendStringField(formData, 'simpleplace', values.simpleplace.trim());
   appendStringField(formData, 'address', values.address.trim());
   appendStringField(formData, 'phone', values.phone.trim());
   appendStringField(formData, 'is_exclusive', String(values.is_exclusive));

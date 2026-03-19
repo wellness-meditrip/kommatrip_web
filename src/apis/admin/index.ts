@@ -9,6 +9,7 @@ import type {
   AdminUsersParams,
   AdminUsersResponse,
   AdminProgramDetail,
+  AdminProgramActionResponse,
   AdminProgramFormValues,
   AdminProgramImagesState,
   AdminProgramListItem,
@@ -124,6 +125,13 @@ const parseAdminCompaniesResponse = (
     };
   }
 
+  if (isRecord(source) && Array.isArray(source.pending_companies)) {
+    return {
+      companies: source.pending_companies as AdminCompanyListItem[],
+      total: typeof source.total === 'number' ? source.total : source.pending_companies.length,
+    };
+  }
+
   return {
     companies: [],
     total: 0,
@@ -162,6 +170,24 @@ const parseAdminProgramDetail = (payload: unknown): { program: AdminProgramDetai
     };
   }
   return source as { program: AdminProgramDetail };
+};
+
+const parseAdminProgramActionResponse = (payload: unknown): AdminProgramActionResponse => {
+  const source = unwrapPayload(payload);
+
+  if (!isRecord(source)) {
+    return {
+      message: '프로그램 상태가 변경되었습니다.',
+    };
+  }
+
+  return {
+    message:
+      typeof source.message === 'string' ? source.message : '프로그램 상태가 변경되었습니다.',
+    program: isRecord(source.program)
+      ? (source.program as unknown as AdminProgramDetail)
+      : undefined,
+  };
 };
 
 const parseAdminReservationsResponse = (payload: unknown): AdminReservationsResponse => {
@@ -318,9 +344,12 @@ export const deleteAdminUser = async (userId: number | string) => {
 };
 
 export const getAdminCompanies = async (params: AdminCompaniesParams) => {
-  const response = await adminApi.get('/api/admin/companies', {
-    params,
-  });
+  const response =
+    params.status_filter === 'pending'
+      ? await adminApi.get('/api/admin/companies/pending')
+      : await adminApi.get('/api/admin/companies', {
+          params,
+        });
 
   return parseAdminCompaniesResponse(response);
 };
@@ -546,4 +575,9 @@ export const putAdminProgramImages = async (programId: number, files: File[]) =>
 
 export const deleteAdminProgram = async (programId: number) => {
   return adminApi.delete(`/api/admin/programs/${programId}`);
+};
+
+export const postAdminProgramActivate = async (programId: number) => {
+  const response = await adminApi.post(`/api/admin/programs/${programId}/activate`);
+  return parseAdminProgramActionResponse(response);
 };

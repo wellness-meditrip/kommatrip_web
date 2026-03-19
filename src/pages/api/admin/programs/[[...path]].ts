@@ -51,6 +51,16 @@ const resolveBackendRoute = (
     return null;
   }
 
+  if (pathSegments.length === 2 && pathSegments[1] === 'activate') {
+    if (method === 'POST') {
+      return {
+        backendPath: `/api/programs/${pathSegments[0]}/activate`,
+        omitQueryKeys: ['path'],
+      };
+    }
+    return null;
+  }
+
   if (pathSegments.length === 1) {
     if (method === 'GET' || method === 'PUT' || method === 'DELETE') {
       return {

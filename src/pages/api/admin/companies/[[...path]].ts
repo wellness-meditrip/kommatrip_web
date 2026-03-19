@@ -42,6 +42,16 @@ const resolveBackendRoute = (
     return null;
   }
 
+  if (pathSegments.length === 1 && pathSegments[0] === 'pending') {
+    if (method === 'GET') {
+      return {
+        backendPath: '/api/companies/admin/pending',
+        omitQueryKeys: ['path'],
+      };
+    }
+    return null;
+  }
+
   if (pathSegments.length === 1) {
     if (method === 'GET' || method === 'PUT' || method === 'DELETE') {
       return {

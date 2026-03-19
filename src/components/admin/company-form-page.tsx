@@ -456,10 +456,11 @@ export function AdminCompanyFormPage({
           />
           <Input
             tone="dark"
-            label="간단 주소"
+            label="간편 주소"
             value={values.simpleplace}
             onChange={(event) => handleFieldChange('simpleplace', event.target.value)}
             errorMessage={errors.simpleplace}
+            required
           />
           <Input
             tone="dark"
