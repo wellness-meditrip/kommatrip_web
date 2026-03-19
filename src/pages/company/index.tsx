@@ -560,7 +560,7 @@ export const getServerSideProps: GetServerSideProps<CompanyPageProps> =
         },
       };
     },
-    ['company', 'common']
+    ['company', 'common', 'categories']
   );
 
 export const wrapper = css`

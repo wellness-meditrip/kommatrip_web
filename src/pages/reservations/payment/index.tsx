@@ -132,17 +132,6 @@ export default function ReservationPaymentPage() {
   const displayCurrency: CurrencyCode = isPayNowPayment
     ? normalizeCurrency(paymentOrder?.currency ?? selectedPaymentCurrency)
     : 'KRW';
-  const refundPolicyItems = useMemo(
-    () => [
-      t('payment.refundRule1'),
-      t('payment.refundRule2'),
-      t('payment.refundRule3'),
-      t('payment.refundRule4'),
-      t('payment.refundRule5'),
-      t('payment.refundRule6'),
-    ],
-    [t]
-  );
 
   const handleOpenRefundPolicy = () => {
     if (typeof window === 'undefined') return;
@@ -550,8 +539,6 @@ export default function ReservationPaymentPage() {
                   <div css={infoCard}>
                     <ReservationPolicyPanel
                       title={t('payment.refundTitle')}
-                      intro={t('payment.refundIntro')}
-                      items={refundPolicyItems}
                       actionLabel={t('payment.refundMore')}
                       onActionClick={handleOpenRefundPolicy}
                       acceptLabel={t('payment.refundAccept')}
