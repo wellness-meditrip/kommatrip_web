@@ -269,6 +269,11 @@ export type AdminProgramFieldErrors = Partial<
   Record<keyof AdminProgramFormValues | 'process' | 'images', string>
 >;
 
+export interface AdminProgramActionResponse {
+  message: string;
+  program?: AdminProgramDetail;
+}
+
 export interface AdminReservationListItem extends ReservationListItem {
   reservation_code?: string;
   customer_email?: string | null;
