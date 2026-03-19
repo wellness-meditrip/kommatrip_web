@@ -1,5 +1,5 @@
 import { postTokenReissue } from '@/apis/auth';
-import { AUTH_COOKIE_KEYS } from '@/constants';
+import { AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
 import { useAuthStore } from '@/store/auth';
 import { getCookie } from '@/utils/cookie';
 import {
@@ -13,14 +13,12 @@ import { isUsableAccessToken } from '@/utils/auth-token';
 
 export type EnsureAccessTokenReason =
   | 'store_token'
-  | 'session_token'
   | 'waited_refresh'
   | 'manual_reissue'
   | 'missing_refresh_capability'
   | 'reissue_failed';
 
 export interface EnsureAccessTokenOptions {
-  sessionAccessToken?: string | null;
   staleWindowSeconds?: number;
 }
 
@@ -38,7 +36,7 @@ const applyStoreToken = (token: string) => {
 
 /**
  * 액션 직전 access token 확보 공통 유틸.
- * 우선순위: store -> session -> in-flight refresh 대기 -> manual reissue
+ * 우선순위: store -> in-flight refresh 대기 -> manual reissue
  */
 export const ensureAccessToken = async (
   options: EnsureAccessTokenOptions
@@ -48,12 +46,6 @@ export const ensureAccessToken = async (
   const storeToken = getStoreToken();
   if (isUsableAccessToken(storeToken, staleWindowSeconds)) {
     return { token: storeToken as string, reason: 'store_token' };
-  }
-
-  const sessionToken = options.sessionAccessToken;
-  if (isUsableAccessToken(sessionToken, staleWindowSeconds)) {
-    applyStoreToken(sessionToken as string);
-    return { token: sessionToken as string, reason: 'session_token' };
   }
 
   if (isAuthRefreshInFlight()) {
@@ -70,8 +62,7 @@ export const ensureAccessToken = async (
   }
 
   const hasRefreshMarker = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
-  const canTryReissue = hasRefreshMarker || !!sessionToken;
-  if (!canTryReissue) {
+  if (!hasRefreshMarker) {
     return { token: null, reason: 'missing_refresh_capability' };
   }
 

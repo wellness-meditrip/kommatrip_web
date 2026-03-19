@@ -385,7 +385,7 @@ export default function ReservationPaymentPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('payment.title')}>
           {isDesktop ? (
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           ) : (
             <AppBar
               onBackClick={router.back}
@@ -408,7 +408,7 @@ export default function ReservationPaymentPage() {
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('payment.title')}>
         {isDesktop ? (
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         ) : (
           <AppBar
             onBackClick={router.back}

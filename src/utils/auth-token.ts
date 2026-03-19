@@ -1,5 +1,6 @@
 export interface JwtPayload {
   exp?: number;
+  nonce?: string;
   type?: string;
 }
 

@@ -28,6 +28,10 @@ import {
   PostInterestResponse,
 } from '@/models/auth';
 
+interface MutationOptions {
+  suppressGlobalError?: boolean;
+}
+
 export const useGetUserValidateQuery = () => {
   return useQuery({
     queryKey: QUERY_KEYS.GET_USER_VALIDATE,
@@ -77,10 +81,11 @@ export const usePostSignupMutation = () => {
 };
 
 // 로그인
-export const usePostLoginMutation = () => {
+export const usePostLoginMutation = (options?: MutationOptions) => {
   return useMutation<PostLoginResponse, Error, PostLoginRequestBody>({
     mutationKey: QUERY_KEYS.POST_LOGIN,
     mutationFn: postLogin,
+    meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
 

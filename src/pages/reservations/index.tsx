@@ -4,7 +4,6 @@ import {
   DesktopAppBar,
   Layout,
   CTAButton,
-  LoginModal,
   Empty,
   CompanyInfoCard,
   ProgramSection,
@@ -77,8 +76,7 @@ export default function ReservationPage() {
   const router = useRouter();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
-  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
-    useRequireAuth(true);
+  const { isAuthenticated, isLoading } = useRequireAuth(true);
   const { showToast } = useToast();
   const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -365,7 +363,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -388,7 +386,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -399,11 +397,6 @@ export default function ReservationPage() {
               backgroundColor="bg_surface1"
             />
           </div>
-          <LoginModal
-            isOpen={showLoginModal}
-            onClose={() => setShowLoginModal(false)}
-            onCancel={handleDismissModal}
-          />
         </Layout>
       </>
     );
@@ -845,7 +838,7 @@ export default function ReservationPage() {
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <div css={desktopAppBar}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>
         <div css={mobileAppBar}>
           <AppBar
@@ -1178,7 +1171,6 @@ export default function ReservationPage() {
             </div>
           </>
         )}
-        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </Layout>
     </>
   );

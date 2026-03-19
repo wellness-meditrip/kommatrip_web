@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { postBackend, resolveBackendPayload } from '@/server/http/backend-client';
+import { getBackendBaseUrl } from '@/server/config/backend-url';
 import {
   buildErrorContract,
   buildSuccessContract,
@@ -9,7 +10,8 @@ import {
   resolveTraceId,
 } from '@/server/http/api-contract';
 
-const isDev = process.env.NODE_ENV !== 'production';
+const isDebugRuntime =
+  process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === 'preview';
 
 const maskValue = (value: string, left = 6, right = 4) => {
   if (value.length <= left + right) return value;
@@ -48,8 +50,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       programId?: number;
     };
 
-    if (isDev) {
+    const backendBaseUrl = getBackendBaseUrl();
+    const backendConfirmUrl = `${backendBaseUrl}/api/payments/confirm`;
+
+    if (isDebugRuntime) {
       console.info('[api/payments/confirm] incoming', {
+        nodeEnv: process.env.NODE_ENV,
+        vercelEnv: process.env.VERCEL_ENV,
+        backendBaseUrl,
+        backendConfirmUrl,
+        hasAuthorization: Boolean(authHeader),
         orderId: payload?.orderId,
         paymentKey: payload?.paymentKey ? maskValue(payload.paymentKey) : undefined,
         amount: payload?.amount,
@@ -75,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       successFlag ? 'Payment confirmed' : 'Payment confirm failed'
     );
 
-    if (isDev) {
+    if (isDebugRuntime) {
       console.info('[api/payments/confirm] backend response', {
         status: backendResponse.status,
         success: successFlag,
@@ -110,8 +120,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             : code,
       };
 
-      if (isDev) {
+      if (isDebugRuntime) {
         console.error('[api/payments/confirm] backend error', {
+          nodeEnv: process.env.NODE_ENV,
+          vercelEnv: process.env.VERCEL_ENV,
+          backendBaseUrl: getBackendBaseUrl(),
           status: error.response.status,
           code,
           message,

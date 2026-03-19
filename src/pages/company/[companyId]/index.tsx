@@ -16,7 +16,6 @@ import {
   DesktopAppBar,
   RoundButton,
   Loading,
-  LoginModal,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
@@ -28,6 +27,7 @@ import { ROUTES } from '@/constants';
 import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
+import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
 
 interface ClinicDetailPageProps extends Record<string, unknown> {
@@ -238,22 +238,23 @@ export default function ClinicDetailPage({
   };
 
   const { isAuthenticated: isLoggedIn } = useAuthState();
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
-    // 비회원인 경우 로그인 모달 표시
-    if (!isLoggedIn) {
-      setShowLoginModal(true);
-      return;
-    }
     if (typeof window !== 'undefined' && company) {
       window.sessionStorage.setItem('reservation_company', JSON.stringify(company));
     }
-    // 회원인 경우 예약 페이지로 이동
-    router.push({
-      pathname: `/${currentLocale}${ROUTES.RESERVATIONS}`,
-      query: { companyId: companyIdNumber },
-    });
+
+    const reservationUrl = `/${currentLocale}${ROUTES.RESERVATIONS}?companyId=${companyIdNumber}`;
+
+    if (!isLoggedIn) {
+      openLoginModal({
+        callbackUrl: reservationUrl,
+        reason: 'reserve',
+      });
+      return;
+    }
+
+    void router.push(reservationUrl);
   };
   // router가 준비되지 않았거나 companyId가 없으면 로딩 표시
   const companyName = company?.name?.trim();
@@ -389,11 +390,6 @@ export default function ClinicDetailPage({
         </div>
 
         {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onCancel={() => setShowLoginModal(false)}
-        />
       </Layout>
     </>
   );

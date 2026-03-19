@@ -27,14 +27,16 @@ import {
   languageItem,
   languageItemActive,
 } from './index.styles';
-import { LoginModal, SearchBar } from '@/components';
+import { SearchBar } from '@/components';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
 import { useChangeLocale, useCurrentLocale } from '@/i18n/navigation';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { css } from '@emotion/react';
 import type { Locale } from '@/i18n/routing';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
+import { openLoginModal } from '@/utils/auth-modal';
 
 interface DesktopAppBarProps {
   onSearchChange: (value: string) => void;
@@ -44,7 +46,6 @@ interface DesktopAppBarProps {
   sticky?: boolean;
   searchPlaceholder?: string;
   onSearchBarClick?: () => void;
-  disableAuthModal?: boolean;
 }
 
 const languages: { locale: Locale; label: string }[] = [
@@ -60,33 +61,17 @@ export function DesktopAppBar({
   sticky = true,
   searchPlaceholder,
   onSearchBarClick,
-  disableAuthModal = false,
 }: DesktopAppBarProps) {
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
 
   const router = useRouter();
-  const { authState, isAuthenticated } = useAuthState();
+  const { isAuthenticated } = useAuthState();
   const isLoggedIn = isAuthenticated;
   const changeLocale = useChangeLocale();
   const currentLocale = useCurrentLocale();
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [hasDismissedAuthModal, setHasDismissedAuthModal] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
-  const guestAccessiblePathnames = useMemo(
-    () =>
-      new Set([
-        ROUTES.HOME,
-        ROUTES.SEARCH,
-        ROUTES.COMPANY,
-        ROUTES.LOGIN,
-        ROUTES.SIGNUP,
-        ROUTES.TERMS_OF_USE,
-        '/company/[companyId]',
-        '/company/[companyId]/program/[programId]',
-      ]),
-    []
-  );
 
   const handleSearchBarClick = () => {
     if (onSearchBarClick) {
@@ -125,23 +110,6 @@ export function DesktopAppBar({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isLanguageMenuOpen]);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      setHasDismissedAuthModal(false);
-    }
-  }, [isLoggedIn]);
-
-  useEffect(() => {
-    setHasDismissedAuthModal(false);
-  }, [router.pathname]);
-
-  const shouldAutoShowLoginModal =
-    router.isReady &&
-    !disableAuthModal &&
-    authState === 'guest' &&
-    !guestAccessiblePathnames.has(router.pathname) &&
-    !hasDismissedAuthModal;
 
   return (
     <div css={wrapper({ variant, sticky })}>
@@ -206,9 +174,22 @@ export function DesktopAppBar({
               )}
             </div>
           </div>
-          <Link href={isLoggedIn ? ROUTES.MYPAGE : ROUTES.LOGIN}>
-            {isLoggedIn ? t('mypage') : t('login')}
-          </Link>
+          {isLoggedIn ? (
+            <Link href={ROUTES.MYPAGE}>{t('mypage')}</Link>
+          ) : (
+            <button
+              type="button"
+              css={authButton}
+              onClick={() =>
+                openLoginModal({
+                  callbackUrl: router.asPath,
+                  reason: 'header',
+                })
+              }
+            >
+              {t('login')}
+            </button>
+          )}
         </div>
         <div
           css={languageWrapper}
@@ -243,10 +224,15 @@ export function DesktopAppBar({
           )}
         </div>
       </div>
-      <LoginModal
-        isOpen={shouldAutoShowLoginModal}
-        onClose={() => setHasDismissedAuthModal(true)}
-      />
     </div>
   );
 }
+
+const authButton = css`
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+`;

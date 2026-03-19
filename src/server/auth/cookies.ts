@@ -1,4 +1,4 @@
-import { AUTH_COOKIE_KEYS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/constants';
+import { AUTH_COOKIE_KEYS, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/constants/commons/auth-cookies';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -57,12 +57,3 @@ export const createExpiredAuthCookies = () => [
     secure: isProduction,
   }),
 ];
-
-export const createExpiredGoogleMetaCookie = () =>
-  buildCookie({
-    name: AUTH_COOKIE_KEYS.GOOGLE_AUTH_META,
-    value: '',
-    maxAgeSeconds: 0,
-    httpOnly: true,
-    secure: isProduction,
-  });

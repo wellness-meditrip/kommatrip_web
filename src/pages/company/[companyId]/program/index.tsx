@@ -11,7 +11,6 @@ import {
   Loading,
   RoundButton,
   DesktopAppBar,
-  LoginModal,
   PageErrorEmpty,
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
@@ -22,6 +21,7 @@ import { useTranslations } from 'next-intl';
 import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { resolvePrice } from '@/utils/price';
+import { openLoginModal } from '@/utils/auth-modal';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 
 export default function ProgramDetailPage() {
@@ -50,14 +50,34 @@ export default function ProgramDetailPage() {
   const [searchValue, setSearchValue] = useState('');
   const currentLocale = useCurrentLocale();
   const { isAuthenticated: isLoggedIn } = useAuthState();
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
-    if (isLoggedIn) {
-      router.push(`/${currentLocale}${ROUTES.RESERVATIONS}`);
-    } else {
-      setShowLoginModal(true);
+    const rawCompanyId = Array.isArray(router.query.companyId)
+      ? router.query.companyId[0]
+      : router.query.companyId;
+    const rawProgramId = Array.isArray(programId) ? programId[0] : programId;
+    const searchParams = new URLSearchParams();
+
+    if (rawCompanyId) {
+      searchParams.set('companyId', String(rawCompanyId));
     }
+    if (rawProgramId) {
+      searchParams.set('programId', String(rawProgramId));
+    }
+
+    const reservationUrl = `/${currentLocale}${ROUTES.RESERVATIONS}${
+      searchParams.size > 0 ? `?${searchParams.toString()}` : ''
+    }`;
+
+    if (!isLoggedIn) {
+      openLoginModal({
+        callbackUrl: reservationUrl,
+        reason: 'reserve',
+      });
+      return;
+    }
+
+    void router.push(reservationUrl);
   };
 
   const handleSearchChange = (value: string) => {
@@ -342,7 +362,6 @@ export default function ProgramDetailPage() {
         </div>
 
         {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
-        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </Layout>
     </>
   );

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { theme } from '@/styles';
@@ -9,9 +8,12 @@ import { useToast } from '@/hooks';
 import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
-import { useAuthStore } from '@/store/auth';
-import { deleteCookie } from '@/utils/cookie';
-import { AUTH_COOKIE_KEYS, ROUTES } from '@/constants';
+import { ROUTES } from '@/constants';
+import {
+  clearClientAuthSession,
+  clearLogoutRedirectPending,
+  markLogoutRedirectPending,
+} from '@/utils/auth-session';
 import { useTranslations } from 'next-intl';
 
 type Variant = 'page' | 'embedded';
@@ -55,22 +57,15 @@ export function SettingsForm({ variant = 'page' }: Props) {
   };
 
   const handleLogout = async () => {
-    useAuthStore.getState().clearAuth();
-    deleteCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
+    markLogoutRedirectPending();
 
     try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch (error) {
-      console.error('[Logout] Failed to clear auth cookies', error);
+      await clearClientAuthSession();
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
+      await router.replace(ROUTES.HOME);
+    } finally {
+      clearLogoutRedirectPending();
     }
-
-    try {
-      await signOut({ redirect: false });
-    } catch (error) {
-      console.error('[Logout] NextAuth signOut failed', error);
-    }
-
-    router.replace(ROUTES.HOME);
   };
 
   return (

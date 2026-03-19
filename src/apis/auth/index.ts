@@ -5,6 +5,8 @@ import {
   PostConfirmEmailResponse,
   PostLoginRequestBody,
   PostLoginResponse,
+  PostSocialLoginRequestBody,
+  PostSocialLoginResponse,
   PostSignupRequestBody,
   PostSignupResponse,
   PostVerifyEmailCodeResponse,
@@ -21,6 +23,7 @@ import {
   PostInterestRequestBody,
   PostInterestResponse,
 } from '@/models/auth';
+import { normalizeError } from '@/utils/error-handler';
 
 const unwrapApiPayload = <T>(payload: unknown): T => {
   if (payload && typeof payload === 'object') {
@@ -69,13 +72,35 @@ export const postSignup = async (data: PostSignupRequestBody) => {
 // 로그인
 export const postLogin = async (data: PostLoginRequestBody) => {
   return axios
-    .post('/api/auth/login/customer', data, {
+    .post('/api/auth/login', data, {
       withCredentials: true,
       headers: {
         'Content-Type': 'application/json',
       },
     })
-    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data));
+    .then((response) => unwrapApiPayload<PostLoginResponse>(response.data))
+    .catch((error) => Promise.reject(normalizeError(error)));
+};
+
+export const postSocialLogin = async (data: PostSocialLoginRequestBody) => {
+  return axios
+    .post(
+      '/api/auth/social',
+      {
+        provider: data.provider,
+        idToken: data.idToken,
+        country: data.country,
+        marketing_consent: data.marketing_consent,
+      },
+      {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    .then((response) => unwrapApiPayload<PostSocialLoginResponse>(response.data))
+    .catch((error) => Promise.reject(normalizeError(error)));
 };
 
 // 비밀번호 재설정 코드 발송
@@ -161,7 +186,7 @@ export const postTokenReissue = async (): Promise<PostTokenReissueResponse> => {
   // refreshToken은 브라우저 쿠키에 저장되므로 same-origin API를 호출해야 전송됨
   return axios
     .post(
-      '/api/auth/token/reissue',
+      '/api/auth/reissue',
       {},
       {
         withCredentials: true,
