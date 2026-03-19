@@ -76,6 +76,9 @@ const filterCompaniesByKeyword = (companies: CompanyRow[], keyword: string) => {
   });
 };
 
+const isPendingCompany = (company: CompanyRow) => company.status === 'pending';
+const canOpenPrograms = (company: CompanyRow) => company.status !== 'suspended';
+
 export default function AdminCompaniesPage() {
   const queryClient = useQueryClient();
   const { canAccess, isReady } = useAdminRouteGuard();
@@ -242,6 +245,34 @@ export default function AdminCompaniesPage() {
     }
   };
 
+  const handleApprove = async (company: CompanyRow) => {
+    try {
+      setIsStatusUpdatingId(company.id);
+      await postAdminCompanyApprove(company.id);
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: QUERY_KEYS.GET_ADMIN_COMPANIES,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [...QUERY_KEYS.GET_ADMIN_COMPANY_DETAIL, company.id],
+        }),
+      ]);
+
+      showToast({
+        title: '업체가 승인되었습니다.',
+        icon: 'check',
+      });
+    } catch (error) {
+      showToast({
+        title: normalizeError(error).message || '업체 승인에 실패했습니다.',
+        icon: 'exclaim',
+      });
+    } finally {
+      setIsStatusUpdatingId(null);
+    }
+  };
+
   if (isLoading) {
     return <Loading title="업체 관리 화면을 준비하는 중입니다." fullHeight />;
   }
@@ -398,12 +429,24 @@ export default function AdminCompaniesPage() {
                     </td>
                     <td>
                       <div css={rowActions}>
-                        <Link
-                          href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
-                          css={inlineActionButton}
-                        >
-                          프로그램
-                        </Link>
+                        {isPendingCompany(company) && (
+                          <button
+                            type="button"
+                            css={approveButton}
+                            onClick={() => void handleApprove(company)}
+                            disabled={isStatusUpdatingId === company.id}
+                          >
+                            {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                          </button>
+                        )}
+                        {canOpenPrograms(company) && (
+                          <Link
+                            href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
+                            css={inlineActionButton}
+                          >
+                            프로그램
+                          </Link>
+                        )}
                         <button
                           type="button"
                           css={inlineActionButton}
@@ -464,12 +507,23 @@ export default function AdminCompaniesPage() {
                   </div>
 
                   <div css={cardActions}>
-                    <AdminActionButton
-                      href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
-                      variant="ghost"
-                    >
-                      프로그램
-                    </AdminActionButton>
+                    {isPendingCompany(company) && (
+                      <AdminActionButton
+                        variant="primary"
+                        onClick={() => void handleApprove(company)}
+                        disabled={isStatusUpdatingId === company.id}
+                      >
+                        {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                      </AdminActionButton>
+                    )}
+                    {canOpenPrograms(company) && (
+                      <AdminActionButton
+                        href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
+                        variant="ghost"
+                      >
+                        프로그램
+                      </AdminActionButton>
+                    )}
                     <AdminActionButton variant="primary" onClick={() => handleOpenEdit(company.id)}>
                       수정
                     </AdminActionButton>
@@ -857,6 +911,8 @@ const rowActions = css`
   gap: 8px;
   flex-wrap: wrap;
 `;
+
+const approveButton = adminInlineGhostButton;
 
 const inlineActionButton = adminInlineGhostButton;
 
