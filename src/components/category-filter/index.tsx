@@ -1,6 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { Text } from '../text';
-import { categoryGrid, categoryButton, selectedCategory, categoryName } from './index.styles';
+import {
+  categoryGrid,
+  categoryButton,
+  selectedCategory,
+  categoryName,
+  categoryLabel,
+} from './index.styles';
 import { useTranslations } from 'next-intl';
 
 interface Category {
@@ -35,7 +41,14 @@ export function CategoryFilter({ categories, selectedCategoryIds, onCategorySele
             onClick={() => onCategorySelect(category.id)}
           >
             <div css={categoryName}>{category.icon}</div>
-            <Text typo="body_S" color="primary10">
+            <Text
+              typo="body_S"
+              color="primary10"
+              style={{
+                whiteSpace: 'normal',
+              }}
+              css={categoryLabel}
+            >
               {category.nameKey ? t(category.nameKey) : category.name}
             </Text>
           </button>
