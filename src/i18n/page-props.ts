@@ -22,6 +22,7 @@ export const GLOBAL_I18N_NAMESPACES: readonly MessageNamespace[] = [
   'header',
   'footer',
   'auth',
+  'validation',
 ];
 
 const MESSAGE_NAMESPACE_SET = new Set<string>(MESSAGE_NAMESPACES as readonly string[]);

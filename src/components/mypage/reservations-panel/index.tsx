@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Text, LoginModal, ReservationCardSkeletonList } from '@/components';
+import { Text, ReservationCardSkeletonList } from '@/components';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import Image from 'next/image';
@@ -41,8 +41,7 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
   const currentLocale = useCurrentLocale();
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
-    useRequireAuth(true);
+  const { isAuthenticated, isLoading } = useRequireAuth(true);
   const isEmbedded = variant === 'embedded';
 
   const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
@@ -187,15 +186,7 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <LoginModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onCancel={handleDismissModal}
-      />
-    );
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <>

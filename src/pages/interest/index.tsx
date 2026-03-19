@@ -1,5 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import { Layout, Text, SelectButton, AppBar, DesktopAppBar, RoundButton } from '@/components';
 import { theme } from '@/styles';
@@ -15,7 +16,8 @@ import {
 import { usePostInterestMutation } from '@/queries/auth';
 import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import type { Gender, AgeGroup } from '@/models/auth';
-import { useSession } from 'next-auth/react';
+import { QUERY_KEYS } from '@/queries/query-keys';
+import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 
@@ -60,11 +62,11 @@ const AGE_GROUP_OPTIONS: { id: AgeGroup; label: string }[] = [
 
 export default function InterestPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useTranslations('interest');
   const { showToast } = useToast();
   const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const { update } = useSession();
   const [inputValue, setInputValue] = useState('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
@@ -136,8 +138,9 @@ export default function InterestPage() {
           if (typeof window !== 'undefined') {
             window.sessionStorage.setItem('interest_done', '1');
           }
-          await update({ InterestSetting: true });
-          router.replace(ROUTES.HOME);
+          useAuthStore.getState().patchUser({ InterestSetting: true });
+          await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
+          await router.replace(ROUTES.HOME);
         },
         onError: (error: unknown) => {
           showErrorToast(error, { fallbackMessage: t('toast.saveFailed') });

@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { ROUTES } from '@/constants';
+import { openLoginModal } from '@/utils/auth-modal';
 import { useAuthState } from './use-auth-state';
 
 /**
@@ -10,40 +11,42 @@ import { useAuthState } from './use-auth-state';
 export function useRequireAuth(showModal?: boolean) {
   const router = useRouter();
   const { authState, isAuthenticated, isLoading } = useAuthState();
-  const [hasUserDismissedModal, setHasUserDismissedModal] = useState(false);
+  const promptedPathRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    setHasUserDismissedModal(false);
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    setHasUserDismissedModal(false);
-  }, [router.pathname]);
-
-  useEffect(() => {
+    if (!router.isReady) return;
     if (isLoading || showModal) return;
     if (!isAuthenticated) {
-      router.replace(ROUTES.LOGIN);
+      void router.replace({
+        pathname: ROUTES.LOGIN,
+        query: { callbackUrl: router.asPath },
+      });
     }
-  }, [isAuthenticated, isLoading, showModal, router]);
+  }, [isAuthenticated, isLoading, showModal, router, router.asPath, router.isReady]);
 
-  const setShowLoginModal = useCallback((isOpen: boolean) => {
-    setHasUserDismissedModal(!isOpen);
-  }, []);
+  useEffect(() => {
+    if (!router.isReady || !showModal || isLoading) return;
 
-  const handleDismissModal = useCallback(() => {
-    setHasUserDismissedModal(true);
-  }, []);
+    if (isAuthenticated) {
+      promptedPathRef.current = null;
+      return;
+    }
 
-  const showLoginModal = Boolean(showModal && authState === 'guest' && !hasUserDismissedModal);
+    if (promptedPathRef.current === router.asPath) {
+      return;
+    }
+
+    promptedPathRef.current = router.asPath;
+    openLoginModal({
+      callbackUrl: router.asPath,
+      dismissRedirectUrl: ROUTES.HOME,
+      reason: 'guard',
+    });
+  }, [isAuthenticated, isLoading, router, router.asPath, router.isReady, showModal]);
 
   return {
     authState,
     isAuthenticated,
     isLoading,
-    showLoginModal,
-    setShowLoginModal,
-    handleDismissModal,
   };
 }

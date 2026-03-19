@@ -15,6 +15,7 @@ const shouldSuppressAuthToast = (status?: number): boolean => {
 
 const handleGlobalError = (error: unknown) => {
   const normalized = normalizeError(error);
+  if (normalized.code === 'AUTH_SESSION_EXPIRED') return;
   if (shouldSuppressAuthToast(normalized.status)) return;
   const action = getErrorAction(normalized);
   if (action === 'toast') {

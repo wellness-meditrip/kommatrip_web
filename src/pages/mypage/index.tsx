@@ -1,4 +1,4 @@
-import { AppBar, DesktopAppBar, GNB } from '@/components';
+import { AppBar, DesktopAppBar, GNB, SafeProfileImage } from '@/components';
 import { Layout } from '@/components/layout';
 import { Meta, createPageMeta } from '@/seo';
 import { useRouter } from 'next/router';
@@ -183,15 +183,12 @@ export default function MyPage() {
               <aside css={sidebar}>
                 <div css={profileCard}>
                   <div css={profileAvatar}>
-                    {user?.profile_image_url ? (
-                      <img
-                        src={user.profile_image_url}
-                        alt={t('profile.imageAlt')}
-                        css={profileImage}
-                      />
-                    ) : (
-                      <DefaultProfile width={72} height={72} />
-                    )}
+                    <SafeProfileImage
+                      src={user?.profile_image_url}
+                      alt={t('profile.imageAlt')}
+                      css={profileImage}
+                      fallback={<DefaultProfile width={72} height={72} />}
+                    />
                   </div>
                   <Text typo="title_M" color="bg_default">
                     {user?.username || t('profile.fallbackName')}
@@ -300,16 +297,13 @@ export default function MyPage() {
         <section css={userSection}>
           <div css={userInfo}>
             <div css={userInfoImage}>
-              {user?.profile_image_url ? (
-                <img
-                  src={user.profile_image_url}
-                  alt={t('profile.imageAlt')}
-                  width={50}
-                  height={50}
-                />
-              ) : (
-                <DefaultProfile width={50} height={50} />
-              )}
+              <SafeProfileImage
+                src={user?.profile_image_url}
+                alt={t('profile.imageAlt')}
+                width={50}
+                height={50}
+                fallback={<DefaultProfile width={50} height={50} />}
+              />
             </div>
             <div css={userInfoContent}>
               <div css={userInfoName}>

@@ -24,6 +24,7 @@
     "language": "Language",
     "paymentMethod": "Payment Method",
     "payOnline": "Pay Online({currency})",
+    "payOnSite": "Pay on site",
     "paymentAmount": "Payment Amount",
     "finalPaymentAmount": "Final Payment Amount"
   },

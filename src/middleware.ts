@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
 import { defaultLocale, locales, type Locale } from './i18n/routing';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
@@ -46,7 +46,7 @@ function shouldSkipLocale(pathname: string): boolean {
   }
 
   // 관리자 페이지 제외 (필요시)
-  if (pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin') || pathname.startsWith('/auth')) {
     return true;
   }
 
@@ -89,16 +89,9 @@ export async function middleware(request: NextRequest) {
   const actualPath = pathWithoutLocale === '' ? '/' : pathWithoutLocale;
 
   if (isProtectedPath(actualPath)) {
-    let token = null;
-    try {
-      token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
-    } catch {
-      token = null;
-    }
-    const refreshToken = request.cookies.get('refreshToken')?.value;
-    const isAuthenticated = Boolean(token || refreshToken);
+    const hasRefreshToken = request.cookies.has(AUTH_COOKIE_KEYS.REFRESH_TOKEN);
 
-    if (!isAuthenticated) {
+    if (!hasRefreshToken) {
       const loginUrl = new URL(`/${locale}/login`, request.url);
       const callbackPath = hasPrefix ? pathname : `/${locale}${pathname}`;
       const callbackUrl = `${callbackPath}${request.nextUrl.search}`;

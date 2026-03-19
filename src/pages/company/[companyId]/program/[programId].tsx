@@ -5,7 +5,7 @@ import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
-import { CTAButton, RoundButton, DesktopAppBar, LoginModal, PageErrorEmpty } from '@/components';
+import { CTAButton, RoundButton, DesktopAppBar, PageErrorEmpty } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,6 +18,7 @@ import type { GetServerSideProps } from 'next';
 import { ProgramDetail } from '@/models/program';
 import { getProgramDetail } from '@/apis';
 import { withI18nGssp } from '@/i18n/page-props';
+import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
 import { resolvePrice } from '@/utils/price';
 
@@ -57,14 +58,29 @@ export default function ProgramDetailPage({
   const [searchValue, setSearchValue] = useState('');
   const currentLocale = useCurrentLocale();
   const { isAuthenticated: isLoggedIn } = useAuthState();
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleReserveClick = () => {
-    if (isLoggedIn) {
-      router.push(`/${currentLocale}${ROUTES.RESERVATIONS}`);
-    } else {
-      setShowLoginModal(true);
+    const rawCompanyId = Array.isArray(router.query.companyId)
+      ? router.query.companyId[0]
+      : router.query.companyId;
+    const searchParams = new URLSearchParams();
+
+    if (rawCompanyId) {
+      searchParams.set('companyId', String(rawCompanyId));
     }
+    searchParams.set('programId', String(programId));
+
+    const reservationUrl = `/${currentLocale}${ROUTES.RESERVATIONS}?${searchParams.toString()}`;
+
+    if (!isLoggedIn) {
+      openLoginModal({
+        callbackUrl: reservationUrl,
+        reason: 'reserve',
+      });
+      return;
+    }
+
+    void router.push(reservationUrl);
   };
 
   const handleSearchChange = (value: string) => {
@@ -326,7 +342,6 @@ export default function ProgramDetailPage({
         </div>
 
         {!isDesktop && <CTAButton onClick={handleReserveClick}>{t('bookNow')}</CTAButton>}
-        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </Layout>
     </>
   );

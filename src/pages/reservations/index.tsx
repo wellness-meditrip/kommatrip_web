@@ -4,12 +4,12 @@ import {
   DesktopAppBar,
   Layout,
   CTAButton,
-  LoginModal,
   Empty,
   CompanyInfoCard,
   ProgramSection,
   ContactSection,
   InquiriesSection,
+  ReservationPolicyPanel,
   ScheduleSection,
   Text,
   Dim,
@@ -40,9 +40,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { resolvePrice, type CurrencyCode } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
-
-const REFUND_POLICY_URL =
-  'https://www.notion.so/English-Cancellation-and-Refund-policy-2958bf64ec2180308ca5ec2b72d0b815?source=copy_link';
+import { RESERVATION_REFUND_POLICY_URL } from '@/utils/reservation-policy';
 
 interface ReservationDraft {
   company_id: number;
@@ -78,8 +76,7 @@ export default function ReservationPage() {
   const router = useRouter();
   const t = useTranslations('reservation');
   const tCommon = useTranslations('common');
-  const { showLoginModal, setShowLoginModal, isAuthenticated, isLoading, handleDismissModal } =
-    useRequireAuth(true);
+  const { isAuthenticated, isLoading } = useRequireAuth(true);
   const { showToast } = useToast();
   const { showErrorToast } = useErrorHandler();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -195,6 +192,17 @@ export default function ReservationPage() {
   const [isPaymentWidgetOpen, setIsPaymentWidgetOpen] = useState(false);
   const hasRenderedWidgetRef = useRef(false);
   const [isPolicyAccepted, setIsPolicyAccepted] = useState(false);
+
+  const closePaymentWidgetModal = () => {
+    if (typeof document !== 'undefined') {
+      document.getElementById('reservation-payment-methods-modal')?.replaceChildren();
+      document.getElementById('reservation-payment-agreement-modal')?.replaceChildren();
+    }
+    paymentWidgetsRef.current = null;
+    hasRenderedWidgetRef.current = false;
+    setIsWidgetReady(false);
+    setIsPaymentWidgetOpen(false);
+  };
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -355,7 +363,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -378,7 +386,7 @@ export default function ReservationPage() {
         <Meta {...meta} />
         <Layout isAppBarExist={false} title={t('title')}>
           <div css={desktopAppBar}>
-            <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+            <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
           </div>
           <div css={mobileAppBar}>
             <AppBar
@@ -389,11 +397,6 @@ export default function ReservationPage() {
               backgroundColor="bg_surface1"
             />
           </div>
-          <LoginModal
-            isOpen={showLoginModal}
-            onClose={() => setShowLoginModal(false)}
-            onCancel={handleDismissModal}
-          />
         </Layout>
       </>
     );
@@ -752,7 +755,7 @@ export default function ReservationPage() {
   const handleSubmit = async () => {
     const draft = buildDraft(true);
     if (!draft) return;
-    if (!isPolicyAccepted) {
+    if (isPayNowPayment && !isPolicyAccepted) {
       showToast({ title: t('payment.refundAcceptRequired'), icon: 'exclaim' });
       return;
     }
@@ -816,13 +819,26 @@ export default function ReservationPage() {
   const summaryPriceText = selectedProgram
     ? formatPriceByCurrency(selectedProgram.price_info, selectedPaymentCurrency) || '-'
     : '-';
+  const refundPolicyItems = [
+    t('payment.refundRule1'),
+    t('payment.refundRule2'),
+    t('payment.refundRule3'),
+    t('payment.refundRule4'),
+    t('payment.refundRule5'),
+    t('payment.refundRule6'),
+  ];
+
+  const handleOpenRefundPolicy = () => {
+    if (typeof window === 'undefined') return;
+    window.open(RESERVATION_REFUND_POLICY_URL, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <>
       <Meta {...meta} />
       <Layout isAppBarExist={false} title={t('title')} showFooter={false}>
         <div css={desktopAppBar}>
-          <DesktopAppBar onSearchChange={() => {}} showSearch={false} disableAuthModal />
+          <DesktopAppBar onSearchChange={() => {}} showSearch={false} />
         </div>
         <div css={mobileAppBar}>
           <AppBar
@@ -1060,68 +1076,20 @@ export default function ReservationPage() {
                   </div>
                 </div>
 
-                <div css={policyCard}>
-                  <Text typo="title_M" color="text_primary">
-                    {t('payment.refundTitle')}
-                  </Text>
-                  <div css={policyBox}>
-                    <Text typo="body_M" color="text_secondary">
-                      {t('payment.refundIntro')}
-                    </Text>
-                    <ul css={policyList}>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule1')}
-                        </Text>
-                      </li>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule2')}
-                        </Text>
-                      </li>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule3')}
-                        </Text>
-                      </li>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule4')}
-                        </Text>
-                      </li>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule5')}
-                        </Text>
-                      </li>
-                      <li>
-                        <Text typo="body_M" color="text_secondary">
-                          {t('payment.refundRule6')}
-                        </Text>
-                      </li>
-                    </ul>
-                  </div>
-                  <button
-                    type="button"
-                    css={policyLink}
-                    onClick={() => window.open(REFUND_POLICY_URL, '_blank', 'noopener,noreferrer')}
-                  >
-                    <Text typo="body_M" color="text_primary">
-                      {t('payment.refundMore')}
-                    </Text>
-                  </button>
-                  <label css={policyAccept}>
-                    <input
-                      type="checkbox"
-                      checked={isPolicyAccepted}
-                      onChange={(event) => setIsPolicyAccepted(event.target.checked)}
-                      css={policyCheckbox}
+                {isPayNowPayment && (
+                  <div css={policyCard}>
+                    <ReservationPolicyPanel
+                      title={t('payment.refundTitle')}
+                      intro={t('payment.refundIntro')}
+                      items={refundPolicyItems}
+                      actionLabel={t('payment.refundMore')}
+                      onActionClick={handleOpenRefundPolicy}
+                      acceptLabel={t('payment.refundAccept')}
+                      accepted={isPolicyAccepted}
+                      onAcceptedChange={setIsPolicyAccepted}
                     />
-                    <Text typo="body_M" color="text_primary">
-                      {t('payment.refundAccept')}
-                    </Text>
-                  </label>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1131,7 +1099,11 @@ export default function ReservationPage() {
             <div css={submitButtonWrapper}>
               <CTAButton
                 onClick={handleSubmit}
-                disabled={isCreatingReservation || !isPolicyAccepted || isPaymentOrderPending}
+                disabled={
+                  isCreatingReservation ||
+                  isPaymentOrderPending ||
+                  (isPayNowPayment && !isPolicyAccepted)
+                }
               >
                 {isPayNowPayment ? t('payment.payNow') : t('payment.bookNow')}
               </CTAButton>
@@ -1171,17 +1143,13 @@ export default function ReservationPage() {
         )}
         {isPaymentWidgetOpen && pendingDraft && (
           <>
-            <Dim fullScreen onClick={() => setIsPaymentWidgetOpen(false)} />
+            <Dim fullScreen onClick={closePaymentWidgetModal} />
             <div css={paymentWidgetModal}>
               <div css={paymentWidgetHeader}>
                 <Text typo="title_M" color="text_primary">
                   {t('payment.tossWidgetTitle')}
                 </Text>
-                <button
-                  type="button"
-                  css={modalClose}
-                  onClick={() => setIsPaymentWidgetOpen(false)}
-                >
+                <button type="button" css={modalClose} onClick={closePaymentWidgetModal}>
                   ×
                 </button>
               </div>
@@ -1203,7 +1171,6 @@ export default function ReservationPage() {
             </div>
           </>
         )}
-        <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
       </Layout>
     </>
   );
@@ -1211,7 +1178,8 @@ export default function ReservationPage() {
 
 // Styles
 const pageWrapper = css`
-  padding: 0 0 120px 0;
+  padding: 0 0 120px;
+
   background: ${theme.colors.bg_surface1};
 
   @media (min-width: ${theme.breakpoints.desktop}) {
@@ -1226,9 +1194,10 @@ const desktopAppBar = css`
     display: block;
     position: fixed;
     top: 0;
-    left: 0;
     right: 0;
+    left: 0;
     z-index: ${theme.zIndex.dialog};
+
     background: ${theme.colors.bg_surface1};
     border-bottom: 1px solid ${theme.colors.border_default};
   }
@@ -1249,6 +1218,7 @@ const desktopHeader = css`
     display: flex;
     flex-direction: column;
     gap: 6px;
+
     margin: 24px auto 0;
     padding: 0 40px;
   }
@@ -1261,12 +1231,13 @@ const contentGrid = css`
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
-    gap: 24px;
     align-items: start;
+    gap: 24px;
+
     max-width: 1200px;
     margin: 0 auto;
     padding: 24px;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
   }
 `;
 
@@ -1284,64 +1255,72 @@ const sideColumn = css`
   order: 1;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
-    order: 2;
     position: sticky;
-    z-index: 0;
     top: 96px;
+    z-index: 0;
+    order: 2;
     align-self: flex-start;
   }
 `;
 
 const sidePanel = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
-    border: 1px solid ${theme.colors.border_default};
-    border-radius: 20px;
-    padding: 16px;
-    background: ${theme.colors.bg_surface1};
     position: relative;
     z-index: 0;
+
+    padding: 16px;
+    border: 1px solid ${theme.colors.border_default};
+    border-radius: 20px;
+
+    background: ${theme.colors.bg_surface1};
   }
 `;
 
 const companyInfoCard = css`
+  overflow: hidden;
+
+  margin-bottom: 12px;
   padding: 12px;
   border-radius: 16px;
-  overflow: hidden;
+
   background: ${theme.colors.white};
   box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
-  margin-bottom: 12px;
 `;
 
 const companyImage = css`
+  display: block;
+
   width: 100%;
   height: 160px;
-  object-fit: cover;
-  display: block;
   border-radius: 12px;
+  object-fit: cover;
 `;
 
 const sideCardSkeletonContent = css`
   display: flex;
   flex-direction: column;
   gap: 10px;
+
   padding: 14px 4px 2px;
 `;
 
 const sideCardSkeletonTags = css`
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 `;
 
 const paymentSection = css`
-  margin: 12px 16px 8px;
-  padding: 20px 18px;
-  border-radius: 16px;
-  background: ${theme.colors.white};
-  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  margin: 12px 16px 8px;
+  padding: 20px 18px;
+  border-radius: 16px;
+
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
 `;
 
 const paymentMethodOptions = css`
@@ -1351,22 +1330,27 @@ const paymentMethodOptions = css`
 `;
 
 const paymentMethodButton = css`
-  width: 100%;
-  border-radius: 999px;
-  padding: 10px 14px;
-  border: 1px solid ${theme.colors.border_default};
-  background: ${theme.colors.white};
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  cursor: pointer;
+
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid ${theme.colors.border_default};
+  border-radius: 999px;
+
+  background: ${theme.colors.white};
+
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
+  cursor: pointer;
+
   &[data-selected='true'] {
     border-color: ${theme.colors.primary50};
+
     box-shadow: 0 4px 10px ${theme.colors.grayOpacity50};
   }
 `;
@@ -1374,33 +1358,37 @@ const paymentMethodButton = css`
 const radioDot = (selected: boolean) => css`
   width: 14px;
   height: 14px;
-  border-radius: 50%;
   border: 2px solid ${selected ? theme.colors.primary50 : theme.colors.border_default};
+  border-radius: 50%;
+
   background: ${selected ? theme.colors.primary50 : theme.colors.white};
 `;
 
 const widgetBox = css`
-  border-radius: 12px;
   overflow: hidden;
+
+  border-radius: 12px;
 `;
 
 const paymentWidgetModal = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: ${theme.colors.white};
-  border-radius: 24px;
+  z-index: ${theme.zIndex.dialog};
+  overflow: auto;
+
   width: calc(100% - 48px);
   max-width: 720px;
   max-height: 80vh;
   padding: 24px;
-  z-index: ${theme.zIndex.dialog};
+  border-radius: 24px;
+
+  background: ${theme.colors.white};
   box-shadow: 0 16px 32px ${theme.colors.grayOpacity200};
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: auto;
 `;
 
 const paymentWidgetHeader = css`
@@ -1411,10 +1399,12 @@ const paymentWidgetHeader = css`
 
 const modalClose = css`
   border: none;
+
   background: transparent;
-  font-size: 20px;
-  cursor: pointer;
   color: ${theme.colors.text_secondary};
+  font-size: 20px;
+
+  cursor: pointer;
 `;
 
 const paymentWidgetAction = css`
@@ -1422,14 +1412,16 @@ const paymentWidgetAction = css`
 `;
 
 const summaryCard = css`
-  margin: 12px 16px 8px;
-  padding: 20px 18px;
-  border-radius: 16px;
-  background: ${theme.colors.white};
-  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  margin: 12px 16px 8px;
+  padding: 20px 18px;
+  border-radius: 16px;
+
+  background: ${theme.colors.white};
+  box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
 `;
 
 const summaryRow = css`
@@ -1445,6 +1437,7 @@ const summaryValueRight = css`
 
 const summaryDivider = css`
   height: 1px;
+
   background: ${theme.colors.border_default};
 `;
 
@@ -1452,65 +1445,21 @@ const policyCard = css`
   margin: 12px 16px 8px;
   padding: 20px 18px;
   border-radius: 16px;
+
   background: ${theme.colors.white};
   box-shadow: 0 6px 16px ${theme.colors.grayOpacity50};
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const policyBox = css`
-  background: ${theme.colors.bg_surface1};
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const policyList = css`
-  margin: 0;
-  padding-left: 18px;
-  color: ${theme.colors.text_secondary};
-
-  li {
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }
-`;
-
-const policyLink = css`
-  border: 1px solid ${theme.colors.border_default};
-  background: ${theme.colors.primary10Opacity40};
-  border-radius: 12px;
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-`;
-
-const policyAccept = css`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const policyCheckbox = css`
-  width: 18px;
-  height: 18px;
-  accent-color: ${theme.colors.primary50};
-  cursor: pointer;
 `;
 
 const submitButtonWrapper = css`
   position: fixed;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
+
   padding: 16px 18px;
+
   background: ${theme.colors.white};
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 10px rgb(0 0 0 / 10%);
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     display: none;
@@ -1522,6 +1471,7 @@ const desktopSubmitWrapper = css`
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     display: block;
+
     margin-top: 16px;
   }
 `;
@@ -1531,14 +1481,16 @@ const modalCard = css`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: ${theme.colors.white};
-  border-radius: 24px;
+  z-index: ${theme.zIndex.dialog};
+
   width: calc(100% - 48px);
   max-width: 360px;
   padding: 28px 24px 24px;
-  z-index: ${theme.zIndex.dialog};
-  text-align: center;
+  border-radius: 24px;
+
+  background: ${theme.colors.white};
   box-shadow: 0 16px 32px ${theme.colors.grayOpacity200};
+  text-align: center;
 `;
 
 const modalText = css`
@@ -1549,21 +1501,26 @@ const modalText = css`
 
 const modalDescription = css`
   margin: 0;
+
   line-height: 1.5;
 `;
 
 const modalButtonRow = css`
   display: grid;
   grid-template-columns: 1fr 1fr;
+
   gap: 12px;
+
   margin-top: 24px;
 `;
 
 const modalButtonBase = css`
-  border-radius: 999px;
   padding: 12px 0;
   border: 1px solid ${theme.colors.primary50};
+  border-radius: 999px;
+
   background: ${theme.colors.white};
+
   cursor: pointer;
 `;
 

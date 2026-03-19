@@ -2,7 +2,7 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
 import { css } from '@emotion/react';
-import { CTAButton, RoundButton, Text } from '@/components';
+import { CTAButton, RoundButton, SafeProfileImage, Text } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { ImageUploadPlus } from '@/icons';
 import { theme } from '@/styles';
@@ -285,11 +285,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
               onClick={handleAvatarClick}
               aria-label="Edit profile image"
             >
-              {profileImageUrl ? (
-                <img css={profileImage} src={profileImageUrl} alt="Profile" />
-              ) : (
-                <ImageUploadPlus width={22} height={22} />
-              )}
+              <SafeProfileImage
+                src={profileImageUrl}
+                css={profileImage}
+                alt="Profile"
+                fallback={<ImageUploadPlus width={22} height={22} />}
+              />
             </button>
             {isDesktop && (
               <div css={profileActions}>

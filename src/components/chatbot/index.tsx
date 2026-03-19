@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import { ChatSessionMetadataResponse } from '@/models/chat';
 import { getChatSessionDetail, getChatSessions } from '@/apis/chat';
 import { useToast, useAuthState } from '@/hooks';
-import { Dim, LoginModal, Portal, Text } from '@/components';
+import { Dim, Portal, Text } from '@/components';
 import { Chatbot, ChevronLeft, ChevronRight, Close, Clock, ReviewAi } from '@/icons';
 import {
   dateHeader,
@@ -48,6 +48,7 @@ import {
 import type { ChatMessage } from './types';
 import { MessageRenderer } from './messages';
 import { useChatActions } from './hooks/useChatActions';
+import { openLoginModal } from '@/utils/auth-modal';
 
 const MESSAGE_LIMIT = 10;
 const ENABLE_CHATBOT = true;
@@ -55,13 +56,14 @@ const ENABLE_CHATBOT = true;
 export function ChatbotLauncher() {
   const t = useTranslations('chatbot');
   const { isAuthenticated } = useAuthState();
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPreparingOpen, setIsPreparingOpen] = useState(false);
 
   const handleOpenChat = () => {
     if (!isAuthenticated) {
-      setIsLoginOpen(true);
+      openLoginModal({
+        reason: 'chatbot',
+      });
       return;
     }
 
@@ -79,7 +81,6 @@ export function ChatbotLauncher() {
       <button css={floatingButton} onClick={handleOpenChat} aria-label={t('launcherLabel')}>
         <ReviewAi width={22} height={22} />
       </button>
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <ChatbotPreparingModal isOpen={isPreparingOpen} onClose={() => setIsPreparingOpen(false)} />
       {/* TODO(챗봇): 백엔드 수정 완료 시 기존 ChatbotModal을 다시 기본 진입점으로 사용한다. */}
       {ENABLE_CHATBOT ? (
