@@ -221,6 +221,7 @@ const wrapper = css`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 `;
 
 const desktopAppBar = css`
@@ -297,4 +298,4 @@ const desktopSearchWrapper = css`
   }
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['search']);
+export const getServerSideProps = getI18nServerSideProps(['search', 'categories']);

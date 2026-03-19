@@ -819,14 +819,6 @@ export default function ReservationPage() {
   const summaryPriceText = selectedProgram
     ? formatPriceByCurrency(selectedProgram.price_info, selectedPaymentCurrency) || '-'
     : '-';
-  const refundPolicyItems = [
-    t('payment.refundRule1'),
-    t('payment.refundRule2'),
-    t('payment.refundRule3'),
-    t('payment.refundRule4'),
-    t('payment.refundRule5'),
-    t('payment.refundRule6'),
-  ];
 
   const handleOpenRefundPolicy = () => {
     if (typeof window === 'undefined') return;
@@ -1080,8 +1072,6 @@ export default function ReservationPage() {
                   <div css={policyCard}>
                     <ReservationPolicyPanel
                       title={t('payment.refundTitle')}
-                      intro={t('payment.refundIntro')}
-                      items={refundPolicyItems}
                       actionLabel={t('payment.refundMore')}
                       onActionClick={handleOpenRefundPolicy}
                       acceptLabel={t('payment.refundAccept')}
