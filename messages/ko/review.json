@@ -8,6 +8,7 @@
   "loading": "리뷰를 불러오는 중...",
   "anonymous": "익명",
   "empty": "아직 받은 리뷰가 없어요",
+  "emptyWritten": "아직 작성한 리뷰가 없어요",
   "emptyReceived": "받은 리뷰가 없습니다",
   "editTitle": "리뷰 수정",
   "minLengthAlert": "리뷰는 최소 10글자 이상 작성해주세요.",

@@ -44,6 +44,18 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
   const { isAuthenticated, isLoading } = useRequireAuth(true);
   const isEmbedded = variant === 'embedded';
 
+  const goToReviewManagement = useCallback(() => {
+    if (isEmbedded) {
+      router.push({
+        pathname: `/${currentLocale}${ROUTES.MYPAGE}`,
+        query: { tab: 'reviews' },
+      });
+      return;
+    }
+
+    router.push(`/${currentLocale}${ROUTES.MYPAGE_REVIEWS}`);
+  }, [currentLocale, isEmbedded, router]);
+
   const filterOptions = useMemo<{ value: FilterStatus; label: string }[]>(
     () => [
       { value: 'total', label: t('filters.total') },
@@ -388,7 +400,7 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
                       css={viewReviewButton}
                       onClick={(event) => {
                         event.stopPropagation();
-                        router.push(`/${currentLocale}${ROUTES.MYPAGE_REVIEWS}`);
+                        goToReviewManagement();
                       }}
                     >
                       <Text typo="body_M" color="white">
@@ -400,22 +412,9 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
                       css={writeReviewButton}
                       onClick={(event) => {
                         event.stopPropagation();
-                        const schedule = reservation.date || '-';
-                        if (typeof window !== 'undefined') {
-                          window.sessionStorage.setItem(
-                            'review_draft',
-                            JSON.stringify({
-                              reservationId: reservation.id,
-                              companyId: reservation.companyId,
-                              programId: reservation.programId,
-                              companyName: reservation.clinicName,
-                              programName: reservation.title,
-                              schedule,
-                              programImage: reservation.image,
-                            })
-                          );
-                        }
-                        router.push(`/${currentLocale}${ROUTES.REVIEW}`);
+                        router.push(
+                          `/${currentLocale}${ROUTES.BOOKING_REVIEW_CREATE(reservation.id)}`
+                        );
                       }}
                     >
                       <Text typo="body_M" color="white">

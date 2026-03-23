@@ -8,6 +8,7 @@
   "loading": "Loading reviews...",
   "anonymous": "Anonymous",
   "empty": "No reviews yet.",
+  "emptyWritten": "You haven't written any reviews yet.",
   "emptyReceived": "No reviews received.",
   "editTitle": "Edit Review",
   "minLengthAlert": "Please write at least 10 characters.",

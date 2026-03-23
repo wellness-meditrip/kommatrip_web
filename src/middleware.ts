@@ -61,7 +61,7 @@ function hasLocalePrefix(pathname: string): boolean {
   return segments.length > 0 && locales.includes(segments[0] as Locale);
 }
 
-const PROTECTED_PATH_PREFIXES = ['/bookings', '/reservations', '/review', '/mypage/reviews'];
+const PROTECTED_PATH_PREFIXES = ['/bookings', '/reservations', '/mypage/reviews'];
 
 function isProtectedPath(pathname: string): boolean {
   if (
@@ -87,6 +87,20 @@ export async function middleware(request: NextRequest) {
   const locale = hasPrefix ? (pathname.split('/')[1] as Locale) : detectLocale(request);
   const pathWithoutLocale = hasPrefix ? `/${pathname.split('/').slice(2).join('/')}` : pathname;
   const actualPath = pathWithoutLocale === '' ? '/' : pathWithoutLocale;
+  const legacyReviewEditMatch = actualPath.match(/^\/review\/([^/]+)(?:\/|$)/);
+
+  if (actualPath === '/review') {
+    const homeUrl = new URL(`/${locale}`, request.url);
+    homeUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(homeUrl);
+  }
+
+  if (legacyReviewEditMatch) {
+    const reviewId = legacyReviewEditMatch[1];
+    const reviewEditUrl = new URL(`/${locale}/mypage/reviews/${reviewId}`, request.url);
+    reviewEditUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(reviewEditUrl);
+  }
 
   if (isProtectedPath(actualPath)) {
     const hasRefreshToken = request.cookies.has(AUTH_COOKIE_KEYS.REFRESH_TOKEN);

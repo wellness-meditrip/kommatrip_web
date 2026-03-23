@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { Empty, Text } from '@/components';
 import { Card } from '@/components/reviews/card';
 import { useDialog, useToast } from '@/hooks';
+import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { ROUTES } from '@/constants';
 import { ReviewCardSkeletonList } from '@/components/common';
@@ -94,6 +95,7 @@ function MyReviewCard({
 // 내가 작성한 리뷰 조회
 export function MyReviewsPanel({ variant = 'page' }: Props) {
   const router = useRouter();
+  const currentLocale = useCurrentLocale();
   const tReviewList = useTranslations('review-list');
   const tReview = useTranslations('review');
   const tCommon = useTranslations('common');
@@ -123,7 +125,7 @@ export function MyReviewsPanel({ variant = 'page' }: Props) {
   const handleEdit = () => {
     if (!activeReviewId) return;
     setIsSheetOpen(false);
-    router.push(`${ROUTES.REVIEW}/${activeReviewId}`);
+    router.push(`/${currentLocale}${ROUTES.REVIEW_EDIT(activeReviewId)}`);
   };
 
   const handleDelete = () => {
@@ -162,7 +164,7 @@ export function MyReviewsPanel({ variant = 'page' }: Props) {
           <ReviewCardSkeletonList count={3} />
         ) : reviews.length === 0 ? (
           <div css={emptyState}>
-            <Empty title={tReview('empty')} />
+            <Empty title={tReview('emptyWritten')} />
           </div>
         ) : (
           <div css={reviewList}>

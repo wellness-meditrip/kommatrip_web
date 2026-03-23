@@ -7,7 +7,7 @@ import { Meta, createPageMeta } from '@/seo';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 
 // 내가 작성한 리뷰 조회
-export default function MyPage() {
+export default function MyReviewsPage() {
   const router = useRouter();
   const tMypage = useTranslations('mypage');
   const tCommon = useTranslations('common');

@@ -62,7 +62,6 @@ export const PRIVATE_ROBOTS_PATHS = [
   '/mypage',
   '/reservations',
   '/bookings',
-  '/review',
 ] as const;
 
 const SYSTEM_PATHS = new Set(['/404', '/500', '/_error', '/robots.txt', '/sitemap.xml']);
