@@ -18,10 +18,6 @@ export const ROUTES = {
   COMPANY_PROGRAM_DETAIL: (companyId: number, programId: number) =>
     `/company/${companyId}/program/${programId}`,
 
-  // Packages
-  PACKAGES: '/packages',
-  PACKAGES_DETAIL: (packageId: number) => `/packages/${packageId}`,
-
   // Mypage
   MYPAGE: '/mypage',
   MYPAGE_REVIEWS: '/mypage/reviews',

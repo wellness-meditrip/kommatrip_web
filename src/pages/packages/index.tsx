@@ -1,21 +1,27 @@
-import Head from 'next/head';
-import { useTranslations } from 'next-intl';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import type { GetServerSideProps } from 'next';
+import { defaultLocale, locales, type Locale } from '@/i18n/routing';
 
-// 패키지 리스트 페이지
-export default function PackageListPage() {
-  const tCommon = useTranslations('common');
-  const t = useTranslations('packages');
-  const pageTitle = `${tCommon('app.name')} | ${t('title')}`;
+const resolveLocale = (localeHeader: string | string[] | undefined): Locale => {
+  const candidate = Array.isArray(localeHeader) ? localeHeader[0] : localeHeader;
 
-  return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-      </Head>
-      <>패키지 리스트 페이지입니다</>
-    </>
-  );
+  if (candidate && locales.includes(candidate as Locale)) {
+    return candidate as Locale;
+  }
+
+  return defaultLocale;
+};
+
+export default function PackagesRedirectPage() {
+  return null;
 }
 
-export const getServerSideProps = getI18nServerSideProps(['packages']);
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  const locale = resolveLocale(req.headers['x-locale']);
+
+  return {
+    redirect: {
+      destination: `/${locale}/company`,
+      permanent: true,
+    },
+  };
+};

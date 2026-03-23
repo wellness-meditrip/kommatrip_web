@@ -89,7 +89,7 @@ const isPrivatePath = (path: string) =>
   PRIVATE_ROBOTS_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
 const isPublicUtilityPath = (path: string) =>
-  path === '/search' || path === '/packages' || /^\/company\/.+\/program$/.test(path);
+  path === '/search' || /^\/company\/.+\/program$/.test(path);
 
 export const resolvePagePolicy = (path?: string): PagePolicy => {
   const normalizedPath = normalizePath(path);
