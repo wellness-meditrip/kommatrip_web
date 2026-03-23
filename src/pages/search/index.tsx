@@ -16,7 +16,7 @@ import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
 import { useTranslations } from 'next-intl';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPublicUtilityI18nStaticProps } from '@/i18n/page-props';
 
 // 검색 페이지
 export default function SearchPage() {
@@ -298,4 +298,4 @@ const desktopSearchWrapper = css`
   }
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['search', 'categories']);
+export const getStaticProps = getPublicUtilityI18nStaticProps(['search', 'categories']);

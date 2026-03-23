@@ -7,7 +7,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { ROUTES } from '@/constants';
 import { useMediaQuery, useToast } from '@/hooks';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nStaticProps } from '@/i18n/page-props';
 import { useAuthStore } from '@/store/auth';
 import { theme } from '@/styles';
 import { createPageMeta, Meta } from '@/seo';
@@ -139,4 +139,4 @@ const content = css`
   }
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['auth']);
+export const getStaticProps = getPrivateI18nStaticProps(['auth']);

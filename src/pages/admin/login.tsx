@@ -13,6 +13,7 @@ import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
 import { useAdminAuth, useToast } from '@/hooks';
 import { postAdminLogin, postAdminRegister } from '@/apis';
+import { getAdminI18nStaticProps } from '@/i18n/page-props';
 import { persistAdminAuthFromResponse } from '@/utils/admin-auth-storage';
 import { normalizeError } from '@/utils/error-handler';
 
@@ -356,3 +357,5 @@ const signupButton = css`
     cursor: not-allowed;
   }
 `;
+
+export const getStaticProps = getAdminI18nStaticProps();

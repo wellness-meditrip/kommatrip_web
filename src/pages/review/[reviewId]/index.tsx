@@ -39,7 +39,7 @@ import {
 import { Loading } from '@/components/common';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { ROUTES } from '@/constants';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 export default function ReviewEditPage() {
   const [reviewText, setReviewText] = useState<string>('');
@@ -342,4 +342,4 @@ export default function ReviewEditPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['review', 'review-list']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['review', 'review-list']);
