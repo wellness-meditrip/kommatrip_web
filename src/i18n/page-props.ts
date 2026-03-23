@@ -19,6 +19,10 @@ export interface I18nPageProps {
   pagePolicy: PagePolicyName;
 }
 
+export interface I18nPageOptions {
+  pagePolicy?: PagePolicyName;
+}
+
 export const GLOBAL_I18N_NAMESPACES: readonly MessageNamespace[] = [
   'common',
   'error',
@@ -114,9 +118,7 @@ const applyCacheControl = (
   pagePolicyName: PagePolicyName
 ) => {
   if (!('res' in context)) return;
-  const cacheControl = resolvePagePolicy(context.resolvedUrl).cacheControl;
-  const fallbackCacheControl = PAGE_POLICIES[pagePolicyName].cacheControl;
-  const finalCacheControl = cacheControl ?? fallbackCacheControl;
+  const finalCacheControl = PAGE_POLICIES[pagePolicyName].cacheControl;
   if (!finalCacheControl) return;
   context.res.setHeader('Cache-Control', finalCacheControl);
 };
@@ -135,13 +137,14 @@ export const withI18nGssp = <P extends object>(
   handler: (
     context: GetServerSidePropsContext
   ) => Promise<GetServerSidePropsResult<P>> | GetServerSidePropsResult<P>,
-  namespaces?: readonly string[]
+  namespaces?: readonly string[],
+  options?: I18nPageOptions
 ): GetServerSideProps<P & I18nPageProps> => {
   return async (context) => {
     const result = await handler(context);
     if (!('props' in result)) return result;
 
-    const pagePolicy = resolveContextPolicy(context);
+    const pagePolicy = options?.pagePolicy ?? resolveContextPolicy(context);
     applyCacheControl(context, pagePolicy);
     const locale = resolveLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
@@ -165,13 +168,14 @@ export const withI18nGsp = <P extends object>(
   handler: (
     context: GetStaticPropsContext
   ) => Promise<GetStaticPropsResult<P>> | GetStaticPropsResult<P>,
-  namespaces?: readonly string[]
+  namespaces?: readonly string[],
+  options?: I18nPageOptions
 ): GetStaticProps<P & I18nPageProps> => {
   return async (context) => {
     const result = await handler(context);
     if (!('props' in result)) return result;
 
-    const pagePolicy = resolveContextPolicy(context);
+    const pagePolicy = options?.pagePolicy ?? resolveContextPolicy(context);
     const locale = resolveLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
     const { messages: allMessages } = await getI18nConfig(locale, requiredNamespaces);
@@ -193,19 +197,39 @@ export const withI18nGsp = <P extends object>(
 /**
  * 번역 리소스만 필요한 정적 페이지용 기본 getStaticProps
  */
-export const getI18nStaticProps = (namespaces?: readonly string[]) =>
-  withI18nGsp(async () => {
-    return {
-      props: {},
-    };
-  }, namespaces);
+export const getI18nStaticProps = (namespaces?: readonly string[], options?: I18nPageOptions) =>
+  withI18nGsp(
+    async () => {
+      return {
+        props: {},
+      };
+    },
+    namespaces,
+    options
+  );
 
 /**
  * 번역 리소스만 필요한 동적 페이지용 기본 getServerSideProps
  */
-export const getI18nServerSideProps = (namespaces?: readonly string[]) =>
-  withI18nGssp(async () => {
-    return {
-      props: {},
-    };
-  }, namespaces);
+export const getI18nServerSideProps = (namespaces?: readonly string[], options?: I18nPageOptions) =>
+  withI18nGssp(
+    async () => {
+      return {
+        props: {},
+      };
+    },
+    namespaces,
+    options
+  );
+
+export const getPrivateI18nStaticProps = (namespaces?: readonly string[]) =>
+  getI18nStaticProps(namespaces, { pagePolicy: 'private-app' });
+
+export const getPrivateI18nServerSideProps = (namespaces?: readonly string[]) =>
+  getI18nServerSideProps(namespaces, { pagePolicy: 'private-app' });
+
+export const getAdminI18nStaticProps = (namespaces?: readonly string[]) =>
+  getI18nStaticProps(namespaces, { pagePolicy: 'admin' });
+
+export const getPublicUtilityI18nStaticProps = (namespaces?: readonly string[]) =>
+  getI18nStaticProps(namespaces, { pagePolicy: 'public-utility' });

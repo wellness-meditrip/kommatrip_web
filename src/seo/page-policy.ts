@@ -88,8 +88,7 @@ const isAdminPath = (path: string) => path === '/admin' || path.startsWith('/adm
 const isPrivatePath = (path: string) =>
   PRIVATE_ROBOTS_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
-const isPublicUtilityPath = (path: string) =>
-  path === '/search' || /^\/company\/.+\/program$/.test(path);
+const isPublicUtilityPath = (path: string) => path === '/search';
 
 export const resolvePagePolicy = (path?: string): PagePolicy => {
   const normalizedPath = normalizePath(path);
