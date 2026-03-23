@@ -6,13 +6,17 @@ import type {
   GetStaticPropsContext,
   GetStaticPropsResult,
 } from 'next';
+import type { DehydratedState } from '@tanstack/react-query';
 import { getI18nConfig } from './request';
 import { routing, type Locale } from './routing';
 import { MESSAGE_NAMESPACES, type MessageNamespace } from './namespaces';
+import { PAGE_POLICIES, resolvePagePolicy, type PagePolicyName } from '@/seo/page-policy';
 
 export interface I18nPageProps {
   locale: Locale;
   messages: Record<string, unknown>;
+  dehydratedState?: DehydratedState;
+  pagePolicy: PagePolicyName;
 }
 
 export const GLOBAL_I18N_NAMESPACES: readonly MessageNamespace[] = [
@@ -105,6 +109,28 @@ const resolveLocale = (context: GetServerSidePropsContext | GetStaticPropsContex
   return routing.defaultLocale;
 };
 
+const applyCacheControl = (
+  context: GetServerSidePropsContext | GetStaticPropsContext,
+  pagePolicyName: PagePolicyName
+) => {
+  if (!('res' in context)) return;
+  const cacheControl = resolvePagePolicy(context.resolvedUrl).cacheControl;
+  const fallbackCacheControl = PAGE_POLICIES[pagePolicyName].cacheControl;
+  const finalCacheControl = cacheControl ?? fallbackCacheControl;
+  if (!finalCacheControl) return;
+  context.res.setHeader('Cache-Control', finalCacheControl);
+};
+
+const resolveContextPolicy = (
+  context: GetServerSidePropsContext | GetStaticPropsContext
+): PagePolicyName => {
+  if ('resolvedUrl' in context && typeof context.resolvedUrl === 'string') {
+    return resolvePagePolicy(context.resolvedUrl).name;
+  }
+
+  return 'system';
+};
+
 export const withI18nGssp = <P extends object>(
   handler: (
     context: GetServerSidePropsContext
@@ -115,6 +141,8 @@ export const withI18nGssp = <P extends object>(
     const result = await handler(context);
     if (!('props' in result)) return result;
 
+    const pagePolicy = resolveContextPolicy(context);
+    applyCacheControl(context, pagePolicy);
     const locale = resolveLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
     const { messages: allMessages } = await getI18nConfig(locale, requiredNamespaces);
@@ -127,6 +155,7 @@ export const withI18nGssp = <P extends object>(
         ...resolvedProps,
         locale,
         messages,
+        pagePolicy,
       },
     };
   };
@@ -142,6 +171,7 @@ export const withI18nGsp = <P extends object>(
     const result = await handler(context);
     if (!('props' in result)) return result;
 
+    const pagePolicy = resolveContextPolicy(context);
     const locale = resolveLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
     const { messages: allMessages } = await getI18nConfig(locale, requiredNamespaces);
@@ -154,6 +184,7 @@ export const withI18nGsp = <P extends object>(
         ...resolvedProps,
         locale,
         messages,
+        pagePolicy,
       },
     };
   };

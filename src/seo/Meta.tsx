@@ -10,19 +10,31 @@ export function Meta({
   siteName,
   type = 'website',
   noindex = false,
+  robots,
   twitterCard = 'summary_large_image',
   imageAlt,
+  alternates,
+  jsonLd,
 }: MetaProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? '';
   const resolvedUrl = toAbsoluteUrl(siteUrl, url);
   const resolvedImage = toAbsoluteUrl(siteUrl, image);
+  const robotsContent = robots ?? (noindex ? 'noindex,nofollow' : undefined);
 
   return (
     <Head>
       <title>{title}</title>
       <meta name="description" content={description} />
-      {noindex ? <meta name="robots" content="noindex,nofollow" /> : null}
+      {robotsContent ? <meta name="robots" content={robotsContent} /> : null}
       {resolvedUrl ? <link rel="canonical" href={resolvedUrl} /> : null}
+      {alternates?.map((alternate) => (
+        <link
+          key={`${alternate.hrefLang}:${alternate.href}`}
+          rel="alternate"
+          hrefLang={alternate.hrefLang}
+          href={alternate.href}
+        />
+      ))}
       <meta property="og:type" content={type} />
       {siteName ? <meta property="og:site_name" content={siteName} /> : null}
       <meta property="og:title" content={title} />
@@ -34,6 +46,13 @@ export function Meta({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {resolvedImage ? <meta name="twitter:image" content={resolvedImage} /> : null}
+      {jsonLd?.map((item, index) => (
+        <script
+          key={`jsonld:${index}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(item) }}
+        />
+      ))}
     </Head>
   );
 }
