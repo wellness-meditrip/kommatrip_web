@@ -50,8 +50,34 @@ export const usePostClinicReviewMutation = () => {
 
 const PAGE_SIZE = 20;
 
+export const getCompanyReviewsQueryKey = (params: GetCompanyReviewsParams) =>
+  [
+    ...QUERY_KEYS.GET_COMPANY_REVIEWS,
+    params.companyId,
+    {
+      skip: params.skip ?? null,
+      limit: params.limit ?? null,
+      with_photos: params.with_photos ?? null,
+      my_country_only: params.my_country_only ?? null,
+      country: params.country ?? null,
+      tag: params.tag ?? null,
+    },
+  ] as const;
+
 export const getGuestCompanyReviewsInfiniteQueryKey = (params: GetGuestCompanyReviewsParams) =>
-  [...QUERY_KEYS.GET_COMPANY_REVIEWS, 'guest', params.companyId, params] as const;
+  [
+    ...QUERY_KEYS.GET_COMPANY_REVIEWS,
+    'guest',
+    params.companyId,
+    {
+      skip: params.skip ?? null,
+      limit: params.limit ?? null,
+      with_photos: params.with_photos ?? null,
+      my_country_only: params.my_country_only ?? null,
+      country: params.country ?? null,
+      tags: params.tags ?? null,
+    },
+  ] as const;
 
 export const createGuestCompanyReviewsInfiniteQueryOptions = (
   params: GetGuestCompanyReviewsParams
@@ -174,7 +200,7 @@ export const useReportGuestReviewMutation = () => {
 // 업체 리뷰 조회 (무한 스크롤)
 export const useGetCompanyReviewsInfiniteQuery = (params: GetCompanyReviewsParams) => {
   return useInfiniteQuery({
-    queryKey: [...QUERY_KEYS.GET_COMPANY_REVIEWS, params.companyId, params],
+    queryKey: getCompanyReviewsQueryKey(params),
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       const response = await getCompanyReviews({
@@ -196,7 +222,7 @@ export const useGetCompanyReviewsInfiniteQuery = (params: GetCompanyReviewsParam
 // 업체 리뷰 조회 (일반 쿼리)
 export const useGetCompanyReviewsQuery = (params: GetCompanyReviewsParams) => {
   return useQuery({
-    queryKey: [...QUERY_KEYS.GET_COMPANY_REVIEWS, params.companyId, params],
+    queryKey: getCompanyReviewsQueryKey(params),
     queryFn: () => getCompanyReviews(params),
     enabled: !!params.companyId,
   });

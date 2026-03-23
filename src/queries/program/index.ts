@@ -22,8 +22,8 @@ export const getProgramCompanyListQueryKey = (params: ProgramCompanyListParams) 
     ...QUERY_KEYS.GET_PROGRAM_COMPANY,
     'list',
     params.company_id,
-    params.skip,
-    params.limit,
+    params.skip ?? null,
+    params.limit ?? null,
   ] as const;
 
 export const fetchProgramCompanyListQuery = (params: ProgramCompanyListParams) =>

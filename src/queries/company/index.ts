@@ -38,8 +38,8 @@ export const getCompanySearchQueryKey = (params: SearchParams) =>
     params.location,
     params.skip,
     params.limit,
-    params.date,
-    params.endDate,
+    params.date ?? null,
+    params.endDate ?? null,
   ] as const;
 
 export const fetchCompanySearchQuery = (params: SearchParams) => getCompanySearch(params);
