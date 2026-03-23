@@ -7,7 +7,7 @@ import { useMediaQuery } from '@/hooks';
 import { ROUTES } from '@/constants';
 import { useTranslations } from 'next-intl';
 import { Meta, createPageMeta } from '@/seo';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nStaticProps } from '@/i18n/page-props';
 
 export default function MyPageSettings() {
   const router = useRouter();
@@ -60,4 +60,4 @@ export default function MyPageSettings() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['mypage']);
+export const getStaticProps = getPrivateI18nStaticProps(['mypage']);
