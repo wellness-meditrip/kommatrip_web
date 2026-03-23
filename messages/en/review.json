@@ -71,5 +71,6 @@
     "agreement": "I agree to the collection and use of my review.",
     "requiredAlert": "Please agree to the AI review consent."
   },
-  "missingReservation": "Reservation information is missing."
+  "missingReservation": "Reservation information is missing.",
+  "completedReservationOnly": "Reviews can only be written for completed reservations."
 }

@@ -71,5 +71,6 @@
     "agreement": "리뷰 수집 및 활용에 동의합니다.",
     "requiredAlert": "AI 리뷰 동의에 체크해 주세요."
   },
-  "missingReservation": "예약 정보를 찾을 수 없습니다."
+  "missingReservation": "예약 정보를 찾을 수 없습니다.",
+  "completedReservationOnly": "완료된 예약에 대해서만 리뷰를 작성할 수 있습니다."
 }

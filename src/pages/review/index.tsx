@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useErrorHandler } from '@/hooks';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -33,10 +34,12 @@ import {
 import { ReviewInputCard } from '@/components/reviews';
 import { usePostClinicReviewMutation } from '@/queries';
 import { Loading } from '@/components/common';
+import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/auth';
 import { useGetReservationDetailQuery } from '@/queries/reservation';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { normalizeReservationStatus } from '@/utils/reservation-policy';
 
 interface ReviewDraft {
   reservationId?: number;
@@ -54,6 +57,7 @@ export default function ReviewPage() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
   const [aiConsentChecked, setAiConsentChecked] = useState(false);
+  const [isRouteGuardReady, setIsRouteGuardReady] = useState(false);
 
   const router = useRouter();
   const t = useTranslations('review');
@@ -64,15 +68,19 @@ export default function ReviewPage() {
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const accessToken = useAuthStore((state) => state.accessToken);
+  const { isLoading: isAuthLoading } = useAuthState();
 
   const reservationId = reviewDraft?.reservationId;
   const programId = reviewDraft?.programId;
   const parsedReservationId =
     typeof reservationId === 'number' ? reservationId : Number(reservationId);
-  const { data: reservationDetailResponse } = useGetReservationDetailQuery(
-    parsedReservationId,
-    Boolean(parsedReservationId && accessToken)
-  );
+  const shouldFetchReservationDetail =
+    isRouteGuardReady && Boolean(parsedReservationId) && !isAuthLoading && Boolean(accessToken);
+  const {
+    data: reservationDetailResponse,
+    error: reservationDetailError,
+    isLoading: isReservationDetailLoading,
+  } = useGetReservationDetailQuery(parsedReservationId, shouldFetchReservationDetail);
   const reservationDetail = reservationDetailResponse
     ? 'reservation' in reservationDetailResponse
       ? reservationDetailResponse.reservation
@@ -157,6 +165,18 @@ export default function ReviewPage() {
     );
   };
 
+  const redirectToBookings = useCallback(
+    (message: string) => {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem('review_draft');
+      }
+      showToast({ title: message, icon: 'exclaim' });
+      setIsRouteGuardReady(false);
+      void router.replace(`/${currentLocale}${ROUTES.BOOKINGS}`);
+    },
+    [currentLocale, router, showToast]
+  );
+
   const validateForm = () => {
     if (!reviewText || selectedTags.length === 0) {
       alert(t('missingFields'));
@@ -182,15 +202,58 @@ export default function ReviewPage() {
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || isRouteGuardReady) return;
     const stored = window.sessionStorage.getItem('review_draft');
-    if (!stored) return;
+    if (!stored) {
+      redirectToBookings(t('missingReservation'));
+      return;
+    }
     try {
-      setReviewDraft(JSON.parse(stored));
+      const parsedDraft = JSON.parse(stored) as ReviewDraft;
+      const nextReservationId =
+        typeof parsedDraft.reservationId === 'number'
+          ? parsedDraft.reservationId
+          : Number(parsedDraft.reservationId);
+
+      if (!Number.isFinite(nextReservationId) || nextReservationId <= 0) {
+        throw new Error('Invalid reservation draft');
+      }
+
+      setReviewDraft(parsedDraft);
+      setIsRouteGuardReady(true);
     } catch {
       window.sessionStorage.removeItem('review_draft');
+      redirectToBookings(t('missingReservation'));
     }
-  }, []);
+  }, [currentLocale, isRouteGuardReady, redirectToBookings, router, showToast, t]);
+
+  useEffect(() => {
+    if (!isRouteGuardReady || isAuthLoading) return;
+    if (!parsedReservationId || !accessToken) {
+      redirectToBookings(t('missingReservation'));
+      return;
+    }
+    if (isReservationDetailLoading) return;
+    if (reservationDetailError || !reservationDetail) {
+      redirectToBookings(t('missingReservation'));
+      return;
+    }
+
+    if (normalizeReservationStatus(reservationDetail.status) !== 'completed') {
+      redirectToBookings(t('completedReservationOnly'));
+    }
+  }, [
+    accessToken,
+    currentLocale,
+    isAuthLoading,
+    isReservationDetailLoading,
+    isRouteGuardReady,
+    parsedReservationId,
+    reservationDetail,
+    reservationDetailError,
+    t,
+    redirectToBookings,
+  ]);
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -214,6 +277,9 @@ export default function ReviewPage() {
             response && typeof response === 'object' && 'message' in response
               ? String(response.message)
               : t('createSuccess');
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.removeItem('review_draft');
+          }
           showToast({ title: successMessage });
           // 성공 시 메인 페이지로 이동
           router.push(`/${currentLocale}`);
@@ -240,9 +306,9 @@ export default function ReviewPage() {
         title={t('createTitle')}
       />
       <div css={pageWrapper}>
-        {isPending ? (
+        {!isRouteGuardReady || isAuthLoading || isReservationDetailLoading || isPending ? (
           <div css={loadingContainer}>
-            <Loading title={t('creating')} fullHeight={true} />
+            <Loading title={isPending ? t('creating') : t('loading')} fullHeight={true} />
           </div>
         ) : (
           <>
@@ -367,4 +433,4 @@ export default function ReviewPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['review', 'review-list']);
+export const getStaticProps = getPrivateI18nStaticProps(['review', 'review-list']);

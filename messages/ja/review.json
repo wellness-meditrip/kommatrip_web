@@ -71,5 +71,6 @@
     "agreement": "レビューの収集と利用に同意します。",
     "requiredAlert": "AIレビュー同意にチェックしてください。"
   },
-  "missingReservation": "予約情報が見つかりません。"
+  "missingReservation": "予約情報が見つかりません。",
+  "completedReservationOnly": "レビューは完了した予約に対してのみ作成できます。"
 }
