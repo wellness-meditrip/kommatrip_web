@@ -9,18 +9,23 @@ import { CTAButton, RoundButton, DesktopAppBar, PageErrorEmpty } from '@/compone
 import { Meta, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
-import { useGetProgramDetailQuery } from '@/queries/program';
+import { dehydrate } from '@tanstack/react-query';
+import {
+  fetchProgramDetailQuery,
+  getProgramDetailQueryKey,
+  useGetProgramDetailQuery,
+} from '@/queries/program';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import type { GetServerSideProps } from 'next';
 import { ProgramDetail } from '@/models/program';
-import { getProgramDetail } from '@/apis';
 import { withI18nGssp } from '@/i18n/page-props';
 import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
 import { resolvePrice } from '@/utils/price';
+import { createQueryClient } from '@/providers';
 
 interface ProgramDetailPageProps extends Record<string, unknown> {
   programId: number;
@@ -363,7 +368,11 @@ export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
       }
 
       try {
-        const response = await getProgramDetail(programId);
+        const queryClient = createQueryClient();
+        const response = await queryClient.fetchQuery({
+          queryKey: getProgramDetailQueryKey(programId),
+          queryFn: () => fetchProgramDetailQuery(programId),
+        });
         if (!response?.program) {
           return { notFound: true };
         }
@@ -373,6 +382,7 @@ export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
             programId,
             initialProgram: response.program,
             initialCanonicalPath: `/company/${companyId}/program/${programId}`,
+            dehydratedState: dehydrate(queryClient),
           },
         };
       } catch (error) {

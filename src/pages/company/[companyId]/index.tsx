@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { css } from '@emotion/react';
 import { useTranslations } from 'next-intl';
 import type { GetServerSideProps } from 'next';
+import { dehydrate } from '@tanstack/react-query';
 
 import {
   AppBar,
@@ -19,9 +20,12 @@ import {
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
-import { useGetCompanyDetailQuery } from '@/queries/company';
+import {
+  fetchCompanyDetailQuery,
+  getCompanyDetailQueryKey,
+  useGetCompanyDetailQuery,
+} from '@/queries/company';
 import { CompanyDetail as CompanyDetailType } from '@/models';
-import { getCompanyDetail } from '@/apis/company';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useAuthState, useMediaQuery } from '@/hooks';
@@ -29,6 +33,7 @@ import { useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
 import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
+import { createQueryClient } from '@/providers';
 
 interface ClinicDetailPageProps extends Record<string, unknown> {
   companyId: number;
@@ -526,7 +531,11 @@ export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
       }
 
       try {
-        const response = await getCompanyDetail({ companyId });
+        const queryClient = createQueryClient();
+        const response = await queryClient.fetchQuery({
+          queryKey: getCompanyDetailQueryKey(companyId),
+          queryFn: () => fetchCompanyDetailQuery({ companyId }),
+        });
         if (!response?.company) {
           return { notFound: true };
         }
@@ -538,6 +547,7 @@ export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
             companyId,
             initialCompany: response.company,
             initialCanonicalPath: canonicalPath,
+            dehydratedState: dehydrate(queryClient),
           },
         };
       } catch (error) {

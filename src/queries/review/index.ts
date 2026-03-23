@@ -1,4 +1,9 @@
-import { useMutation, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  infiniteQueryOptions,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 import {
   PostClinicReviewRequestBody,
@@ -44,6 +49,34 @@ export const usePostClinicReviewMutation = () => {
 };
 
 const PAGE_SIZE = 20;
+
+export const getGuestCompanyReviewsInfiniteQueryKey = (params: GetGuestCompanyReviewsParams) =>
+  [...QUERY_KEYS.GET_COMPANY_REVIEWS, 'guest', params.companyId, params] as const;
+
+export const createGuestCompanyReviewsInfiniteQueryOptions = (
+  params: GetGuestCompanyReviewsParams
+) =>
+  infiniteQueryOptions({
+    queryKey: getGuestCompanyReviewsInfiniteQueryKey(params),
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) =>
+      getGuestCompanyReviews({
+        ...params,
+        skip: pageParam,
+        limit: params.limit ?? PAGE_SIZE,
+      }),
+    getNextPageParam: (
+      lastPage: GetGuestCompanyReviewsResponse,
+      allPages: GetGuestCompanyReviewsResponse[]
+    ) => {
+      const totalLoaded = allPages.reduce((sum, page) => sum + page.reviews.length, 0);
+      const hasNext = totalLoaded < lastPage.total;
+      return hasNext ? totalLoaded : undefined;
+    },
+    enabled: !!params.companyId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
 
 export const useGetClinicReviewInfiniteQuery = (hospitalId: number) => {
   return useInfiniteQuery({
@@ -171,22 +204,5 @@ export const useGetCompanyReviewsQuery = (params: GetCompanyReviewsParams) => {
 
 // 가리뷰 조회 (무한 스크롤)
 export const useGetGuestCompanyReviewsInfiniteQuery = (params: GetGuestCompanyReviewsParams) => {
-  return useInfiniteQuery<GetGuestCompanyReviewsResponse>({
-    queryKey: [...QUERY_KEYS.GET_COMPANY_REVIEWS, 'guest', params.companyId, params],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam = 0 }) => {
-      const response = await getGuestCompanyReviews({
-        ...params,
-        skip: pageParam as number,
-        limit: params.limit ?? PAGE_SIZE,
-      });
-      return response;
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      const totalLoaded = allPages.reduce((sum, page) => sum + page.reviews.length, 0);
-      const hasNext = totalLoaded < lastPage.total;
-      return hasNext ? totalLoaded : undefined;
-    },
-    enabled: !!params.companyId,
-  });
+  return useInfiniteQuery(createGuestCompanyReviewsInfiniteQueryOptions(params));
 };

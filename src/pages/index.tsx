@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQueryClient } from '@tanstack/react-query';
+import { dehydrate, useQueryClient } from '@tanstack/react-query';
 import type { GetServerSideProps } from 'next';
 import {
   Layout,
@@ -14,7 +14,12 @@ import {
 } from '@/components';
 import { Meta, createPageMeta } from '@/seo';
 import { useMediaQuery, useAuthState } from '@/hooks';
-import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
+import {
+  fetchRecommendedCompanyQuery,
+  getRecommendedCompanyQueryKey,
+  useGetRecommendedCompanyQuery,
+  useGetRecentCompanyQuery,
+} from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
 import { QUERY_KEYS } from '@/queries/query-keys';
 
@@ -22,6 +27,7 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 import { withI18nGssp } from '@/i18n/page-props';
+import { createQueryClient } from '@/providers';
 
 interface HomePageProps {
   heroImages: string[];
@@ -266,6 +272,7 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> =
   withI18nGssp<HomePageProps>(async () => {
     const path = await import('node:path');
     const { readdir } = await import('node:fs/promises');
+    const queryClient = createQueryClient();
 
     const dir = path.join(process.cwd(), 'public', 'images', 'hero');
     let heroImages: string[] = [];
@@ -282,9 +289,15 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> =
       heroImages = [];
     }
 
+    await queryClient.prefetchQuery({
+      queryKey: getRecommendedCompanyQueryKey(),
+      queryFn: fetchRecommendedCompanyQuery,
+    });
+
     return {
       props: {
         heroImages,
+        dehydratedState: dehydrate(queryClient),
       },
     };
   }, ['common']);

@@ -17,6 +17,23 @@ interface QueryOptions {
   retry?: number;
 }
 
+export const getProgramCompanyListQueryKey = (params: ProgramCompanyListParams) =>
+  [
+    ...QUERY_KEYS.GET_PROGRAM_COMPANY,
+    'list',
+    params.company_id,
+    params.skip,
+    params.limit,
+  ] as const;
+
+export const fetchProgramCompanyListQuery = (params: ProgramCompanyListParams) =>
+  getProgramCompanyList(params);
+
+export const getProgramDetailQueryKey = (programId: number) =>
+  [...QUERY_KEYS.GET_PROGRAM_DETAIL, programId] as const;
+
+export const fetchProgramDetailQuery = (programId: number) => getProgramDetail(programId);
+
 export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
   return useQuery<GetProgramCompanyResponseParams>({
     queryKey: [
@@ -32,22 +49,18 @@ export const useGetProgramCompanyQuery = (params: ProgramCompanyParams) => {
 
 export const useGetProgramCompanyListQuery = (params: ProgramCompanyListParams) => {
   return useQuery<ProgramCompanyListResponse>({
-    queryKey: [
-      ...QUERY_KEYS.GET_PROGRAM_COMPANY,
-      'list',
-      params.company_id,
-      params.skip,
-      params.limit,
-    ],
-    queryFn: () => getProgramCompanyList(params),
+    queryKey: getProgramCompanyListQueryKey(params),
+    queryFn: () => fetchProgramCompanyListQuery(params),
     enabled: !!params.company_id,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 };
 
 export const useGetProgramDetailQuery = (programId: number, options?: QueryOptions) => {
   return useQuery<GetProgramDetailResponse>({
-    queryKey: [...QUERY_KEYS.GET_PROGRAM_DETAIL, programId],
-    queryFn: () => getProgramDetail(programId),
+    queryKey: getProgramDetailQueryKey(programId),
+    queryFn: () => fetchProgramDetailQuery(programId),
     enabled: options?.enabled ?? !!programId,
     initialData: options?.initialData,
     staleTime: options?.staleTime ?? 1000 * 60 * 10,
