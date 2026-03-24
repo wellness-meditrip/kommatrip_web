@@ -1,4 +1,4 @@
-import type { MetaProps } from './meta.types';
+import type { JsonLd, MetaProps } from './meta.types';
 import { buildLocaleAlternates, buildTitle, normalizeMetaPath } from './meta.utils';
 import type { PagePolicyName } from './page-policy';
 import { PAGE_POLICIES } from './page-policy';
@@ -11,6 +11,7 @@ interface CreateMetaParams {
   image?: string;
   noindex?: boolean;
   policy?: PagePolicyName;
+  jsonLd?: JsonLd[];
 }
 
 export function createPageMeta({
@@ -21,6 +22,7 @@ export function createPageMeta({
   image = '/og/OG_image.jpg',
   noindex = false,
   policy = 'public-discovery',
+  jsonLd,
 }: CreateMetaParams): MetaProps {
   const resolvedSiteName = process.env.NEXT_PUBLIC_SITE_NAME ?? '';
   const resolvedSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? '';
@@ -46,5 +48,6 @@ export function createPageMeta({
     alternates: resolvedPolicy.includeAlternates
       ? buildLocaleAlternates(resolvedSiteUrl.replace(/\/$/, ''), normalizedPath)
       : undefined,
+    jsonLd,
   };
 }
