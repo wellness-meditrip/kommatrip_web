@@ -16,7 +16,7 @@ import {
   PageErrorEmpty,
   CompanyCardSkeletonList,
 } from '@/components';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildCompanyListJsonLd, createPageMeta } from '@/seo';
 import type { GetServerSideProps } from 'next';
 import {
   fetchCompanySearchQuery,
@@ -64,13 +64,7 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
   const metaKeyword = rawKeyword.trim();
   const metaDescription = metaKeyword ? `${metaKeyword} - ${t('list.title')}` : appDescription;
   const ogImage = '/og/OG_image.jpg';
-  const meta = createPageMeta({
-    keyword: metaKeyword || undefined,
-    pageTitle: t('title'),
-    description: metaDescription,
-    path: router.asPath || initialCanonicalPath,
-    image: ogImage,
-  });
+  const listPagePath = initialCanonicalPath;
   const [inputValue, setInputValue] = useState(initialKeyword);
   const [keyword, setKeyword] = useState(initialKeyword);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -225,6 +219,24 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
       })
     );
   }, [companies, keyword, selectedCategories]);
+  const jsonLd = filteredCompanies.length
+    ? buildCompanyListJsonLd({
+        companies: filteredCompanies,
+        locale: currentLocale,
+        pagePath: listPagePath,
+        homeLabel: tCommon('app.name'),
+        companyListLabel: t('title'),
+        pageTitle: metaKeyword ? `${metaKeyword} - ${t('list.title')}` : t('list.title'),
+      })
+    : undefined;
+  const meta = createPageMeta({
+    keyword: metaKeyword || undefined,
+    pageTitle: t('title'),
+    description: metaDescription,
+    path: listPagePath,
+    image: ogImage,
+    jsonLd,
+  });
 
   const hasActiveFilters =
     keyword.trim().length > 0 || selectedCategories.length > 0 || Boolean(selectedRange.start);

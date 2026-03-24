@@ -12,7 +12,7 @@ import {
   CompanyList,
   CompanyCardSkeletonList,
 } from '@/components';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildHomeJsonLd, createPageMeta } from '@/seo';
 import { useMediaQuery, useAuthState } from '@/hooks';
 import {
   fetchRecommendedCompanyQuery,
@@ -27,6 +27,7 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 import { withI18nGssp } from '@/i18n/page-props';
+import { useCurrentLocale } from '@/i18n/navigation';
 import { createQueryClient } from '@/providers';
 
 interface HomePageProps {
@@ -50,6 +51,7 @@ const getRecentCount = (value: unknown) => {
 export default function HomePage({ heroImages }: HomePageProps) {
   const router = useRouter();
   const t = useTranslations('common');
+  const currentLocale = useCurrentLocale();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { isAuthenticated } = useAuthState();
@@ -65,11 +67,20 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const appDescription = t('app.description');
   const pageTitle = `${appName} | ${appTitle}`;
   const ogImagePath = '/og/OG_image.jpg';
+  const homePath = router.asPath || `/${currentLocale}`;
+  const jsonLd = buildHomeJsonLd({
+    locale: currentLocale,
+    path: homePath,
+    siteName: appName,
+    description: appDescription,
+    image: ogImagePath,
+  });
   const meta = createPageMeta({
     pageTitle,
     description: appDescription,
-    path: router.asPath || '/',
+    path: homePath,
     image: ogImagePath,
+    jsonLd,
   });
 
   // 최근 본 업체 조회
