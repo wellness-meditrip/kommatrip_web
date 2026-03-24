@@ -7,6 +7,7 @@ export {
   getPrivateI18nServerSideProps,
   getPrivateI18nStaticProps,
   getPublicUtilityI18nStaticProps,
+  getSystemI18nStaticProps,
   withI18nGsp,
   withI18nGssp,
   type I18nPageProps,

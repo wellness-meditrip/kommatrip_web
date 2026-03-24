@@ -130,7 +130,7 @@ const resolveContextPolicy = (
     return resolvePagePolicy(context.resolvedUrl).name;
   }
 
-  return 'system';
+  return 'public-discovery';
 };
 
 export const withI18nGssp = <P extends object>(
@@ -227,6 +227,9 @@ export const getPrivateI18nStaticProps = (namespaces?: readonly string[]) =>
 
 export const getPrivateI18nServerSideProps = (namespaces?: readonly string[]) =>
   getI18nServerSideProps(namespaces, { pagePolicy: 'private-app' });
+
+export const getSystemI18nStaticProps = (namespaces?: readonly string[]) =>
+  getI18nStaticProps(namespaces, { pagePolicy: 'system' });
 
 export const getAdminI18nStaticProps = (namespaces?: readonly string[]) =>
   getI18nStaticProps(namespaces, { pagePolicy: 'admin' });
