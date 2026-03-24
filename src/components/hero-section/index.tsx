@@ -74,6 +74,7 @@ export function HeroSection({
             fill
             sizes="100vw"
             priority={currentIndex === 0}
+            fetchPriority={currentIndex === 0 ? 'high' : undefined}
             quality={75}
             css={[image, !isCurrentImageReady && settledImage && hiddenImage]}
             onLoadingComplete={handleCurrentImageLoad}
