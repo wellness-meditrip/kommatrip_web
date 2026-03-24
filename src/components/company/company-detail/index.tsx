@@ -87,6 +87,8 @@ export default function CompanyDetail({
           src={currentImageUrl}
           alt={`${companyName} 프로필 이미지`}
           fallbackText={t('infoPending')}
+          priority={currentImageIndex === 0}
+          quality={75}
         />
         {imageList.length > 1 && (
           <>

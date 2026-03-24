@@ -26,6 +26,11 @@ import type { CompanyDetail as CompanyDetailType } from '@/models';
 import { withI18nGssp } from '@/i18n/page-props';
 import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
+import {
+  isOptimizableImage,
+  normalizeSafeImageSrc,
+  shouldBypassNextImageOptimization,
+} from '@/utils/image';
 import { resolvePrice } from '@/utils/price';
 import { createQueryClient } from '@/providers';
 
@@ -125,45 +130,36 @@ export default function ProgramDetailPage({
 
   const displayImageUrl = useMemo(() => {
     if (!program) return '/default.png';
-    const primaryImageUrl = program.primary_image_url || '';
-    const fallbackImageUrl = program.image_urls?.[0] || '';
+    const primaryImageUrl = normalizeSafeImageSrc(program.primary_image_url);
+    const fallbackImageUrl = normalizeSafeImageSrc(program.image_urls?.[0]);
     return primaryImageUrl || fallbackImageUrl || '/default.png';
   }, [program]);
 
   const detailImageUrl = useMemo(() => {
     if (!program) return '';
-    return program.primary_image_url || '';
-  }, [program]);
+    const detailCandidates = [program.primary_image_url, ...(program.image_urls ?? [])]
+      .map((imageUrl) => normalizeSafeImageSrc(imageUrl))
+      .filter(Boolean);
+    return detailCandidates.find((imageUrl) => imageUrl !== displayImageUrl) ?? '';
+  }, [displayImageUrl, program]);
 
-  const [imageSrc, setImageSrc] = useState('/default.png');
-  const [detailImageSrc, setDetailImageSrc] = useState('');
-  const isSasImage = imageSrc?.includes('meditripstorage.blob.core.windows.net')
-    ? imageSrc.includes('sig=')
-    : false;
-  const isOptimizableImage = (url: string) => {
-    if (!url) return false;
-    if (url.startsWith('/')) return true;
-    try {
-      const parsedUrl = new URL(url);
-      if (parsedUrl.protocol !== 'https:') return false;
-      return [
-        'drive.google.com',
-        'meditrip.s3.ap-northeast-2.amazonaws.com',
-        'meditripstorage.blob.core.windows.net',
-      ].includes(parsedUrl.hostname);
-    } catch {
-      return false;
-    }
-  };
-  const shouldUseNextImage = isOptimizableImage(imageSrc);
+  const [hasMainImageError, setHasMainImageError] = useState(false);
+  const [hasDetailImageError, setHasDetailImageError] = useState(false);
 
   useEffect(() => {
-    setImageSrc(displayImageUrl);
+    setHasMainImageError(false);
   }, [displayImageUrl]);
 
   useEffect(() => {
-    setDetailImageSrc(detailImageUrl);
+    setHasDetailImageError(false);
   }, [detailImageUrl]);
+
+  const mainImageSrc = hasMainImageError ? '/default.png' : displayImageUrl;
+  const detailImageSrc = hasDetailImageError ? '' : detailImageUrl;
+  const shouldUseNextImage = isOptimizableImage(mainImageSrc);
+  const shouldUseNextDetailImage = isOptimizableImage(detailImageSrc);
+  const shouldBypassMainImageOptimization = shouldBypassNextImageOptimization(mainImageSrc);
+  const shouldBypassDetailImageOptimization = shouldBypassNextImageOptimization(detailImageSrc);
 
   if (error) {
     console.error('[ProgramDetailPage] program detail query error', error);
@@ -226,23 +222,25 @@ export default function ProgramDetailPage({
                 <div css={imageSection}>
                   {shouldUseNextImage ? (
                     <Image
-                      src={imageSrc}
+                      src={mainImageSrc}
                       alt={t('imageAlt')}
                       width={1200}
                       height={800}
-                      sizes="100vw"
-                      quality={90}
+                      sizes="(max-width: 1023px) 100vw, 420px"
+                      quality={80}
                       priority
-                      unoptimized={isSasImage}
+                      unoptimized={shouldBypassMainImageOptimization}
                       css={mainImage}
-                      onError={() => setImageSrc('/default.png')}
+                      onError={() => setHasMainImageError(true)}
                     />
                   ) : (
                     <img
-                      src={imageSrc}
+                      src={mainImageSrc}
                       alt={t('imageAlt')}
+                      loading="eager"
+                      fetchPriority="high"
                       css={mainImage}
-                      onError={() => setImageSrc('/default.png')}
+                      onError={() => setHasMainImageError(true)}
                     />
                   )}
                 </div>
@@ -299,14 +297,28 @@ export default function ProgramDetailPage({
                     </Text>
                   </div>
                   <div css={detailsCard}>
-                    {detailImageSrc && (
-                      <img
-                        src={detailImageSrc}
-                        alt={t('detailImageAlt')}
-                        css={detailsImage}
-                        onError={() => setDetailImageSrc('')}
-                      />
-                    )}
+                    {detailImageSrc &&
+                      (shouldUseNextDetailImage ? (
+                        <Image
+                          src={detailImageSrc}
+                          alt={t('detailImageAlt')}
+                          width={360}
+                          height={280}
+                          sizes="(max-width: 640px) 100vw, 180px"
+                          quality={70}
+                          unoptimized={shouldBypassDetailImageOptimization}
+                          css={detailsImage}
+                          onError={() => setHasDetailImageError(true)}
+                        />
+                      ) : (
+                        <img
+                          src={detailImageSrc}
+                          alt={t('detailImageAlt')}
+                          loading="lazy"
+                          css={detailsImage}
+                          onError={() => setHasDetailImageError(true)}
+                        />
+                      ))}
                     <Text typo="body_M" color="text_secondary" css={detailsTextStyle}>
                       {detailsText || t('infoPending')}
                     </Text>
