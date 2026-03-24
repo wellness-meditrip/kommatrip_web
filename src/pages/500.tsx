@@ -6,7 +6,7 @@ import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getI18nStaticProps } from '@/i18n/page-props';
+import { getSystemI18nStaticProps } from '@/i18n/page-props';
 
 export default function ServerErrorPage() {
   const router = useRouter();
@@ -66,4 +66,4 @@ const action = css`
   margin-top: 16px;
 `;
 
-export const getStaticProps = getI18nStaticProps(['common']);
+export const getStaticProps = getSystemI18nStaticProps(['common']);

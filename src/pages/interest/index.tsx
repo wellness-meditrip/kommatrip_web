@@ -19,7 +19,7 @@ import type { Gender, AgeGroup } from '@/models/auth';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nStaticProps } from '@/i18n/page-props';
 
 // 관심사 옵션
 const INTEREST_OPTIONS = [
@@ -370,4 +370,4 @@ const submitButtonStyle = css`
   }
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['interest']);
+export const getStaticProps = getPrivateI18nStaticProps(['interest']);

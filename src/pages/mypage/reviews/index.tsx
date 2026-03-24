@@ -4,10 +4,10 @@ import { Layout } from '@/components/layout';
 import { useTranslations } from 'next-intl';
 import { MyReviewsPanel } from '@/components/mypage/reviews-panel';
 import { Meta, createPageMeta } from '@/seo';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nStaticProps } from '@/i18n/page-props';
 
 // 내가 작성한 리뷰 조회
-export default function MyPage() {
+export default function MyReviewsPage() {
   const router = useRouter();
   const tMypage = useTranslations('mypage');
   const tCommon = useTranslations('common');
@@ -34,4 +34,4 @@ export default function MyPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['mypage', 'review', 'review-list']);
+export const getStaticProps = getPrivateI18nStaticProps(['mypage', 'review', 'review-list']);

@@ -39,7 +39,7 @@ import {
 import { Loading } from '@/components/common';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { ROUTES } from '@/constants';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 export default function ReviewEditPage() {
   const [reviewText, setReviewText] = useState<string>('');
@@ -55,7 +55,6 @@ export default function ReviewEditPage() {
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
 
-  // URL에서 review_id 가져오기
   const reviewId = Number(router.query.reviewId);
 
   const { data: myReviewsResponse, isLoading: isLoadingReview } = useGetMyReviewsQuery({
@@ -67,12 +66,10 @@ export default function ReviewEditPage() {
     [myReviewsResponse, reviewId]
   );
 
-  // 리뷰 수정 mutation
   const { mutateAsync: updateReview, isPending: isUpdating } = useUpdateMyReviewMutation();
   const { mutateAsync: replaceImages, isPending: isReplacingImages } =
     useReplaceReviewImagesMutation();
 
-  // 리뷰 데이터가 로드되면 폼에 설정
   useEffect(() => {
     if (reviewData) {
       setReviewText(reviewData.content);
@@ -117,7 +114,7 @@ export default function ReviewEditPage() {
       }
 
       showToast({ title: t('updateSuccess') });
-      router.push(ROUTES.MYPAGE_REVIEWS);
+      router.push(`/${currentLocale}${ROUTES.MYPAGE_REVIEWS}`);
     } catch (error: unknown) {
       showErrorDialog(error, {
         title: t('updateFail'),
@@ -342,4 +339,8 @@ export default function ReviewEditPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['review', 'review-list']);
+export const getServerSideProps = getPrivateI18nServerSideProps([
+  'review',
+  'review-form',
+  'review-list',
+]);

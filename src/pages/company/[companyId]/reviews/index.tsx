@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { css } from '@emotion/react';
+import { dehydrate } from '@tanstack/react-query';
 import { AppBar, Loading, Text, Empty } from '@/components';
 import { Layout } from '@/components/layout';
 import { Check, ReviewAi } from '@/icons';
 import { theme } from '@/styles';
 import { useIntersectionLoad } from '@/hooks/review';
 import { useGetGuestCompanyReviewsInfiniteQuery } from '@/queries/review';
+import { createGuestCompanyReviewsInfiniteQueryOptions } from '@/queries/review';
 import { Card } from '@/components/reviews/card';
 import { TagFilterButton } from '@/components/reviews';
 import { useTranslations } from 'next-intl';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { withI18nGssp } from '@/i18n/page-props';
 import { useAuthStore } from '@/store/auth';
+import { createQueryClient } from '@/providers';
 
 export default function CompanyReviewListPage() {
   const router = useRouter();
@@ -316,4 +319,31 @@ const emptyState = css`
   text-align: center;
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['review-list', 'review']);
+export const getServerSideProps = withI18nGssp(
+  async ({ params }) => {
+    const companyIdParam = params?.companyId;
+    const rawCompanyId = Array.isArray(companyIdParam) ? companyIdParam[0] : companyIdParam;
+    const companyId = Number(rawCompanyId);
+
+    if (!companyId || Number.isNaN(companyId)) {
+      return { notFound: true };
+    }
+
+    const queryClient = createQueryClient();
+    const initialParams = {
+      companyId,
+      limit: 20,
+    };
+
+    await queryClient.prefetchInfiniteQuery(
+      createGuestCompanyReviewsInfiniteQueryOptions(initialParams)
+    );
+
+    return {
+      props: {
+        dehydratedState: dehydrate(queryClient),
+      },
+    };
+  },
+  ['review-list', 'review']
+);

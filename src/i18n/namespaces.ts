@@ -24,7 +24,6 @@ export const MESSAGE_NAMESPACES = [
   'map',
   'mypage',
   'notification',
-  'packages',
   'payment',
   'program',
   'program-detail',

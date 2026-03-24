@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppBar, Layout, Text, RoundButton } from '@/components';
 import { useToast, useErrorHandler } from '@/hooks';
+import { useAuthState } from '@/hooks/auth/use-auth-state';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -33,26 +34,21 @@ import {
 import { ReviewInputCard } from '@/components/reviews';
 import { usePostClinicReviewMutation } from '@/queries';
 import { Loading } from '@/components/common';
+import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/auth';
 import { useGetReservationDetailQuery } from '@/queries/reservation';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
+import { normalizeReservationStatus } from '@/utils/reservation-policy';
 
-interface ReviewDraft {
-  reservationId?: number;
-  companyId?: number;
-  programId?: number;
-  companyName?: string;
-  programName?: string;
-  schedule?: string;
-  programImage?: string;
-}
+const getRouteParam = (value: string | string[] | undefined) => {
+  return Array.isArray(value) ? value[0] : value;
+};
 
-export default function ReviewPage() {
+export default function BookingReviewCreatePage() {
   const [reviewText, setReviewText] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [reviewDraft, setReviewDraft] = useState<ReviewDraft | null>(null);
   const [aiConsentChecked, setAiConsentChecked] = useState(false);
 
   const router = useRouter();
@@ -64,30 +60,41 @@ export default function ReviewPage() {
   const currentLocale = useCurrentLocale();
   const locale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const accessToken = useAuthStore((state) => state.accessToken);
+  const { isLoading: isAuthLoading } = useAuthState();
+  const hasRedirectedRef = useRef(false);
 
-  const reservationId = reviewDraft?.reservationId;
-  const programId = reviewDraft?.programId;
-  const parsedReservationId =
-    typeof reservationId === 'number' ? reservationId : Number(reservationId);
-  const { data: reservationDetailResponse } = useGetReservationDetailQuery(
-    parsedReservationId,
-    Boolean(parsedReservationId && accessToken)
-  );
+  const parsedReservationId = useMemo(() => {
+    const reservationId = getRouteParam(router.query.reservationId);
+    const parsed = Number(reservationId);
+    return Number.isFinite(parsed) ? parsed : NaN;
+  }, [router.query.reservationId]);
+  const isValidReservationId = Number.isInteger(parsedReservationId) && parsedReservationId > 0;
+  const shouldFetchReservationDetail =
+    router.isReady && isValidReservationId && !isAuthLoading && Boolean(accessToken);
+
+  const {
+    data: reservationDetailResponse,
+    error: reservationDetailError,
+    isLoading: isReservationDetailLoading,
+  } = useGetReservationDetailQuery(parsedReservationId, shouldFetchReservationDetail);
+
   const reservationDetail = reservationDetailResponse
     ? 'reservation' in reservationDetailResponse
       ? reservationDetailResponse.reservation
       : reservationDetailResponse
     : undefined;
-  const resolvedReservationId = parsedReservationId || reservationDetail?.id;
-  const resolvedProgramId = programId ?? reservationDetail?.program_id;
+  const resolvedProgramId = reservationDetail?.program_id ?? reservationDetail?.program_info?.id;
+  const fallbackBookingPath = isValidReservationId
+    ? ROUTES.BOOKINGS_DETAIL(parsedReservationId)
+    : ROUTES.BOOKINGS;
 
-  const displayRecipient = reviewDraft?.companyName ?? reservationDetail?.company_address ?? '-';
-  const displayShop = reservationDetail?.program_info?.name ?? reviewDraft?.programName ?? '-';
-  const displaySchedule = reservationDetail?.visit_date ?? reviewDraft?.schedule ?? '-';
+  const displayRecipient = reservationDetail?.company_address ?? '-';
+  const displayShop = reservationDetail?.program_info?.name ?? '-';
+  const displaySchedule = reservationDetail?.visit_date ?? '-';
   const programImageFromApi =
     reservationDetail?.program_info?.primary_image_url ||
     reservationDetail?.program_info?.image_urls?.[0];
-  const displayImage = programImageFromApi || reviewDraft?.programImage || '/default.png';
+  const displayImage = programImageFromApi || '/default.png';
 
   const formattedSchedule = useMemo(() => {
     if (!displaySchedule || displaySchedule === '-') return '-';
@@ -157,6 +164,20 @@ export default function ReviewPage() {
     );
   };
 
+  const redirectToBookingPage = useCallback(
+    (message?: string) => {
+      if (hasRedirectedRef.current) return;
+      hasRedirectedRef.current = true;
+
+      if (message) {
+        showToast({ title: message, icon: 'exclaim' });
+      }
+
+      void router.replace(`/${currentLocale}${fallbackBookingPath}`);
+    },
+    [currentLocale, fallbackBookingPath, router, showToast]
+  );
+
   const validateForm = () => {
     if (!reviewText || selectedTags.length === 0) {
       alert(t('missingFields'));
@@ -168,7 +189,7 @@ export default function ReviewPage() {
       return false;
     }
 
-    if (!resolvedReservationId || !resolvedProgramId) {
+    if (!isValidReservationId || !resolvedProgramId) {
       alert(t('missingReservation'));
       return false;
     }
@@ -182,22 +203,46 @@ export default function ReviewPage() {
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const stored = window.sessionStorage.getItem('review_draft');
-    if (!stored) return;
-    try {
-      setReviewDraft(JSON.parse(stored));
-    } catch {
-      window.sessionStorage.removeItem('review_draft');
+    if (!router.isReady || isAuthLoading) return;
+
+    if (!isValidReservationId) {
+      redirectToBookingPage(t('missingReservation'));
+      return;
     }
-  }, []);
+
+    if (!accessToken) {
+      redirectToBookingPage(t('missingReservation'));
+      return;
+    }
+
+    if (isReservationDetailLoading) return;
+
+    if (reservationDetailError || !reservationDetail) {
+      redirectToBookingPage(t('missingReservation'));
+      return;
+    }
+
+    if (normalizeReservationStatus(reservationDetail.status) !== 'completed') {
+      redirectToBookingPage(t('completedReservationOnly'));
+    }
+  }, [
+    accessToken,
+    isAuthLoading,
+    isReservationDetailLoading,
+    isValidReservationId,
+    redirectToBookingPage,
+    reservationDetail,
+    reservationDetailError,
+    router.isReady,
+    t,
+  ]);
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
     try {
       const body = new FormData();
-      body.append('reservation_id', String(resolvedReservationId));
+      body.append('reservation_id', String(parsedReservationId));
       body.append('program_id', String(resolvedProgramId));
       body.append('ai_consent', String(aiConsentChecked));
       body.append('content', reviewText);
@@ -215,7 +260,6 @@ export default function ReviewPage() {
               ? String(response.message)
               : t('createSuccess');
           showToast({ title: successMessage });
-          // 성공 시 메인 페이지로 이동
           router.push(`/${currentLocale}`);
         },
         onError: (error: unknown) => {
@@ -240,9 +284,9 @@ export default function ReviewPage() {
         title={t('createTitle')}
       />
       <div css={pageWrapper}>
-        {isPending ? (
+        {!router.isReady || isAuthLoading || isReservationDetailLoading || isPending ? (
           <div css={loadingContainer}>
-            <Loading title={t('creating')} fullHeight={true} />
+            <Loading title={isPending ? t('creating') : t('loading')} fullHeight={true} />
           </div>
         ) : (
           <>
@@ -367,4 +411,8 @@ export default function ReviewPage() {
   );
 }
 
-export const getServerSideProps = getI18nServerSideProps(['review', 'review-list']);
+export const getServerSideProps = getPrivateI18nServerSideProps([
+  'review',
+  'review-form',
+  'review-list',
+]);

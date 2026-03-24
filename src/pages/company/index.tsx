@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import debounce from 'lodash.debounce';
 import { useEffect, useMemo, useState } from 'react';
+import { dehydrate } from '@tanstack/react-query';
 import { AppBar } from '@/components/app-bar';
 import { Layout } from '@/components/layout';
 import {
@@ -15,9 +16,13 @@ import {
   PageErrorEmpty,
   CompanyCardSkeletonList,
 } from '@/components';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildCompanyListJsonLd, createPageMeta } from '@/seo';
 import type { GetServerSideProps } from 'next';
-import { useGetCompanySearchQuery } from '@/queries/company';
+import {
+  fetchCompanySearchQuery,
+  getCompanySearchQueryKey,
+  useGetCompanySearchQuery,
+} from '@/queries/company';
 import { ROUTES } from '@/constants/commons/routes';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -29,6 +34,7 @@ import { useMediaQuery } from '@/hooks';
 import { GnbCalendarActive, GnbSearchActive } from '@/icons';
 import { CATEGORIES } from '@/constants/commons/categories';
 import { withI18nGssp } from '@/i18n/page-props';
+import { createQueryClient } from '@/providers';
 
 interface CompanyPageProps {
   initialKeyword: string;
@@ -58,13 +64,7 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
   const metaKeyword = rawKeyword.trim();
   const metaDescription = metaKeyword ? `${metaKeyword} - ${t('list.title')}` : appDescription;
   const ogImage = '/og/OG_image.jpg';
-  const meta = createPageMeta({
-    keyword: metaKeyword || undefined,
-    pageTitle: t('title'),
-    description: metaDescription,
-    path: router.asPath || initialCanonicalPath,
-    image: ogImage,
-  });
+  const listPagePath = initialCanonicalPath;
   const [inputValue, setInputValue] = useState(initialKeyword);
   const [keyword, setKeyword] = useState(initialKeyword);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -219,6 +219,24 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
       })
     );
   }, [companies, keyword, selectedCategories]);
+  const jsonLd = filteredCompanies.length
+    ? buildCompanyListJsonLd({
+        companies: filteredCompanies,
+        locale: currentLocale,
+        pagePath: listPagePath,
+        homeLabel: tCommon('app.name'),
+        companyListLabel: t('title'),
+        pageTitle: metaKeyword ? `${metaKeyword} - ${t('list.title')}` : t('list.title'),
+      })
+    : undefined;
+  const meta = createPageMeta({
+    keyword: metaKeyword || undefined,
+    pageTitle: t('title'),
+    description: metaDescription,
+    path: listPagePath,
+    image: ogImage,
+    jsonLd,
+  });
 
   const hasActiveFilters =
     keyword.trim().length > 0 || selectedCategories.length > 0 || Boolean(selectedRange.start);
@@ -552,11 +570,43 @@ export const getServerSideProps: GetServerSideProps<CompanyPageProps> =
     async ({ query, resolvedUrl }) => {
       const q = typeof query.q === 'string' ? query.q.trim() : '';
       const canonicalPath = resolvedUrl.split('?')[0] || '/company';
+      const queryClient = createQueryClient();
+      const selectedCategories =
+        typeof query.categories === 'string' ? query.categories.split(',').filter(Boolean) : [];
+      const searchParams = {
+        search_term: q,
+        tags: selectedCategories.length > 0 ? selectedCategories : null,
+        location: null,
+        skip: 0,
+        limit: 20,
+        date: typeof query.date === 'string' ? query.date : undefined,
+        endDate: typeof query.endDate === 'string' ? query.endDate : undefined,
+      };
+      const recommendedSearchParams = {
+        search_term: '',
+        tags: null,
+        location: null,
+        skip: 0,
+        limit: 4,
+        date: undefined,
+      };
+
+      await Promise.all([
+        queryClient.prefetchQuery({
+          queryKey: getCompanySearchQueryKey(searchParams),
+          queryFn: () => fetchCompanySearchQuery(searchParams),
+        }),
+        queryClient.prefetchQuery({
+          queryKey: getCompanySearchQueryKey(recommendedSearchParams),
+          queryFn: () => fetchCompanySearchQuery(recommendedSearchParams),
+        }),
+      ]);
 
       return {
         props: {
           initialKeyword: q,
           initialCanonicalPath: canonicalPath,
+          dehydratedState: dehydrate(queryClient),
         },
       };
     },

@@ -15,7 +15,7 @@ import {
 } from '@/components/booking-detail';
 import { ReasonModal } from '@/components/reviews/report-modal';
 import { ROUTES } from '@/constants';
-import { getI18nServerSideProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 import { useBookingDetailViewModel, useMediaQuery, useRequireAuth } from '@/hooks';
 import { useDeleteReservationMutation } from '@/queries/reservation';
 import { useAuthStore } from '@/store/auth';
@@ -72,25 +72,8 @@ export default function BookingDetailPage() {
       }
 
       if (actionKey === 'writeReview') {
-        const schedule =
-          bookingInfo.dates.length > 0
-            ? `${bookingInfo.dates[0].date ?? '-'} ${bookingInfo.dates[0].time ?? '-'}`
-            : '-';
-        if (typeof window !== 'undefined') {
-          window.sessionStorage.setItem(
-            'review_draft',
-            JSON.stringify({
-              reservationId: Number(reservationId),
-              companyId: providerInfo.id,
-              programId,
-              companyName: providerInfo.name,
-              programName: header.title,
-              schedule,
-              programImage: header.image,
-            })
-          );
-        }
-        router.push(`/${router.locale ?? 'en'}${ROUTES.REVIEW}`);
+        if (!reservationId) return;
+        router.push(`/${router.locale ?? 'en'}${ROUTES.BOOKING_REVIEW_CREATE(reservationId)}`);
         return;
       }
 
@@ -98,16 +81,7 @@ export default function BookingDetailPage() {
         setIsCancelModalOpen(true);
       }
     },
-    [
-      bookingInfo.dates,
-      header.image,
-      header.title,
-      programId,
-      providerInfo.id,
-      providerInfo.name,
-      reservationId,
-      router,
-    ]
+    [programId, providerInfo.id, reservationId, router]
   );
 
   if (isLoading || (isAuthenticated && !accessToken)) {
@@ -316,4 +290,4 @@ const statusChip = (status: BookingStatus) => css`
   `}
 `;
 
-export const getServerSideProps = getI18nServerSideProps(['booking-detail', 'reservation']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['booking-detail', 'reservation']);
