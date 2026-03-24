@@ -6,6 +6,7 @@ import { ProgramListItem } from '@/models/program';
 import { getLocaleAwarePath } from '@/seo';
 
 const basePaths = ['/', '/company'] as const;
+const PROGRAM_SITEMAP_BATCH_SIZE = 10;
 
 const escapeXml = (value: string) =>
   value
@@ -45,36 +46,49 @@ const extractPrograms = (payload: unknown): ProgramListItem[] => {
   return [];
 };
 
+const fetchProgramPaths = async (companies: Company[]) => {
+  const programPaths: string[] = [];
+
+  for (let index = 0; index < companies.length; index += PROGRAM_SITEMAP_BATCH_SIZE) {
+    const batch = companies.slice(index, index + PROGRAM_SITEMAP_BATCH_SIZE);
+    const results = await Promise.allSettled(
+      batch.map(({ id }) =>
+        getProgramCompanyList({
+          company_id: id,
+          skip: 0,
+          limit: 100,
+        })
+      )
+    );
+
+    results.forEach((result, batchIndex) => {
+      if (result.status !== 'fulfilled') {
+        return;
+      }
+
+      const companyId = batch[batchIndex]?.id;
+      if (!companyId) {
+        return;
+      }
+
+      programPaths.push(
+        ...extractPrograms(result.value).map(
+          ({ id: programId }) => `/company/${companyId}/program/${programId}`
+        )
+      );
+    });
+  }
+
+  return programPaths;
+};
+
 export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
   const lastmod = new Date().toISOString();
   const companies = extractCompanies(await getCompanyAll());
 
-  const programResults = await Promise.allSettled(
-    companies.map(({ id }) =>
-      getProgramCompanyList({
-        company_id: id,
-        skip: 0,
-        limit: 100,
-      })
-    )
-  );
-
   const dynamicPaths = companies.flatMap(({ id }) => [`/company/${id}`, `/company/${id}/reviews`]);
-  const programPaths = programResults.flatMap((result, index) => {
-    if (result.status !== 'fulfilled') {
-      return [];
-    }
-
-    const companyId = companies[index]?.id;
-    if (!companyId) {
-      return [];
-    }
-
-    return extractPrograms(result.value).map(
-      ({ id: programId }) => `/company/${companyId}/program/${programId}`
-    );
-  });
+  const programPaths = await fetchProgramPaths(companies);
 
   const paths = Array.from(new Set([...basePaths, ...dynamicPaths, ...programPaths]));
 
