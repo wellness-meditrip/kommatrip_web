@@ -1,5 +1,6 @@
 import type { JsonLd } from '../meta.types';
 import {
+  buildSameAs,
   buildSchemaId,
   getSchemaContext,
   normalizeSchemaImages,
@@ -19,7 +20,17 @@ interface CreateOrganizationSchemaParams {
   name: string;
   description?: string;
   image?: string;
+  sameAs?: string[];
 }
+
+const getOrganizationSameAs = () =>
+  buildSameAs([
+    process.env.NEXT_PUBLIC_SITE_INSTAGRAM_URL,
+    process.env.NEXT_PUBLIC_SITE_FACEBOOK_URL,
+    process.env.NEXT_PUBLIC_SITE_YOUTUBE_URL,
+    process.env.NEXT_PUBLIC_SITE_X_URL,
+    process.env.NEXT_PUBLIC_SITE_KAKAO_URL,
+  ]);
 
 export const createWebSiteSchema = ({
   path,
@@ -45,9 +56,11 @@ export const createOrganizationSchema = ({
   name,
   description,
   image,
+  sameAs,
 }: CreateOrganizationSchemaParams): JsonLd => {
   const url = toAbsoluteSchemaUrl(path);
   const images = normalizeSchemaImages([image]);
+  const resolvedSameAs = sameAs && sameAs.length > 0 ? sameAs : getOrganizationSameAs();
 
   return {
     '@context': getSchemaContext(),
@@ -56,6 +69,7 @@ export const createOrganizationSchema = ({
     url,
     name: normalizeSchemaString(name),
     description: normalizeSchemaString(description),
+    sameAs: resolvedSameAs,
     logo: images?.[0],
     image: images,
   };
