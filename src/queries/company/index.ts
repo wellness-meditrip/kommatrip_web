@@ -21,34 +21,62 @@ interface QueryOptions {
   suppressGlobalError?: boolean;
   enabled?: boolean;
   initialData?: { company: CompanyDetail };
+  staleTime?: number;
 }
+
+export const getCompanyDetailQueryKey = (companyId: number) =>
+  [...QUERY_KEYS.GET_COMPANY_DETAIL, companyId] as const;
+
+export const fetchCompanyDetailQuery = (params: GetCompanyIdRequestParams) =>
+  getCompanyDetail(params);
+
+export const getCompanySearchQueryKey = (params: SearchParams) =>
+  [
+    ...QUERY_KEYS.GET_COMPANY_SEARCH,
+    params.search_term,
+    params.tags,
+    params.location,
+    params.skip,
+    params.limit,
+    params.date ?? null,
+    params.endDate ?? null,
+  ] as const;
+
+export const fetchCompanySearchQuery = (params: SearchParams) => getCompanySearch(params);
+
+export const getRecommendedCompanyQueryKey = () => [...QUERY_KEYS.GET_RECOMMENDED_COMPANY] as const;
+
+export const fetchRecommendedCompanyQuery = async () => {
+  try {
+    const response = await getRecommendedCompany();
+    return response || { companies: [], total: 0 };
+  } catch (error) {
+    console.error('[fetchRecommendedCompanyQuery] Error:', error);
+    return { companies: [], total: 0 };
+  }
+};
 
 export const useGetCompanyDetailQuery = (
   params: GetCompanyIdRequestParams,
   options?: QueryOptions
 ) => {
   return useQuery<{ company: CompanyDetail }>({
-    queryKey: [...QUERY_KEYS.GET_COMPANY_DETAIL, params.companyId],
-    queryFn: () => getCompanyDetail(params),
+    queryKey: getCompanyDetailQueryKey(params.companyId),
+    queryFn: () => fetchCompanyDetailQuery(params),
     enabled: options?.enabled ?? !!params.companyId,
     initialData: options?.initialData,
+    staleTime: options?.staleTime ?? 1000 * 60 * 10,
+    refetchOnWindowFocus: false,
     meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
 
 export const useGetCompanySearchQuery = (params: SearchParams, options?: QueryOptions) => {
   return useQuery<GetCompanySearchResponseParams>({
-    queryKey: [
-      ...QUERY_KEYS.GET_COMPANY_SEARCH,
-      params.search_term,
-      params.tags,
-      params.location,
-      params.skip,
-      params.limit,
-      params.date,
-      params.endDate,
-    ],
-    queryFn: () => getCompanySearch(params),
+    queryKey: getCompanySearchQueryKey(params),
+    queryFn: () => fetchCompanySearchQuery(params),
+    staleTime: options?.staleTime ?? 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
     meta: options?.suppressGlobalError ? { suppressGlobalError: true } : undefined,
   });
 };
@@ -99,22 +127,13 @@ export const useGetRecentCompanyQuery = (enabled: boolean = true) => {
 
 export const useGetRecommendedCompanyQuery = () => {
   return useQuery({
-    queryKey: [...QUERY_KEYS.GET_RECOMMENDED_COMPANY],
-    queryFn: async () => {
-      try {
-        const response = await getRecommendedCompany();
-        // response가 { companies, total } 형태로 반환됨
-        return response || { companies: [], total: 0 };
-      } catch (error) {
-        // 에러 발생 시 빈 배열 반환
-        console.error('[useGetRecommendedCompanyQuery] Error:', error);
-        return { companies: [], total: 0 };
-      }
-    },
+    queryKey: getRecommendedCompanyQueryKey(),
+    queryFn: fetchRecommendedCompanyQuery,
     select: (data): GetRecommendedCompanyResponse[] => {
       // data.companies 배열 반환
       return data?.companies || [];
     },
+    staleTime: 1000 * 60 * 5,
     retry: (failureCount, error: unknown) => {
       // 404 에러나 403 에러는 재시도하지 않음
       const axiosError = error as { response?: { status?: number } };

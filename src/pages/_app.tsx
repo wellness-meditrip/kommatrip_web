@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import type { DehydratedState } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -19,6 +20,7 @@ import { Meta, createPageMeta, type MetaProps } from '@/seo';
 import { ChatbotLauncher } from '@/components';
 import { SkeletonTheme } from 'react-loading-skeleton';
 import { AdminShell } from '@/components/admin/admin-shell';
+import { PAGE_POLICIES, resolvePagePolicy, type PagePolicyName } from '@/seo/page-policy';
 
 const warnedMissingMessages = new Set<string>();
 const EMPTY_MESSAGES: Record<string, unknown> = {};
@@ -38,10 +40,15 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const isAdminRoute = router.pathname.startsWith('/admin');
   const isAdminLoginRoute = router.pathname === '/admin/login';
   const initialPageProps = pageProps as Partial<I18nPageProps>;
+  const dehydratedState = (pageProps as { dehydratedState?: DehydratedState }).dehydratedState;
   const initialLocale = initialPageProps.locale ?? routing.defaultLocale;
   const pageMessages = initialPageProps.messages as Record<string, unknown> | undefined;
   const initialMessages = pageMessages ?? EMPTY_MESSAGES;
   const pageLocale = initialPageProps.locale ?? routing.defaultLocale;
+  const routePolicyName =
+    (pageProps as { pagePolicy?: PagePolicyName }).pagePolicy ??
+    resolvePagePolicy(router.pathname).name;
+  const routePolicy = PAGE_POLICIES[routePolicyName];
   const [messageCache, setMessageCache] = useState<
     Partial<Record<Locale, Record<string, unknown>>>
   >(() => ({ [initialLocale]: initialMessages }));
@@ -87,14 +94,27 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const pageDescription =
     (messages?.common as { app?: { description?: string } } | undefined)?.app?.description ||
     defaultAppDescription;
-  const resolvedMeta: MetaProps =
-    (pageProps as { meta?: MetaProps }).meta ??
-    createPageMeta({
-      pageTitle,
-      description: pageDescription,
-      path: router.asPath || '/',
-      image: '/og/OG_image.jpg',
-    });
+  const pageMeta = (pageProps as { meta?: MetaProps }).meta;
+  const baseMeta = createPageMeta({
+    pageTitle,
+    description: pageDescription,
+    path: router.asPath || '/',
+    image: '/og/OG_image.jpg',
+    policy: routePolicyName,
+    noindex: routePolicy.noindex,
+  });
+  const resolvedMeta: MetaProps = pageMeta
+    ? {
+        ...baseMeta,
+        ...pageMeta,
+        noindex: routePolicy.noindex || pageMeta.noindex,
+        robots:
+          routePolicy.noindex || pageMeta.noindex
+            ? 'noindex,nofollow'
+            : (pageMeta.robots ?? baseMeta.robots),
+        alternates: pageMeta.alternates ?? baseMeta.alternates,
+      }
+    : baseMeta;
 
   useEffect(() => {
     if (!gtmId) return;
@@ -157,7 +177,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           return `${prefix}${key}`;
         }}
       >
-        <QueryProvider>
+        <QueryProvider dehydratedState={dehydratedState}>
           <SkeletonTheme
             baseColor={theme.colors.gray200}
             highlightColor={theme.colors.gray100}

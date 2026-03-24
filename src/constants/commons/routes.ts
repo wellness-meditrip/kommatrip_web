@@ -18,10 +18,6 @@ export const ROUTES = {
   COMPANY_PROGRAM_DETAIL: (companyId: number, programId: number) =>
     `/company/${companyId}/program/${programId}`,
 
-  // Packages
-  PACKAGES: '/packages',
-  PACKAGES_DETAIL: (packageId: number) => `/packages/${packageId}`,
-
   // Mypage
   MYPAGE: '/mypage',
   MYPAGE_REVIEWS: '/mypage/reviews',
@@ -31,10 +27,6 @@ export const ROUTES = {
   MYPAGE_SETTINGS: '/mypage/settings',
   MYPAGE_PAYMENTS: '/mypage/payments',
 
-  // REVIEWS
-  REVIEW: '/review',
-  REVIEW_EDIT: '/review/edit',
-
   // RESERVATIONS
   RESERVATIONS: '/reservations',
   RESERVATIONS_PAYMENT: '/reservations/payment',
@@ -43,6 +35,10 @@ export const ROUTES = {
   RESERVATIONS_PAYMENT_PENDING: '/reservations/payment/pending',
   BOOKINGS: '/bookings',
   BOOKINGS_DETAIL: (reservationId: number | string) => `/bookings/${reservationId}`,
+  BOOKING_REVIEW_CREATE: (reservationId: number | string) => `/bookings/${reservationId}/review`,
+
+  // REVIEWS
+  REVIEW_EDIT: (reviewId: number | string) => `/mypage/reviews/${reviewId}`,
 
   // INTEREST
   INTEREST: '/interest',

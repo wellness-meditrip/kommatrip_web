@@ -16,6 +16,17 @@ import {
   PostCreateReservationResponse,
 } from '@/models/reservation';
 
+export const getReservationsQueryKey = (params: GetReservationsParams) =>
+  [
+    ...QUERY_KEYS.GET_RESERVATIONS,
+    params.skip ?? 0,
+    params.limit ?? 20,
+    params.status ?? null,
+  ] as const;
+
+export const getReservationDetailQueryKey = (reservationId: number | string) =>
+  [...QUERY_KEYS.GET_RESERVATIONS, reservationId, 'detail'] as const;
+
 export const usePostCreateReservationMutation = () => {
   return useMutation<PostCreateReservationResponse, Error, PostCreateReservationRequest>({
     mutationKey: QUERY_KEYS.CREATE_RESERVATION,
@@ -25,7 +36,7 @@ export const usePostCreateReservationMutation = () => {
 
 export const useGetReservationsQuery = (params: GetReservationsParams, enabled: boolean = true) => {
   return useQuery<GetReservationsResponse>({
-    queryKey: [...QUERY_KEYS.GET_RESERVATIONS, params.skip, params.limit, params.status],
+    queryKey: getReservationsQueryKey(params),
     queryFn: () => getReservations(params),
     enabled,
   });
@@ -36,7 +47,7 @@ export const useGetReservationDetailQuery = (
   enabled: boolean = true
 ) => {
   return useQuery<GetReservationDetailResponse>({
-    queryKey: [...QUERY_KEYS.GET_RESERVATIONS, reservationId, 'detail'],
+    queryKey: getReservationDetailQueryKey(reservationId),
     queryFn: () => getReservationDetail(reservationId),
     enabled,
   });
