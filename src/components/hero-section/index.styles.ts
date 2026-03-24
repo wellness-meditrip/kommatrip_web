@@ -34,6 +34,12 @@ export const slide = (isActive: boolean) => css`
 export const image = css`
   object-fit: cover;
   object-position: center;
+
+  transition: opacity 400ms ease;
+`;
+
+export const hiddenImage = css`
+  opacity: 0;
 `;
 
 export const overlay = css`
@@ -169,13 +175,19 @@ export const progressTrack = css`
   }
 `;
 
-export const progressFill = (ratio: number) => css`
-  width: ${Math.min(Math.max(ratio, 0), 1) * 100}%;
+export const progressFill = (ratio: number, shouldAnimate: boolean, durationMs: number) => css`
+  transform: scaleX(${Math.min(Math.max(ratio, 0), 1)});
+
+  width: 100%;
   height: 100%;
 
   background: ${theme.colors.white};
 
-  transition: width 350ms ease;
+  transition: ${shouldAnimate
+    ? `transform ${durationMs}ms cubic-bezier(0.22, 1, 0.36, 1) `
+    : 'none'};
+  transform-origin: left center;
+  will-change: transform;
 `;
 
 export const progressCount = css`
