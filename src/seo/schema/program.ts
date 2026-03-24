@@ -17,6 +17,18 @@ interface CreateProgramSchemaParams {
   companyPath?: string;
 }
 
+const resolveOfferAvailability = (program: ProgramDetail) => {
+  if (program.is_active && normalizeSchemaString(program.status)?.toLowerCase() === 'active') {
+    return 'https://schema.org/InStock';
+  }
+
+  if (!program.is_active) {
+    return 'https://schema.org/OutOfStock';
+  }
+
+  return 'https://schema.org/LimitedAvailability';
+};
+
 const buildOffer = ({ program, path }: Pick<CreateProgramSchemaParams, 'program' | 'path'>) => {
   const url = toAbsoluteSchemaUrl(path);
   const krwPrice = program.price_info?.krw;
@@ -29,7 +41,13 @@ const buildOffer = ({ program, path }: Pick<CreateProgramSchemaParams, 'program'
       url,
       price: krwPrice,
       priceCurrency: 'KRW',
-      availability: 'https://schema.org/InStock',
+      availability: resolveOfferAvailability(program),
+      priceSpecification: {
+        '@type': 'PriceSpecification',
+        price: krwPrice,
+        priceCurrency: 'KRW',
+      },
+      validFrom: normalizeSchemaString(program.created_at),
     };
   }
 
@@ -40,7 +58,13 @@ const buildOffer = ({ program, path }: Pick<CreateProgramSchemaParams, 'program'
       url,
       price: usdPrice,
       priceCurrency: 'USD',
-      availability: 'https://schema.org/InStock',
+      availability: resolveOfferAvailability(program),
+      priceSpecification: {
+        '@type': 'PriceSpecification',
+        price: usdPrice,
+        priceCurrency: 'USD',
+      },
+      validFrom: normalizeSchemaString(program.created_at),
     };
   }
 
@@ -57,6 +81,16 @@ export const createProgramSchema = ({
   const images = normalizeSchemaImages([program.primary_image_url, ...(program.image_urls ?? [])]);
   const companyUrl = toAbsoluteSchemaUrl(companyPath);
   const offer = buildOffer({ program, path });
+  const provider =
+    company &&
+    ({
+      '@type': 'LocalBusiness',
+      '@id': (companyPath ? buildSchemaId(companyPath, 'localbusiness') : undefined) ?? companyUrl,
+      name: normalizeSchemaString(company.name),
+      url: companyUrl,
+      address: buildPostalAddress(company.address),
+      telephone: normalizeSchemaString(company.phone),
+    } as const);
 
   return {
     '@context': getSchemaContext(),
@@ -66,18 +100,13 @@ export const createProgramSchema = ({
     description: normalizeSchemaString(program.description),
     url,
     image: images,
-    provider: company
+    provider,
+    offers: offer
       ? {
-          '@type': 'LocalBusiness',
-          '@id':
-            (companyPath ? buildSchemaId(companyPath, 'localbusiness') : undefined) ?? companyUrl,
-          name: normalizeSchemaString(company.name),
-          url: companyUrl,
-          address: buildPostalAddress(company.address),
-          telephone: normalizeSchemaString(company.phone),
+          ...offer,
+          seller: provider,
         }
       : undefined,
-    offers: offer,
     duration:
       typeof program.duration_minutes === 'number' && program.duration_minutes > 0
         ? `PT${program.duration_minutes}M`
