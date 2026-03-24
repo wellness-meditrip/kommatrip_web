@@ -18,7 +18,7 @@ import {
   RoundButton,
   Loading,
 } from '@/components';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildCompanyDetailJsonLd, createPageMeta } from '@/seo';
 import CompanyDetail from '@/components/company/company-detail';
 import {
   fetchCompanyDetailQuery,
@@ -48,6 +48,7 @@ export default function ClinicDetailPage({
 }: ClinicDetailPageProps) {
   const router = useRouter();
   const t = useTranslations('company-detail');
+  const tCompany = useTranslations('company');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
@@ -267,11 +268,22 @@ export default function ClinicDetailPage({
   const companyDescription = company?.description?.trim() || '';
   const metaDescription = companyDescription || tCommon('app.description');
   const ogImage = company?.image_urls?.[0] || company?.primary_image_url || '/og/OG_image.jpg';
+  const jsonLd = company
+    ? buildCompanyDetailJsonLd({
+        company,
+        companyId: companyIdNumber,
+        locale: currentLocale,
+        homeLabel: tCommon('app.name'),
+        companyListLabel: tCompany('title'),
+        pageTitle,
+      })
+    : undefined;
   const meta = createPageMeta({
     pageTitle,
     description: metaDescription,
     path: router.asPath || initialCanonicalPath,
     image: ogImage,
+    jsonLd,
   });
 
   if (!company) {
@@ -562,5 +574,5 @@ export const getServerSideProps: GetServerSideProps<ClinicDetailPageProps> =
         throw error;
       }
     },
-    ['company-detail', 'program', 'review', 'common']
+    ['company', 'company-detail', 'program', 'review', 'common']
   );

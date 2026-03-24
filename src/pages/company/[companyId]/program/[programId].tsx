@@ -6,10 +6,11 @@ import { theme } from '@/styles';
 import { Text } from '@/components/text';
 import { ArrowDown, Clock, Wallet } from '@/icons';
 import { CTAButton, RoundButton, DesktopAppBar, PageErrorEmpty } from '@/components';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildProgramDetailJsonLd, createPageMeta } from '@/seo';
 import { ROUTES } from '@/constants';
 import { useEffect, useMemo, useState } from 'react';
 import { dehydrate } from '@tanstack/react-query';
+import { fetchCompanyDetailQuery } from '@/queries/company';
 import {
   fetchProgramDetailQuery,
   getProgramDetailQueryKey,
@@ -21,6 +22,7 @@ import { useAuthState, useMediaQuery } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import type { GetServerSideProps } from 'next';
 import { ProgramDetail } from '@/models/program';
+import type { CompanyDetail as CompanyDetailType } from '@/models';
 import { withI18nGssp } from '@/i18n/page-props';
 import { openLoginModal } from '@/utils/auth-modal';
 import { normalizeError } from '@/utils/error-handler';
@@ -28,19 +30,25 @@ import { resolvePrice } from '@/utils/price';
 import { createQueryClient } from '@/providers';
 
 interface ProgramDetailPageProps extends Record<string, unknown> {
+  companyId: number;
   programId: number;
   initialProgram: ProgramDetail;
   initialCanonicalPath: string;
+  schemaCompany: CompanyDetailType | null;
 }
 
 export default function ProgramDetailPage({
+  companyId,
   programId,
   initialProgram,
   initialCanonicalPath,
+  schemaCompany,
 }: ProgramDetailPageProps) {
   const router = useRouter();
   const t = useTranslations('program-detail');
+  const tCompany = useTranslations('company');
   const tCommon = useTranslations('common');
+  const currentLocale = useCurrentLocale();
   const { data, error } = useGetProgramDetailQuery(programId, {
     suppressGlobalError: true,
     initialData: { program: initialProgram },
@@ -51,28 +59,35 @@ export default function ProgramDetailPage({
   const appDescription = tCommon('app.description');
   const metaDescription = program?.description?.trim() || appDescription;
   const ogImage = program?.image_urls?.[0] || program?.primary_image_url || '/og/OG_image.jpg';
+  const jsonLd = program
+    ? buildProgramDetailJsonLd({
+        program,
+        companyId,
+        programId,
+        locale: currentLocale,
+        homeLabel: tCommon('app.name'),
+        companyListLabel: tCompany('title'),
+        pageTitle,
+        company: schemaCompany,
+      })
+    : undefined;
   const meta = createPageMeta({
     pageTitle,
     description: metaDescription,
     path: router.asPath || initialCanonicalPath,
     image: ogImage,
+    jsonLd,
   });
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const [searchValue, setSearchValue] = useState('');
-  const currentLocale = useCurrentLocale();
   const { isAuthenticated: isLoggedIn } = useAuthState();
 
   const handleReserveClick = () => {
-    const rawCompanyId = Array.isArray(router.query.companyId)
-      ? router.query.companyId[0]
-      : router.query.companyId;
     const searchParams = new URLSearchParams();
 
-    if (rawCompanyId) {
-      searchParams.set('companyId', String(rawCompanyId));
-    }
+    searchParams.set('companyId', String(companyId));
     searchParams.set('programId', String(programId));
 
     const reservationUrl = `/${currentLocale}${ROUTES.RESERVATIONS}?${searchParams.toString()}`;
@@ -377,11 +392,22 @@ export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
           return { notFound: true };
         }
 
+        let schemaCompany: CompanyDetailType | null = null;
+
+        try {
+          const companyResponse = await fetchCompanyDetailQuery({ companyId });
+          schemaCompany = companyResponse?.company ?? null;
+        } catch (schemaError) {
+          console.warn('[ProgramDetailPage] failed to load company schema data', schemaError);
+        }
+
         return {
           props: {
+            companyId,
             programId,
             initialProgram: response.program,
             initialCanonicalPath: `/company/${companyId}/program/${programId}`,
+            schemaCompany,
             dehydratedState: dehydrate(queryClient),
           },
         };
@@ -394,7 +420,7 @@ export const getServerSideProps: GetServerSideProps<ProgramDetailPageProps> =
         throw error;
       }
     },
-    ['program-detail', 'common']
+    ['company', 'program-detail', 'common']
   );
 
 const imageSection = css`
