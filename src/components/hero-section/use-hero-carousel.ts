@@ -128,7 +128,7 @@ export const useHeroCarousel = (images: string[], fallbackImage: string, autopla
       isReady: loadedImagesRef.current.has(initialImage),
       slidesLength: slidesList.length,
     });
-  }, [fallbackImage, slidesKey, slidesList]);
+  }, [fallbackImage, slidesList]);
 
   useEffect(() => {
     if (slidesList.length > 1) {
