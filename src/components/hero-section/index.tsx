@@ -60,13 +60,16 @@ export function HeroSection({
     slidesList,
     handleCurrentImageLoad,
   } = useHeroCarousel(images, FALLBACK_IMAGE, AUTOPLAY_DELAY);
+  const shouldRenderSettledLayer = Boolean(settledImage) && settledImage !== currentImage;
 
   return (
-    <section
-      css={section}
-      style={settledImage ? { backgroundImage: `url("${settledImage}")` } : undefined}
-    >
+    <section css={section}>
       <div css={slides} aria-hidden="true">
+        {shouldRenderSettledLayer && (
+          <div key={settledImage} css={slide(true)}>
+            <Image src={settledImage} alt="" fill sizes="100vw" quality={75} css={image} />
+          </div>
+        )}
         <div key={currentImage} css={slide(true)}>
           <Image
             src={currentImage}
