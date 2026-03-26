@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { AppBar } from '@/components/app-bar';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
@@ -9,6 +8,7 @@ import {
   slides,
   slide,
   image,
+  hiddenImage,
   overlay,
   content,
   headerOverlay,
@@ -21,6 +21,7 @@ import {
   progressFill,
   progressCount,
 } from './index.styles';
+import { useHeroCarousel } from './use-hero-carousel';
 
 interface HeroSectionProps {
   images: string[];
@@ -36,6 +37,7 @@ interface HeroSectionProps {
 
 const FALLBACK_IMAGE = '/images/hero/hero1.webp';
 const AUTOPLAY_DELAY = 3500;
+const PROGRESS_TRANSITION_MS = 650;
 
 export function HeroSection({
   images,
@@ -48,31 +50,39 @@ export function HeroSection({
   onBackClick,
   onSearchBarClick,
 }: HeroSectionProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const slidesList = useMemo(() => (images.length > 0 ? images : [FALLBACK_IMAGE]), [images]);
-
-  useEffect(() => {
-    if (slidesList.length < 2) return;
-    const interval = window.setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % slidesList.length);
-    }, AUTOPLAY_DELAY);
-    return () => window.clearInterval(interval);
-  }, [slidesList.length]);
-
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [slidesList]);
-
-  const backgroundImage = slidesList[0] || FALLBACK_IMAGE;
+  const {
+    currentImage,
+    currentIndex,
+    isCurrentImageReady,
+    progressRatio,
+    settledImage,
+    shouldAnimateProgress,
+    slidesList,
+    handleCurrentImageLoad,
+  } = useHeroCarousel(images, FALLBACK_IMAGE, AUTOPLAY_DELAY);
+  const shouldRenderSettledLayer = Boolean(settledImage) && settledImage !== currentImage;
 
   return (
-    <section css={section} style={{ backgroundImage: `url("${backgroundImage}")` }}>
+    <section css={section}>
       <div css={slides} aria-hidden="true">
-        {slidesList.map((src, idx) => (
-          <div key={src} css={slide(idx === currentIndex)}>
-            <Image src={src} alt="" fill sizes="100vw" priority={idx === 0} css={image} />
+        {shouldRenderSettledLayer && (
+          <div key={settledImage} css={slide(true)}>
+            <Image src={settledImage} alt="" fill sizes="100vw" quality={75} css={image} />
           </div>
-        ))}
+        )}
+        <div key={currentImage} css={slide(true)}>
+          <Image
+            src={currentImage}
+            alt=""
+            fill
+            sizes="100vw"
+            priority={currentIndex === 0}
+            fetchPriority={currentIndex === 0 ? 'high' : undefined}
+            quality={75}
+            css={[image, !isCurrentImageReady && settledImage && hiddenImage]}
+            onLoadingComplete={handleCurrentImageLoad}
+          />
+        </div>
         <div css={overlay} />
       </div>
 
@@ -111,7 +121,9 @@ export function HeroSection({
           </Text>
           <div css={progressRow}>
             <div css={progressTrack}>
-              <div css={progressFill((currentIndex + 1) / slidesList.length)} />
+              <div
+                css={progressFill(progressRatio, shouldAnimateProgress, PROGRESS_TRANSITION_MS)}
+              />
             </div>
             {!isDesktop && (
               <span css={progressCount}>
