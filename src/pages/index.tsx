@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { dehydrate, useQueryClient } from '@tanstack/react-query';
-import type { GetServerSideProps } from 'next';
+import { useQueryClient } from '@tanstack/react-query';
+import type { GetStaticProps } from 'next';
 import {
   Layout,
   HeroSection,
@@ -14,21 +14,15 @@ import {
 } from '@/components';
 import { Meta, buildHomeJsonLd, createPageMeta } from '@/seo';
 import { useMediaQuery, useAuthState } from '@/hooks';
-import {
-  fetchRecommendedCompanyQuery,
-  getRecommendedCompanyQueryKey,
-  useGetRecommendedCompanyQuery,
-  useGetRecentCompanyQuery,
-} from '@/queries/company';
+import { useGetRecommendedCompanyQuery, useGetRecentCompanyQuery } from '@/queries/company';
 import { useAuthStore } from '@/store/auth';
 import { QUERY_KEYS } from '@/queries/query-keys';
 
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
-import { withI18nGssp } from '@/i18n/page-props';
+import { withI18nGsp } from '@/i18n/page-props';
 import { useCurrentLocale } from '@/i18n/navigation';
-import { createQueryClient } from '@/providers';
 
 interface HomePageProps {
   heroImages: string[];
@@ -36,6 +30,7 @@ interface HomePageProps {
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
 const MAX_RECENT_SKELETON_COUNT = 6;
+const HOME_REVALIDATE_SECONDS = 300;
 
 const normalizeSkeletonCount = (count: number) => {
   if (count <= 0) return 0;
@@ -279,11 +274,10 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getServerSideProps: GetServerSideProps<HomePageProps> =
-  withI18nGssp<HomePageProps>(async () => {
+export const getStaticProps: GetStaticProps<HomePageProps> =
+  withI18nGsp<HomePageProps>(async () => {
     const path = await import('node:path');
     const { readdir } = await import('node:fs/promises');
-    const queryClient = createQueryClient();
 
     const dir = path.join(process.cwd(), 'public', 'images', 'hero');
     let heroImages: string[] = [];
@@ -300,15 +294,10 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> =
       heroImages = [];
     }
 
-    await queryClient.prefetchQuery({
-      queryKey: getRecommendedCompanyQueryKey(),
-      queryFn: fetchRecommendedCompanyQuery,
-    });
-
     return {
       props: {
         heroImages,
-        dehydratedState: dehydrate(queryClient),
       },
+      revalidate: HOME_REVALIDATE_SECONDS,
     };
   }, ['common']);
