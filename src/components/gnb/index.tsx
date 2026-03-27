@@ -26,9 +26,15 @@ export function GNB({ menus, activePath, onNavigate }: Props) {
   return (
     <nav css={wrapper}>
       {menus?.map((menu) => (
-        <button key={menu.path} css={menuItem} onClick={() => onNavigate?.(menu.path ?? '')}>
+        <button
+          key={menu.path}
+          type="button"
+          css={menuItem}
+          onClick={() => onNavigate?.(menu.path ?? '')}
+          aria-current={isActiveMenu(menu.path) ? 'page' : undefined}
+        >
           {isActiveMenu(menu.path) ? menu.icon.active : menu.icon.inactive}
-          <Text typo="button_S" color={isActiveMenu(menu.path) ? 'primary30' : 'primary80'}>
+          <Text typo="button_S" color={isActiveMenu(menu.path) ? 'primary50' : 'primary80'}>
             {menu.name}
           </Text>
         </button>

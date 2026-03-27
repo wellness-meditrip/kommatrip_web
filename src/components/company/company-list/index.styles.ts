@@ -75,8 +75,8 @@ export const leftButton = css`
   transform: translateY(-50%);
   z-index: 30;
 
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid ${theme.colors.border_default};
   border-radius: 50%;
 
@@ -110,8 +110,8 @@ export const rightButton = css`
   transform: translateY(-50%);
   z-index: 30;
 
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid ${theme.colors.border_default};
   border-radius: 50%;
 

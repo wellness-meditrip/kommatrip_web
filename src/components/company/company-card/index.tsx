@@ -3,6 +3,8 @@ import { Text } from '@/components/text';
 import { Location, ChevronLeftWhite } from '@/icons';
 import NextImage from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { normalizeSafeImageSrc, shouldBypassNextImageOptimization } from '@/utils/image';
+import { useTranslations } from 'next-intl';
 import {
   wrapper,
   wrapperFixedHeight,
@@ -41,6 +43,7 @@ interface Props {
   size?: 'default' | 'compact';
   images?: string[]; // 여러 이미지 배열 추가
   isExclusive?: boolean;
+  carouselDotsMode?: 'static' | 'hidden';
   onClick: (clinicId: number) => void;
 }
 
@@ -55,8 +58,10 @@ export function CompanyCard({
   size = 'default',
   images = [],
   isExclusive = false,
+  carouselDotsMode = 'static',
   onClick,
 }: Props) {
+  const t = useTranslations('common');
   const [imageError, setImageError] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const ignoreClickRef = useRef(false);
@@ -64,14 +69,16 @@ export function CompanyCard({
   const touchDeltaX = useRef(0);
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
-  const imageList = useMemo(
-    () => (images.length > 0 ? images : [companyImage]),
-    [images, companyImage]
-  );
+  const imageList = useMemo(() => {
+    const normalizedImages = [...images, companyImage]
+      .map((imageUrl) => normalizeSafeImageSrc(imageUrl))
+      .filter(Boolean);
+
+    const dedupedImages = Array.from(new Set(normalizedImages));
+    return dedupedImages.length > 0 ? dedupedImages : ['/default.png'];
+  }, [images, companyImage]);
   const currentImageUrl = imageList[currentImageIndex];
-  const isSasImage = currentImageUrl?.includes('meditripstorage.blob.core.windows.net')
-    ? currentImageUrl.includes('sig=')
-    : false;
+  const shouldBypassOptimization = shouldBypassNextImageOptimization(currentImageUrl);
 
   const handleImageError = () => {
     console.log('Image load failed, falling back to default image for:', companyName);
@@ -87,21 +94,9 @@ export function CompanyCard({
   }, [currentImageIndex]);
 
   useEffect(() => {
-    if (imageList.length < 2) return;
-
-    const nextIndex = (currentImageIndex + 1) % imageList.length;
-    const prevIndex = (currentImageIndex - 1 + imageList.length) % imageList.length;
-
-    [imageList[nextIndex], imageList[prevIndex]].forEach((url) => {
-      if (!url) return;
-      const preloadImage = new window.Image();
-      preloadImage.src = url;
-    });
-  }, [currentImageIndex, imageList]);
-
-  const handleDotClick = (index: number) => {
-    setCurrentImageIndex(index);
-  };
+    if (currentImageIndex < imageList.length) return;
+    setCurrentImageIndex(0);
+  }, [currentImageIndex, imageList.length]);
 
   const goPrevImage = () => {
     setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
@@ -178,9 +173,9 @@ export function CompanyCard({
                   alt="프로필 이미지"
                   fill
                   sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
-                  quality={90}
+                  quality={80}
                   onError={handleImageError}
-                  unoptimized={isSasImage}
+                  unoptimized={shouldBypassOptimization}
                   // onLoad={handleImageLoad}
                   css={carouselImage}
                 />
@@ -188,32 +183,32 @@ export function CompanyCard({
                 <img src="/default.png" alt="기본 이미지" css={carouselImage} />
               )}
               <button
+                type="button"
                 css={[carouselNavButton, carouselNavLeft]}
                 onClick={handlePrevImage}
-                aria-label="이전 이미지"
+                aria-label={t('button.previous')}
               >
                 <ChevronLeftWhite width={32} height={34} />
               </button>
               <button
+                type="button"
                 css={[carouselNavButton, carouselNavRight]}
                 onClick={handleNextImage}
-                aria-label="다음 이미지"
+                aria-label={t('button.next')}
               >
                 <ChevronLeftWhite width={32} height={34} style={{ transform: 'rotate(180deg)' }} />
               </button>
             </div>
-            <div css={carouselDots}>
-              {imageList.map((_, index) => (
-                <button
-                  key={index}
-                  css={index === currentImageIndex ? carouselDotActive : carouselDot}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDotClick(index);
-                  }}
-                />
-              ))}
-            </div>
+            {carouselDotsMode === 'static' && (
+              <div css={carouselDots} aria-hidden="true">
+                {imageList.map((_, index) => (
+                  <span
+                    key={index}
+                    css={index === currentImageIndex ? carouselDotActive : carouselDot}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -223,9 +218,9 @@ export function CompanyCard({
                 alt="프로필 이미지"
                 fill
                 sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
-                quality={90}
+                quality={80}
                 onError={handleImageError}
-                unoptimized={isSasImage}
+                unoptimized={shouldBypassOptimization}
                 css={carouselImage}
               />
             ) : (

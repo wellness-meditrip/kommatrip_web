@@ -27,8 +27,12 @@ export const menuItem = css`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
 
   width: 71px;
+  min-height: 48px;
+  padding: 4px 8px;
+  border-radius: 12px;
 
   white-space: nowrap;
 `;

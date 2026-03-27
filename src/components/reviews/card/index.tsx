@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { DefaultProfile, ReviewFold, ReviewUnfold, Clock, Wallet, ChevronRight } from '@/icons';
 import { ROUTES } from '@/constants';
 import { useTranslations } from 'next-intl';
+import {
+  isOptimizableImage,
+  normalizeSafeImageSrc,
+  shouldBypassNextImageOptimization,
+} from '@/utils/image';
 import {
   clampText,
   reviewerInfo,
@@ -70,6 +75,15 @@ export function Card({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const router = useRouter();
   const t = useTranslations('review');
+  const normalizedProgramImageSrc = useMemo(
+    () => normalizeSafeImageSrc(programImageUrl) || '/default.png',
+    [programImageUrl]
+  );
+  const [hasProgramImageError, setHasProgramImageError] = useState(false);
+
+  useEffect(() => {
+    setHasProgramImageError(false);
+  }, [normalizedProgramImageSrc]);
 
   const handleProgramClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
@@ -82,6 +96,9 @@ export function Card({
       ? `${new Intl.NumberFormat('en-US').format(programPrice)} KRW`
       : '';
   const formattedDuration = programDurationMinutes ? `${programDurationMinutes} mins` : '';
+  const programImageSrc = hasProgramImageError ? '/default.png' : normalizedProgramImageSrc;
+  const shouldUseNextProgramImage = isOptimizableImage(programImageSrc);
+  const shouldBypassProgramImageOptimization = shouldBypassNextImageOptimization(programImageSrc);
 
   return (
     <div css={wrapper} onClick={onCardClick}>
@@ -141,7 +158,27 @@ export function Card({
 
       {programName && (
         <div css={programCard} onClick={handleProgramClick}>
-          <img src={programImageUrl || '/default.png'} alt="program" css={programImage} />
+          {shouldUseNextProgramImage ? (
+            <Image
+              src={programImageSrc}
+              alt={programName}
+              width={56}
+              height={56}
+              sizes="56px"
+              quality={70}
+              unoptimized={shouldBypassProgramImageOptimization}
+              css={programImage}
+              onError={() => setHasProgramImageError(true)}
+            />
+          ) : (
+            <img
+              src={programImageSrc}
+              alt={programName}
+              loading="lazy"
+              css={programImage}
+              onError={() => setHasProgramImageError(true)}
+            />
+          )}
           <div css={programInfo}>
             <Text typo="title_S" color="text_primary" css={programTitle}>
               {programName}

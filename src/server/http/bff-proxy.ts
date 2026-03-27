@@ -65,6 +65,30 @@ const sendProxyError = (res: NextApiResponse, error: unknown, fallbackMessage: s
   return res.status(500).json({ message: fallbackMessage });
 };
 
+const requestJsonFromBackend = async ({
+  req,
+  method,
+  backendPath,
+  omitQueryKeys,
+  includeCookie,
+}: {
+  req: NextApiRequest;
+  method: HttpMethod;
+  backendPath: string;
+  omitQueryKeys?: string[];
+  includeCookie?: boolean;
+}) => {
+  const baseURL = getBackendBaseUrl();
+
+  return axios.request({
+    method,
+    url: `${baseURL}${backendPath}`,
+    params: toAxiosParams(req.query, omitQueryKeys),
+    data: METHODS_WITH_BODY.has(method) ? req.body : undefined,
+    headers: buildHeaders(req, { includeCookie }),
+  });
+};
+
 export const validateMethod = (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -97,13 +121,12 @@ export const proxyJsonToBackend = async ({
   errorMessage: string;
 }) => {
   try {
-    const baseURL = getBackendBaseUrl();
-    const response = await axios.request({
+    const response = await requestJsonFromBackend({
+      req,
       method,
-      url: `${baseURL}${backendPath}`,
-      params: toAxiosParams(req.query, omitQueryKeys),
-      data: METHODS_WITH_BODY.has(method) ? req.body : undefined,
-      headers: buildHeaders(req, { includeCookie }),
+      backendPath,
+      omitQueryKeys,
+      includeCookie,
     });
 
     return res.status(response.status).send(response.data);

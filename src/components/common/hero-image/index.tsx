@@ -3,6 +3,11 @@ import Image from 'next/image';
 import { css } from '@emotion/react';
 import { theme } from '@/styles';
 import { Text } from '@/components/text';
+import {
+  isOptimizableImage,
+  normalizeSafeImageSrc,
+  shouldBypassNextImageOptimization,
+} from '@/utils/image';
 
 interface HeroImageProps {
   src?: string | null;
@@ -13,41 +18,6 @@ interface HeroImageProps {
   quality?: number;
 }
 
-const OPTIMIZABLE_IMAGE_HOSTNAMES = [
-  'drive.google.com',
-  'meditrip.s3.ap-northeast-2.amazonaws.com',
-  'meditripstorage.blob.core.windows.net',
-] as const;
-
-const normalizeSafeSrc = (rawSrc?: string | null): string => {
-  const value = rawSrc?.trim() ?? '';
-  if (!value) return '';
-  if (value.startsWith('/')) return value;
-  try {
-    const parsedUrl = new URL(value);
-    if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
-      return value;
-    }
-    return '';
-  } catch {
-    return '';
-  }
-};
-
-const isOptimizableImage = (url: string) => {
-  if (!url) return false;
-  if (url.startsWith('/')) return true;
-  try {
-    const parsedUrl = new URL(url);
-    if (parsedUrl.protocol !== 'https:') return false;
-    return OPTIMIZABLE_IMAGE_HOSTNAMES.includes(
-      parsedUrl.hostname as (typeof OPTIMIZABLE_IMAGE_HOSTNAMES)[number]
-    );
-  } catch {
-    return false;
-  }
-};
-
 export function HeroImage({
   src,
   alt,
@@ -56,46 +26,52 @@ export function HeroImage({
   priority = true,
   quality = 80,
 }: HeroImageProps) {
-  const [imageSrc, setImageSrc] = useState('');
-  const [isImageLoading, setIsImageLoading] = useState(false);
+  const normalizedSrc = useMemo(() => normalizeSafeImageSrc(src), [src]);
+  const [hasImageError, setHasImageError] = useState(() => !normalizedSrc);
   const [isImageReady, setIsImageReady] = useState(false);
   const handleImageError = () => {
-    setImageSrc('');
-    setIsImageLoading(false);
+    setHasImageError(true);
     setIsImageReady(false);
   };
   const handleImageLoad = () => {
-    setIsImageLoading(false);
     setIsImageReady(true);
   };
 
   useEffect(() => {
-    const nextSrc = normalizeSafeSrc(src);
-    setImageSrc(nextSrc);
-    setIsImageLoading(Boolean(nextSrc));
+    setHasImageError(!normalizedSrc);
     setIsImageReady(false);
-  }, [src]);
+  }, [normalizedSrc]);
 
-  const shouldUseNextImage = useMemo(() => isOptimizableImage(imageSrc), [imageSrc]);
+  const shouldUseNextImage = useMemo(() => isOptimizableImage(normalizedSrc), [normalizedSrc]);
+  const shouldBypassOptimization = useMemo(
+    () => shouldBypassNextImageOptimization(normalizedSrc),
+    [normalizedSrc]
+  );
+  const isImageLoading = Boolean(normalizedSrc && !hasImageError && !isImageReady);
+
   return (
     <>
-      {imageSrc &&
+      {normalizedSrc &&
+        !hasImageError &&
         (shouldUseNextImage ? (
           <Image
-            src={imageSrc}
+            src={normalizedSrc}
             alt={alt}
             fill
             sizes={sizes}
             quality={quality}
             priority={priority}
+            unoptimized={shouldBypassOptimization}
             css={[mainImage, !isImageReady && hiddenImage]}
             onError={handleImageError}
             onLoadingComplete={handleImageLoad}
           />
         ) : (
           <img
-            src={imageSrc}
+            src={normalizedSrc}
             alt={alt}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             css={[mainImage, !isImageReady && hiddenImage]}
             onError={handleImageError}
             onLoad={handleImageLoad}
@@ -106,7 +82,7 @@ export function HeroImage({
           <div css={imageLoadingSpinner} aria-hidden="true" />
         </div>
       )}
-      {!isImageLoading && !imageSrc && (
+      {!isImageLoading && (hasImageError || !normalizedSrc) && (
         <div css={imageFallback}>
           <Text typo="body_M" color="text_tertiary">
             {fallbackText}

@@ -9,6 +9,61 @@ export interface ImageMetadata {
   alt_text?: string; // 이미지 설명
 }
 
+export const OPTIMIZABLE_IMAGE_HOSTNAMES = [
+  'drive.google.com',
+  'meditrip.s3.ap-northeast-2.amazonaws.com',
+  'meditripstorage.blob.core.windows.net',
+] as const;
+
+export const normalizeSafeImageSrc = (rawSrc?: string | null): string => {
+  const value = rawSrc?.trim() ?? '';
+  if (!value) return '';
+  if (value.startsWith('/')) return value;
+
+  try {
+    const parsedUrl = new URL(value);
+    if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') {
+      return value;
+    }
+
+    return '';
+  } catch {
+    return '';
+  }
+};
+
+export const isOptimizableImage = (rawSrc?: string | null): boolean => {
+  const src = normalizeSafeImageSrc(rawSrc);
+  if (!src) return false;
+  if (src.startsWith('/')) return true;
+
+  try {
+    const parsedUrl = new URL(src);
+    if (parsedUrl.protocol !== 'https:') return false;
+
+    return OPTIMIZABLE_IMAGE_HOSTNAMES.includes(
+      parsedUrl.hostname as (typeof OPTIMIZABLE_IMAGE_HOSTNAMES)[number]
+    );
+  } catch {
+    return false;
+  }
+};
+
+export const shouldBypassNextImageOptimization = (rawSrc?: string | null): boolean => {
+  const src = normalizeSafeImageSrc(rawSrc);
+  if (!src || src.startsWith('/')) return false;
+
+  try {
+    const parsedUrl = new URL(src);
+    return (
+      parsedUrl.hostname === 'meditripstorage.blob.core.windows.net' &&
+      parsedUrl.searchParams.has('sig')
+    );
+  } catch {
+    return false;
+  }
+};
+
 /**
  * File 객체에서 이미지 메타데이터를 추출하는 함수
  */
