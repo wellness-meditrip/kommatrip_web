@@ -8,56 +8,63 @@ import { beginAuthRefresh, rejectAuthRefresh, resolveAuthRefresh } from '@/utils
 import { applyAuthSession, clearClientAuthSession } from '@/utils/auth-session';
 import { getCookie } from '@/utils/cookie';
 
-export function AuthBootstrap({ children }: PropsWithChildren) {
-  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
-  const setBootstrapped = useAuthStore((state) => state.setBootstrapped);
-  const setAuthState = useAuthStore((state) => state.setAuthState);
-  const setHasRefreshToken = useAuthStore((state) => state.setHasRefreshToken);
+let bootstrapPromise: Promise<void> | null = null;
 
-  useEffect(() => {
-    let isCancelled = false;
+const ensureAuthBootstrapped = async () => {
+  const authStore = useAuthStore.getState();
+  if (authStore.isBootstrapped) return;
+  if (bootstrapPromise) return bootstrapPromise;
 
-    const bootstrapAuth = async () => {
-      const hasRefreshFlag = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
-      setHasRefreshToken(hasRefreshFlag);
+  bootstrapPromise = (async () => {
+    const hasRefreshFlag = !!getCookie(AUTH_COOKIE_KEYS.REFRESH_TOKEN_FLAG);
+    authStore.setHasRefreshToken(hasRefreshFlag);
 
-      if (!hasRefreshFlag) {
-        setAuthState('guest');
-        setBootstrapped(true);
-        return;
-      }
-
-      setAuthState('refreshing');
-      beginAuthRefresh();
-
-      try {
-        const response = await postTokenReissue();
-        if (!isCancelled) {
-          applyAuthSession(response);
-          setHasRefreshToken(true);
-        }
-        resolveAuthRefresh();
-      } catch (error) {
-        if (!isCancelled) {
-          console.error('[AuthBootstrap] token bootstrap failed', error);
-          await clearClientAuthSession();
-        }
-        rejectAuthRefresh(error);
-      } finally {
-        if (!isCancelled) {
-          setBootstrapped(true);
-        }
-      }
-    };
-
-    if (!isBootstrapped) {
-      void bootstrapAuth();
+    if (!hasRefreshFlag) {
+      authStore.setAuthState('guest');
+      authStore.setBootstrapped(true);
+      return;
     }
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [isBootstrapped, setAuthState, setBootstrapped, setHasRefreshToken]);
+    authStore.setAuthState('refreshing');
+    beginAuthRefresh();
+
+    try {
+      const response = await postTokenReissue();
+      const didApplySession = applyAuthSession(response);
+
+      if (!didApplySession) {
+        throw new Error('Missing auth session payload during bootstrap');
+      }
+
+      authStore.setHasRefreshToken(true);
+      resolveAuthRefresh();
+    } catch (error) {
+      console.error('[AuthBootstrap] token bootstrap failed', error);
+      await clearClientAuthSession();
+      rejectAuthRefresh(error);
+    } finally {
+      useAuthStore.getState().setBootstrapped(true);
+      bootstrapPromise = null;
+    }
+  })();
+
+  return bootstrapPromise;
+};
+
+function useBootstrapAuth() {
+  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
+
+  useEffect(() => {
+    if (!isBootstrapped) {
+      void ensureAuthBootstrapped();
+    }
+  }, [isBootstrapped]);
+
+  return isBootstrapped;
+}
+
+export function AuthBootstrap({ children }: PropsWithChildren) {
+  const isBootstrapped = useBootstrapAuth();
 
   if (!isBootstrapped) {
     return (
@@ -68,6 +75,11 @@ export function AuthBootstrap({ children }: PropsWithChildren) {
   }
 
   return <>{children}</>;
+}
+
+export function BackgroundAuthWarmup() {
+  useBootstrapAuth();
+  return null;
 }
 
 const loadingWrapper = css`

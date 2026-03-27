@@ -5,7 +5,7 @@ import { Close } from '@/icons';
 import { Dim } from '@/components/dim';
 import { Portal } from '@/components/portal';
 import { Text } from '@/components/text';
-import { LoginForm } from '@/components/auth/LoginForm';
+import { LazyLoginForm } from '@/components/auth/LazyLoginForm';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
 import { theme } from '@/styles';
 
@@ -57,7 +57,7 @@ export function LoginModal({
         </div>
 
         <div css={formWrapper}>
-          <LoginForm
+          <LazyLoginForm
             variant="modal"
             callbackUrl={callbackUrl}
             onNavigateAway={onClose}

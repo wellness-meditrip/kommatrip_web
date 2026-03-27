@@ -41,6 +41,11 @@ export function ChatbotLauncher() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isPreparingOpen, setIsPreparingOpen] = useState(false);
 
+  const handlePrefetchRuntime = () => {
+    if (!isAuthenticated) return;
+    prefetchChatbotRuntime();
+  };
+
   const handleOpenChat = () => {
     if (!isAuthenticated) {
       openLoginModal({
@@ -54,7 +59,7 @@ export function ChatbotLauncher() {
       return;
     }
 
-    prefetchChatbotRuntime();
+    handlePrefetchRuntime();
     setIsChatOpen(true);
   };
 
@@ -64,9 +69,9 @@ export function ChatbotLauncher() {
         type="button"
         css={floatingButton}
         onClick={handleOpenChat}
-        onMouseEnter={prefetchChatbotRuntime}
-        onFocus={prefetchChatbotRuntime}
-        onTouchStart={prefetchChatbotRuntime}
+        onMouseEnter={handlePrefetchRuntime}
+        onFocus={handlePrefetchRuntime}
+        onTouchStart={handlePrefetchRuntime}
         aria-label={t('launcherLabel')}
       >
         <ReviewAi width={22} height={22} />

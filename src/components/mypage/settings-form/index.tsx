@@ -9,6 +9,7 @@ import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queri
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { ROUTES } from '@/constants';
+import { useAuthStore } from '@/store/auth';
 import {
   clearClientAuthSession,
   clearLogoutRedirectPending,
@@ -44,6 +45,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
       { marketing_consent: nextValue },
       {
         onSuccess: () => {
+          useAuthStore.getState().patchUser({ marketing_consent: nextValue });
           queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
           showToast({ title: t('toast.marketingConsentUpdated'), icon: 'check' });
         },
