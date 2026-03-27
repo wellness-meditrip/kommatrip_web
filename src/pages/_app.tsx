@@ -1,10 +1,11 @@
 import type { AppProps } from 'next/app';
 import type { DehydratedState } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { NextIntlClientProvider } from 'next-intl';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { AuthBootstrap } from '@/components/auth/AuthBootstrap';
-import { GlobalLoginModal } from '@/components/auth/GlobalLoginModal';
+import { LazyGlobalLoginModal } from '@/components/auth/LazyGlobalLoginModal';
 import { DialogProvider, ToastProvider } from '@/hooks';
 import { GlobalStyle, theme } from '@/styles';
 import { QueryProvider } from '@/providers';
@@ -16,14 +17,26 @@ import { useAuthSync } from '@/hooks/auth/use-auth-sync';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
 
 import Head from 'next/head';
+import Script from 'next/script';
 import { Meta, createPageMeta, type MetaProps } from '@/seo';
-import { ChatbotLauncher } from '@/components';
 import { SkeletonTheme } from 'react-loading-skeleton';
-import { AdminShell } from '@/components/admin/admin-shell';
 import { PAGE_POLICIES, resolvePagePolicy, type PagePolicyName } from '@/seo/page-policy';
 
 const warnedMissingMessages = new Set<string>();
 const EMPTY_MESSAGES: Record<string, unknown> = {};
+const AdminShell = dynamic(
+  () => import('@/components/admin/admin-shell').then((mod) => mod.AdminShell),
+  {
+    loading: () => null,
+  }
+);
+const ChatbotLauncher = dynamic(
+  () => import('@/components/chatbot').then((mod) => mod.ChatbotLauncher),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 
 /**
  * NextAuth 세션과 zustand auth store 동기화
@@ -120,7 +133,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     if (!gtmId) return;
 
     const handleRouteChange = (url: string) => {
-      if (!window.dataLayer) return;
+      window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({
         event: 'page_view',
         page_location: window.location.href,
@@ -144,6 +157,23 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+      {gtmId ? (
+        <>
+          <Script
+            id="gtm-loader"
+            strategy="lazyOnload"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','${gtmId}');
+              `,
+            }}
+          />
+        </>
+      ) : null}
       <Meta {...resolvedMeta} />
       {!isAdminRoute && <AuthSync />}
       <NextIntlClientProvider
@@ -192,7 +222,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
                     <AuthBootstrap>
                       <>
                         <Component {...pageProps} />
-                        <GlobalLoginModal />
+                        <LazyGlobalLoginModal />
                         {!isAdminRoute && <ChatbotLauncher />}
                       </>
                     </AuthBootstrap>
