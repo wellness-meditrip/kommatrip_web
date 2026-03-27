@@ -1,4 +1,5 @@
 import { GnbSearchActive } from '@/icons';
+import { useTranslations } from 'next-intl';
 import { wrapper, searchBar, input, button } from './index.styles';
 
 interface SearchBarProps {
@@ -20,6 +21,8 @@ export function SearchBar({
   onInputClick,
   isReadOnly = false,
 }: SearchBarProps) {
+  const t = useTranslations('common');
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isReadOnly) return;
     const value = e.target.value;
@@ -40,7 +43,12 @@ export function SearchBar({
     <div css={wrapper}>
       <div css={searchBar}>
         {isLeft && (
-          <button type="button" css={button({ isLeft: true })} onClick={handleButtonClick}>
+          <button
+            type="button"
+            css={button({ isLeft: true })}
+            onClick={handleButtonClick}
+            aria-label={t('button.search')}
+          >
             <GnbSearchActive width={24} height={24} />
           </button>
         )}
@@ -54,9 +62,15 @@ export function SearchBar({
           inputMode={isReadOnly ? 'none' : undefined}
           css={input}
           placeholder={placeholder}
+          aria-label={placeholder ?? t('button.search')}
         />
         {!isLeft && (
-          <button type="button" css={button({ isLeft: false })} onClick={handleButtonClick}>
+          <button
+            type="button"
+            css={button({ isLeft: false })}
+            onClick={handleButtonClick}
+            aria-label={t('button.search')}
+          >
             <GnbSearchActive width={24} height={24} />
           </button>
         )}
