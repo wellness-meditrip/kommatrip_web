@@ -16,7 +16,9 @@ const resolveBackendPath = (
   }
 
   if (pathSegments[0] === 'session') {
-    if (pathSegments.length === 1) return method === 'POST' ? '/agent/chat/session' : null;
+    if (pathSegments.length === 1) {
+      return method === 'POST' ? '/agent/chat/session' : null;
+    }
     if (pathSegments.length === 2 && isNonEmpty(pathSegments[1])) {
       return method === 'GET' || method === 'DELETE'
         ? `/agent/chat/session/${pathSegments[1]}`

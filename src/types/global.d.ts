@@ -6,5 +6,6 @@ declare global {
   interface Window {
     google: typeof google;
     dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
   }
 }

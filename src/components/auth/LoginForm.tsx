@@ -24,7 +24,7 @@ interface LoginFormData {
   password: string;
 }
 
-interface LoginFormProps {
+export interface LoginFormProps {
   callbackUrl?: string;
   variant?: 'page' | 'modal';
   onSuccess?: (redirectUrl: string) => void | Promise<void>;

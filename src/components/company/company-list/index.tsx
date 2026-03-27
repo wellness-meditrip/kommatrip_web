@@ -5,6 +5,7 @@ import { CompanyCard } from '@/components';
 import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants/commons/routes';
 import { useCurrentLocale } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import {
   container,
   wrapper,
@@ -40,6 +41,7 @@ export function CompanyList({
   cardSize = 'default',
   containerCss,
 }: CompanyListProps) {
+  const t = useTranslations('common');
   const router = useRouter();
   const currentLocale = useCurrentLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -86,7 +88,12 @@ export function CompanyList({
       </div>
       <div css={wrapper}>
         {canScrollLeft && (
-          <button css={leftButton} onClick={() => handleScroll('left')}>
+          <button
+            type="button"
+            css={leftButton}
+            onClick={() => handleScroll('left')}
+            aria-label={`${title} ${t('button.previous')}`}
+          >
             <ChevronRight width={24} height={24} style={{ transform: 'rotate(180deg)' }} />
           </button>
         )}
@@ -115,7 +122,12 @@ export function CompanyList({
           </div>
         </div>
         {canScrollRight && (
-          <button css={rightButton} onClick={() => handleScroll('right')}>
+          <button
+            type="button"
+            css={rightButton}
+            onClick={() => handleScroll('right')}
+            aria-label={`${title} ${t('button.next')}`}
+          >
             <ChevronRight width={24} height={24} />
           </button>
         )}
