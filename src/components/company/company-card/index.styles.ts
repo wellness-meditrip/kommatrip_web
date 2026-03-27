@@ -203,41 +203,29 @@ export const carouselImage = css`
 
 export const carouselDots = css`
   display: flex;
-  gap: 4px;
+  gap: 8px;
   position: absolute;
-  bottom: 8px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
 `;
 
-export const carouselDot = css`
-  width: 6px;
-  height: 6px;
-  border: none;
+const carouselDotBase = css`
+  display: flex;
+
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+`;
 
-  background-color: ${theme.colors.gray300};
-
-  transition: all 0.2s ease;
-
-  cursor: pointer;
-
-  &:hover {
-    background-color: rgb(255 255 255 / 80%);
-  }
+export const carouselDot = css`
+  ${carouselDotBase};
+  background-color: rgb(255 255 255 / 72%);
 `;
 
 export const carouselDotActive = css`
-  width: 6px;
-  height: 6px;
-  border: none;
-  border-radius: 50%;
-
+  ${carouselDotBase};
   background-color: ${theme.colors.primary50};
-
-  transition: all 0.2s ease;
-
-  cursor: pointer;
 `;
 
 export const carouselNavButton = css`
