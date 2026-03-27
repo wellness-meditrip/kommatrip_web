@@ -218,6 +218,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
                   images={company.images}
                   isExclusive={company.is_exclusive}
                   fixedHeight={true}
+                  carouselDotsMode="hidden"
                   onClick={() => handleCompanyClick(company.id)}
                 />
               ))}
