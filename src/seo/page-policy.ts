@@ -4,8 +4,11 @@ export type PagePolicyName =
   | 'public-discovery'
   | 'public-utility'
   | 'private-app'
+  | 'auth-entry'
   | 'admin'
   | 'system';
+
+export type AuthBootstrapMode = 'background' | 'blocking' | 'none';
 
 export interface PagePolicy {
   name: PagePolicyName;
@@ -13,6 +16,9 @@ export interface PagePolicy {
   includeAlternates: boolean;
   includeInSitemap: boolean;
   noindex: boolean;
+  authBootstrapMode: AuthBootstrapMode;
+  enableAnalytics: boolean;
+  enableAuthSync: boolean;
 }
 
 export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
@@ -22,6 +28,9 @@ export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
     includeAlternates: true,
     includeInSitemap: true,
     noindex: false,
+    authBootstrapMode: 'background',
+    enableAnalytics: true,
+    enableAuthSync: true,
   },
   'public-utility': {
     name: 'public-utility',
@@ -29,6 +38,9 @@ export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
     includeAlternates: false,
     includeInSitemap: false,
     noindex: true,
+    authBootstrapMode: 'background',
+    enableAnalytics: true,
+    enableAuthSync: true,
   },
   'private-app': {
     name: 'private-app',
@@ -36,6 +48,19 @@ export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
     includeAlternates: false,
     includeInSitemap: false,
     noindex: true,
+    authBootstrapMode: 'blocking',
+    enableAnalytics: true,
+    enableAuthSync: true,
+  },
+  'auth-entry': {
+    name: 'auth-entry',
+    cacheControl: 'public, no-store, max-age=0',
+    includeAlternates: false,
+    includeInSitemap: false,
+    noindex: true,
+    authBootstrapMode: 'background',
+    enableAnalytics: true,
+    enableAuthSync: true,
   },
   admin: {
     name: 'admin',
@@ -43,6 +68,9 @@ export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
     includeAlternates: false,
     includeInSitemap: false,
     noindex: true,
+    authBootstrapMode: 'none',
+    enableAnalytics: false,
+    enableAuthSync: false,
   },
   system: {
     name: 'system',
@@ -50,19 +78,21 @@ export const PAGE_POLICIES: Record<PagePolicyName, PagePolicy> = {
     includeAlternates: false,
     includeInSitemap: false,
     noindex: true,
+    authBootstrapMode: 'background',
+    enableAnalytics: false,
+    enableAuthSync: false,
   },
 };
 
 export const PRIVATE_ROBOTS_PATHS = [
   '/admin',
-  '/login',
-  '/signup',
   '/interest',
-  '/auth/social/callback',
   '/mypage',
   '/reservations',
   '/bookings',
 ] as const;
+
+export const AUTH_ENTRY_PATHS = ['/login', '/signup', '/auth/social/callback'] as const;
 
 const SYSTEM_PATHS = new Set(['/404', '/500', '/_error', '/robots.txt', '/sitemap.xml']);
 
@@ -87,6 +117,9 @@ const isAdminPath = (path: string) => path === '/admin' || path.startsWith('/adm
 const isPrivatePath = (path: string) =>
   PRIVATE_ROBOTS_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 
+const isAuthEntryPath = (path: string) =>
+  AUTH_ENTRY_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
 const isPublicUtilityPath = (path: string) => path === '/search';
 
 export const resolvePagePolicy = (path?: string): PagePolicy => {
@@ -98,6 +131,10 @@ export const resolvePagePolicy = (path?: string): PagePolicy => {
 
   if (isAdminPath(normalizedPath)) {
     return PAGE_POLICIES.admin;
+  }
+
+  if (isAuthEntryPath(normalizedPath)) {
+    return PAGE_POLICIES['auth-entry'];
   }
 
   if (isPrivatePath(normalizedPath)) {
