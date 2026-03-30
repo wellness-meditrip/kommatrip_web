@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
+import { ADMIN_AUTH_COOKIE_KEYS, AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
 import { defaultLocale, locales, type Locale } from './i18n/routing';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
@@ -53,6 +53,14 @@ function shouldSkipLocale(pathname: string): boolean {
   return false;
 }
 
+function isAdminPath(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
+
+function isAdminLoginPath(pathname: string): boolean {
+  return pathname === '/admin/login';
+}
+
 /**
  * 로케일 프리픽스가 있는 경로인지 확인
  */
@@ -77,6 +85,19 @@ function isProtectedPath(pathname: string): boolean {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isAdminPath(pathname)) {
+    const hasAdminRefreshToken = request.cookies.has(ADMIN_AUTH_COOKIE_KEYS.REFRESH_TOKEN);
+
+    if (!isAdminLoginPath(pathname) && !hasAdminRefreshToken) {
+      const loginUrl = new URL('/admin/login', request.url);
+      const nextPath = `${pathname}${request.nextUrl.search}`;
+      loginUrl.searchParams.set('next', nextPath);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
+  }
 
   // 다국어 처리 제외 경로
   if (shouldSkipLocale(pathname)) {
@@ -154,16 +175,16 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 매처: 모든 경로에 적용하되, 제외 경로는 shouldSkipLocale에서 처리
+  // 매처: 모든 경로에 적용하되, 정적 파일 및 API 경로는 철저히 제외
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public folder)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - public files (all static files with specific extensions)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|json|txt|webmanifest)$).*)',
   ],
 };

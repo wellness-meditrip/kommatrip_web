@@ -1,10 +1,7 @@
 import axios, { AxiosHeaders, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import type { AdminAuthTokens } from '@/models';
-import {
-  clearAdminAuthSession,
-  readAdminAuthState,
-  updateAdminTokens,
-} from '@/utils/admin-auth-storage';
+import { useAdminAuthStore } from '@/store/admin-auth';
+import { applyAdminAuthSession, clearClientAdminAuthSession } from '@/utils/admin-auth-session';
 import { normalizeError } from '@/utils/error-handler';
 
 type AdminRequestConfig = InternalAxiosRequestConfig & {
@@ -30,12 +27,11 @@ const extractAdminTokens = (payload: unknown): AdminAuthTokens | null => {
   const tokens = isRecord(source.tokens) ? source.tokens : null;
   if (!tokens) return null;
   if (typeof tokens.access_token !== 'string') return null;
-  if (typeof tokens.refresh_token !== 'string') return null;
   const tokenType = tokens.token_type === 'bearer' ? 'bearer' : 'Bearer';
 
   return {
     access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
+    ...(typeof tokens.refresh_token === 'string' ? { refresh_token: tokens.refresh_token } : {}),
     token_type: tokenType,
   };
 };
@@ -52,19 +48,14 @@ const shouldSkipRefresh = (config?: Partial<AdminRequestConfig>) => {
 export const adminApi = axios.create({
   baseURL: '',
   timeout: 10000,
-  withCredentials: false,
+  withCredentials: true,
 });
 
 let refreshInFlight: Promise<string> | null = null;
 
 const requestAdminAccessToken = async () => {
-  const { refreshToken } = readAdminAuthState();
-  if (!refreshToken) {
-    throw new Error('Missing admin refresh token');
-  }
-
-  const response = await axios.post(ADMIN_AUTH_REISSUE_PATH, {
-    refreshToken,
+  const response = await axios.post(ADMIN_AUTH_REISSUE_PATH, undefined, {
+    withCredentials: true,
   });
   const tokens = extractAdminTokens(response.data);
 
@@ -72,7 +63,10 @@ const requestAdminAccessToken = async () => {
     throw new Error('Missing admin access token');
   }
 
-  updateAdminTokens(tokens);
+  const didApplySession = applyAdminAuthSession(extractDataEnvelope(response.data));
+  if (!didApplySession) {
+    throw new Error('Missing admin session payload during token refresh');
+  }
   return tokens.access_token;
 };
 
@@ -87,7 +81,7 @@ const refreshAdminAccessToken = async () => {
 };
 
 adminApi.interceptors.request.use((config) => {
-  const { accessToken } = readAdminAuthState();
+  const accessToken = useAdminAuthStore.getState().accessToken;
   if (!accessToken) return config;
 
   const baseHeaders =
@@ -131,13 +125,13 @@ adminApi.interceptors.response.use(
 
         return adminApi(originalRequest);
       } catch (refreshError) {
-        clearAdminAuthSession();
+        await clearClientAdminAuthSession();
         return Promise.reject(normalizeError(refreshError));
       }
     }
 
     if (status === 401 || status === 403) {
-      clearAdminAuthSession();
+      await clearClientAdminAuthSession();
     }
 
     return Promise.reject(normalizeError(error));

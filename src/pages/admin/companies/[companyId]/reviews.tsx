@@ -23,7 +23,7 @@ import {
 } from '@/components/admin/admin-console.styles';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminRouteGuard } from '@/hooks';
+import { useAdminAccess } from '@/hooks';
 import { useGetAdminCompanyDetailQuery, useGetAdminCompanyReviewsQuery } from '@/queries';
 import { normalizeError } from '@/utils/error-handler';
 import { toSearchableText } from '@/utils/search';
@@ -45,7 +45,7 @@ const formatDateTime = (value: string) => {
 
 export default function AdminCompanyReviewsPage() {
   const router = useRouter();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const companyId = parseCompanyId(router.query.companyId);
   const [withPhotosOnly, setWithPhotosOnly] = useState(false);
   const [keyword, setKeyword] = useState('');
@@ -84,13 +84,7 @@ export default function AdminCompanyReviewsPage() {
     reviewsQuery.data?.reviews,
   ]);
 
-  if (
-    !router.isReady ||
-    !isReady ||
-    !canAccess ||
-    companyDetailQuery.isLoading ||
-    reviewsQuery.isLoading
-  ) {
+  if (!router.isReady || !canAccess || companyDetailQuery.isLoading || reviewsQuery.isLoading) {
     return <Loading title="업체 리뷰를 불러오는 중입니다." fullHeight />;
   }
 

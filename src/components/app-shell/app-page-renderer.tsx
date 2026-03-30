@@ -1,15 +1,9 @@
 import type { AppProps } from 'next/app';
 import dynamic from 'next/dynamic';
+import { AdminRouteRenderer } from '@/components/admin/admin-route-renderer';
 import { LazyGlobalLoginModal } from '@/components/auth/LazyGlobalLoginModal';
 import { ChatbotLauncher } from '@/components/chatbot';
 import type { AuthBootstrapMode } from '@/seo/page-policy';
-
-const AdminShell = dynamic(
-  () => import('@/components/admin/admin-shell').then((mod) => mod.AdminShell),
-  {
-    loading: () => null,
-  }
-);
 
 const AuthBootstrap = dynamic(
   () => import('@/components/auth/AuthBootstrap').then((mod) => mod.AuthBootstrap),
@@ -54,15 +48,18 @@ export function AppPageRenderer({
   isAdminLoginRoute,
   authBootstrapMode,
 }: AppPageRendererProps) {
-  if (isAdminRoute && !isAdminLoginRoute) {
+  if (isAdminRoute) {
     return (
-      <AdminShell>
-        <Component {...pageProps} />
-      </AdminShell>
+      <AdminRouteRenderer
+        key={isAdminLoginRoute ? 'admin-login-route' : 'admin-protected-route'}
+        Component={Component}
+        pageProps={pageProps}
+        isLoginRoute={isAdminLoginRoute}
+      />
     );
   }
 
-  if (isAdminRoute || authBootstrapMode === 'none') {
+  if (authBootstrapMode === 'none') {
     return <Component {...pageProps} />;
   }
 

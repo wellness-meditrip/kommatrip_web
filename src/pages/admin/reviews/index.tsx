@@ -11,67 +11,31 @@ import { AdminPageHeader } from '@/components/admin/common/AdminPageHeader';
 import { AdminSearchField } from '@/components/admin/common/AdminSearchField';
 import { Loading } from '@/components/common';
 import { Text } from '@/components/text';
-import { useAdminRouteGuard } from '@/hooks';
-import type { AdminCompanyListItem, AdminCompanyReviewsResponse } from '@/models';
-import { useGetAdminCompaniesQuery, useGetAdminCompanyReviewsQuery } from '@/queries';
+import {
+  ADMIN_COMPANY_STATUS_LABELS,
+  ADMIN_COMPANY_STATUS_META,
+  formatAdminCompanyStatusLabel,
+  filterAdminCompaniesByKeyword,
+  useAdminAccess,
+  useAdminCompanyStatusBuckets,
+} from '@/hooks';
+import type { AdminCompanyReviewsResponse } from '@/models';
+import { useGetAdminCompanyReviewsQuery } from '@/queries';
 import { normalizeError } from '@/utils/error-handler';
 import { toSearchableText } from '@/utils/search';
+import type { AdminCompanyStatusRow, AdminCompanyStatusTab } from '@/hooks';
 
-type CompanyStatusTab = 'all' | 'active' | 'pending' | 'suspended';
 type CompanyViewMode = 'table' | 'card';
-
-interface CompanyRow extends AdminCompanyListItem {
-  status: Exclude<CompanyStatusTab, 'all'>;
-}
-
-const STATUS_META: Array<{ value: CompanyStatusTab; label: string }> = [
-  { value: 'active', label: '활성 업체' },
-  { value: 'pending', label: '승인 대기' },
-  { value: 'suspended', label: '중지 업체' },
-  { value: 'all', label: '전체' },
-];
-
-const STATUS_LABELS: Record<Exclude<CompanyStatusTab, 'all'>, string> = {
-  active: '활성',
-  pending: '승인 대기',
-  suspended: '중지',
-};
 
 const VIEW_OPTIONS: Array<{ value: CompanyViewMode; label: string }> = [
   { value: 'table', label: '표형' },
   { value: 'card', label: '카드형' },
 ];
 
-const withStatus = (
-  companies: AdminCompanyListItem[] | undefined,
-  status: Exclude<CompanyStatusTab, 'all'>
-): CompanyRow[] => (companies ?? []).map((company) => ({ ...company, status }));
-
-const dedupeCompanies = (companies: CompanyRow[]) => {
-  const byId = new Map<number, CompanyRow>();
-  for (const company of companies) {
-    if (!byId.has(company.id)) {
-      byId.set(company.id, company);
-    }
-  }
-  return Array.from(byId.values());
-};
-
-const filterCompaniesByKeyword = (companies: CompanyRow[], keyword: string) => {
-  const searchTerm = toSearchableText(keyword);
-  if (!searchTerm) return companies;
-
-  return companies.filter((company) => {
-    const searchFields = [company.name, company.address, company.simpleplace ?? ''];
-
-    return searchFields.some((field) => toSearchableText(field).includes(searchTerm));
-  });
-};
-
 const filterSelectedCompanyReviewsByKeyword = (
   reviews: AdminCompanyReviewsResponse['reviews'] | undefined,
   keyword: string,
-  company: CompanyRow | null
+  company: AdminCompanyStatusRow | null
 ) => {
   const searchTerm = toSearchableText(keyword);
   const list = reviews ?? [];
@@ -83,8 +47,6 @@ const filterSelectedCompanyReviewsByKeyword = (
   return isMatch ? list : [];
 };
 
-const formatStatusLabel = (status: Exclude<CompanyStatusTab, 'all'>) => STATUS_LABELS[status];
-
 const formatDateTime = (value: string) => {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -95,70 +57,20 @@ const formatDateTime = (value: string) => {
 };
 
 export default function AdminReviewsPage() {
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
 
-  const [statusTab, setStatusTab] = useState<CompanyStatusTab>('active');
+  const [statusTab, setStatusTab] = useState<AdminCompanyStatusTab>('active');
   const [viewMode, setViewMode] = useState<CompanyViewMode>('table');
   const [keyword, setKeyword] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
   const [reviewKeyword, setReviewKeyword] = useState('');
   const [withPhotosOnly, setWithPhotosOnly] = useState(false);
-
-  const activeCompaniesQuery = useGetAdminCompaniesQuery('active', canAccess);
-  const pendingCompaniesQuery = useGetAdminCompaniesQuery('pending', canAccess);
-  const suspendedCompaniesQuery = useGetAdminCompaniesQuery('suspended', canAccess);
-
-  const companyBuckets = useMemo(
-    () => ({
-      active: withStatus(activeCompaniesQuery.data?.companies, 'active'),
-      pending: withStatus(pendingCompaniesQuery.data?.companies, 'pending'),
-      suspended: withStatus(suspendedCompaniesQuery.data?.companies, 'suspended'),
-    }),
-    [
-      activeCompaniesQuery.data?.companies,
-      pendingCompaniesQuery.data?.companies,
-      suspendedCompaniesQuery.data?.companies,
-    ]
-  );
-
-  const allCompanies = useMemo(
-    () =>
-      dedupeCompanies([
-        ...companyBuckets.active,
-        ...companyBuckets.pending,
-        ...companyBuckets.suspended,
-      ]),
-    [companyBuckets.active, companyBuckets.pending, companyBuckets.suspended]
-  );
-
-  const companiesByTab = useMemo(
-    () => ({
-      all: allCompanies,
-      active: companyBuckets.active,
-      pending: companyBuckets.pending,
-      suspended: companyBuckets.suspended,
-    }),
-    [allCompanies, companyBuckets.active, companyBuckets.pending, companyBuckets.suspended]
-  );
+  const { allCompanies, companiesByTab, counts, isLoading, hasError, errorMessage, refetchAll } =
+    useAdminCompanyStatusBuckets(canAccess);
 
   const filteredCompanies = useMemo(
-    () => filterCompaniesByKeyword(companiesByTab[statusTab], keyword),
+    () => filterAdminCompaniesByKeyword(companiesByTab[statusTab], keyword),
     [companiesByTab, keyword, statusTab]
-  );
-
-  const counts = useMemo(
-    () => ({
-      all: allCompanies.length,
-      active: companyBuckets.active.length,
-      pending: companyBuckets.pending.length,
-      suspended: companyBuckets.suspended.length,
-    }),
-    [
-      allCompanies.length,
-      companyBuckets.active.length,
-      companyBuckets.pending.length,
-      companyBuckets.suspended.length,
-    ]
   );
 
   useEffect(() => {
@@ -196,31 +108,6 @@ export default function AdminReviewsPage() {
     [reviewKeyword, reviewsQuery.data?.reviews, selectedCompany]
   );
 
-  const isLoading =
-    !isReady ||
-    !canAccess ||
-    activeCompaniesQuery.isLoading ||
-    pendingCompaniesQuery.isLoading ||
-    suspendedCompaniesQuery.isLoading;
-
-  const hasError =
-    activeCompaniesQuery.isError ||
-    pendingCompaniesQuery.isError ||
-    suspendedCompaniesQuery.isError;
-
-  const errorMessage =
-    normalizeError(
-      activeCompaniesQuery.error || pendingCompaniesQuery.error || suspendedCompaniesQuery.error
-    ).message || '업체 목록을 불러오지 못했습니다.';
-
-  const handleRefetchAll = () => {
-    void Promise.all([
-      activeCompaniesQuery.refetch(),
-      pendingCompaniesQuery.refetch(),
-      suspendedCompaniesQuery.refetch(),
-    ]);
-  };
-
   if (isLoading) {
     return <Loading title="리뷰 관리 화면을 준비하는 중입니다." fullHeight />;
   }
@@ -235,7 +122,7 @@ export default function AdminReviewsPage() {
 
       <div css={topControls}>
         <div css={statusTabs}>
-          {STATUS_META.map((tab) => {
+          {ADMIN_COMPANY_STATUS_META.map((tab) => {
             const isActive = statusTab === tab.value;
             return (
               <button
@@ -281,7 +168,9 @@ export default function AdminReviewsPage() {
         <div css={resultPanelHeader}>
           <div>
             <Text typo="subtitle1" css={resultTitle}>
-              {statusTab === 'all' ? '리뷰 대상 업체 목록' : `${STATUS_LABELS[statusTab]} 업체`}
+              {statusTab === 'all'
+                ? '리뷰 대상 업체 목록'
+                : `${ADMIN_COMPANY_STATUS_LABELS[statusTab]} 업체`}
             </Text>
           </div>
           <Text typo="body9" css={resultCount}>
@@ -297,7 +186,7 @@ export default function AdminReviewsPage() {
             <Text typo="body10" css={emptyDescription}>
               {errorMessage}
             </Text>
-            <button type="button" css={retryButton} onClick={handleRefetchAll}>
+            <button type="button" css={retryButton} onClick={() => void refetchAll()}>
               다시 시도
             </button>
           </div>
@@ -361,7 +250,7 @@ export default function AdminReviewsPage() {
                       </td>
                       <td>
                         <span css={statusBadge(company.status)}>
-                          {formatStatusLabel(company.status)}
+                          {formatAdminCompanyStatusLabel(company.status)}
                         </span>
                       </td>
                       <td>
@@ -392,7 +281,7 @@ export default function AdminReviewsPage() {
                     <div css={cardOverlay} />
                     <div css={cardTopRow}>
                       <span css={statusBadge(company.status)}>
-                        {formatStatusLabel(company.status)}
+                        {formatAdminCompanyStatusLabel(company.status)}
                       </span>
                       {company.is_exclusive && <span css={featureBadge}>독점</span>}
                     </div>
@@ -803,7 +692,7 @@ const mutedBadge = css`
   font-weight: 700;
 `;
 
-const statusBadge = (status: Exclude<CompanyStatusTab, 'all'>) => css`
+const statusBadge = (status: Exclude<AdminCompanyStatusTab, 'all'>) => css`
   ${adminCapsuleBadge({
     background:
       status === 'active'

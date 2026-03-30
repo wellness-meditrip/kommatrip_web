@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import {
@@ -11,10 +11,10 @@ import {
 import { Input } from '@/components/input';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminAuth, useToast } from '@/hooks';
+import { useToast } from '@/hooks';
 import { postAdminLogin, postAdminRegister } from '@/apis';
 import { getAdminI18nStaticProps } from '@/i18n/page-props';
-import { persistAdminAuthFromResponse } from '@/utils/admin-auth-storage';
+import { applyAdminAuthSession } from '@/utils/admin-auth-session';
 import { normalizeError } from '@/utils/error-handler';
 
 const resolveNextPath = (nextValue: string | string[] | undefined) => {
@@ -26,7 +26,6 @@ const resolveNextPath = (nextValue: string | string[] | undefined) => {
 export default function AdminLoginPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const { isReady, isAuthenticated } = useAdminAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -40,11 +39,6 @@ export default function AdminLoginPage() {
   const [signupErrorMessage, setSignupErrorMessage] = useState('');
   const [isSignupSubmitting, setIsSignupSubmitting] = useState(false);
   const nextPath = useMemo(() => resolveNextPath(router.query.next), [router.query.next]);
-
-  useEffect(() => {
-    if (!isReady || !isAuthenticated) return;
-    void router.replace(nextPath);
-  }, [isAuthenticated, isReady, nextPath, router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,7 +57,9 @@ export default function AdminLoginPage() {
         password,
       });
 
-      persistAdminAuthFromResponse(response);
+      if (!applyAdminAuthSession(response)) {
+        throw new Error('관리자 세션 정보를 적용하지 못했습니다.');
+      }
       showToast({ title: '관리자 로그인에 성공했습니다.', icon: 'check' });
       await router.replace(nextPath);
     } catch (error) {
@@ -109,7 +105,9 @@ export default function AdminLoginPage() {
         admin_secret_key: signupSecretKey.trim(),
       });
 
-      persistAdminAuthFromResponse(response);
+      if (!applyAdminAuthSession(response)) {
+        throw new Error('관리자 세션 정보를 적용하지 못했습니다.');
+      }
       showToast({ title: '관리자 회원가입과 로그인이 완료되었습니다.', icon: 'check' });
       await router.replace(nextPath);
     } catch (error) {
