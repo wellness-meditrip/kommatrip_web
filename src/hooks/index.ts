@@ -10,4 +10,5 @@ export * from './auth/use-auth-sync';
 export * from './auth/use-auth-state';
 export * from './admin/use-admin-access';
 export * from './admin/use-admin-auth';
+export * from './admin/use-admin-company-status';
 export * from './reservation/use-booking-detail-view-model';

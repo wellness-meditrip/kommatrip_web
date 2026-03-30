@@ -19,28 +19,16 @@ import {
 import { AdminStatCard } from '@/components/admin/common/AdminStatCard';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminAccess } from '@/hooks';
-import { useGetAdminCompaniesQuery } from '@/queries';
+import { useAdminAccess, useAdminCompanyStatusBuckets } from '@/hooks';
 
 export default function AdminIndexPage() {
   const { canAccess } = useAdminAccess();
-  const activeCompaniesQuery = useGetAdminCompaniesQuery('active', canAccess);
-  const pendingCompaniesQuery = useGetAdminCompaniesQuery('pending', canAccess);
-  const suspendedCompaniesQuery = useGetAdminCompaniesQuery('suspended', canAccess);
+  const { recentCompanies, totals, isLoading, hasError, errorMessage, refetchAll } =
+    useAdminCompanyStatusBuckets(canAccess);
 
-  if (
-    !canAccess ||
-    activeCompaniesQuery.isLoading ||
-    pendingCompaniesQuery.isLoading ||
-    suspendedCompaniesQuery.isLoading
-  ) {
+  if (isLoading) {
     return <Loading title="대시보드를 불러오는 중입니다." fullHeight />;
   }
-
-  const recentCompanies = [
-    ...(pendingCompaniesQuery.data?.companies ?? []),
-    ...(activeCompaniesQuery.data?.companies ?? []),
-  ].slice(0, 6);
 
   return (
     <div css={page}>
@@ -70,13 +58,28 @@ export default function AdminIndexPage() {
       </header>
 
       <section css={statsGrid}>
-        <AdminStatCard label="활성 업체" value={String(activeCompaniesQuery.data?.total ?? 0)} />
-        <AdminStatCard
-          label="승인 대기 업체"
-          value={String(pendingCompaniesQuery.data?.total ?? 0)}
-        />
-        <AdminStatCard label="중지 업체" value={String(suspendedCompaniesQuery.data?.total ?? 0)} />
+        <AdminStatCard label="활성 업체" value={String(totals.active)} />
+        <AdminStatCard label="승인 대기 업체" value={String(totals.pending)} />
+        <AdminStatCard label="중지 업체" value={String(totals.suspended)} />
       </section>
+
+      {hasError && (
+        <section css={panel}>
+          <div css={sectionHeader}>
+            <div>
+              <Text tag="h2" typo="subtitle1" css={adminSectionTitle}>
+                업체 목록을 불러오지 못했습니다.
+              </Text>
+              <Text typo="body10" css={adminSectionSubtitle}>
+                {errorMessage}
+              </Text>
+            </div>
+            <button type="button" css={retryButton} onClick={() => void refetchAll()}>
+              다시 시도
+            </button>
+          </div>
+        </section>
+      )}
 
       <section css={quickSection}>
         <div css={sectionHeader}>
@@ -253,4 +256,10 @@ const companyActions = css`
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+`;
+
+const retryButton = css`
+  ${adminGhostButton};
+  border: none;
+  cursor: pointer;
 `;

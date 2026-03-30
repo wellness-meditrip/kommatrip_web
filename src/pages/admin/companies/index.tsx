@@ -16,68 +16,29 @@ import { AdminCompanyFormPage } from '@/components/admin/company-form-page';
 import { Loading } from '@/components/common';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminAccess, useDialog, useToast } from '@/hooks';
+import {
+  ADMIN_COMPANY_STATUS_LABELS,
+  ADMIN_COMPANY_STATUS_META,
+  filterAdminCompaniesByKeyword,
+  useAdminAccess,
+  useAdminCompanyStatusBuckets,
+  useDialog,
+  useToast,
+} from '@/hooks';
 import { deleteAdminCompany, postAdminCompanyApprove, postAdminCompanySuspend } from '@/apis';
-import type { AdminCompanyListItem } from '@/models';
-import { useGetAdminCompaniesQuery } from '@/queries';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { colors } from '@/styles';
 import { normalizeError } from '@/utils/error-handler';
-import { toSearchableText } from '@/utils/search';
+import type { AdminCompanyStatusRow, AdminCompanyStatusTab } from '@/hooks';
 
-type CompanyStatusTab = 'all' | 'active' | 'pending' | 'suspended';
 type CompanyViewMode = 'table' | 'card';
-
-interface CompanyRow extends AdminCompanyListItem {
-  status: Exclude<CompanyStatusTab, 'all'>;
-}
-
-const STATUS_META: Array<{ value: CompanyStatusTab; label: string }> = [
-  { value: 'active', label: '활성 업체' },
-  { value: 'pending', label: '승인 대기' },
-  { value: 'suspended', label: '중지 업체' },
-  { value: 'all', label: '전체' },
-];
-
-const STATUS_LABELS: Record<Exclude<CompanyStatusTab, 'all'>, string> = {
-  active: '활성',
-  pending: '승인 대기',
-  suspended: '중지',
-};
 
 const VIEW_OPTIONS: Array<{ value: CompanyViewMode; label: string }> = [
   { value: 'table', label: '표형' },
   { value: 'card', label: '카드형' },
 ];
-
-const withStatus = (
-  companies: AdminCompanyListItem[] | undefined,
-  status: Exclude<CompanyStatusTab, 'all'>
-): CompanyRow[] => (companies ?? []).map((company) => ({ ...company, status }));
-
-const dedupeCompanies = (companies: CompanyRow[]) => {
-  const byId = new Map<number, CompanyRow>();
-  for (const company of companies) {
-    if (!byId.has(company.id)) {
-      byId.set(company.id, company);
-    }
-  }
-  return Array.from(byId.values());
-};
-
-const filterCompaniesByKeyword = (companies: CompanyRow[], keyword: string) => {
-  const searchTerm = toSearchableText(keyword);
-  if (!searchTerm) return companies;
-
-  return companies.filter((company) => {
-    const searchFields = [company.name, company.address, company.simpleplace ?? ''];
-
-    return searchFields.some((field) => toSearchableText(field).includes(searchTerm));
-  });
-};
-
-const isPendingCompany = (company: CompanyRow) => company.status === 'pending';
-const canOpenPrograms = (company: CompanyRow) => company.status !== 'suspended';
+const isPendingCompany = (company: AdminCompanyStatusRow) => company.status === 'pending';
+const canOpenPrograms = (company: AdminCompanyStatusRow) => company.status !== 'suspended';
 
 export default function AdminCompaniesPage() {
   const queryClient = useQueryClient();
@@ -85,95 +46,21 @@ export default function AdminCompaniesPage() {
   const { showToast } = useToast();
   const { open: openDialog } = useDialog();
 
-  const [statusTab, setStatusTab] = useState<CompanyStatusTab>('active');
+  const [statusTab, setStatusTab] = useState<AdminCompanyStatusTab>('active');
   const [viewMode, setViewMode] = useState<CompanyViewMode>('table');
   const [keyword, setKeyword] = useState('');
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   const [isStatusUpdatingId, setIsStatusUpdatingId] = useState<number | null>(null);
   const [editingCompanyId, setEditingCompanyId] = useState<number | null>(null);
-
-  const activeCompaniesQuery = useGetAdminCompaniesQuery('active', canAccess);
-  const pendingCompaniesQuery = useGetAdminCompaniesQuery('pending', canAccess);
-  const suspendedCompaniesQuery = useGetAdminCompaniesQuery('suspended', canAccess);
-
-  const companyBuckets = useMemo(
-    () => ({
-      active: withStatus(activeCompaniesQuery.data?.companies, 'active'),
-      pending: withStatus(pendingCompaniesQuery.data?.companies, 'pending'),
-      suspended: withStatus(suspendedCompaniesQuery.data?.companies, 'suspended'),
-    }),
-    [
-      activeCompaniesQuery.data?.companies,
-      pendingCompaniesQuery.data?.companies,
-      suspendedCompaniesQuery.data?.companies,
-    ]
-  );
-
-  const allCompanies = useMemo(
-    () =>
-      dedupeCompanies([
-        ...companyBuckets.active,
-        ...companyBuckets.pending,
-        ...companyBuckets.suspended,
-      ]),
-    [companyBuckets.active, companyBuckets.pending, companyBuckets.suspended]
-  );
-
-  const companiesByTab = useMemo(
-    () => ({
-      all: allCompanies,
-      active: companyBuckets.active,
-      pending: companyBuckets.pending,
-      suspended: companyBuckets.suspended,
-    }),
-    [allCompanies, companyBuckets.active, companyBuckets.pending, companyBuckets.suspended]
-  );
+  const { companiesByTab, counts, isLoading, hasError, errorMessage, refetchAll } =
+    useAdminCompanyStatusBuckets(canAccess);
 
   const filteredCompanies = useMemo(
-    () => filterCompaniesByKeyword(companiesByTab[statusTab], keyword),
+    () => filterAdminCompaniesByKeyword(companiesByTab[statusTab], keyword),
     [companiesByTab, keyword, statusTab]
   );
 
-  const counts = useMemo(
-    () => ({
-      all: allCompanies.length,
-      active: companyBuckets.active.length,
-      pending: companyBuckets.pending.length,
-      suspended: companyBuckets.suspended.length,
-    }),
-    [
-      allCompanies.length,
-      companyBuckets.active.length,
-      companyBuckets.pending.length,
-      companyBuckets.suspended.length,
-    ]
-  );
-
-  const isLoading =
-    !canAccess ||
-    activeCompaniesQuery.isLoading ||
-    pendingCompaniesQuery.isLoading ||
-    suspendedCompaniesQuery.isLoading;
-
-  const hasError =
-    activeCompaniesQuery.isError ||
-    pendingCompaniesQuery.isError ||
-    suspendedCompaniesQuery.isError;
-
-  const errorMessage =
-    normalizeError(
-      activeCompaniesQuery.error || pendingCompaniesQuery.error || suspendedCompaniesQuery.error
-    ).message || '업체 목록을 불러오지 못했습니다.';
-
-  const handleRefetchAll = () => {
-    void Promise.all([
-      activeCompaniesQuery.refetch(),
-      pendingCompaniesQuery.refetch(),
-      suspendedCompaniesQuery.refetch(),
-    ]);
-  };
-
-  const handleDelete = (company: CompanyRow) => {
+  const handleDelete = (company: AdminCompanyStatusRow) => {
     openDialog({
       type: 'warn',
       title: `${company.name} 업체를 삭제할까요?`,
@@ -211,7 +98,7 @@ export default function AdminCompaniesPage() {
     setEditingCompanyId(null);
   };
 
-  const handleToggleStatus = async (company: CompanyRow, nextChecked: boolean) => {
+  const handleToggleStatus = async (company: AdminCompanyStatusRow, nextChecked: boolean) => {
     try {
       setIsStatusUpdatingId(company.id);
 
@@ -244,7 +131,7 @@ export default function AdminCompaniesPage() {
     }
   };
 
-  const handleApprove = async (company: CompanyRow) => {
+  const handleApprove = async (company: AdminCompanyStatusRow) => {
     try {
       setIsStatusUpdatingId(company.id);
       await postAdminCompanyApprove(company.id);
@@ -296,7 +183,7 @@ export default function AdminCompaniesPage() {
 
       <div css={topControls}>
         <div css={statusTabs}>
-          {STATUS_META.map((tab) => {
+          {ADMIN_COMPANY_STATUS_META.map((tab) => {
             const isActive = statusTab === tab.value;
             return (
               <button
@@ -345,7 +232,7 @@ export default function AdminCompaniesPage() {
         <div css={resultPanelHeader}>
           <div>
             <Text typo="subtitle1" css={resultTitle}>
-              {statusTab === 'all' ? '업체 목록' : `${STATUS_LABELS[statusTab]} 업체`}
+              {statusTab === 'all' ? '업체 목록' : `${ADMIN_COMPANY_STATUS_LABELS[statusTab]} 업체`}
             </Text>
           </div>
           <Text typo="body9" css={resultCount}>
@@ -361,7 +248,7 @@ export default function AdminCompaniesPage() {
             <Text typo="body10" css={emptyDescription}>
               {errorMessage}
             </Text>
-            <button type="button" css={retryButton} onClick={handleRefetchAll}>
+            <button type="button" css={retryButton} onClick={() => void refetchAll()}>
               다시 시도
             </button>
           </div>
