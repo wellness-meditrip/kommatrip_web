@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,18 +7,21 @@ import {
   adminAccentButton,
   adminConsolePalette,
   adminGhostButton,
-  adminHeroActions,
-  adminHeroDescription,
-  adminHeroSection,
-  adminHeroTitle,
   adminSectionTitle,
   adminSurfacePanel,
 } from '@/components/admin/admin-console.styles';
-import { FormSheet } from '@/components/admin/common/FormSheet';
+import {
+  AdminEntityFormFrame,
+  AdminEntityFormMessageCard,
+  adminEntityFormActionRow,
+  adminEntityFormSectionButton,
+  adminEntityFormState,
+} from '@/components/admin/common/AdminEntityFormFrame';
 import { Input } from '@/components/input';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
 import { useToast } from '@/hooks';
+import { useAdminFormSectionNavigation } from '@/hooks/admin/use-admin-form-section-navigation';
 import type {
   AdminBusinessDay,
   AdminCompanyFieldErrors,
@@ -126,7 +129,6 @@ export function AdminCompanyFormPage({
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { canAccess } = useAdminAccess();
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const detailQuery = useGetAdminCompanyDetailQuery(
     typeof companyId === 'number' ? companyId : null,
     mode === 'edit' && canAccess
@@ -138,8 +140,12 @@ export function AdminCompanyFormPage({
   const [imageState, setImageState] = useState(createEmptyAdminCompanyImagesState);
   const [errors, setErrors] = useState<AdminCompanyFieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<CompanyFormSectionId>('meta');
   const isSheetPresentation = presentation === 'sheet';
+  const formTitle = mode === 'create' ? '업체 등록' : '업체 수정';
+  const formDescription =
+    mode === 'create'
+      ? '어드민에서 신규 업체 정보를 등록합니다.'
+      : '기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다.';
 
   const hydrateFromCompany = (
     nextCompany: Parameters<typeof mapAdminCompanyDetailToFormValues>[0]
@@ -180,6 +186,13 @@ export function AdminCompanyFormPage({
       }),
     [meta]
   );
+  const { activeSectionId, scrollContainerRef, handleSectionNavClick } =
+    useAdminFormSectionNavigation({
+      presentation,
+      sections: availableSections,
+      initialSectionId: 'meta',
+      getSectionDomId: getCompanySectionDomId,
+    });
 
   const newImagePreviews = useMemo(
     () =>
@@ -197,55 +210,6 @@ export function AdminCompanyFormPage({
       }
     };
   }, [newImagePreviews]);
-
-  useEffect(() => {
-    if (!availableSections.some((section) => section.id === activeSectionId)) {
-      setActiveSectionId(availableSections[0]?.id ?? 'basic');
-    }
-  }, [activeSectionId, availableSections]);
-
-  useEffect(() => {
-    if (!isSheetPresentation) return;
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const containerTop = container.getBoundingClientRect().top + 120;
-      let nextActive = availableSections[0]?.id ?? 'basic';
-
-      for (const section of availableSections) {
-        const element = document.getElementById(getCompanySectionDomId(section.id));
-        if (!element) continue;
-
-        if (element.getBoundingClientRect().top <= containerTop) {
-          nextActive = section.id;
-        }
-      }
-
-      setActiveSectionId((prev) => (prev === nextActive ? prev : nextActive));
-    };
-
-    handleScroll();
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [availableSections, isSheetPresentation]);
-
-  const handleSectionNavClick = (sectionId: CompanyFormSectionId) => {
-    const element = document.getElementById(getCompanySectionDomId(sectionId));
-    const container = scrollContainerRef.current;
-    if (!element || !container) return;
-
-    setActiveSectionId(sectionId);
-    const containerTop = container.getBoundingClientRect().top;
-    const elementTop = element.getBoundingClientRect().top;
-    const nextTop = container.scrollTop + (elementTop - containerTop) - 24;
-
-    container.scrollTo({
-      top: Math.max(0, nextTop),
-      behavior: 'smooth',
-    });
-  };
 
   const handleClose = () => {
     if (onClose) {
@@ -748,6 +712,14 @@ export function AdminCompanyFormPage({
     </>
   );
 
+  const closeOnlyActions = (
+    <div css={actionRow}>
+      <button type="button" css={secondaryButton} onClick={handleClose}>
+        목록으로
+      </button>
+    </div>
+  );
+
   const sheetHeaderActions = (
     <div css={actionRow}>
       <button type="button" css={secondaryButton} onClick={handleClose}>
@@ -782,26 +754,19 @@ export function AdminCompanyFormPage({
   if (mode === 'edit' && !canAccess && !detailQuery.isError) {
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title="업체 수정"
-          description="기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다."
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1120}
+          scrollable={false}
         >
-          <div css={sheetState}>
+          <div css={adminEntityFormState}>
             <Loading title="관리자 인증을 확인하는 중입니다." fullHeight />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
@@ -811,26 +776,19 @@ export function AdminCompanyFormPage({
   if (isLoadingInitialData) {
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title="업체 수정"
-          description="기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다."
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1120}
+          scrollable={false}
         >
-          <div css={sheetState}>
+          <div css={adminEntityFormState}>
             <Loading title="업체 정보를 불러오는 중입니다." fullHeight />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
@@ -839,144 +797,109 @@ export function AdminCompanyFormPage({
 
   if (mode === 'edit' && detailQuery.isError) {
     const message = normalizeError(detailQuery.error).message || '업체 정보를 불러오지 못했습니다.';
+    const errorActions = (
+      <>
+        <button type="button" css={secondaryButton} onClick={handleClose}>
+          목록으로
+        </button>
+        <button type="button" css={primaryButton} onClick={() => void detailQuery.refetch()}>
+          다시 시도
+        </button>
+      </>
+    );
 
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title="업체 수정"
-          description="기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다."
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1120}
+          scrollable={false}
         >
-          <div css={sheetState}>
-            <section css={errorCard}>
-              <Text tag="h1" typo="title1" css={heroTitleText}>
-                업체 정보를 불러오지 못했습니다.
-              </Text>
-              <Text typo="body9" css={heroDescriptionText}>
-                {message}
-              </Text>
-              <div css={actionRow}>
-                <button type="button" css={secondaryButton} onClick={handleClose}>
-                  목록으로
-                </button>
-                <button
-                  type="button"
-                  css={primaryButton}
-                  onClick={() => void detailQuery.refetch()}
-                >
-                  다시 시도
-                </button>
-              </div>
-            </section>
+          <div css={adminEntityFormState}>
+            <AdminEntityFormMessageCard
+              title="업체 정보를 불러오지 못했습니다."
+              message={message}
+              actions={errorActions}
+            />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
     return (
-      <div css={pageWrapper}>
-        <div css={pageInner}>
-          <section css={errorCard}>
-            <Text tag="h1" typo="title1" css={heroTitleText}>
-              업체 정보를 불러오지 못했습니다.
-            </Text>
-            <Text typo="body9" css={heroDescriptionText}>
-              {message}
-            </Text>
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-              <button type="button" css={primaryButton} onClick={() => void detailQuery.refetch()}>
-                다시 시도
-              </button>
-            </div>
-          </section>
-        </div>
-      </div>
+      <AdminEntityFormFrame
+        presentation="page"
+        title={formTitle}
+        description={formDescription}
+        onClose={handleClose}
+      >
+        <AdminEntityFormMessageCard
+          title="업체 정보를 불러오지 못했습니다."
+          message={message}
+          actions={errorActions}
+        />
+      </AdminEntityFormFrame>
     );
   }
 
-  return isSheetPresentation ? (
-    <FormSheet
-      open
-      onOpenChange={(open) => {
-        if (!open) handleClose();
-      }}
-      title="업체 수정"
-      description="기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다."
-      headerActions={sheetHeaderActions}
-      sideNav={sheetSideNav}
-      width={1120}
-    >
-      <div ref={scrollContainerRef} css={sheetScrollArea}>
-        <div css={sheetSections}>{formSections}</div>
-      </div>
-    </FormSheet>
-  ) : (
-    <div css={pageWrapper}>
-      <div css={pageInner}>
-        <header css={headerSection}>
-          <div css={headerCopy}>
-            <Text tag="h1" typo="title1" css={heroTitleText}>
-              {mode === 'create' ? '업체 등록' : '업체 수정'}
-            </Text>
-            <Text typo="body9" css={heroDescriptionText}>
-              {mode === 'create'
-                ? '어드민에서 신규 업체 정보를 등록합니다.'
-                : '기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다.'}
-            </Text>
-          </div>
-          <div css={actionRow}>
-            <button type="button" css={secondaryButton} onClick={handleClose}>
-              목록으로
-            </button>
-            <button
-              type="button"
-              css={primaryButton}
-              disabled={isSaving || !isDirty}
-              onClick={handleSave}
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
-          </div>
-        </header>
+  const pageHeaderActions = (
+    <div css={actionRow}>
+      <button type="button" css={secondaryButton} onClick={handleClose}>
+        목록으로
+      </button>
+      <button
+        type="button"
+        css={primaryButton}
+        disabled={isSaving || !isDirty}
+        onClick={handleSave}
+      >
+        {isSaving ? '저장 중...' : '저장'}
+      </button>
+    </div>
+  );
 
+  return (
+    <>
+      <AdminEntityFormFrame
+        presentation={presentation}
+        title={formTitle}
+        description={formDescription}
+        headerActions={isSheetPresentation ? sheetHeaderActions : pageHeaderActions}
+        sideNav={isSheetPresentation ? sheetSideNav : undefined}
+        width={1120}
+        onClose={handleClose}
+        scrollContainerRef={scrollContainerRef}
+      >
         {formSections}
-      </div>
+      </AdminEntityFormFrame>
 
-      <div css={stickyActionBar}>
-        <div css={stickyActionInner}>
-          <Text typo="body10" css={helperText}>
-            {isDirty ? '변경 사항이 있습니다.' : '변경 사항이 없습니다.'}
-          </Text>
-          <div css={actionRow}>
-            <button type="button" css={secondaryButton} onClick={handleClose}>
-              취소
-            </button>
-            <button
-              type="button"
-              css={primaryButton}
-              disabled={isSaving || !isDirty}
-              onClick={handleSave}
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
+      {!isSheetPresentation && (
+        <div css={stickyActionBar}>
+          <div css={stickyActionInner}>
+            <Text typo="body10" css={helperText}>
+              {isDirty ? '변경 사항이 있습니다.' : '변경 사항이 없습니다.'}
+            </Text>
+            <div css={actionRow}>
+              <button type="button" css={secondaryButton} onClick={handleClose}>
+                취소
+              </button>
+              <button
+                type="button"
+                css={primaryButton}
+                disabled={isSaving || !isDirty}
+                onClick={handleSave}
+              >
+                {isSaving ? '저장 중...' : '저장'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
@@ -1091,25 +1014,6 @@ function MetaField({ label, value }: { label: string; value: string }) {
   );
 }
 
-const pageWrapper = css`
-  padding: 0 0 120px;
-`;
-
-const pageInner = css`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const headerSection = adminHeroSection;
-
-const headerCopy = css`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
 const cardSection = css`
   ${adminSurfacePanel};
   gap: 16px;
@@ -1129,14 +1033,7 @@ const cardSection = css`
   }
 `;
 
-const errorCard = css([
-  cardSection,
-  css`
-    margin-top: 40px;
-  `,
-]);
-
-const actionRow = adminHeroActions;
+const actionRow = adminEntityFormActionRow;
 
 const baseButton = css`
   border: none;
@@ -1396,10 +1293,6 @@ const stickyActionInner = css`
   }
 `;
 
-const heroTitleText = adminHeroTitle;
-
-const heroDescriptionText = adminHeroDescription;
-
 const sectionTitleText = adminSectionTitle;
 
 const helperText = css`
@@ -1426,64 +1319,4 @@ const metaValueText = css`
   color: ${adminConsolePalette.textStrong};
 `;
 
-const sheetSectionButton = (isActive: boolean) => css`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  min-height: 46px;
-  padding: 0 16px;
-  border: 1px solid ${isActive ? 'rgba(142, 164, 190, 0.16)' : 'transparent'};
-  border-radius: 14px;
-  background: ${isActive ? 'rgba(255, 255, 255, 0.08)' : 'transparent'};
-  color: ${isActive ? adminConsolePalette.textStrong : adminConsolePalette.textMuted};
-  font-size: 14px;
-  font-weight: ${isActive ? 700 : 500};
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: ${adminConsolePalette.textStrong};
-  }
-
-  @media (max-width: 1024px) {
-    width: auto;
-    white-space: nowrap;
-  }
-`;
-
-const sheetScrollArea = css`
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding: 24px 28px 32px;
-
-  @media (max-width: 1024px) {
-    padding: 20px;
-  }
-`;
-
-const sheetSections = css`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  & > section {
-    scroll-margin-top: 24px;
-  }
-`;
-
-const sheetState = css`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-`;
+const sheetSectionButton = adminEntityFormSectionButton;
