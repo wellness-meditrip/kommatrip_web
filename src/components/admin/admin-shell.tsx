@@ -15,17 +15,21 @@ interface AdminShellProps {
 export function AdminShell({ children }: AdminShellProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const { logout, user } = useAdminAuth();
+  const { logout, user, isReady } = useAdminAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     showToast({ title: '관리자 로그아웃이 완료되었습니다.', icon: 'check' });
-    void router.replace(ROUTES.ADMIN_LOGIN);
+    await router.replace(ROUTES.ADMIN_LOGIN);
   };
 
   return (
     <div css={shell}>
-      <AdminSidebar onLogout={handleLogout} userEmail={user?.email} />
+      <AdminSidebar
+        onLogout={() => void handleLogout()}
+        userEmail={user?.email}
+        showAccount={isReady}
+      />
       <div css={mainPane}>
         <AdminTopbar />
         <main css={contentArea} data-admin-content-area>

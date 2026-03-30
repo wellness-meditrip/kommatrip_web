@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type {
   AdminCompanyReviewsResponse,
   AdminCompanyDetail,
@@ -23,6 +24,7 @@ import type {
   AdminReservationStatsResponse,
   AdminLoginResponse,
 } from '@/models';
+import { normalizeError } from '@/utils/error-handler';
 import {
   buildAdminCompanyCreateFormData,
   buildAdminCompanyImagesFormData,
@@ -319,6 +321,7 @@ export const postAdminLogin = async (data: AdminLoginRequestBody) => {
 
 const ADMIN_AUTH_LOGIN_PATH = '/api/admin/auth/login';
 const ADMIN_AUTH_REGISTER_PATH = '/api/admin/auth/register';
+const ADMIN_AUTH_REISSUE_PATH = '/api/admin/auth/token/reissue';
 
 export const postAdminRegister = async (data: AdminRegisterRequestBody) => {
   const response = await adminApi.post(ADMIN_AUTH_REGISTER_PATH, data, {
@@ -328,6 +331,15 @@ export const postAdminRegister = async (data: AdminRegisterRequestBody) => {
   });
 
   return parseAdminLoginResponse(response);
+};
+
+export const postAdminTokenReissue = async () => {
+  return axios
+    .post(ADMIN_AUTH_REISSUE_PATH, undefined, {
+      withCredentials: true,
+    })
+    .then((response) => parseAdminLoginResponse(response.data))
+    .catch((error) => Promise.reject(normalizeError(error)));
 };
 
 export const getAdminUsers = async (params: AdminUsersParams = {}) => {

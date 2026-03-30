@@ -37,6 +37,7 @@ export * from './Close';
 export * from './Copy';
 export * from './DefaultImage';
 export * from './DefaultProfile';
+export * from './Download';
 export * from './Exit';
 export * from './GlobeFilled';
 export * from './Globe';

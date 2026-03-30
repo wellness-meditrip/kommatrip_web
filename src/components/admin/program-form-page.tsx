@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,18 +7,21 @@ import {
   adminAccentButton,
   adminConsolePalette,
   adminGhostButton,
-  adminHeroActions,
-  adminHeroDescription,
-  adminHeroSection,
-  adminHeroTitle,
   adminSectionTitle,
   adminSurfacePanel,
 } from '@/components/admin/admin-console.styles';
-import { FormSheet } from '@/components/admin/common/FormSheet';
+import {
+  AdminEntityFormFrame,
+  AdminEntityFormMessageCard,
+  adminEntityFormActionRow,
+  adminEntityFormSectionButton,
+  adminEntityFormState,
+} from '@/components/admin/common/AdminEntityFormFrame';
 import { Input } from '@/components/input';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
 import { useToast } from '@/hooks';
+import { useAdminFormSectionNavigation } from '@/hooks/admin/use-admin-form-section-navigation';
 import type {
   AdminProgramFieldErrors,
   AdminProgramFormValues,
@@ -40,7 +43,7 @@ import {
   validateAdminProgramForm,
 } from '@/utils/admin-program-form';
 import { postAdminProgram, putAdminProgram, putAdminProgramImages } from '@/apis';
-import { useAdminRouteGuard } from '@/hooks/admin/use-admin-route-guard';
+import { useAdminAccess } from '@/hooks/admin/use-admin-access';
 
 interface AdminProgramFormPageProps {
   mode: 'create' | 'edit';
@@ -115,8 +118,7 @@ export function AdminProgramFormPage({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { canAccess, isReady } = useAdminRouteGuard();
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const { canAccess } = useAdminAccess();
   const isSheetPresentation = presentation === 'sheet';
 
   const companyDetailQuery = useGetAdminCompanyDetailQuery(companyId, canAccess);
@@ -127,6 +129,10 @@ export function AdminProgramFormPage({
 
   const companyCode = companyDetailQuery.data?.company?.company_code ?? '';
   const companyName = companyDetailQuery.data?.company?.name ?? '';
+  const formTitle = mode === 'create' ? '프로그램 등록' : '프로그램 수정';
+  const formDescription = companyName
+    ? `${companyName} 프로그램 관리`
+    : '프로그램 정보를 관리합니다.';
 
   const [values, setValues] = useState(createEmptyAdminProgramFormValues);
   const [originalValues, setOriginalValues] = useState<AdminProgramFormValues | null>(null);
@@ -134,7 +140,6 @@ export function AdminProgramFormPage({
   const [imageState, setImageState] = useState(createEmptyAdminProgramImagesState);
   const [errors, setErrors] = useState<AdminProgramFieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [activeSectionId, setActiveSectionId] = useState<ProgramFormSectionId>('meta');
 
   const hydrateFromProgram = (
     nextProgram: Parameters<typeof mapAdminProgramDetailToFormValues>[0]
@@ -158,7 +163,6 @@ export function AdminProgramFormPage({
   }, [mode, programDetailQuery.data?.program]);
 
   const isLoadingInitialData =
-    !isReady ||
     !canAccess ||
     companyDetailQuery.isLoading ||
     (mode === 'edit' && (programDetailQuery.isLoading || !originalValues));
@@ -186,49 +190,13 @@ export function AdminProgramFormPage({
       }
     };
   }, [newImagePreviews]);
-
-  useEffect(() => {
-    if (!isSheetPresentation) return;
-
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const containerTop = container.getBoundingClientRect().top + 120;
-      let nextActive: ProgramFormSectionId = 'meta';
-
-      for (const section of PROGRAM_FORM_SECTIONS) {
-        const element = document.getElementById(getProgramSectionDomId(section.id));
-        if (!element) continue;
-
-        if (element.getBoundingClientRect().top <= containerTop) {
-          nextActive = section.id;
-        }
-      }
-
-      setActiveSectionId((prev) => (prev === nextActive ? prev : nextActive));
-    };
-
-    handleScroll();
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [isSheetPresentation]);
-
-  const handleSectionNavClick = (sectionId: ProgramFormSectionId) => {
-    const element = document.getElementById(getProgramSectionDomId(sectionId));
-    const container = scrollContainerRef.current;
-    if (!element || !container) return;
-
-    setActiveSectionId(sectionId);
-    const containerTop = container.getBoundingClientRect().top;
-    const elementTop = element.getBoundingClientRect().top;
-    const nextTop = container.scrollTop + (elementTop - containerTop) - 24;
-
-    container.scrollTo({
-      top: Math.max(0, nextTop),
-      behavior: 'smooth',
+  const { activeSectionId, scrollContainerRef, handleSectionNavClick } =
+    useAdminFormSectionNavigation({
+      presentation,
+      sections: PROGRAM_FORM_SECTIONS,
+      initialSectionId: 'meta',
+      getSectionDomId: getProgramSectionDomId,
     });
-  };
 
   const handleClose = () => {
     if (onClose) {
@@ -602,6 +570,14 @@ export function AdminProgramFormPage({
     </>
   );
 
+  const closeOnlyActions = (
+    <div css={actionRow}>
+      <button type="button" css={secondaryButton} onClick={handleClose}>
+        목록으로
+      </button>
+    </div>
+  );
+
   const sheetHeaderActions = (
     <div css={actionRow}>
       <button type="button" css={secondaryButton} onClick={handleClose}>
@@ -636,26 +612,19 @@ export function AdminProgramFormPage({
   if (isLoadingInitialData) {
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title={mode === 'create' ? '프로그램 등록' : '프로그램 수정'}
-          description={companyName ? `${companyName} 프로그램 관리` : '프로그램 정보를 관리합니다.'}
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1040}
+          scrollable={false}
         >
-          <div css={sheetState}>
+          <div css={adminEntityFormState}>
             <Loading title="프로그램 화면을 준비하는 중입니다." fullHeight />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
@@ -663,144 +632,181 @@ export function AdminProgramFormPage({
   }
 
   if (companyDetailQuery.isError) {
+    const errorMessage = normalizeError(companyDetailQuery.error).message;
+    const errorActions = (
+      <>
+        <button
+          type="button"
+          css={secondaryButton}
+          onClick={() => void router.push(ROUTES.ADMIN_COMPANIES)}
+        >
+          돌아가기
+        </button>
+        <button type="button" css={primaryButton} onClick={() => void companyDetailQuery.refetch()}>
+          다시 시도
+        </button>
+      </>
+    );
+
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title={mode === 'create' ? '프로그램 등록' : '프로그램 수정'}
-          description={companyName ? `${companyName} 프로그램 관리` : '프로그램 정보를 관리합니다.'}
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1040}
+          scrollable={false}
         >
-          <div css={sheetState}>
-            <ErrorPanel
+          <div css={adminEntityFormState}>
+            <AdminEntityFormMessageCard
               title="업체 정보를 불러오지 못했습니다."
-              message={normalizeError(companyDetailQuery.error).message}
-              onBack={handleClose}
-              onRetry={() => void companyDetailQuery.refetch()}
+              message={errorMessage}
+              actions={
+                <>
+                  <button type="button" css={secondaryButton} onClick={handleClose}>
+                    목록으로
+                  </button>
+                  <button
+                    type="button"
+                    css={primaryButton}
+                    onClick={() => void companyDetailQuery.refetch()}
+                  >
+                    다시 시도
+                  </button>
+                </>
+              }
             />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
     return (
-      <ErrorPanel
-        title="업체 정보를 불러오지 못했습니다."
-        message={normalizeError(companyDetailQuery.error).message}
-        onBack={() => void router.push(ROUTES.ADMIN_COMPANIES)}
-        onRetry={() => void companyDetailQuery.refetch()}
-      />
+      <AdminEntityFormFrame
+        presentation="page"
+        title={formTitle}
+        description={formDescription}
+        onClose={handleClose}
+      >
+        <AdminEntityFormMessageCard
+          title="업체 정보를 불러오지 못했습니다."
+          message={errorMessage}
+          actions={errorActions}
+        />
+      </AdminEntityFormFrame>
     );
   }
 
   if (mode === 'edit' && programDetailQuery.isError) {
+    const errorMessage = normalizeError(programDetailQuery.error).message;
+    const errorActions = (
+      <>
+        <button
+          type="button"
+          css={secondaryButton}
+          onClick={() => void router.push(ROUTES.ADMIN_COMPANY_PROGRAMS(companyId))}
+        >
+          돌아가기
+        </button>
+        <button type="button" css={primaryButton} onClick={() => void programDetailQuery.refetch()}>
+          다시 시도
+        </button>
+      </>
+    );
+
     if (isSheetPresentation) {
       return (
-        <FormSheet
-          open
-          onOpenChange={(open) => {
-            if (!open) handleClose();
-          }}
-          title="프로그램 수정"
-          description={companyName ? `${companyName} 프로그램 관리` : '프로그램 정보를 관리합니다.'}
-          headerActions={
-            <div css={actionRow}>
-              <button type="button" css={secondaryButton} onClick={handleClose}>
-                목록으로
-              </button>
-            </div>
-          }
+        <AdminEntityFormFrame
+          presentation="sheet"
+          title={formTitle}
+          description={formDescription}
+          headerActions={closeOnlyActions}
+          onClose={handleClose}
           width={1040}
+          scrollable={false}
         >
-          <div css={sheetState}>
-            <ErrorPanel
+          <div css={adminEntityFormState}>
+            <AdminEntityFormMessageCard
               title="프로그램 정보를 불러오지 못했습니다."
-              message={normalizeError(programDetailQuery.error).message}
-              onBack={handleClose}
-              onRetry={() => void programDetailQuery.refetch()}
+              message={errorMessage}
+              actions={
+                <>
+                  <button type="button" css={secondaryButton} onClick={handleClose}>
+                    목록으로
+                  </button>
+                  <button
+                    type="button"
+                    css={primaryButton}
+                    onClick={() => void programDetailQuery.refetch()}
+                  >
+                    다시 시도
+                  </button>
+                </>
+              }
             />
           </div>
-        </FormSheet>
+        </AdminEntityFormFrame>
       );
     }
 
     return (
-      <ErrorPanel
-        title="프로그램 정보를 불러오지 못했습니다."
-        message={normalizeError(programDetailQuery.error).message}
-        onBack={() => void router.push(ROUTES.ADMIN_COMPANY_PROGRAMS(companyId))}
-        onRetry={() => void programDetailQuery.refetch()}
-      />
+      <AdminEntityFormFrame
+        presentation="page"
+        title={formTitle}
+        description={formDescription}
+        onClose={handleClose}
+      >
+        <AdminEntityFormMessageCard
+          title="프로그램 정보를 불러오지 못했습니다."
+          message={errorMessage}
+          actions={errorActions}
+        />
+      </AdminEntityFormFrame>
     );
   }
 
-  return isSheetPresentation ? (
-    <FormSheet
-      open
-      onOpenChange={(open) => {
-        if (!open) handleClose();
-      }}
-      title={mode === 'create' ? '프로그램 등록' : '프로그램 수정'}
-      description={companyName ? `${companyName} 프로그램 관리` : '프로그램 정보를 관리합니다.'}
-      headerActions={sheetHeaderActions}
-      sideNav={sheetSideNav}
-      width={1040}
-    >
-      <div ref={scrollContainerRef} css={sheetScrollArea}>
-        <div css={sheetSections}>{formSections}</div>
-      </div>
-    </FormSheet>
-  ) : (
-    <div css={pageWrapper}>
-      <div css={pageInner}>
-        <header css={headerSection}>
-          <div css={headerCopy}>
-            <Text tag="h1" typo="title1" css={heroTitleText}>
-              {mode === 'create' ? '프로그램 등록' : '프로그램 수정'}
-            </Text>
-            <Text typo="body9" css={heroDescriptionText}>
-              {companyName ? `${companyName} 프로그램 관리` : '프로그램 정보를 관리합니다.'}
-            </Text>
-          </div>
-          <div css={actionRow}>
-            <button
-              type="button"
-              css={secondaryButton}
-              onClick={() => void router.push(ROUTES.ADMIN_COMPANY_EDIT(companyId))}
-            >
-              업체 수정
-            </button>
-            <button
-              type="button"
-              css={secondaryButton}
-              onClick={() => void router.push(ROUTES.ADMIN_COMPANY_PROGRAMS(companyId))}
-            >
-              프로그램 목록
-            </button>
-            <button
-              type="button"
-              css={primaryButton}
-              disabled={isSaving || !isDirty}
-              onClick={handleSave}
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
-          </div>
-        </header>
-
-        {formSections}
-      </div>
+  const pageHeaderActions = (
+    <div css={actionRow}>
+      <button
+        type="button"
+        css={secondaryButton}
+        onClick={() => void router.push(ROUTES.ADMIN_COMPANY_EDIT(companyId))}
+      >
+        업체 수정
+      </button>
+      <button
+        type="button"
+        css={secondaryButton}
+        onClick={() => void router.push(ROUTES.ADMIN_COMPANY_PROGRAMS(companyId))}
+      >
+        프로그램 목록
+      </button>
+      <button
+        type="button"
+        css={primaryButton}
+        disabled={isSaving || !isDirty}
+        onClick={handleSave}
+      >
+        {isSaving ? '저장 중...' : '저장'}
+      </button>
     </div>
+  );
+
+  return (
+    <AdminEntityFormFrame
+      presentation={presentation}
+      title={formTitle}
+      description={formDescription}
+      headerActions={isSheetPresentation ? sheetHeaderActions : pageHeaderActions}
+      sideNav={isSheetPresentation ? sheetSideNav : undefined}
+      width={1040}
+      onClose={handleClose}
+      scrollContainerRef={scrollContainerRef}
+    >
+      {formSections}
+    </AdminEntityFormFrame>
   );
 }
 
@@ -869,41 +875,6 @@ function PreviewTextAreaField({
   );
 }
 
-function ErrorPanel({
-  title,
-  message,
-  onBack,
-  onRetry,
-}: {
-  title: string;
-  message: string;
-  onBack: () => void;
-  onRetry: () => void;
-}) {
-  return (
-    <div css={pageWrapper}>
-      <div css={pageInner}>
-        <section css={cardSection}>
-          <Text tag="h1" typo="title1" css={heroTitleText}>
-            {title}
-          </Text>
-          <Text typo="body9" css={heroDescriptionText}>
-            {message}
-          </Text>
-          <div css={actionRow}>
-            <button type="button" css={secondaryButton} onClick={onBack}>
-              돌아가기
-            </button>
-            <button type="button" css={primaryButton} onClick={onRetry}>
-              다시 시도
-            </button>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
 function MetaBlock({ label, value }: { label: string; value: string }) {
   return (
     <div css={metaItem}>
@@ -917,26 +888,7 @@ function MetaBlock({ label, value }: { label: string; value: string }) {
   );
 }
 
-const pageWrapper = css`
-  padding: 0 0 120px;
-`;
-
-const pageInner = css`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
-
-const headerSection = adminHeroSection;
-
-const headerCopy = css`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const actionRow = adminHeroActions;
+const actionRow = adminEntityFormActionRow;
 
 const baseButton = css`
   border: none;
@@ -1164,10 +1116,6 @@ const hiddenInput = css`
   display: none;
 `;
 
-const heroTitleText = adminHeroTitle;
-
-const heroDescriptionText = adminHeroDescription;
-
 const sectionTitleText = adminSectionTitle;
 
 const helperText = css`
@@ -1194,64 +1142,4 @@ const metaValueText = css`
   color: ${adminConsolePalette.textStrong};
 `;
 
-const sheetSectionButton = (isActive: boolean) => css`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  min-height: 46px;
-  padding: 0 16px;
-  border: 1px solid ${isActive ? 'rgba(142, 164, 190, 0.16)' : 'transparent'};
-  border-radius: 14px;
-  background: ${isActive ? 'rgba(255, 255, 255, 0.08)' : 'transparent'};
-  color: ${isActive ? adminConsolePalette.textStrong : adminConsolePalette.textMuted};
-  font-size: 14px;
-  font-weight: ${isActive ? 700 : 500};
-  text-align: left;
-  cursor: pointer;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: ${adminConsolePalette.textStrong};
-  }
-
-  @media (max-width: 1024px) {
-    width: auto;
-    white-space: nowrap;
-  }
-`;
-
-const sheetScrollArea = css`
-  flex: 1;
-  height: 100%;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  padding: 24px 28px 32px;
-
-  @media (max-width: 1024px) {
-    padding: 20px;
-  }
-`;
-
-const sheetSections = css`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  & > section {
-    scroll-margin-top: 24px;
-  }
-`;
-
-const sheetState = css`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-`;
+const sheetSectionButton = adminEntityFormSectionButton;

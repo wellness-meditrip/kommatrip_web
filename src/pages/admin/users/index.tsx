@@ -19,7 +19,7 @@ import { AdminPageHeader } from '@/components/admin/common/AdminPageHeader';
 import { AdminSearchField } from '@/components/admin/common/AdminSearchField';
 import { AdminStatCard } from '@/components/admin/common/AdminStatCard';
 import { Text } from '@/components/text';
-import { useAdminRouteGuard, useDialog, useToast } from '@/hooks';
+import { useAdminAccess, useDialog, useToast } from '@/hooks';
 import type { AdminUserListItem, AdminUsersParams } from '@/models';
 import { useGetAdminUsersQuery } from '@/queries';
 import { QUERY_KEYS } from '@/queries/query-keys';
@@ -79,7 +79,7 @@ const buildUserProfileSummary = (user: AdminUserListItem) => {
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const { open: openDialog } = useDialog();
   const { showToast } = useToast();
   const [keyword, setKeyword] = useState('');
@@ -198,7 +198,7 @@ export default function AdminUsersPage() {
     });
   };
 
-  if (!isReady || !canAccess || (usersQuery.isLoading && !usersQuery.data)) {
+  if (!canAccess || (usersQuery.isLoading && !usersQuery.data)) {
     return <Loading title="회원관리 화면을 준비하는 중입니다." fullHeight />;
   }
 

@@ -29,7 +29,7 @@ import { AdminPageHeader } from '@/components/admin/common/AdminPageHeader';
 import { AdminSearchField } from '@/components/admin/common/AdminSearchField';
 import { AdminStatCard } from '@/components/admin/common/AdminStatCard';
 import { Text } from '@/components/text';
-import { useAdminRouteGuard, useDialog, useToast } from '@/hooks';
+import { useAdminAccess, useDialog, useToast } from '@/hooks';
 import type {
   AdminReservationDetail,
   AdminReservationListStatus,
@@ -209,7 +209,7 @@ const parseAvailabilityOptions = (input: string): AvailabilityOption[] => {
 
 export default function AdminReservationsPage() {
   const queryClient = useQueryClient();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const { open: openDialog } = useDialog();
   const { showToast } = useToast();
 
@@ -497,7 +497,7 @@ export default function AdminReservationsPage() {
     }
   };
 
-  if (!isReady || !canAccess || reservationsQuery.isLoading) {
+  if (!canAccess || reservationsQuery.isLoading) {
     return <Loading title="예약 운영 화면을 준비하는 중입니다." fullHeight />;
   }
 
