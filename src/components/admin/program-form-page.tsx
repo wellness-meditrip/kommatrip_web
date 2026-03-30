@@ -40,7 +40,7 @@ import {
   validateAdminProgramForm,
 } from '@/utils/admin-program-form';
 import { postAdminProgram, putAdminProgram, putAdminProgramImages } from '@/apis';
-import { useAdminRouteGuard } from '@/hooks/admin/use-admin-route-guard';
+import { useAdminAccess } from '@/hooks/admin/use-admin-access';
 
 interface AdminProgramFormPageProps {
   mode: 'create' | 'edit';
@@ -115,7 +115,7 @@ export function AdminProgramFormPage({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const isSheetPresentation = presentation === 'sheet';
 
@@ -158,7 +158,6 @@ export function AdminProgramFormPage({
   }, [mode, programDetailQuery.data?.program]);
 
   const isLoadingInitialData =
-    !isReady ||
     !canAccess ||
     companyDetailQuery.isLoading ||
     (mode === 'edit' && (programDetailQuery.isLoading || !originalValues));

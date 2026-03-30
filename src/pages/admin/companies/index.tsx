@@ -16,7 +16,7 @@ import { AdminCompanyFormPage } from '@/components/admin/company-form-page';
 import { Loading } from '@/components/common';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminRouteGuard, useDialog, useToast } from '@/hooks';
+import { useAdminAccess, useDialog, useToast } from '@/hooks';
 import { deleteAdminCompany, postAdminCompanyApprove, postAdminCompanySuspend } from '@/apis';
 import type { AdminCompanyListItem } from '@/models';
 import { useGetAdminCompaniesQuery } from '@/queries';
@@ -81,7 +81,7 @@ const canOpenPrograms = (company: CompanyRow) => company.status !== 'suspended';
 
 export default function AdminCompaniesPage() {
   const queryClient = useQueryClient();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const { showToast } = useToast();
   const { open: openDialog } = useDialog();
 
@@ -150,7 +150,6 @@ export default function AdminCompaniesPage() {
   );
 
   const isLoading =
-    !isReady ||
     !canAccess ||
     activeCompaniesQuery.isLoading ||
     pendingCompaniesQuery.isLoading ||

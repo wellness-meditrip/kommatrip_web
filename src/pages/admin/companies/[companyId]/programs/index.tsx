@@ -29,7 +29,7 @@ import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
 import { deleteAdminProgram, postAdminProgramActivate } from '@/apis';
 import type { AdminProgramListItem } from '@/models';
-import { useAdminRouteGuard, useDialog, useToast } from '@/hooks';
+import { useAdminAccess, useDialog, useToast } from '@/hooks';
 import { useGetAdminCompanyDetailQuery, useGetAdminProgramsByCompanyQuery } from '@/queries';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { normalizeError } from '@/utils/error-handler';
@@ -70,7 +70,7 @@ const canActivateProgram = (status: string) => status === 'draft' || status === 
 export default function AdminCompanyProgramsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const { showToast } = useToast();
   const { open: openDialog } = useDialog();
   const companyId = parseCompanyId(router.query.companyId);
@@ -167,13 +167,7 @@ export default function AdminCompanyProgramsPage() {
     }
   };
 
-  if (
-    !router.isReady ||
-    !isReady ||
-    !canAccess ||
-    companyDetailQuery.isLoading ||
-    programsQuery.isLoading
-  ) {
+  if (!router.isReady || !canAccess || companyDetailQuery.isLoading || programsQuery.isLoading) {
     return <Loading title="프로그램 목록을 불러오는 중입니다." fullHeight />;
   }
 

@@ -19,17 +19,16 @@ import {
 import { AdminStatCard } from '@/components/admin/common/AdminStatCard';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
-import { useAdminRouteGuard } from '@/hooks';
+import { useAdminAccess } from '@/hooks';
 import { useGetAdminCompaniesQuery } from '@/queries';
 
 export default function AdminIndexPage() {
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const activeCompaniesQuery = useGetAdminCompaniesQuery('active', canAccess);
   const pendingCompaniesQuery = useGetAdminCompaniesQuery('pending', canAccess);
   const suspendedCompaniesQuery = useGetAdminCompaniesQuery('suspended', canAccess);
 
   if (
-    !isReady ||
     !canAccess ||
     activeCompaniesQuery.isLoading ||
     pendingCompaniesQuery.isLoading ||

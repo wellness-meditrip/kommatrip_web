@@ -11,7 +11,7 @@ import { AdminPageHeader } from '@/components/admin/common/AdminPageHeader';
 import { AdminSearchField } from '@/components/admin/common/AdminSearchField';
 import { Loading } from '@/components/common';
 import { Text } from '@/components/text';
-import { useAdminRouteGuard } from '@/hooks';
+import { useAdminAccess } from '@/hooks';
 import type { AdminCompanyListItem, AdminCompanyReviewsResponse } from '@/models';
 import { useGetAdminCompaniesQuery, useGetAdminCompanyReviewsQuery } from '@/queries';
 import { normalizeError } from '@/utils/error-handler';
@@ -95,7 +95,7 @@ const formatDateTime = (value: string) => {
 };
 
 export default function AdminReviewsPage() {
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
 
   const [statusTab, setStatusTab] = useState<CompanyStatusTab>('active');
   const [viewMode, setViewMode] = useState<CompanyViewMode>('table');
@@ -197,7 +197,6 @@ export default function AdminReviewsPage() {
   );
 
   const isLoading =
-    !isReady ||
     !canAccess ||
     activeCompaniesQuery.isLoading ||
     pendingCompaniesQuery.isLoading ||

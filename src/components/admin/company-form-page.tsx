@@ -41,7 +41,7 @@ import {
   validateAdminCompanyForm,
 } from '@/utils/admin-company-form';
 import { postAdminCompany, putAdminCompany, putAdminCompanyImages } from '@/apis';
-import { useAdminRouteGuard } from '@/hooks/admin/use-admin-route-guard';
+import { useAdminAccess } from '@/hooks/admin/use-admin-access';
 
 interface AdminCompanyFormPageProps {
   mode: 'create' | 'edit';
@@ -125,7 +125,7 @@ export function AdminCompanyFormPage({
   const router = useRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { canAccess, isReady } = useAdminRouteGuard();
+  const { canAccess } = useAdminAccess();
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const detailQuery = useGetAdminCompanyDetailQuery(
     typeof companyId === 'number' ? companyId : null,
@@ -779,7 +779,7 @@ export function AdminCompanyFormPage({
     </>
   );
 
-  if (!isReady || (mode === 'edit' && !canAccess && !detailQuery.isError)) {
+  if (mode === 'edit' && !canAccess && !detailQuery.isError) {
     if (isSheetPresentation) {
       return (
         <FormSheet
@@ -787,12 +787,8 @@ export function AdminCompanyFormPage({
           onOpenChange={(open) => {
             if (!open) handleClose();
           }}
-          title={mode === 'create' ? '업체 등록' : '업체 수정'}
-          description={
-            mode === 'create'
-              ? '필수 정보를 입력하세요.'
-              : '기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다.'
-          }
+          title="업체 수정"
+          description="기존 업체 정보를 기본값으로 불러와 변경분만 저장합니다."
           headerActions={
             <div css={actionRow}>
               <button type="button" css={secondaryButton} onClick={handleClose}>
