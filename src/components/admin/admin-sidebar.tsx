@@ -10,6 +10,7 @@ import { adminConsolePalette } from './admin-console.styles';
 interface AdminSidebarProps {
   onLogout: () => void;
   userEmail?: string | null;
+  showAccount?: boolean;
 }
 
 interface AdminNavItem {
@@ -33,7 +34,7 @@ const normalizePath = (value: string) => {
   return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
 };
 
-export function AdminSidebar({ onLogout, userEmail }: AdminSidebarProps) {
+export function AdminSidebar({ onLogout, userEmail, showAccount = true }: AdminSidebarProps) {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const currentPath = useMemo(() => normalizePath(router.asPath), [router.asPath]);
@@ -70,7 +71,7 @@ export function AdminSidebar({ onLogout, userEmail }: AdminSidebarProps) {
       </nav>
 
       <div css={sidebarFooter}>
-        {!collapsed && (
+        {!collapsed && showAccount && (
           <div css={accountCard}>
             <Text typo="body12" css={accountLabel}>
               접속 계정

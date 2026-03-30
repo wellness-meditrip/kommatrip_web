@@ -8,6 +8,8 @@ import {
   extractContractMessage,
   resolveTraceId,
 } from '@/server/http/api-contract';
+import { createAdminRefreshTokenCookies } from '@/server/auth/cookies';
+import { applyRefreshTokenCookies, sanitizeAuthPayload } from '@/server/api/auth/auth-proxy-utils';
 
 const BACKEND_ADMIN_LOGIN_PATH = 'api/users/login/admin';
 
@@ -33,7 +35,8 @@ export const handleAdminLogin = async (req: NextApiRequest, res: NextApiResponse
       timeout: 7000,
     });
 
-    const payload = resolveBackendPayload(backendResponse.data);
+    applyRefreshTokenCookies(res, backendResponse.data, createAdminRefreshTokenCookies);
+    const payload = sanitizeAuthPayload(resolveBackendPayload(backendResponse.data));
     const message = extractContractMessage(payload, 'Admin login successful');
 
     return res.status(backendResponse.status).json(
@@ -47,7 +50,7 @@ export const handleAdminLogin = async (req: NextApiRequest, res: NextApiResponse
     );
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      const payload = resolveBackendPayload(error.response.data);
+      const payload = sanitizeAuthPayload(resolveBackendPayload(error.response.data));
       return res.status(error.response.status).json(
         buildErrorContract({
           traceId,

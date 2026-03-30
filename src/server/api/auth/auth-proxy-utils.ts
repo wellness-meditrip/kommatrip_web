@@ -6,10 +6,14 @@ import {
   sanitizeTokenPayload,
 } from '@/server/auth/token-payload';
 
-export const applyRefreshTokenCookies = (res: NextApiResponse, payload: unknown) => {
-  const refreshToken = extractRefreshToken(payload);
+export const applyRefreshTokenCookies = (
+  res: NextApiResponse,
+  payload: unknown,
+  createCookies: (refreshToken: string) => string[] = createRefreshTokenCookies
+) => {
+  const refreshToken = extractRefreshToken(resolvePayload(payload));
   if (refreshToken) {
-    res.setHeader('Set-Cookie', createRefreshTokenCookies(refreshToken));
+    res.setHeader('Set-Cookie', createCookies(refreshToken));
   }
   return refreshToken;
 };

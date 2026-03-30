@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { ADMIN_AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
+import { createAdminRefreshTokenCookies } from '@/server/auth/cookies';
+import { resolvePayload, extractRefreshToken } from '@/server/auth/token-payload';
 import { postBackend, resolveBackendPayload } from '@/server/http/backend-client';
 import {
   buildErrorContract,
@@ -8,6 +11,7 @@ import {
   extractContractMessage,
   resolveTraceId,
 } from '@/server/http/api-contract';
+import { sanitizeAuthPayload } from '@/server/api/auth/auth-proxy-utils';
 
 const BACKEND_ADMIN_REISSUE_PATH = 'api/users/token/reissue';
 
@@ -25,37 +29,42 @@ export const handleAdminTokenReissue = async (req: NextApiRequest, res: NextApiR
     );
   }
 
-  const refreshToken =
-    typeof req.body?.refreshToken === 'string' && req.body.refreshToken.trim().length > 0
-      ? req.body.refreshToken.trim()
-      : undefined;
-
   try {
+    const refreshTokenFromCookie = req.cookies?.[ADMIN_AUTH_COOKIE_KEYS.REFRESH_TOKEN];
+    const refreshToken = refreshTokenFromCookie || undefined;
+
     const backendResponse = await postBackend(
       BACKEND_ADMIN_REISSUE_PATH,
       { refreshToken },
       {
         headers: {
           'Content-Type': 'application/json',
+          cookie: req.headers.cookie ?? '',
         },
       }
     );
 
-    const payload = resolveBackendPayload(backendResponse.data);
-    const message = extractContractMessage(payload, 'Admin token reissued');
+    const payload = resolvePayload(resolveBackendPayload(backendResponse.data));
+    const rotatedRefreshToken = extractRefreshToken(payload);
+    if (rotatedRefreshToken) {
+      res.setHeader('Set-Cookie', createAdminRefreshTokenCookies(rotatedRefreshToken));
+    }
+
+    const sanitizedPayload = sanitizeAuthPayload(payload);
+    const message = extractContractMessage(sanitizedPayload, 'Admin token reissued');
 
     return res.status(backendResponse.status).json(
       buildSuccessContract({
         traceId,
         code: 'ADMIN_TOKEN_REISSUE_SUCCESS',
         message,
-        data: payload,
+        data: sanitizedPayload,
         mergeData: true,
       })
     );
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      const payload = resolveBackendPayload(error.response.data);
+      const payload = sanitizeAuthPayload(resolveBackendPayload(error.response.data));
       return res.status(error.response.status).json(
         buildErrorContract({
           traceId,

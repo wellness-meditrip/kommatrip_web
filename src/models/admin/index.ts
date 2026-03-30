@@ -22,7 +22,7 @@ export interface AdminAuthUser {
 
 export interface AdminAuthTokens {
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
   token_type: 'Bearer' | 'bearer';
 }
 
