@@ -203,8 +203,8 @@ export default function AdminCompanyProgramsPage() {
           </Text>
         </div>
         <div css={pageHeaderActions}>
-          <Link href={ROUTES.ADMIN_COMPANY_EDIT(companyId)} css={secondaryLinkButton}>
-            업체 수정
+          <Link href={ROUTES.ADMIN_COMPANIES} css={secondaryLinkButton}>
+            업체 목록
           </Link>
           <Link href={ROUTES.ADMIN_COMPANY_PROGRAM_NEW(companyId)} css={primaryLinkButton}>
             프로그램 등록

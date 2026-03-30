@@ -8,12 +8,14 @@ import {
   adminCompactHeaderCopy,
   adminInlineDangerButton,
   adminInlineGhostButton,
+  adminInlinePrimaryButton,
   adminSectionSubtitle,
   adminSectionTitle,
 } from '@/components/admin/admin-console.styles';
 import { AdminActionButton } from '@/components/admin/common/AdminActionButton';
 import { AdminCompanyFormPage } from '@/components/admin/company-form-page';
 import { Loading } from '@/components/common';
+import { Download } from '@/icons';
 import { Text } from '@/components/text';
 import { ROUTES } from '@/constants';
 import {
@@ -25,9 +27,19 @@ import {
   useDialog,
   useToast,
 } from '@/hooks';
-import { deleteAdminCompany, postAdminCompanyApprove, postAdminCompanySuspend } from '@/apis';
+import {
+  deleteAdminCompany,
+  getAdminCompanyDetail,
+  getAdminProgramsByCompany,
+  postAdminCompanyApprove,
+  postAdminCompanySuspend,
+} from '@/apis';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { colors } from '@/styles';
+import {
+  downloadAdminCompaniesWorkbook,
+  downloadAdminCompanyProgramsWorkbook,
+} from '@/utils/admin-excel';
 import { normalizeError } from '@/utils/error-handler';
 import type { AdminCompanyStatusRow, AdminCompanyStatusTab } from '@/hooks';
 
@@ -39,6 +51,29 @@ const VIEW_OPTIONS: Array<{ value: CompanyViewMode; label: string }> = [
 ];
 const isPendingCompany = (company: AdminCompanyStatusRow) => company.status === 'pending';
 const canOpenPrograms = (company: AdminCompanyStatusRow) => company.status !== 'suspended';
+const EXPORT_FETCH_CONCURRENCY = 4;
+
+const mapWithConcurrencyLimit = async <TInput, TOutput>(
+  items: TInput[],
+  limit: number,
+  mapper: (item: TInput, index: number) => Promise<TOutput>
+) => {
+  const results = new Array<TOutput>(items.length);
+  const safeLimit = Math.max(1, limit);
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+    }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(safeLimit, items.length) }, () => worker()));
+
+  return results;
+};
 
 export default function AdminCompaniesPage() {
   const queryClient = useQueryClient();
@@ -52,6 +87,8 @@ export default function AdminCompaniesPage() {
   const [isDeletingId, setIsDeletingId] = useState<number | null>(null);
   const [isStatusUpdatingId, setIsStatusUpdatingId] = useState<number | null>(null);
   const [editingCompanyId, setEditingCompanyId] = useState<number | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [downloadingCompanyId, setDownloadingCompanyId] = useState<number | null>(null);
   const { companiesByTab, counts, isLoading, hasError, errorMessage, refetchAll } =
     useAdminCompanyStatusBuckets(canAccess);
 
@@ -59,6 +96,29 @@ export default function AdminCompaniesPage() {
     () => filterAdminCompaniesByKeyword(companiesByTab[statusTab], keyword),
     [companiesByTab, keyword, statusTab]
   );
+  const exportableCompanies = companiesByTab.all;
+
+  const fetchCompanyExportBundle = async (companyId: number) => {
+    const companyDetailResponse = await queryClient.fetchQuery({
+      queryKey: [...QUERY_KEYS.GET_ADMIN_COMPANY_DETAIL, companyId],
+      queryFn: () => getAdminCompanyDetail(companyId),
+    });
+    const company = companyDetailResponse.company;
+
+    if (!company.company_code.trim()) {
+      throw new Error('업체 코드를 불러오지 못했습니다.');
+    }
+
+    const programsResponse = await queryClient.fetchQuery({
+      queryKey: [...QUERY_KEYS.GET_ADMIN_PROGRAMS_BY_COMPANY, company.company_code],
+      queryFn: () => getAdminProgramsByCompany(company.company_code),
+    });
+
+    return {
+      company,
+      programs: programsResponse.programs,
+    };
+  };
 
   const handleDelete = (company: AdminCompanyStatusRow) => {
     openDialog({
@@ -159,6 +219,74 @@ export default function AdminCompaniesPage() {
     }
   };
 
+  const handleDownloadAll = async () => {
+    if (isDownloadingAll || downloadingCompanyId !== null) {
+      return;
+    }
+
+    if (exportableCompanies.length === 0) {
+      showToast({
+        title: '다운로드할 업체가 없습니다.',
+        icon: 'exclaim',
+      });
+      return;
+    }
+
+    try {
+      setIsDownloadingAll(true);
+      const bundles = await mapWithConcurrencyLimit(
+        exportableCompanies,
+        EXPORT_FETCH_CONCURRENCY,
+        (company) => fetchCompanyExportBundle(company.id)
+      );
+
+      await downloadAdminCompaniesWorkbook(bundles);
+      showToast({
+        title: '전체 업체 엑셀 다운로드를 시작했습니다.',
+        icon: 'check',
+      });
+    } catch (error) {
+      showToast({
+        title: normalizeError(error).message || '전체 엑셀 다운로드에 실패했습니다.',
+        icon: 'exclaim',
+      });
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
+  const handleDownloadCompany = async (company: AdminCompanyStatusRow) => {
+    if (isDownloadingAll) {
+      showToast({
+        title: '전체 업체 엑셀 다운로드가 진행 중입니다.',
+        icon: 'exclaim',
+      });
+      return;
+    }
+
+    if (downloadingCompanyId !== null) {
+      return;
+    }
+
+    try {
+      setDownloadingCompanyId(company.id);
+      const bundle = await fetchCompanyExportBundle(company.id);
+
+      await downloadAdminCompanyProgramsWorkbook(bundle);
+      showToast({
+        title: `${company.name} 프로그램 엑셀 다운로드를 시작했습니다.`,
+        icon: 'check',
+      });
+    } catch (error) {
+      showToast({
+        title: normalizeError(error).message || `${company.name} 다운로드에 실패했습니다.`,
+        icon: 'exclaim',
+      });
+    } finally {
+      setDownloadingCompanyId(null);
+    }
+  };
+
   if (isLoading) {
     return <Loading title="업체 관리 화면을 준비하는 중입니다." fullHeight />;
   }
@@ -175,6 +303,20 @@ export default function AdminCompaniesPage() {
           </Text>
         </div>
         <div css={pageHeaderActions}>
+          <button
+            type="button"
+            css={downloadHeaderButton}
+            onClick={() => void handleDownloadAll()}
+            disabled={
+              hasError ||
+              exportableCompanies.length === 0 ||
+              isDownloadingAll ||
+              downloadingCompanyId !== null
+            }
+          >
+            <Download css={downloadHeaderButtonIcon} />
+            <span>{isDownloadingAll ? '엑셀 생성 중...' : '엑셀 다운로드'}</span>
+          </button>
           <Link href={ROUTES.ADMIN_COMPANY_NEW} css={addLinkButton}>
             신규 등록
           </Link>
@@ -314,40 +456,58 @@ export default function AdminCompaniesPage() {
                       />
                     </td>
                     <td>
-                      <div css={rowActions}>
-                        {isPendingCompany(company) && (
+                      <div css={actionRows}>
+                        <div css={actionRow}>
+                          <div css={actionRowLeading}>
+                            {isPendingCompany(company) && (
+                              <button
+                                type="button"
+                                css={approveButton}
+                                onClick={() => void handleApprove(company)}
+                                disabled={isStatusUpdatingId === company.id}
+                              >
+                                {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                              </button>
+                            )}
+                            {canOpenPrograms(company) && (
+                              <Link
+                                href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
+                                css={inlineActionButton}
+                              >
+                                프로그램 관리
+                              </Link>
+                            )}
+                          </div>
                           <button
                             type="button"
-                            css={approveButton}
-                            onClick={() => void handleApprove(company)}
-                            disabled={isStatusUpdatingId === company.id}
+                            css={companyDownloadActionButton}
+                            onClick={() => void handleDownloadCompany(company)}
+                            disabled={downloadingCompanyId === company.id}
+                            aria-label={`${company.name} 프로그램 엑셀 다운로드`}
+                            title={`${company.name} 프로그램 엑셀 다운로드`}
                           >
-                            {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                            <Download css={companyDownloadActionButtonIcon} />
                           </button>
-                        )}
-                        {canOpenPrograms(company) && (
-                          <Link
-                            href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
-                            css={inlineActionButton}
-                          >
-                            프로그램
-                          </Link>
-                        )}
-                        <button
-                          type="button"
-                          css={inlineActionButton}
-                          onClick={() => handleOpenEdit(company.id)}
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          css={inlineDangerButton}
-                          onClick={() => handleDelete(company)}
-                          disabled={isDeletingId === company.id}
-                        >
-                          {isDeletingId === company.id ? '삭제 중...' : '삭제'}
-                        </button>
+                        </div>
+                        <div css={actionRow}>
+                          <div css={actionButtonPair}>
+                            <button
+                              type="button"
+                              css={inlinePrimaryActionButton}
+                              onClick={() => handleOpenEdit(company.id)}
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              css={inlineDangerButton}
+                              onClick={() => handleDelete(company)}
+                              disabled={isDeletingId === company.id}
+                            >
+                              {isDeletingId === company.id ? '삭제 중...' : '삭제'}
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -393,33 +553,50 @@ export default function AdminCompaniesPage() {
                   </div>
 
                   <div css={cardActions}>
-                    {isPendingCompany(company) && (
+                    <div css={cardActionRow}>
+                      {isPendingCompany(company) && (
+                        <AdminActionButton
+                          variant="primary"
+                          onClick={() => void handleApprove(company)}
+                          disabled={isStatusUpdatingId === company.id}
+                        >
+                          {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                        </AdminActionButton>
+                      )}
+                      {canOpenPrograms(company) && (
+                        <AdminActionButton
+                          href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
+                          variant="ghost"
+                        >
+                          프로그램 관리
+                        </AdminActionButton>
+                      )}
+                      <button
+                        type="button"
+                        css={companyDownloadActionButton}
+                        onClick={() => void handleDownloadCompany(company)}
+                        disabled={downloadingCompanyId === company.id}
+                        aria-label={`${company.name} 프로그램 엑셀 다운로드`}
+                        title={`${company.name} 프로그램 엑셀 다운로드`}
+                      >
+                        <Download css={companyDownloadActionButtonIcon} />
+                      </button>
+                    </div>
+                    <div css={cardActionRow}>
                       <AdminActionButton
                         variant="primary"
-                        onClick={() => void handleApprove(company)}
-                        disabled={isStatusUpdatingId === company.id}
+                        onClick={() => handleOpenEdit(company.id)}
                       >
-                        {isStatusUpdatingId === company.id ? '승인 중...' : '승인'}
+                        수정
                       </AdminActionButton>
-                    )}
-                    {canOpenPrograms(company) && (
                       <AdminActionButton
-                        href={ROUTES.ADMIN_COMPANY_PROGRAMS(company.id)}
-                        variant="ghost"
+                        variant="danger"
+                        onClick={() => handleDelete(company)}
+                        disabled={isDeletingId === company.id}
                       >
-                        프로그램
+                        {isDeletingId === company.id ? '삭제 중...' : '삭제'}
                       </AdminActionButton>
-                    )}
-                    <AdminActionButton variant="primary" onClick={() => handleOpenEdit(company.id)}>
-                      수정
-                    </AdminActionButton>
-                    <AdminActionButton
-                      variant="danger"
-                      onClick={() => handleDelete(company)}
-                      disabled={isDeletingId === company.id}
-                    >
-                      {isDeletingId === company.id ? '삭제 중...' : '삭제'}
-                    </AdminActionButton>
+                    </div>
                   </div>
                 </div>
               </article>
@@ -791,18 +968,97 @@ const statusToggleThumb = (checked: boolean) => css`
   transition: transform 0.18s ease;
 `;
 
-const rowActions = css`
+const actionRows = css`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const actionRow = css`
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
   flex-wrap: wrap;
 `;
 
-const approveButton = adminInlineGhostButton;
+const actionRowLeading = css`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+`;
 
-const inlineActionButton = adminInlineGhostButton;
+const actionButtonPair = css`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+`;
 
-const inlineDangerButton = adminInlineDangerButton;
+const compactCompanyActionButton = css`
+  min-width: 64px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 12px;
+`;
+
+const approveButton = css`
+  ${adminInlineGhostButton};
+  ${compactCompanyActionButton};
+`;
+
+const inlineActionButton = css`
+  ${adminInlineGhostButton};
+  ${compactCompanyActionButton};
+`;
+
+const inlinePrimaryActionButton = css`
+  ${adminInlinePrimaryButton};
+  ${compactCompanyActionButton};
+`;
+
+const inlineDangerButton = css`
+  ${adminInlineDangerButton};
+  ${compactCompanyActionButton};
+`;
+
+const companyDownloadActionButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid rgba(148, 165, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef5ff;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease,
+    border-color 0.16s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    transform: none;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const companyDownloadActionButtonIcon = css`
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+`;
 
 const cardGrid = css`
   display: grid;
@@ -886,8 +1142,54 @@ const cardBody = css`
 
 const cardActions = css`
   display: flex;
+  flex-direction: column;
   gap: 8px;
+  align-items: flex-end;
+`;
+
+const cardActionRow = css`
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 6px;
   flex-wrap: wrap;
+`;
+
+const downloadHeaderButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(148, 165, 184, 0.18);
+  min-width: 124px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef5ff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease,
+    border-color 0.16s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    transform: none;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const downloadHeaderButtonIcon = css`
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 `;
 
 const addLinkButton = css`
