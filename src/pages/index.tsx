@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import type { GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import {
   Layout,
   HeroSection,
@@ -21,7 +21,7 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
-import { withI18nGsp } from '@/i18n/page-props';
+import { withI18nGssp } from '@/i18n/page-props';
 import { useCurrentLocale } from '@/i18n/navigation';
 
 interface HomePageProps {
@@ -30,7 +30,6 @@ interface HomePageProps {
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
 const MAX_RECENT_SKELETON_COUNT = 6;
-const HOME_REVALIDATE_SECONDS = 300;
 
 const normalizeSkeletonCount = (count: number) => {
   if (count <= 0) return 0;
@@ -275,8 +274,8 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getStaticProps: GetStaticProps<HomePageProps> =
-  withI18nGsp<HomePageProps>(async () => {
+export const getServerSideProps: GetServerSideProps<HomePageProps> =
+  withI18nGssp<HomePageProps>(async () => {
     const path = await import('node:path');
     const { readdir } = await import('node:fs/promises');
 
@@ -299,6 +298,5 @@ export const getStaticProps: GetStaticProps<HomePageProps> =
       props: {
         heroImages,
       },
-      revalidate: HOME_REVALIDATE_SECONDS,
     };
   }, ['common']);
