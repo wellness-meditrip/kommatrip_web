@@ -47,7 +47,8 @@
       "selectDates": "01. Select up to 2 preferred dates",
       "selectTimes": "02. Select up to 3 available times",
       "emptyDatePrompt": "Please select your first preferred date.",
-      "selectTimesPlaceholder": "Select times"
+      "selectTimesPlaceholder": "Select times",
+      "noAvailableTimes": "No available times for this date"
     }
   },
   "validation": {

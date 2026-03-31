@@ -47,7 +47,8 @@
       "selectDates": "01. 希望日を最大2つ選択してください",
       "selectTimes": "02. 可能な時間を最大3つ選択してください",
       "emptyDatePrompt": "まず希望日を選択してください。",
-      "selectTimesPlaceholder": "時間を選択"
+      "selectTimesPlaceholder": "時間を選択",
+      "noAvailableTimes": "この日に選択できる時間がありません"
     }
   },
   "validation": {

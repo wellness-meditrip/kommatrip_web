@@ -36,7 +36,7 @@ interface Props {
   timeSelectionOpen: Record<string, boolean>;
   onToggleTimeSelection: (dateString: string) => void;
   onTimeSelect: (dateString: string, time: string) => void;
-  availableTimes: string[];
+  getAvailableTimes: (date: Date) => string[];
   formatDateForDisplay: (date: Date) => string;
   formatDateKey: (date: Date) => string;
 }
@@ -55,7 +55,7 @@ export function ScheduleSection({
   timeSelectionOpen,
   onToggleTimeSelection,
   onTimeSelect,
-  availableTimes,
+  getAvailableTimes,
   formatDateForDisplay,
   formatDateKey,
 }: Props) {
@@ -149,9 +149,11 @@ export function ScheduleSection({
 
         {selectedDates.map((date) => {
           const dateString = formatDateKey(date);
+          const availableTimes = getAvailableTimes(date);
           const selectedTimeList = selectedTimes[dateString] ?? [];
           const hasSelectedTime = selectedTimeList.length > 0;
-          const isOpen = timeSelectionOpen[dateString] || false;
+          const hasAvailableTimes = availableTimes.length > 0;
+          const isOpen = hasAvailableTimes && (timeSelectionOpen[dateString] || false);
 
           return (
             <div key={dateString} css={timeGroup}>
@@ -159,15 +161,26 @@ export function ScheduleSection({
                 {formatDateForDisplay(date)}
               </Text>
 
-              <div css={selectedTimesBox()} onClick={() => onToggleTimeSelection(dateString)}>
+              <div
+                css={selectedTimesBox(!hasAvailableTimes)}
+                onClick={() => {
+                  if (hasAvailableTimes) {
+                    onToggleTimeSelection(dateString);
+                  }
+                }}
+              >
                 <Text typo="body_M" color={hasSelectedTime ? 'text_primary' : 'text_tertiary'}>
                   {hasSelectedTime
                     ? selectedTimeList.join(' / ')
-                    : t('form.schedule.selectTimesPlaceholder')}
+                    : hasAvailableTimes
+                      ? t('form.schedule.selectTimesPlaceholder')
+                      : t('form.schedule.noAvailableTimes')}
                 </Text>
-                <div css={timeBoxChevron(isOpen)}>
-                  <Chevron width={20} height={20} />
-                </div>
+                {hasAvailableTimes && (
+                  <div css={timeBoxChevron(isOpen)}>
+                    <Chevron width={20} height={20} />
+                  </div>
+                )}
               </div>
 
               {isOpen && (
