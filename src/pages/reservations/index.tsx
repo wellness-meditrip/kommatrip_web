@@ -41,6 +41,10 @@ import { useTranslations } from 'next-intl';
 import { resolvePrice, type CurrencyCode } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 import { RESERVATION_REFUND_POLICY_URL } from '@/utils/reservation-policy';
+import {
+  getCompanyAvailableReservationTimes,
+  isCompanyClosedOnDate,
+} from '@/utils/company-schedule';
 
 interface ReservationDraft {
   company_id: number;
@@ -344,6 +348,50 @@ export default function ReservationPage() {
     t,
   ]);
 
+  const formatDateForRequest = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    if (!company) return;
+
+    const currentDateKeys = selectedDates.map((date) => formatDateForRequest(date));
+    const nextSelectedDates = selectedDates.filter((date) => !isCompanyClosedOnDate(company, date));
+    const nextDateKeys = nextSelectedDates.map((date) => formatDateForRequest(date));
+    const validDateKeySet = new Set(nextDateKeys);
+
+    const nextSelectedTimes = Object.fromEntries(
+      Object.entries(selectedTimes).flatMap(([dateKey, times]) => {
+        if (!validDateKeySet.has(dateKey)) return [];
+
+        const [year, month, day] = dateKey.split('-').map(Number);
+        const availableTimeSet = new Set(
+          getCompanyAvailableReservationTimes(company, new Date(year, month - 1, day))
+        );
+        const filteredTimes = times.filter((time) => availableTimeSet.has(time));
+
+        return filteredTimes.length > 0 ? [[dateKey, filteredTimes]] : [];
+      })
+    );
+
+    const nextTimeSelectionOpen = Object.fromEntries(
+      Object.entries(timeSelectionOpen).filter(([dateKey]) => validDateKeySet.has(dateKey))
+    );
+
+    if (JSON.stringify(currentDateKeys) !== JSON.stringify(nextDateKeys)) {
+      setSelectedDates(nextSelectedDates);
+    }
+    if (JSON.stringify(selectedTimes) !== JSON.stringify(nextSelectedTimes)) {
+      setSelectedTimes(nextSelectedTimes);
+    }
+    if (JSON.stringify(timeSelectionOpen) !== JSON.stringify(nextTimeSelectionOpen)) {
+      setTimeSelectionOpen(nextTimeSelectionOpen);
+    }
+  }, [company, selectedDates, selectedTimes, timeSelectionOpen]);
+
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
   };
@@ -402,19 +450,6 @@ export default function ReservationPage() {
     );
   }
 
-  const availableTimes = [
-    '10:00',
-    '11:00',
-    '12:00',
-    '13:00',
-    '14:00',
-    '15:00',
-    '16:00',
-    '17:00',
-    '18:00',
-    '19:00',
-  ];
-
   // Calendar logic
 
   const getDaysInMonth = (date: Date) => {
@@ -435,7 +470,8 @@ export default function ReservationPage() {
     const isAlreadySelected = selectedDates.some(
       (date) => formatDateForRequest(date) === dateString
     );
-    if (isPastDate(clickedDate) && !isAlreadySelected) {
+    const isClosedDate = company ? isCompanyClosedOnDate(company, clickedDate) : false;
+    if ((isPastDate(clickedDate) || isClosedDate) && !isAlreadySelected) {
       return;
     }
 
@@ -503,7 +539,11 @@ export default function ReservationPage() {
 
   const isDateDisabled = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    return isPastDate(date);
+    return isPastDate(date) || (company ? isCompanyClosedOnDate(company, date) : false);
+  };
+
+  const getAvailableTimesForDate = (date: Date) => {
+    return getCompanyAvailableReservationTimes(company, date);
   };
 
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
@@ -543,13 +583,6 @@ export default function ReservationPage() {
 
   const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
     return formatPriceByCurrency(priceInfo, 'KRW');
-  };
-
-  const formatDateForRequest = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   };
 
   const toTimeString = (timeString: string) => {
@@ -625,6 +658,17 @@ export default function ReservationPage() {
 
     if (hasEmptyTimes) {
       showError('validation.selectTimesPerDate');
+      return null;
+    }
+
+    const hasUnavailableTimes = selectedDates.some((date) => {
+      const dateString = formatDateForRequest(date);
+      const availableTimeSet = new Set(getAvailableTimesForDate(date));
+      return (selectedTimes[dateString] || []).some((time) => !availableTimeSet.has(time));
+    });
+
+    if (hasUnavailableTimes) {
+      showError('validation.selectTimeSlot');
       return null;
     }
 
@@ -965,7 +1009,7 @@ export default function ReservationPage() {
                   }
                   isDateDisabled={isDateDisabled}
                   onTimeSelect={handleTimeSelect}
-                  availableTimes={availableTimes}
+                  getAvailableTimes={getAvailableTimesForDate}
                   formatDateForDisplay={formatDateForDisplay}
                   formatDateKey={formatDateForRequest}
                 />

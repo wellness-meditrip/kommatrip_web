@@ -47,7 +47,8 @@
       "selectDates": "01. 선호 날짜를 최대 2개 선택해 주세요",
       "selectTimes": "02. 가능한 시간을 최대 3개 선택해 주세요",
       "emptyDatePrompt": "먼저 선호 날짜를 선택해 주세요.",
-      "selectTimesPlaceholder": "시간 선택"
+      "selectTimesPlaceholder": "시간 선택",
+      "noAvailableTimes": "선택 가능한 시간이 없습니다"
     }
   },
   "validation": {
