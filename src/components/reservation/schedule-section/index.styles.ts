@@ -101,7 +101,7 @@ export const timeGroup = css`
   margin-top: 16px;
 `;
 
-export const selectedTimesBox = () => css`
+export const selectedTimesBox = (isDisabled: boolean = false) => css`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -115,10 +115,11 @@ export const selectedTimesBox = () => css`
 
   transition: all 0.2s ease;
 
-  cursor: pointer;
+  cursor: ${isDisabled ? 'not-allowed' : 'pointer'};
+  opacity: ${isDisabled ? 0.7 : 1};
 
   &:hover {
-    border-color: ${theme.colors.primary50};
+    border-color: ${isDisabled ? theme.colors.divider_2 : theme.colors.primary50};
   }
 `;
 
