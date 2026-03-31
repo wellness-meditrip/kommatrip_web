@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  productionBrowserSourceMaps: false,
 
   // TurboPack 설정 (Next.js 15.4+ stable)
   turbopack: {

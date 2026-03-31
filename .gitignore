@@ -19,6 +19,8 @@
 
 # production
 /build
+/lhci_reports
+/.lighthouseci
 
 # misc
 .DS_Store

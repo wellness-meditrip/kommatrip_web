@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
+    "analyze:bundle": "node scripts/print-bundle-report.mjs",
+    "check:bundle-budget": "node scripts/check-bundle-budget.mjs",
     "start": "next start",
+    "serve:lhci": "next start --hostname 127.0.0.1 --port 3000",
     "lint": "next lint",
     "check:i18n": "node scripts/check-i18n-keys.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
