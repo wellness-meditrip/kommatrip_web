@@ -1,5 +1,6 @@
 import type { GetServerSideProps } from 'next';
 import { getCompanyAll, getProgramCompanyList } from '@/apis';
+import { getArticleSitemapPaths } from '@/data/articles';
 import { routing } from '@/i18n/routing';
 import { Company } from '@/models/company';
 import { ProgramListItem } from '@/models/program';
@@ -90,7 +91,10 @@ export const getServerSideProps: GetServerSideProps = async ({ res }) => {
   const dynamicPaths = companies.flatMap(({ id }) => [`/company/${id}`, `/company/${id}/reviews`]);
   const programPaths = await fetchProgramPaths(companies);
 
-  const paths = Array.from(new Set([...basePaths, ...dynamicPaths, ...programPaths]));
+  const articlePaths = getArticleSitemapPaths();
+  const paths = Array.from(
+    new Set([...basePaths, ...dynamicPaths, ...programPaths, ...articlePaths])
+  );
 
   const urls = routing.locales.flatMap((locale) =>
     paths.map((path) => buildUrl(siteUrl, locale, path))
