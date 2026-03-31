@@ -8,6 +8,7 @@ import type { AuthBootstrapMode } from '@/seo/page-policy';
 const AuthBootstrap = dynamic(
   () => import('@/components/auth/AuthBootstrap').then((mod) => mod.AuthBootstrap),
   {
+    ssr: false,
     loading: () => null,
   }
 );

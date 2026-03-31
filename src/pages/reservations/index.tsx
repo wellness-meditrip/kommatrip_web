@@ -76,6 +76,53 @@ const logPaymentInfo = (message: string, payload?: Record<string, unknown>) => {
   console.info(message, payload);
 };
 
+const formatDateForRequest = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateKey = (dateKey: string) => {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const areDateListsEqual = (left: Date[], right: Date[]) => {
+  if (left.length !== right.length) return false;
+
+  return left.every(
+    (date, index) => formatDateForRequest(date) === formatDateForRequest(right[index])
+  );
+};
+
+const areTimeSelectionsEqual = (
+  left: Record<string, string[]>,
+  right: Record<string, string[]>
+) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every((key) => {
+    const leftTimes = left[key] ?? [];
+    const rightTimes = right[key] ?? [];
+
+    if (leftTimes.length !== rightTimes.length) return false;
+    return leftTimes.every((time, index) => time === rightTimes[index]);
+  });
+};
+
+const areBooleanRecordsEqual = (left: Record<string, boolean>, right: Record<string, boolean>) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every((key) => left[key] === right[key]);
+};
+
 export default function ReservationPage() {
   const router = useRouter();
   const t = useTranslations('reservation');
@@ -348,49 +395,40 @@ export default function ReservationPage() {
     t,
   ]);
 
-  const formatDateForRequest = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   useEffect(() => {
     if (!company) return;
 
-    const currentDateKeys = selectedDates.map((date) => formatDateForRequest(date));
-    const nextSelectedDates = selectedDates.filter((date) => !isCompanyClosedOnDate(company, date));
-    const nextDateKeys = nextSelectedDates.map((date) => formatDateForRequest(date));
-    const validDateKeySet = new Set(nextDateKeys);
+    setSelectedDates((prev) => {
+      const next = prev.filter((date) => !isCompanyClosedOnDate(company, date));
+      return areDateListsEqual(prev, next) ? prev : next;
+    });
 
-    const nextSelectedTimes = Object.fromEntries(
-      Object.entries(selectedTimes).flatMap(([dateKey, times]) => {
-        if (!validDateKeySet.has(dateKey)) return [];
+    setSelectedTimes((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).flatMap(([dateKey, times]) => {
+          const date = parseDateKey(dateKey);
+          if (isCompanyClosedOnDate(company, date)) return [];
 
-        const [year, month, day] = dateKey.split('-').map(Number);
-        const availableTimeSet = new Set(
-          getCompanyAvailableReservationTimes(company, new Date(year, month - 1, day))
-        );
-        const filteredTimes = times.filter((time) => availableTimeSet.has(time));
+          const availableTimeSet = new Set(getCompanyAvailableReservationTimes(company, date));
+          const filteredTimes = times.filter((time) => availableTimeSet.has(time));
 
-        return filteredTimes.length > 0 ? [[dateKey, filteredTimes]] : [];
-      })
-    );
+          return filteredTimes.length > 0 ? [[dateKey, filteredTimes]] : [];
+        })
+      );
 
-    const nextTimeSelectionOpen = Object.fromEntries(
-      Object.entries(timeSelectionOpen).filter(([dateKey]) => validDateKeySet.has(dateKey))
-    );
+      return areTimeSelectionsEqual(prev, next) ? prev : next;
+    });
 
-    if (JSON.stringify(currentDateKeys) !== JSON.stringify(nextDateKeys)) {
-      setSelectedDates(nextSelectedDates);
-    }
-    if (JSON.stringify(selectedTimes) !== JSON.stringify(nextSelectedTimes)) {
-      setSelectedTimes(nextSelectedTimes);
-    }
-    if (JSON.stringify(timeSelectionOpen) !== JSON.stringify(nextTimeSelectionOpen)) {
-      setTimeSelectionOpen(nextTimeSelectionOpen);
-    }
-  }, [company, selectedDates, selectedTimes, timeSelectionOpen]);
+    setTimeSelectionOpen((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(
+          ([dateKey]) => !isCompanyClosedOnDate(company, parseDateKey(dateKey))
+        )
+      );
+
+      return areBooleanRecordsEqual(prev, next) ? prev : next;
+    });
+  }, [company]);
 
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
