@@ -79,25 +79,35 @@ export const getCompanyAvailableReservationTimes = (
   const endMinutes = toMinutes(hours.closeTime);
 
   if (startMinutes == null || endMinutes == null) return [];
-  if (stepMinutes <= 0 || startMinutes > endMinutes) return [];
+  if (stepMinutes <= 0 || startMinutes >= endMinutes) return [];
 
   const slots: string[] = [];
   for (
     let currentMinutes = startMinutes;
-    currentMinutes <= endMinutes;
+    currentMinutes + stepMinutes <= endMinutes;
     currentMinutes += stepMinutes
   ) {
     slots.push(toDisplayTime(currentMinutes));
   }
 
-  const closingTimeLabel = toDisplayTime(endMinutes);
-  if (slots[slots.length - 1] !== closingTimeLabel) {
-    slots.push(closingTimeLabel);
-  }
-
   return slots;
 };
 
-export const isCompanyClosedOnDate = (company: CompanySchedule | null | undefined, date: Date) => {
-  return getCompanyAvailableReservationTimes(company, date).length === 0;
+export const isCompanyClosedOnDate = (
+  company: CompanySchedule | null | undefined,
+  date: Date,
+  stepMinutes: number = 60
+) => {
+  const hours = getCompanyHoursForDate(company, date);
+  if (!hours) return true;
+
+  const startMinutes = toMinutes(hours.openTime);
+  const endMinutes = toMinutes(hours.closeTime);
+
+  return (
+    startMinutes == null ||
+    endMinutes == null ||
+    stepMinutes <= 0 ||
+    startMinutes + stepMinutes > endMinutes
+  );
 };
