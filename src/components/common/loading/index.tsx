@@ -1,4 +1,3 @@
-'use client';
 import type { CSSObject } from '@emotion/react';
 import { Text } from '@/components';
 import { wrapper } from './index.styles';

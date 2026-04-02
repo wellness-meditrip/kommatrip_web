@@ -41,6 +41,10 @@ import { useTranslations } from 'next-intl';
 import { resolvePrice, type CurrencyCode } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 import { RESERVATION_REFUND_POLICY_URL } from '@/utils/reservation-policy';
+import {
+  getCompanyAvailableReservationTimes,
+  isCompanyClosedOnDate,
+} from '@/utils/company-schedule';
 
 interface ReservationDraft {
   company_id: number;
@@ -70,6 +74,53 @@ const isDev = process.env.NODE_ENV !== 'production';
 const logPaymentInfo = (message: string, payload?: Record<string, unknown>) => {
   if (!isDev) return;
   console.info(message, payload);
+};
+
+const formatDateForRequest = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateKey = (dateKey: string) => {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const areDateListsEqual = (left: Date[], right: Date[]) => {
+  if (left.length !== right.length) return false;
+
+  return left.every(
+    (date, index) => formatDateForRequest(date) === formatDateForRequest(right[index])
+  );
+};
+
+const areTimeSelectionsEqual = (
+  left: Record<string, string[]>,
+  right: Record<string, string[]>
+) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every((key) => {
+    const leftTimes = left[key] ?? [];
+    const rightTimes = right[key] ?? [];
+
+    if (leftTimes.length !== rightTimes.length) return false;
+    return leftTimes.every((time, index) => time === rightTimes[index]);
+  });
+};
+
+const areBooleanRecordsEqual = (left: Record<string, boolean>, right: Record<string, boolean>) => {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  if (leftKeys.length !== rightKeys.length) return false;
+
+  return leftKeys.every((key) => left[key] === right[key]);
 };
 
 export default function ReservationPage() {
@@ -344,6 +395,41 @@ export default function ReservationPage() {
     t,
   ]);
 
+  useEffect(() => {
+    if (!company) return;
+
+    setSelectedDates((prev) => {
+      const next = prev.filter((date) => !isCompanyClosedOnDate(company, date));
+      return areDateListsEqual(prev, next) ? prev : next;
+    });
+
+    setSelectedTimes((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).flatMap(([dateKey, times]) => {
+          const date = parseDateKey(dateKey);
+          if (isCompanyClosedOnDate(company, date)) return [];
+
+          const availableTimeSet = new Set(getCompanyAvailableReservationTimes(company, date));
+          const filteredTimes = times.filter((time) => availableTimeSet.has(time));
+
+          return filteredTimes.length > 0 ? [[dateKey, filteredTimes]] : [];
+        })
+      );
+
+      return areTimeSelectionsEqual(prev, next) ? prev : next;
+    });
+
+    setTimeSelectionOpen((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(
+          ([dateKey]) => !isCompanyClosedOnDate(company, parseDateKey(dateKey))
+        )
+      );
+
+      return areBooleanRecordsEqual(prev, next) ? prev : next;
+    });
+  }, [company]);
+
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
   };
@@ -402,19 +488,6 @@ export default function ReservationPage() {
     );
   }
 
-  const availableTimes = [
-    '10:00',
-    '11:00',
-    '12:00',
-    '13:00',
-    '14:00',
-    '15:00',
-    '16:00',
-    '17:00',
-    '18:00',
-    '19:00',
-  ];
-
   // Calendar logic
 
   const getDaysInMonth = (date: Date) => {
@@ -435,7 +508,8 @@ export default function ReservationPage() {
     const isAlreadySelected = selectedDates.some(
       (date) => formatDateForRequest(date) === dateString
     );
-    if (isPastDate(clickedDate) && !isAlreadySelected) {
+    const isClosedDate = company ? isCompanyClosedOnDate(company, clickedDate) : false;
+    if ((isPastDate(clickedDate) || isClosedDate) && !isAlreadySelected) {
       return;
     }
 
@@ -503,7 +577,11 @@ export default function ReservationPage() {
 
   const isDateDisabled = (day: number) => {
     const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-    return isPastDate(date);
+    return isPastDate(date) || (company ? isCompanyClosedOnDate(company, date) : false);
+  };
+
+  const getAvailableTimesForDate = (date: Date) => {
+    return getCompanyAvailableReservationTimes(company, date);
   };
 
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
@@ -543,13 +621,6 @@ export default function ReservationPage() {
 
   const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
     return formatPriceByCurrency(priceInfo, 'KRW');
-  };
-
-  const formatDateForRequest = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   };
 
   const toTimeString = (timeString: string) => {
@@ -625,6 +696,17 @@ export default function ReservationPage() {
 
     if (hasEmptyTimes) {
       showError('validation.selectTimesPerDate');
+      return null;
+    }
+
+    const hasUnavailableTimes = selectedDates.some((date) => {
+      const dateString = formatDateForRequest(date);
+      const availableTimeSet = new Set(getAvailableTimesForDate(date));
+      return (selectedTimes[dateString] || []).some((time) => !availableTimeSet.has(time));
+    });
+
+    if (hasUnavailableTimes) {
+      showError('validation.selectTimeSlot');
       return null;
     }
 
@@ -965,7 +1047,7 @@ export default function ReservationPage() {
                   }
                   isDateDisabled={isDateDisabled}
                   onTimeSelect={handleTimeSelect}
-                  availableTimes={availableTimes}
+                  getAvailableTimes={getAvailableTimesForDate}
                   formatDateForDisplay={formatDateForDisplay}
                   formatDateKey={formatDateForRequest}
                 />
