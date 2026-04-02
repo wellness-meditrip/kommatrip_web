@@ -31,6 +31,7 @@ interface HomePageProps {
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
 const MAX_RECENT_SKELETON_COUNT = 6;
 const HOME_REVALIDATE_SECONDS = 300;
+const PRIORITY_RECOMMENDED_COMPANY_ID = 17; // TODO: 이벤트 기간 동안 우선순위로 노출, 기간 후 제거 예정
 
 const normalizeSkeletonCount = (count: number) => {
   if (count <= 0) return 0;
@@ -40,6 +41,25 @@ const normalizeSkeletonCount = (count: number) => {
 const getRecentCount = (value: unknown) => {
   if (!Array.isArray(value)) return null;
   return value.length;
+};
+
+// 추천 업체 우선순위 결정
+const prioritizeRecommendedCompanies = <T extends { id: number }>(companies: T[]) => {
+  if (companies.length === 0) return companies;
+
+  const prioritized: T[] = [];
+  const remaining: T[] = [];
+
+  companies.forEach((company) => {
+    if (company.id === PRIORITY_RECOMMENDED_COMPANY_ID) {
+      prioritized.push(company);
+      return;
+    }
+
+    remaining.push(company);
+  });
+
+  return prioritized.length > 0 ? [...prioritized, ...remaining] : companies;
 };
 
 // 홈 페이지 (루트 경로)
@@ -138,7 +158,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const formattedRecommendedCompanies = useMemo(() => {
     if (!recommendedCompanies || recommendedCompanies.length === 0) return [];
 
-    return recommendedCompanies.map((company) => ({
+    return prioritizeRecommendedCompanies(recommendedCompanies).map((company) => ({
       id: company.id,
       name: company.name,
       address: company.simpleplace ?? company.simple_place ?? '',
