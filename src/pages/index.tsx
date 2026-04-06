@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import type { GetServerSideProps } from 'next';
+import type { GetStaticProps } from 'next';
 import {
   Layout,
   HeroSection,
@@ -21,7 +21,7 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
-import { withI18nGssp } from '@/i18n/page-props';
+import { withI18nGsp } from '@/i18n/page-props';
 import { useCurrentLocale } from '@/i18n/navigation';
 
 interface HomePageProps {
@@ -295,8 +295,8 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getServerSideProps: GetServerSideProps<HomePageProps> =
-  withI18nGssp<HomePageProps>(async () => {
+export const getStaticProps: GetStaticProps<HomePageProps> =
+  withI18nGsp<HomePageProps>(async () => {
     const path = await import('node:path');
     const { readdir } = await import('node:fs/promises');
 
@@ -319,5 +319,6 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> =
       props: {
         heroImages,
       },
+      revalidate: HOME_REVALIDATE_SECONDS,
     };
   }, ['common']);
