@@ -14,10 +14,14 @@ export interface MetaProps {
   url?: string;
   siteName?: string;
   type?: string;
+  locale?: string;
   noindex?: boolean;
   robots?: string;
   twitterCard?: TwitterCardType;
   imageAlt?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  articleSection?: string;
   alternates?: MetaAlternate[];
   jsonLd?: JsonLd[];
 }

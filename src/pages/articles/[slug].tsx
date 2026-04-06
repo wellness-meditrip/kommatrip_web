@@ -8,7 +8,7 @@ import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
 import { defaultLocale, locales, type Locale } from '@/i18n/routing';
 import type { ArticleDetail } from '@/models/article';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildArticleDetailJsonLd, createPageMeta, toIsoMetaDateTime } from '@/seo';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { useTranslations } from 'next-intl';
@@ -18,6 +18,7 @@ interface ArticleDetailPageProps {
 }
 
 const ARTICLE_CONTENT_MAX_WIDTH = '980px';
+const ARTICLE_FAQ_SECTION_ID = 'section-faq';
 
 const resolveLocale = (localeHeader: string | string[] | undefined): Locale => {
   const candidate = Array.isArray(localeHeader) ? localeHeader[0] : localeHeader;
@@ -39,14 +40,33 @@ const formatArticleDate = (value: string, locale: Locale) =>
 export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
   const router = useRouter();
   const t = useTranslations('article');
+  const tCommon = useTranslations('common');
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const articlePath = `/${currentLocale}${ROUTES.ARTICLE_DETAIL(article.slug)}`;
+  const jsonLd = buildArticleDetailJsonLd({
+    article,
+    locale: currentLocale,
+    articlePath,
+    homeLabel: tCommon('app.name'),
+    articleListLabel: t('title'),
+  });
   const meta = createPageMeta({
     pageTitle: article.title,
     description: article.seoDescription,
-    path: router.asPath || ROUTES.ARTICLE_DETAIL(article.slug),
+    path: articlePath,
     image: article.coverImage,
+    imageAlt: article.coverImageAlt || article.title,
+    type: 'article',
+    locale: currentLocale,
+    publishedTime: toIsoMetaDateTime(article.publishedAt),
+    modifiedTime: toIsoMetaDateTime(article.modifiedAt ?? article.publishedAt),
+    articleSection: article.category,
+    jsonLd,
   });
+  const tocEntries = article.faqItems?.length
+    ? [...article.sections.map((section) => section.heading), t('detail.faqTitle')]
+    : article.sections.map((section) => section.heading);
 
   return (
     <>
@@ -127,11 +147,18 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                     {t('detail.onThisPage')}
                   </Text>
                   <ol css={tocList}>
-                    {article.sections.map((section, index) => (
-                      <li key={section.heading}>
-                        <a href={`#section-${index + 1}`} css={tocLink}>
+                    {tocEntries.map((label, index) => (
+                      <li key={label}>
+                        <a
+                          href={
+                            index < article.sections.length
+                              ? `#section-${index + 1}`
+                              : `#${ARTICLE_FAQ_SECTION_ID}`
+                          }
+                          css={tocLink}
+                        >
                           <span css={tocNumber}>{String(index + 1).padStart(2, '0')}</span>
-                          <span>{section.heading}</span>
+                          <span>{label}</span>
                         </a>
                       </li>
                     ))}
@@ -149,6 +176,30 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                       <Text tag="h2" typo="title_L" color="text_primary" css={sectionHeading}>
                         {section.heading}
                       </Text>
+                      {section.images && section.images.length > 0 && (
+                        <div css={sectionImageGrid}>
+                          {section.images.map((image) => (
+                            <figure
+                              key={`${section.heading}-${image.src}`}
+                              css={sectionImageFigure}
+                            >
+                              <img
+                                src={image.src}
+                                alt={image.alt}
+                                loading="lazy"
+                                css={sectionImage}
+                              />
+                              {image.caption ? (
+                                <figcaption css={sectionImageCaption}>
+                                  <Text typo="body_S" color="text_tertiary">
+                                    {image.caption}
+                                  </Text>
+                                </figcaption>
+                              ) : null}
+                            </figure>
+                          ))}
+                        </div>
+                      )}
                       <div css={paragraphGroup}>
                         {section.paragraphs.map((paragraph) => (
                           <Text
@@ -176,6 +227,32 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                     </div>
                   </section>
                 ))}
+                {article.faqItems && article.faqItems.length > 0 && (
+                  <section id={ARTICLE_FAQ_SECTION_ID} css={sectionBlock}>
+                    <div css={sectionMarker}>
+                      <span css={sectionNumber}>
+                        {String(article.sections.length + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div css={sectionMain}>
+                      <Text tag="h2" typo="title_L" color="text_primary" css={sectionHeading}>
+                        {t('detail.faqTitle')}
+                      </Text>
+                      <div css={faqList}>
+                        {article.faqItems.map((item) => (
+                          <div key={item.question} css={faqCard}>
+                            <Text tag="h3" typo="title_S" color="text_primary" css={faqQuestion}>
+                              {item.question}
+                            </Text>
+                            <Text tag="p" typo="body_M" color="text_secondary" css={faqAnswer}>
+                              {item.answer}
+                            </Text>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                )}
               </div>
             </div>
 
@@ -447,6 +524,33 @@ const sectionHeading = css`
   line-height: 1.34;
 `;
 
+const sectionImageGrid = css`
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+`;
+
+const sectionImageFigure = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+`;
+
+const sectionImage = css`
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  border: 1px solid rgba(71, 97, 85, 0.1);
+  background: ${theme.colors.white};
+  box-shadow: 0 14px 32px rgba(73, 69, 58, 0.08);
+`;
+
+const sectionImageCaption = css`
+  line-height: 1.7;
+`;
+
 const paragraphGroup = css`
   display: flex;
   flex-direction: column;
@@ -473,6 +577,30 @@ const bulletList = css`
     color: ${theme.colors.text_secondary};
     line-height: 1.9;
   }
+`;
+
+const faqList = css`
+  display: grid;
+  gap: 14px;
+`;
+
+const faqCard = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px;
+  border: 1px solid rgba(71, 97, 85, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+`;
+
+const faqQuestion = css`
+  margin: 0;
+  line-height: 1.45;
+`;
+
+const faqAnswer = css`
+  line-height: 1.9;
 `;
 
 const articleFooter = css`

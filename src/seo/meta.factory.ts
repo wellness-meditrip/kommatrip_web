@@ -9,8 +9,14 @@ interface CreateMetaParams {
   description: string;
   path?: string;
   image?: string;
+  imageAlt?: string;
+  type?: string;
+  locale?: string;
   noindex?: boolean;
   policy?: PagePolicyName;
+  publishedTime?: string;
+  modifiedTime?: string;
+  articleSection?: string;
   jsonLd?: JsonLd[];
 }
 
@@ -20,8 +26,14 @@ export function createPageMeta({
   description,
   path,
   image = '/og/OG_image.jpg',
+  imageAlt,
+  type,
+  locale,
   noindex = false,
   policy = 'public-discovery',
+  publishedTime,
+  modifiedTime,
+  articleSection,
   jsonLd,
 }: CreateMetaParams): MetaProps {
   const resolvedSiteName = process.env.NEXT_PUBLIC_SITE_NAME ?? '';
@@ -41,10 +53,16 @@ export function createPageMeta({
     title,
     description,
     image,
+    imageAlt,
     url: resolvedPath,
     siteName: resolvedSiteName,
+    type,
+    locale,
     noindex: shouldNoindex,
     robots: shouldNoindex ? 'noindex,nofollow' : undefined,
+    publishedTime,
+    modifiedTime,
+    articleSection,
     alternates: resolvedPolicy.includeAlternates
       ? buildLocaleAlternates(resolvedSiteUrl.replace(/\/$/, ''), normalizedPath)
       : undefined,

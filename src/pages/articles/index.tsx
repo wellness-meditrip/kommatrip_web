@@ -1,6 +1,5 @@
 import { css } from '@emotion/react';
 import type { GetServerSideProps } from 'next';
-import { useRouter } from 'next/router';
 import { AppBar, DesktopAppBar, Empty, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { getLocalizedArticles } from '@/data/articles';
@@ -8,7 +7,7 @@ import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
 import { defaultLocale, locales, type Locale } from '@/i18n/routing';
 import type { ArticleListItem } from '@/models/article';
-import { Meta, createPageMeta } from '@/seo';
+import { Meta, buildArticleListJsonLd, createPageMeta } from '@/seo';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { useTranslations } from 'next-intl';
@@ -35,15 +34,31 @@ const formatArticleDate = (value: string, locale: Locale) =>
   }).format(new Date(value));
 
 export default function ArticlesPage({ articles }: ArticlesPageProps) {
-  const router = useRouter();
   const t = useTranslations('article');
+  const tCommon = useTranslations('common');
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
+  const articleListPath = `/${currentLocale}${ROUTES.ARTICLES}`;
+  const jsonLd =
+    articles.length > 0
+      ? buildArticleListJsonLd({
+          articles,
+          locale: currentLocale,
+          pagePath: articleListPath,
+          homeLabel: tCommon('app.name'),
+          articleListLabel: t('title'),
+          pageTitle: t('list.title'),
+          description: t('list.description'),
+        })
+      : undefined;
   const meta = createPageMeta({
     pageTitle: t('title'),
     description: t('list.description'),
-    path: router.asPath || ROUTES.ARTICLES,
+    path: articleListPath,
     image: articles[0]?.coverImage || '/og/OG_image.jpg',
+    imageAlt: articles[0]?.title,
+    locale: currentLocale,
+    jsonLd,
   });
 
   return (
