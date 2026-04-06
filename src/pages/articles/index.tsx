@@ -5,8 +5,8 @@ import { AppBar, DesktopAppBar, Empty, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { getLocalizedArticles } from '@/data/articles';
 import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
-import { withI18nGssp } from '@/i18n/page-props';
-import { defaultLocale, locales, type Locale } from '@/i18n/routing';
+import { resolveI18nLocale, withI18nGssp } from '@/i18n/page-props';
+import type { Locale } from '@/i18n/routing';
 import type { ArticleListItem } from '@/models/article';
 import { Meta, buildArticleListJsonLd, createPageMeta } from '@/seo';
 import { theme } from '@/styles';
@@ -16,16 +16,6 @@ import { useTranslations } from 'next-intl';
 interface ArticlesPageProps {
   articles: ArticleListItem[];
 }
-
-const resolveLocale = (localeHeader: string | string[] | undefined): Locale => {
-  const candidate = Array.isArray(localeHeader) ? localeHeader[0] : localeHeader;
-
-  if (candidate && locales.includes(candidate as Locale)) {
-    return candidate as Locale;
-  }
-
-  return defaultLocale;
-};
 
 const formatArticleDate = (value: string, locale: Locale) =>
   new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
@@ -271,8 +261,8 @@ const cardFooter = css`
 
 export const getServerSideProps: GetServerSideProps<ArticlesPageProps> =
   withI18nGssp<ArticlesPageProps>(
-    async ({ req }) => {
-      const locale = resolveLocale(req.headers['x-locale']);
+    async (context) => {
+      const locale = resolveI18nLocale(context);
 
       return {
         props: {

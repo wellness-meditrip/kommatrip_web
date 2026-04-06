@@ -345,10 +345,14 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
                 alt: 'The Gate Spa illuminated entrance sign',
+                width: 1120,
+                height: 1680,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
                 alt: 'Private treatment room at The Gate Spa',
+                width: 1675,
+                height: 1116,
               },
             ],
             paragraphs: [
@@ -367,14 +371,20 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: 'Traditional Korean facial care using a wooden massage tool',
+                width: 421,
+                height: 632,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: 'Back treatment using a jade gua sha style tool',
+                width: 1200,
+                height: 864,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: 'Facial care using a gold-toned traditional massage tool',
+                width: 384,
+                height: 256,
               },
             ],
             paragraphs: [
@@ -539,10 +549,14 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
                 alt: '더 게이트 스파 입구 사인',
+                width: 1120,
+                height: 1680,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
                 alt: '더 게이트 스파의 프라이빗 트리트먼트 룸',
+                width: 1675,
+                height: 1116,
               },
             ],
             paragraphs: [
@@ -561,14 +575,20 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: '우드 툴을 활용한 한국식 페이셜 케어',
+                width: 421,
+                height: 632,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: '옥 도구를 활용한 등 케어 장면',
+                width: 1200,
+                height: 864,
               },
               {
                 src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: '전통 도구를 활용한 얼굴 케어 장면',
+                width: 384,
+                height: 256,
               },
             ],
             paragraphs: [
@@ -837,6 +857,8 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/korean-spa-authentic-wellness-guide/health-benefits-rating.png',
                 alt: 'Health benefits rating chart for regular Korean spa visits',
+                width: 1046,
+                height: 306,
               },
             ],
             paragraphs: [
@@ -1139,6 +1161,8 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
               {
                 src: '/images/articles/korean-spa-authentic-wellness-guide/health-benefits-rating.png',
                 alt: '정기적인 한국 스파 방문의 건강 효과 평점 차트',
+                width: 1046,
+                height: 306,
               },
             ],
             paragraphs: [

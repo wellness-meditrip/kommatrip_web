@@ -6,8 +6,8 @@ import { AppBar, DesktopAppBar, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { getLocalizedArticleBySlug } from '@/data/articles';
 import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
-import { withI18nGssp } from '@/i18n/page-props';
-import { defaultLocale, locales, type Locale } from '@/i18n/routing';
+import { resolveI18nLocale, withI18nGssp } from '@/i18n/page-props';
+import type { Locale } from '@/i18n/routing';
 import type { ArticleDetail } from '@/models/article';
 import { Meta, buildArticleDetailJsonLd, createPageMeta, toIsoMetaDateTime } from '@/seo';
 import { theme } from '@/styles';
@@ -20,16 +20,6 @@ interface ArticleDetailPageProps {
 
 const ARTICLE_CONTENT_MAX_WIDTH = '980px';
 const ARTICLE_FAQ_SECTION_ID = 'section-faq';
-
-const resolveLocale = (localeHeader: string | string[] | undefined): Locale => {
-  const candidate = Array.isArray(localeHeader) ? localeHeader[0] : localeHeader;
-
-  if (candidate && locales.includes(candidate as Locale)) {
-    return candidate as Locale;
-  }
-
-  return defaultLocale;
-};
 
 const formatArticleDate = (value: string, locale: Locale) =>
   new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
@@ -195,12 +185,23 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                               key={`${section.heading}-${image.src}`}
                               css={sectionImageFigure}
                             >
-                              <img
-                                src={image.src}
-                                alt={image.alt}
-                                loading="lazy"
-                                css={sectionImage}
-                              />
+                              {image.width && image.height ? (
+                                <Image
+                                  src={image.src}
+                                  alt={image.alt}
+                                  width={image.width}
+                                  height={image.height}
+                                  sizes={`(min-width: ${theme.breakpoints.desktop}) 340px, 100vw`}
+                                  css={sectionImage}
+                                />
+                              ) : (
+                                <img
+                                  src={image.src}
+                                  alt={image.alt}
+                                  loading="lazy"
+                                  css={sectionImage}
+                                />
+                              )}
                               {image.caption ? (
                                 <figcaption css={sectionImageCaption}>
                                   <Text typo="body_S" color="text_tertiary">
@@ -664,7 +665,8 @@ const footerLink = css`
 
 export const getServerSideProps: GetServerSideProps<ArticleDetailPageProps> =
   withI18nGssp<ArticleDetailPageProps>(
-    async ({ params, req }) => {
+    async (context) => {
+      const { params } = context;
       const slugParam = params?.slug;
       const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
 
@@ -672,7 +674,7 @@ export const getServerSideProps: GetServerSideProps<ArticleDetailPageProps> =
         return { notFound: true };
       }
 
-      const locale = resolveLocale(req.headers['x-locale']);
+      const locale = resolveI18nLocale(context);
       const article = getLocalizedArticleBySlug(slug, locale);
 
       if (!article) {
