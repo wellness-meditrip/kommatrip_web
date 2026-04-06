@@ -20,10 +20,14 @@ export const main = ({
 }) => css`
   display: flex;
   flex-direction: column;
-  overflow: ${scrollMode === 'container' ? 'scroll' : 'visible'};
+  overflow: hidden ${scrollMode === 'container' ? 'auto' : 'visible'};
 
   width: 100%;
   height: ${scrollMode === 'container' ? '100%' : 'auto'};
   min-height: ${scrollMode === 'container' ? '100%' : '100dvh'};
   padding: ${isAppBarExist ? `${theme.size.appBarHeight} 0 0 0` : 0};
+
+  & > * {
+    flex-shrink: 0;
+  }
 `;
