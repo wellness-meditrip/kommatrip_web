@@ -8,6 +8,15 @@ export const toAbsoluteUrl = (siteUrl: string, value?: string) => {
   return `${siteUrl}${value.startsWith('/') ? value : `/${value}`}`;
 };
 
+export const toIsoMetaDateTime = (value?: string) => {
+  if (!value) return undefined;
+
+  const normalized = value.includes('T') ? value : `${value}T00:00:00.000Z`;
+  const parsed = new Date(normalized);
+
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
+};
+
 export const normalizeMetaPath = (value?: string) => {
   if (!value) return '/';
 

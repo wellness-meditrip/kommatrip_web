@@ -1,0 +1,21 @@
+{
+  "title": "Articles",
+  "list": {
+    "eyebrow": "Editorial",
+    "title": "Wellness travel notes",
+    "description": "Read practical guides for planning, booking, and preparing for your visit.",
+    "empty": "No articles available yet.",
+    "readMore": "Read article"
+  },
+  "detail": {
+    "backToList": "Back to articles",
+    "editor": "KOMMA Editorial",
+    "onThisPage": "On this page",
+    "faqTitle": "Frequently asked questions",
+    "footerEyebrow": "Continue exploring",
+    "footerTitle": "Browse more wellness notes",
+    "footerDescription": "Explore more practical guides for planning, booking, and preparing for your next wellness visit.",
+    "published": "Published {date}",
+    "readingTime": "{minutes} min read"
+  }
+}

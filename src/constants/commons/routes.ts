@@ -7,6 +7,8 @@ export const ROUTES = {
   ONBOARDING_SEARCH_ADDRESS: '/onboarding?step=search-address',
 
   HOME: '/',
+  ARTICLES: '/articles',
+  ARTICLE_DETAIL: (slug: string) => `/articles/${slug}`,
   SEARCH: '/search',
   SEARCH_RESULTS: '/search/results',
   // SEARCH_RESULT: (keyword: string) => `/search?keyword=${keyword}`,
