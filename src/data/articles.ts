@@ -245,7 +245,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
     publishedAt: '2026-04-03',
     modifiedAt: '2026-04-03',
     readingMinutes: 8,
-    coverImage: '/images/articles/explore-korea-top-attractions/treatment-room.png',
+    coverImage: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
     translations: {
       en: {
         category: 'Guide',
@@ -343,11 +343,11 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: 'Why The Gate Spa Works Well for International Visitors',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/cover-sign.png',
+                src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
                 alt: 'The Gate Spa illuminated entrance sign',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/treatment-room.png',
+                src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
                 alt: 'Private treatment room at The Gate Spa',
               },
             ],
@@ -365,15 +365,15 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: 'Experience Traditional Korean Care with Kommatrip',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.png',
+                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: 'Traditional Korean facial care using a wooden massage tool',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.png',
+                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: 'Back treatment using a jade gua sha style tool',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.png',
+                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: 'Facial care using a gold-toned traditional massage tool',
               },
             ],
@@ -537,11 +537,11 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: '더 게이트 스파가 해외 여행자에게 잘 맞는 이유',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/cover-sign.png',
+                src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
                 alt: '더 게이트 스파 입구 사인',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/treatment-room.png',
+                src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
                 alt: '더 게이트 스파의 프라이빗 트리트먼트 룸',
               },
             ],
@@ -559,15 +559,15 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: '코마트립을 통해 경험하는 한국식 케어의 흐름',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.png',
+                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: '우드 툴을 활용한 한국식 페이셜 케어',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.png',
+                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: '옥 도구를 활용한 등 케어 장면',
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.png',
+                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: '전통 도구를 활용한 얼굴 케어 장면',
               },
             ],

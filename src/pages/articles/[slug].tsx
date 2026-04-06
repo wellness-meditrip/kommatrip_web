@@ -1,5 +1,6 @@
 import { css } from '@emotion/react';
 import type { GetServerSideProps } from 'next';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { AppBar, DesktopAppBar, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
@@ -137,7 +138,18 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
             </header>
 
             <div css={heroFigure}>
-              <div css={heroImage(article.coverImage)} aria-hidden="true" />
+              <div css={heroImageFrame}>
+                <Image
+                  src={article.coverImage}
+                  alt={article.coverImageAlt || article.title}
+                  fill
+                  priority
+                  fetchPriority="high"
+                  sizes={`(min-width: ${theme.breakpoints.desktop}) ${ARTICLE_CONTENT_MAX_WIDTH}, 100vw`}
+                  css={heroImage}
+                />
+                <div css={heroImageOverlay} aria-hidden="true" />
+              </div>
             </div>
 
             <div css={articleBodyLayout}>
@@ -411,17 +423,29 @@ const heroFigure = css`
   margin: 28px auto 0;
 `;
 
-const heroImage = (imageUrl: string) => css`
+const heroImageFrame = css`
+  position: relative;
   min-height: 260px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
   border-radius: 36px;
-  background:
-    linear-gradient(180deg, rgba(35, 26, 0, 0.02), rgba(35, 26, 0, 0.18)),
-    url(${imageUrl}) center / cover no-repeat;
+  background: linear-gradient(180deg, rgba(35, 26, 0, 0.02), rgba(35, 26, 0, 0.18));
   box-shadow: 0 24px 50px rgba(73, 69, 58, 0.12);
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     min-height: 520px;
   }
+`;
+
+const heroImage = css`
+  object-fit: cover;
+`;
+
+const heroImageOverlay = css`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(35, 26, 0, 0.02), rgba(35, 26, 0, 0.18));
+  pointer-events: none;
 `;
 
 const articleBodyLayout = css`

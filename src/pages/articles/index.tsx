@@ -1,5 +1,6 @@
 import { css } from '@emotion/react';
 import type { GetServerSideProps } from 'next';
+import Image from 'next/image';
 import { AppBar, DesktopAppBar, Empty, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { getLocalizedArticles } from '@/data/articles';
@@ -95,17 +96,24 @@ export default function ArticlesPage({ articles }: ArticlesPageProps) {
               </div>
             ) : (
               <div css={articleGrid}>
-                {articles.map((article) => (
+                {articles.map((article, index) => (
                   <Link
                     key={article.slug}
                     href={ROUTES.ARTICLE_DETAIL(article.slug)}
                     css={articleCard}
                   >
-                    <div
-                      css={cardImage(article.coverImage)}
-                      aria-hidden="true"
-                      title={article.title}
-                    />
+                    <div css={cardImageFrame}>
+                      <Image
+                        src={article.coverImage}
+                        alt={article.title}
+                        fill
+                        priority={index === 0}
+                        fetchPriority={index === 0 ? 'high' : undefined}
+                        sizes={`(min-width: ${theme.breakpoints.desktop}) 352px, 100vw`}
+                        css={cardImage}
+                      />
+                      <div css={cardImageOverlay} aria-hidden="true" />
+                    </div>
                     <div css={cardBody}>
                       <div css={metaRow}>
                         <Text typo="body_S" color="primary50">
@@ -205,12 +213,24 @@ const articleCard = css`
   text-decoration: none;
 `;
 
-const cardImage = (imageUrl: string) => css`
+const cardImageFrame = css`
+  position: relative;
   width: 100%;
-  height: 188px;
-  background:
-    linear-gradient(180deg, rgba(35, 26, 0, 0.08), rgba(35, 26, 0, 0.18)),
-    url(${imageUrl}) center / cover no-repeat;
+  min-height: 188px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(35, 26, 0, 0.08), rgba(35, 26, 0, 0.18));
+`;
+
+const cardImage = css`
+  object-fit: cover;
+`;
+
+const cardImageOverlay = css`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(35, 26, 0, 0.08), rgba(35, 26, 0, 0.18));
+  pointer-events: none;
 `;
 
 const cardBody = css`
