@@ -93,7 +93,9 @@ const resolveLocaleFromHeader = (context: GetServerSidePropsContext): Locale | n
   return null;
 };
 
-const resolveLocale = (context: GetServerSidePropsContext | GetStaticPropsContext): Locale => {
+export const resolveI18nLocale = (
+  context: GetServerSidePropsContext | GetStaticPropsContext
+): Locale => {
   if ('req' in context) {
     const localeFromHeader = resolveLocaleFromHeader(context);
     if (localeFromHeader) {
@@ -146,7 +148,7 @@ export const withI18nGssp = <P extends object>(
 
     const pagePolicy = options?.pagePolicy ?? resolveContextPolicy(context);
     applyCacheControl(context, pagePolicy);
-    const locale = resolveLocale(context);
+    const locale = resolveI18nLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
     const { messages: allMessages } = await getI18nConfig(locale, requiredNamespaces);
     const messages = pickMessages(allMessages as Record<string, unknown>, requiredNamespaces);
@@ -176,7 +178,7 @@ export const withI18nGsp = <P extends object>(
     if (!('props' in result)) return result;
 
     const pagePolicy = options?.pagePolicy ?? resolveContextPolicy(context);
-    const locale = resolveLocale(context);
+    const locale = resolveI18nLocale(context);
     const requiredNamespaces = normalizeI18nNamespaces(namespaces);
     const { messages: allMessages } = await getI18nConfig(locale, requiredNamespaces);
     const messages = pickMessages(allMessages as Record<string, unknown>, requiredNamespaces);

@@ -1,3 +1,4 @@
+export * from './article';
 export * from './breadcrumb';
 export * from './company';
 export * from './company-list';

@@ -1,4 +1,5 @@
 export const MESSAGE_NAMESPACES = [
+  'article',
   'auth',
   'booking',
   'booking-detail',
