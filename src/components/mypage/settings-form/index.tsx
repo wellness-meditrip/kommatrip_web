@@ -51,7 +51,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
         },
         onError: (error: unknown) => {
           setIsMarketingEnabled(!nextValue);
-          const message = getErrorMessage(error, 'Failed to update marketing consent');
+          const message = getErrorMessage(error, t('toast.marketingConsentUpdateFailed'));
           showToast({ title: message, icon: 'exclaim' });
         },
       }
@@ -74,7 +74,7 @@ export function SettingsForm({ variant = 'page' }: Props) {
     <section css={page(isEmbedded)}>
       {!isEmbedded && (
         <Text tag="p" typo="title_M" color="text_primary" css={pageTitle}>
-          Settings
+          {t('settings.title')}
         </Text>
       )}
       <div css={contentWrapper(isEmbedded)}>
@@ -82,10 +82,10 @@ export function SettingsForm({ variant = 'page' }: Props) {
           <div css={settingRow}>
             <div css={settingText}>
               <Text typo="title_S" color="text_primary">
-                Consent to receiving marketing
+                {t('settings.marketingConsent.title')}
               </Text>
               <Text typo="body_S" color="text_secondary">
-                If you agree to receive marketing, please set it up.
+                {t('settings.marketingConsent.description')}
               </Text>
             </div>
             <label css={toggleWrapper}>
@@ -103,12 +103,12 @@ export function SettingsForm({ variant = 'page' }: Props) {
         <div css={card}>
           <button type="button" css={textButton} onClick={handleLogout}>
             <Text typo="title_S" color="text_primary">
-              Log out
+              {t('settings.actions.logout')}
             </Text>
           </button>
           <button type="button" css={textButtonMuted}>
             <Text typo="title_S" color="text_tertiary">
-              Delete account
+              {t('settings.actions.deleteAccount')}
             </Text>
           </button>
         </div>
