@@ -224,9 +224,6 @@ export const getI18nServerSideProps = (namespaces?: readonly string[], options?:
     options
   );
 
-export const getPrivateI18nStaticProps = (namespaces?: readonly string[]) =>
-  getI18nStaticProps(namespaces, { pagePolicy: 'private-app' });
-
 export const getPrivateI18nServerSideProps = (namespaces?: readonly string[]) =>
   getI18nServerSideProps(namespaces, { pagePolicy: 'private-app' });
 

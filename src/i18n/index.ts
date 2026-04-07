@@ -5,7 +5,6 @@ export { I18nLink as Link, useChangeLocale, useCurrentLocale } from './navigatio
 export {
   getAdminI18nStaticProps,
   getPrivateI18nServerSideProps,
-  getPrivateI18nStaticProps,
   getPublicUtilityI18nStaticProps,
   getSystemI18nStaticProps,
   withI18nGsp,
