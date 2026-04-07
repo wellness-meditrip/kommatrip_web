@@ -73,7 +73,7 @@ export function useProfileImage({ profileImageUrl, onImageChange }: UseProfileIm
         }
       },
       onError: (error: unknown) => {
-        const message = getErrorMessage(error, 'Failed to update profile image');
+        const message = getErrorMessage(error, t('toast.profileImageUploadFailed'));
         showToast({ title: message, icon: 'exclaim' });
         onImageChange(previousImageUrlRef.current);
         if (previewUrlRef.current) {
@@ -97,7 +97,7 @@ export function useProfileImage({ profileImageUrl, onImageChange }: UseProfileIm
         showToast({ title: t('toast.profileImageDeleted'), icon: 'check' });
       },
       onError: (error: unknown) => {
-        const message = getErrorMessage(error, 'Failed to delete profile image');
+        const message = getErrorMessage(error, t('toast.profileImageDeleteFailed'));
         showToast({ title: message, icon: 'exclaim' });
       },
     });

@@ -1,4 +1,5 @@
 import { css } from '@emotion/react';
+import { useTranslations } from 'next-intl';
 import { SafeProfileImage } from '@/components';
 import { ImageUploadPlus } from '@/icons';
 import { theme } from '@/styles';
@@ -20,29 +21,32 @@ export function ProfileAvatar({
   onEditClick,
   onDeleteClick,
 }: ProfileAvatarProps) {
+  const t = useTranslations('mypage');
+  const tCommon = useTranslations('common');
+
   return (
     <div css={profileRow(isDesktop)}>
       <button
         type="button"
         css={profileButton(isDesktop)}
         onClick={onAvatarClick}
-        aria-label="Edit profile image"
+        aria-label={t('profile.editImage')}
         disabled={!editable}
       >
         <SafeProfileImage
           src={src}
           css={profileImage}
-          alt="Profile"
+          alt={t('profile.imageAlt')}
           fallback={<ImageUploadPlus width={22} height={22} />}
         />
       </button>
       {isDesktop && editable && (
         <div css={profileActions}>
           <button type="button" css={actionButton} onClick={onEditClick}>
-            Edit
+            {tCommon('button.edit')}
           </button>
           <button type="button" css={[actionButton, actionButtonDanger]} onClick={onDeleteClick}>
-            Delete
+            {tCommon('button.delete')}
           </button>
         </div>
       )}

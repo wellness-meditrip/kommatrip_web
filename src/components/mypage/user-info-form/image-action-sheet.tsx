@@ -1,4 +1,5 @@
 import { css } from '@emotion/react';
+import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
 import { theme } from '@/styles';
 
@@ -9,6 +10,8 @@ interface ImageActionSheetProps {
 }
 
 export function ImageActionSheet({ onEdit, onDelete, onClose }: ImageActionSheetProps) {
+  const t = useTranslations('common');
+
   return (
     <>
       <div css={modalOverlay} onClick={onClose} />
@@ -24,7 +27,7 @@ export function ImageActionSheet({ onEdit, onDelete, onClose }: ImageActionSheet
             }}
           >
             <Text typo="title_M" color="primary50">
-              Edit
+              {t('button.edit')}
             </Text>
           </button>
           <button
@@ -36,7 +39,7 @@ export function ImageActionSheet({ onEdit, onDelete, onClose }: ImageActionSheet
             }}
           >
             <Text typo="title_M" color="red200">
-              Delete
+              {t('button.delete')}
             </Text>
           </button>
         </div>

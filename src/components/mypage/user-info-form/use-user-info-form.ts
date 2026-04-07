@@ -2,17 +2,37 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import { isSupportedCountryCode, normalizeCountryCode, COUNTRY_OPTIONS } from '@/constants';
+import {
+  isSupportedCountryCode,
+  normalizeCountryCode,
+  COUNTRY_OPTIONS,
+  type SupportedCountryCode,
+} from '@/constants';
 import { useToast } from '@/hooks';
 import { useGetUserProfileQuery, usePatchUserProfileMutation } from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import {
   CONTACT_METHODS,
+  CONTACT_METHOD_I18N_KEYS,
   CONTACT_METHOD_FIELD_MAP,
-  CONTACT_PLACEHOLDER_MAP,
   type ContactMethod,
 } from './constants';
+
+const COUNTRY_LABEL_KEY_MAP: Record<
+  SupportedCountryCode,
+  'usa' | 'japan' | 'china' | 'korea' | 'europe' | 'singapore' | 'malaysia' | 'indonesia' | 'etc'
+> = {
+  US: 'usa',
+  JP: 'japan',
+  CN: 'china',
+  KR: 'korea',
+  EU: 'europe',
+  SG: 'singapore',
+  MY: 'malaysia',
+  ID: 'indonesia',
+  ETC: 'etc',
+};
 
 export interface UserInfoFormValues {
   username: string;
@@ -51,6 +71,7 @@ export function useUserInfoForm() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const t = useTranslations('mypage');
+  const tSignup = useTranslations('auth.signup');
   const tValidation = useTranslations('validation');
 
   const { data: profileData } = useGetUserProfileQuery();
@@ -74,23 +95,30 @@ export function useUserInfoForm() {
 
   const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
 
-  const contactMethod = watch('contactMethod');
-  const profileImageUrl = watch('profileImageUrl');
+  const contactMethod = watch('contactMethod') || 'Line';
+  const profileImageUrl = watch('profileImageUrl') ?? '';
   const passwordSet = !!profileData?.user?.password_set;
   const email = profileData?.user?.email ?? '';
   const canEditProfileImage = profileData?.user
     ? profileData.user.login_method !== 'google'
     : false;
 
-  const selectedContactValue = watch(CONTACT_METHOD_FIELD_MAP[contactMethod]);
-  const contactPlaceholder = CONTACT_PLACEHOLDER_MAP[contactMethod];
+  const selectedContactValue = watch(CONTACT_METHOD_FIELD_MAP[contactMethod]) ?? '';
+  const contactPlaceholder = t(
+    `userInfo.contactPlaceholders.${CONTACT_METHOD_I18N_KEYS[contactMethod]}`
+  );
 
-  const country = watch('country');
+  const localizedCountryOptions = COUNTRY_OPTIONS.map((option) => ({
+    code: option.code,
+    label: tSignup(COUNTRY_LABEL_KEY_MAP[option.code]),
+  }));
+
+  const country = watch('country') ?? '';
   const countryOptions = isSupportedCountryCode(country)
-    ? COUNTRY_OPTIONS
+    ? localizedCountryOptions
     : country
-      ? [...COUNTRY_OPTIONS, { code: country, label: country }]
-      : COUNTRY_OPTIONS;
+      ? [...localizedCountryOptions, { code: country, label: country }]
+      : localizedCountryOptions;
 
   const usernameField = register('username', {
     required: tValidation('username.required'),
@@ -133,7 +161,7 @@ export function useUserInfoForm() {
             showToast({ title: t('toast.profileUpdated'), icon: 'check' });
           },
           onError: (error: unknown) => {
-            const message = getErrorMessage(error, 'Failed to update profile');
+            const message = getErrorMessage(error, t('toast.profileUpdateFailed'));
             showToast({ title: message, icon: 'exclaim' });
           },
         }

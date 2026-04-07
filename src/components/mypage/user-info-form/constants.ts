@@ -1,5 +1,12 @@
 export const CONTACT_METHODS = ['Line', 'Whats App', 'Kakao', 'Phone'] as const;
 
+export const CONTACT_METHOD_I18N_KEYS = {
+  Line: 'line',
+  'Whats App': 'whatsApp',
+  Kakao: 'kakao',
+  Phone: 'phone',
+} as const;
+
 export const CONTACT_METHOD_FIELD_MAP = {
   Line: 'line',
   'Whats App': 'whatsapp',

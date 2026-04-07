@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { css } from '@emotion/react';
+import { useTranslations } from 'next-intl';
 import { CTAButton, RoundButton, Text } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
-import { CONTACT_METHODS, CONTACT_METHOD_FIELD_MAP } from './constants';
+import { CONTACT_METHODS, CONTACT_METHOD_FIELD_MAP, CONTACT_METHOD_I18N_KEYS } from './constants';
 import { useUserInfoForm } from './use-user-info-form';
 import { useProfileImage } from './use-profile-image';
 import { ProfileAvatar } from './profile-avatar';
@@ -19,6 +20,9 @@ interface Props {
 export function UserInfoForm({ variant = 'page' }: Props) {
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const isEmbedded = variant === 'embedded';
+  const t = useTranslations('mypage');
+  const tCommon = useTranslations('common');
+  const tSignup = useTranslations('auth.signup');
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
@@ -59,7 +63,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
         <div css={[card, userInfoCard(isDesktop)]}>
           {!isEmbedded && (
             <Text typo="title_M" color="text_primary">
-              User Information
+              {t('detail.userInfo')}
             </Text>
           )}
           <ProfileAvatar
@@ -76,7 +80,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           />
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              User name
+              {t('userInfo.fields.userName')}
             </Text>
             <input css={input} {...usernameField} />
             {errors.username?.message && (
@@ -87,7 +91,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           </div>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Password
+              {t('userInfo.fields.password')}
             </Text>
             <div css={inputWithIcon}>
               <input
@@ -95,12 +99,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                 type="password"
                 value={passwordSet ? '********' : ''}
                 readOnly
-                placeholder={passwordSet ? undefined : 'Not set'}
+                placeholder={passwordSet ? undefined : t('userInfo.notSet')}
               />
               <button
                 type="button"
                 css={iconButton}
-                aria-label="Edit password"
+                aria-label={t('userInfo.editPassword')}
                 onClick={() => setIsPasswordResetModalOpen(true)}
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
@@ -124,17 +128,17 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
         <div css={card}>
           <Text typo="title_M" color="text_primary">
-            Contact
+            {t('userInfo.sections.contact')}
           </Text>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Email Address
+              {t('userInfo.fields.emailAddress')}
             </Text>
             <input css={input} type="email" value={email} readOnly />
           </div>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Contact Method
+              {t('userInfo.fields.contactMethod')}
             </Text>
             <div css={contactMethods}>
               {CONTACT_METHODS.map((method) => (
@@ -149,7 +153,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                     typo="button_XS"
                     color={method === contactMethod ? 'text_primary' : 'text_tertiary'}
                   >
-                    {method}
+                    {t(`userInfo.contactMethods.${CONTACT_METHOD_I18N_KEYS[method]}`)}
                   </Text>
                 </button>
               ))}
@@ -165,15 +169,15 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
         <div css={card}>
           <Text typo="title_M" color="text_primary">
-            Country
+            {t('userInfo.sections.country')}
           </Text>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Country
+              {t('userInfo.fields.country')}
             </Text>
             <div css={selectContainer}>
               <select css={select} {...countryField}>
-                <option value="">Select country</option>
+                <option value="">{tSignup('selectCountry')}</option>
                 {countryOptions.map((option) => (
                   <option key={option.code} value={option.code}>
                     {option.label}
@@ -194,13 +198,13 @@ export function UserInfoForm({ variant = 'page' }: Props) {
         <div css={desktopActions(isEmbedded)}>
           <RoundButton size="L" disabled={isSaving} onClick={onSubmit}>
             <Text typo="button_L" color="bg_default">
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? t('userInfo.saving') : tCommon('button.save')}
             </Text>
           </RoundButton>
         </div>
       ) : (
         <CTAButton disabled={isSaving} onClick={onSubmit}>
-          {isSaving ? 'Saving...' : 'Save'}
+          {isSaving ? t('userInfo.saving') : tCommon('button.save')}
         </CTAButton>
       )}
 
