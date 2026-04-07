@@ -12,7 +12,7 @@ import { ROUTES } from './routes';
 
 export const MENUS = [
   {
-    name: 'Home',
+    labelKey: 'navigation.home',
     icon: {
       active: <GnbHomeActive width="32px" height="32px" />,
       inactive: <GnbHomeInactive width="32px" height="32px" />,
@@ -21,7 +21,7 @@ export const MENUS = [
     canGuest: true,
   },
   {
-    name: 'My bookings',
+    labelKey: 'navigation.bookings',
     icon: {
       active: <GnbCalendarActive width="32px" height="32px" />,
       inactive: <GnbCalendarInactive width="32px" height="32px" />,
@@ -30,7 +30,7 @@ export const MENUS = [
     canGuest: false,
   },
   {
-    name: 'Search',
+    labelKey: 'navigation.search',
     icon: {
       active: <GnbSearchActive width="32px" height="32px" />,
       inactive: <GnbSearchInactive width="32px" height="32px" />,
@@ -39,7 +39,7 @@ export const MENUS = [
     canGuest: true,
   },
   {
-    name: 'My page',
+    labelKey: 'navigation.mypage',
     icon: {
       active: <GnbMypageActive width="32px" height="32px" />,
       inactive: <GnbMypageInactive width="32px" height="32px" />,
