@@ -17,10 +17,12 @@
       "contactPlaceholder": "Please enter your contact details.",
       "language": "Language Preference",
       "languages": {
-        "korean": "Korean",
+        "korean": "한국어",
+        "chinese": "中文",
+        "japanese": "日本語",
         "english": "English",
-        "chinese": "Chinese",
-        "japanese": "Japanese"
+        "bahasaMelayu": "Bahasa Melayu",
+        "bahasaIndonesia": "Bahasa Indonesia"
       },
       "methods": {
         "line": "Line",
