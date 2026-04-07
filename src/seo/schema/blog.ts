@@ -1,10 +1,5 @@
 import { ROUTES } from '@/constants';
-import type {
-  ArticleDetail,
-  ArticleFaqItem,
-  ArticleListItem,
-  ArticleSection,
-} from '@/models/article';
+import type { BlogDetail, BlogFaqItem, BlogListItem, BlogSection } from '@/models/blog';
 import { toIsoMetaDateTime } from '../meta.utils';
 import type { JsonLd } from '../meta.types';
 import {
@@ -17,10 +12,10 @@ import {
 
 const countWords = (value: string) => value.trim().split(/\s+/u).filter(Boolean).length;
 
-const buildArticleBody = (article: Pick<ArticleDetail, 'excerpt' | 'sections'>) => {
+const buildBlogBody = (blog: Pick<BlogDetail, 'excerpt' | 'sections'>) => {
   const content = [
-    article.excerpt,
-    ...article.sections.flatMap((section) => [
+    blog.excerpt,
+    ...blog.sections.flatMap((section) => [
       section.heading,
       ...section.paragraphs,
       ...(section.bullets ?? []),
@@ -53,11 +48,11 @@ const buildPublisher = ({ name, logo }: { name?: string; logo?: string }): JsonL
   };
 };
 
-const buildItemListElement = (articles: ArticleListItem[], locale: string) => {
-  const items = articles
-    .map((article, index) => {
-      const name = normalizeSchemaString(article.title);
-      const url = toAbsoluteSchemaUrl(`/${locale}${ROUTES.ARTICLE_DETAIL(article.slug)}`);
+const buildItemListElement = (blogs: BlogListItem[], locale: string) => {
+  const items = blogs
+    .map((blog, index) => {
+      const name = normalizeSchemaString(blog.title);
+      const url = toAbsoluteSchemaUrl(`/${locale}${ROUTES.BLOG_DETAIL(blog.slug)}`);
 
       if (!name || !url) {
         return undefined;
@@ -89,12 +84,12 @@ const buildItemListElement = (articles: ArticleListItem[], locale: string) => {
     : undefined;
 };
 
-const buildKeywords = (article: Pick<ArticleDetail, 'keywords'>) => {
-  const keywords = (article.keywords ?? []).map((item) => item.trim()).filter(Boolean);
+const buildKeywords = (blog: Pick<BlogDetail, 'keywords'>) => {
+  const keywords = (blog.keywords ?? []).map((item) => item.trim()).filter(Boolean);
   return keywords.length > 0 ? keywords : undefined;
 };
 
-const buildAbout = (sections: ArticleSection[]) => {
+const buildAbout = (sections: BlogSection[]) => {
   const items = Array.from(
     new Set(sections.map((section) => section.heading.trim()).filter(Boolean))
   ).map((name) => ({
@@ -105,25 +100,25 @@ const buildAbout = (sections: ArticleSection[]) => {
   return items.length > 0 ? items : undefined;
 };
 
-export const createArticleSchema = ({
-  article,
+export const createBlogSchema = ({
+  blog,
   path,
   locale,
   publisherName,
   publisherLogo,
 }: {
-  article: ArticleDetail;
+  blog: BlogDetail;
   path: string;
   locale: string;
   publisherName?: string;
   publisherLogo?: string;
 }): JsonLd | undefined => {
   const url = toAbsoluteSchemaUrl(path);
-  const headline = normalizeSchemaString(article.title);
+  const headline = normalizeSchemaString(blog.title);
   const description =
-    normalizeSchemaString(article.seoDescription) || normalizeSchemaString(article.excerpt);
-  const images = normalizeSchemaImages([article.coverImage]);
-  const articleBody = buildArticleBody(article);
+    normalizeSchemaString(blog.seoDescription) || normalizeSchemaString(blog.excerpt);
+  const images = normalizeSchemaImages([blog.coverImage]);
+  const blogBody = buildBlogBody(blog);
   const publisher = buildPublisher({
     name: publisherName,
     logo: publisherLogo,
@@ -136,7 +131,7 @@ export const createArticleSchema = ({
   return {
     '@context': getSchemaContext(),
     '@type': 'BlogPosting',
-    '@id': buildSchemaId(path, 'article') ?? url,
+    '@id': buildSchemaId(path, 'blog') ?? url,
     url,
     mainEntityOfPage: {
       '@type': 'WebPage',
@@ -146,30 +141,30 @@ export const createArticleSchema = ({
     description,
     image: images,
     thumbnailUrl: images?.[0],
-    datePublished: toIsoMetaDateTime(article.publishedAt),
-    dateModified: toIsoMetaDateTime(article.modifiedAt ?? article.publishedAt),
+    datePublished: toIsoMetaDateTime(blog.publishedAt),
+    dateModified: toIsoMetaDateTime(blog.modifiedAt ?? blog.publishedAt),
     author: publisher,
     publisher,
     inLanguage: normalizeSchemaString(locale),
-    articleSection: normalizeSchemaString(article.category),
-    genre: normalizeSchemaString(article.category),
-    timeRequired: article.readingMinutes > 0 ? `PT${article.readingMinutes}M` : undefined,
-    wordCount: articleBody ? countWords(articleBody) : undefined,
+    articleSection: normalizeSchemaString(blog.category),
+    genre: normalizeSchemaString(blog.category),
+    timeRequired: blog.readingMinutes > 0 ? `PT${blog.readingMinutes}M` : undefined,
+    wordCount: blogBody ? countWords(blogBody) : undefined,
     isAccessibleForFree: true,
-    keywords: buildKeywords(article),
-    about: buildAbout(article.sections),
-    articleBody,
+    keywords: buildKeywords(blog),
+    about: buildAbout(blog.sections),
+    articleBody: blogBody,
   };
 };
 
-export const createArticleCollectionSchema = ({
-  articles,
+export const createBlogCollectionSchema = ({
+  blogs,
   path,
   locale,
   name,
   description,
 }: {
-  articles: ArticleListItem[];
+  blogs: BlogListItem[];
   path: string;
   locale: string;
   name: string;
@@ -191,11 +186,11 @@ export const createArticleCollectionSchema = ({
     name: normalizedName,
     description: normalizedDescription,
     inLanguage: normalizeSchemaString(locale),
-    mainEntity: buildItemListElement(articles, locale),
+    mainEntity: buildItemListElement(blogs, locale),
   };
 };
 
-export const createFaqPageSchema = (faqItems: ArticleFaqItem[]): JsonLd | undefined => {
+export const createFaqPageSchema = (faqItems: BlogFaqItem[]): JsonLd | undefined => {
   const mainEntity = faqItems
     .map((item) => {
       const question = normalizeSchemaString(item.question);

@@ -1,7 +1,8 @@
 import type { Locale } from '@/i18n';
-import type { ArticleDetail, ArticleListItem, ArticleRecord } from '@/models/article';
+import { ROUTES } from '@/constants';
+import type { BlogDetail, BlogListItem, BlogRecord } from '@/models/blog';
 
-const ARTICLE_RECORDS: readonly ArticleRecord[] = [
+const BLOG_RECORDS: readonly BlogRecord[] = [
   {
     slug: 'planning-your-first-wellness-trip',
     publishedAt: '2026-03-10',
@@ -208,7 +209,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
         excerpt:
           '첫 문의, 예약 확인, 결제, 방문 당일까지 보통 어떤 순서로 진행되는지 짧은 타임라인으로 정리했습니다.',
         seoDescription:
-          '문의부터 결제, 방문 당일까지 예약 과정이 어떻게 이어지는지 이해하기 쉽게 정리한 아티클입니다.',
+          '문의부터 결제, 방문 당일까지 예약 과정이 어떻게 이어지는지 이해하기 쉽게 정리한 블로그 글입니다.',
         sections: [
           {
             heading: '문의 단계',
@@ -245,7 +246,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
     publishedAt: '2026-04-03',
     modifiedAt: '2026-04-03',
     readingMinutes: 8,
-    coverImage: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
+    coverImage: '/images/blogs/explore-korea-top-attractions/treatment-room.webp',
     translations: {
       en: {
         category: 'Guide',
@@ -306,7 +307,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             ],
             paragraphs: [
               'A stronger Korea itinerary starts with pace, not a checklist. If you mix busy city days with one or two slower wellness blocks, the trip feels more sustainable and much less rushed.',
-              'This article works best as a practical frame: use iconic Seoul neighborhoods and shopping districts for momentum, then insert spa or wellness time where your energy naturally drops.',
+              'This blog post works best as a practical frame: use iconic Seoul neighborhoods and shopping districts for momentum, then insert spa or wellness time where your energy naturally drops.',
             ],
             bullets: [
               'Blend busy sightseeing days with scheduled wellness time to keep the trip balanced',
@@ -343,13 +344,13 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: 'Why The Gate Spa Works Well for International Visitors',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
+                src: '/images/blogs/explore-korea-top-attractions/cover-sign.webp',
                 alt: 'The Gate Spa illuminated entrance sign',
                 width: 1120,
                 height: 1680,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
+                src: '/images/blogs/explore-korea-top-attractions/treatment-room.webp',
                 alt: 'Private treatment room at The Gate Spa',
                 width: 1675,
                 height: 1116,
@@ -369,19 +370,19 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: 'Experience Traditional Korean Care with Kommatrip',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
+                src: '/images/blogs/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: 'Traditional Korean facial care using a wooden massage tool',
                 width: 421,
                 height: 632,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
+                src: '/images/blogs/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: 'Back treatment using a jade gua sha style tool',
                 width: 1200,
                 height: 864,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
+                src: '/images/blogs/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: 'Facial care using a gold-toned traditional massage tool',
                 width: 384,
                 height: 256,
@@ -547,13 +548,13 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: '더 게이트 스파가 해외 여행자에게 잘 맞는 이유',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/cover-sign.webp',
+                src: '/images/blogs/explore-korea-top-attractions/cover-sign.webp',
                 alt: '더 게이트 스파 입구 사인',
                 width: 1120,
                 height: 1680,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/treatment-room.webp',
+                src: '/images/blogs/explore-korea-top-attractions/treatment-room.webp',
                 alt: '더 게이트 스파의 프라이빗 트리트먼트 룸',
                 width: 1675,
                 height: 1116,
@@ -573,19 +574,19 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             heading: '코마트립을 통해 경험하는 한국식 케어의 흐름',
             images: [
               {
-                src: '/images/articles/explore-korea-top-attractions/wood-tool-treatment.webp',
+                src: '/images/blogs/explore-korea-top-attractions/wood-tool-treatment.webp',
                 alt: '우드 툴을 활용한 한국식 페이셜 케어',
                 width: 421,
                 height: 632,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/jade-back-treatment.webp',
+                src: '/images/blogs/explore-korea-top-attractions/jade-back-treatment.webp',
                 alt: '옥 도구를 활용한 등 케어 장면',
                 width: 1200,
                 height: 864,
               },
               {
-                src: '/images/articles/explore-korea-top-attractions/gold-facial-tool.webp',
+                src: '/images/blogs/explore-korea-top-attractions/gold-facial-tool.webp',
                 alt: '전통 도구를 활용한 얼굴 케어 장면',
                 width: 384,
                 height: 256,
@@ -855,7 +856,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
                 alt: 'Guest relaxing peacefully in a Korean spa',
               },
               {
-                src: '/images/articles/korean-spa-authentic-wellness-guide/health-benefits-rating.png',
+                src: '/images/blogs/korean-spa-authentic-wellness-guide/health-benefits-rating.webp',
                 alt: 'Health benefits rating chart for regular Korean spa visits',
                 width: 1046,
                 height: 306,
@@ -963,7 +964,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
             ],
             paragraphs: [
               'Korean spa culture blends traditional rituals and modern treatment logic into a restorative system for body, skin, and mind. Whether you choose a luxury Gangnam treatment, a regional hot-spring retreat, or an everyday neighborhood jjimjilbang, the same philosophy runs underneath: prevention, community, and holistic wellness.',
-              'The original article closes with a clear next step: download the etiquette and planning guide or call the wellness team for a sample itinerary and treatment recommendations if you want help turning a spa visit into a personal reset, a thoughtful gift, or a more intentional Korea travel day.',
+              'The original blog post closes with a clear next step: download the etiquette and planning guide or call the wellness team for a sample itinerary and treatment recommendations if you want help turning a spa visit into a personal reset, a thoughtful gift, or a more intentional Korea travel day.',
             ],
           },
         ],
@@ -1159,7 +1160,7 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
                 alt: '편안한 표정으로 쉬고 있는 스파 이용자',
               },
               {
-                src: '/images/articles/korean-spa-authentic-wellness-guide/health-benefits-rating.png',
+                src: '/images/blogs/korean-spa-authentic-wellness-guide/health-benefits-rating.webp',
                 alt: '정기적인 한국 스파 방문의 건강 효과 평점 차트',
                 width: 1046,
                 height: 306,
@@ -1276,44 +1277,42 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
   },
 ] as const;
 
-const sortByPublishedAt = (left: ArticleRecord, right: ArticleRecord) =>
+const sortByPublishedAt = (left: BlogRecord, right: BlogRecord) =>
   new Date(right.publishedAt).getTime() - new Date(left.publishedAt).getTime();
 
-const toArticleListItem = (article: ArticleRecord, locale: Locale): ArticleListItem => {
-  const translation = article.translations[locale];
+const toBlogListItem = (blog: BlogRecord, locale: Locale): BlogListItem => {
+  const translation = blog.translations[locale];
 
   return {
-    slug: article.slug,
-    publishedAt: article.publishedAt,
-    readingMinutes: article.readingMinutes,
-    coverImage: article.coverImage,
+    slug: blog.slug,
+    publishedAt: blog.publishedAt,
+    readingMinutes: blog.readingMinutes,
+    coverImage: blog.coverImage,
     category: translation.category,
     title: translation.title,
     excerpt: translation.excerpt,
   };
 };
 
-export const getLocalizedArticles = (locale: Locale): ArticleListItem[] => {
-  return [...ARTICLE_RECORDS]
-    .sort(sortByPublishedAt)
-    .map((article) => toArticleListItem(article, locale));
+export const getLocalizedBlogs = (locale: Locale): BlogListItem[] => {
+  return [...BLOG_RECORDS].sort(sortByPublishedAt).map((blog) => toBlogListItem(blog, locale));
 };
 
-export const getLocalizedArticleBySlug = (slug: string, locale: Locale): ArticleDetail | null => {
-  const article = ARTICLE_RECORDS.find((item) => item.slug === slug);
+export const getLocalizedBlogBySlug = (slug: string, locale: Locale): BlogDetail | null => {
+  const blog = BLOG_RECORDS.find((item) => item.slug === slug);
 
-  if (!article) {
+  if (!blog) {
     return null;
   }
 
-  const translation = article.translations[locale];
+  const translation = blog.translations[locale];
 
   return {
-    slug: article.slug,
-    publishedAt: article.publishedAt,
-    modifiedAt: article.modifiedAt,
-    readingMinutes: article.readingMinutes,
-    coverImage: article.coverImage,
+    slug: blog.slug,
+    publishedAt: blog.publishedAt,
+    modifiedAt: blog.modifiedAt,
+    readingMinutes: blog.readingMinutes,
+    coverImage: blog.coverImage,
     category: translation.category,
     title: translation.title,
     excerpt: translation.excerpt,
@@ -1325,9 +1324,9 @@ export const getLocalizedArticleBySlug = (slug: string, locale: Locale): Article
   };
 };
 
-export const getAllArticleSlugs = () => ARTICLE_RECORDS.map((article) => article.slug);
+export const getAllBlogSlugs = () => BLOG_RECORDS.map((blog) => blog.slug);
 
-export const getArticleSitemapPaths = () => [
-  '/articles',
-  ...getAllArticleSlugs().map((slug) => `/articles/${slug}`),
+export const getBlogSitemapPaths = () => [
+  ROUTES.BLOG,
+  ...getAllBlogSlugs().map((slug) => ROUTES.BLOG_DETAIL(slug)),
 ];

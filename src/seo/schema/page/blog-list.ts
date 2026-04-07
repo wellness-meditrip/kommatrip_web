@@ -1,30 +1,30 @@
-import type { ArticleListItem } from '@/models/article';
+import type { BlogListItem } from '@/models/blog';
 import type { JsonLd } from '../../meta.types';
 import { createBreadcrumbSchema } from '../breadcrumb';
-import { createArticleCollectionSchema } from '../article';
+import { createBlogCollectionSchema } from '../blog';
 
-interface BuildArticleListJsonLdParams {
-  articles: ArticleListItem[];
+interface BuildBlogListJsonLdParams {
+  blogs: BlogListItem[];
   locale: string;
   pagePath: string;
   homeLabel: string;
-  articleListLabel: string;
+  blogListLabel: string;
   pageTitle: string;
   description: string;
 }
 
-export const buildArticleListJsonLd = ({
-  articles,
+export const buildBlogListJsonLd = ({
+  blogs,
   locale,
   pagePath,
   homeLabel,
-  articleListLabel,
+  blogListLabel,
   pageTitle,
   description,
-}: BuildArticleListJsonLdParams): JsonLd[] => {
+}: BuildBlogListJsonLdParams): JsonLd[] => {
   return [
-    createArticleCollectionSchema({
-      articles,
+    createBlogCollectionSchema({
+      blogs,
       path: pagePath,
       locale,
       name: pageTitle,
@@ -36,7 +36,7 @@ export const buildArticleListJsonLd = ({
         path: `/${locale}`,
       },
       {
-        name: articleListLabel,
+        name: blogListLabel,
         path: pagePath,
       },
     ]),

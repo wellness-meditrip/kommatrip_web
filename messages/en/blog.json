@@ -1,14 +1,14 @@
 {
-  "title": "Articles",
+  "title": "Blog",
   "list": {
     "eyebrow": "Editorial",
     "title": "Wellness travel notes",
     "description": "Read practical guides for planning, booking, and preparing for your visit.",
-    "empty": "No articles available yet.",
-    "readMore": "Read article"
+    "empty": "No blog posts available yet.",
+    "readMore": "Read blog post"
   },
   "detail": {
-    "backToList": "Back to articles",
+    "backToList": "Back to blog",
     "editor": "KOMMA Editorial",
     "onThisPage": "On this page",
     "faqTitle": "Frequently asked questions",

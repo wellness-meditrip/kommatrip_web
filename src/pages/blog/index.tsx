@@ -3,41 +3,41 @@ import type { GetServerSideProps } from 'next';
 import Image from 'next/image';
 import { AppBar, DesktopAppBar, Empty, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
-import { getLocalizedArticles } from '@/data/articles';
+import { getLocalizedBlogs } from '@/data/blogs';
 import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
 import { resolveI18nLocale, withI18nGssp } from '@/i18n/page-props';
 import type { Locale } from '@/i18n/routing';
-import type { ArticleListItem } from '@/models/article';
-import { Meta, buildArticleListJsonLd, createPageMeta } from '@/seo';
+import type { BlogListItem } from '@/models/blog';
+import { Meta, buildBlogListJsonLd, createPageMeta } from '@/seo';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { useTranslations } from 'next-intl';
 
-interface ArticlesPageProps {
-  articles: ArticleListItem[];
+interface BlogPageProps {
+  blogs: BlogListItem[];
 }
 
-const formatArticleDate = (value: string, locale: Locale) =>
+const formatBlogDate = (value: string, locale: Locale) =>
   new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   }).format(new Date(value));
 
-export default function ArticlesPage({ articles }: ArticlesPageProps) {
-  const t = useTranslations('article');
+export default function BlogPage({ blogs }: BlogPageProps) {
+  const t = useTranslations('blog');
   const tCommon = useTranslations('common');
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const articleListPath = `/${currentLocale}${ROUTES.ARTICLES}`;
+  const blogListPath = `/${currentLocale}${ROUTES.BLOG}`;
   const jsonLd =
-    articles.length > 0
-      ? buildArticleListJsonLd({
-          articles,
+    blogs.length > 0
+      ? buildBlogListJsonLd({
+          blogs,
           locale: currentLocale,
-          pagePath: articleListPath,
+          pagePath: blogListPath,
           homeLabel: tCommon('app.name'),
-          articleListLabel: t('title'),
+          blogListLabel: t('title'),
           pageTitle: t('list.title'),
           description: t('list.description'),
         })
@@ -45,9 +45,9 @@ export default function ArticlesPage({ articles }: ArticlesPageProps) {
   const meta = createPageMeta({
     pageTitle: t('title'),
     description: t('list.description'),
-    path: articleListPath,
-    image: articles[0]?.coverImage || '/og/OG_image.jpg',
-    imageAlt: articles[0]?.title,
+    path: blogListPath,
+    image: blogs[0]?.coverImage || '/og/OG_image.jpg',
+    imageAlt: blogs[0]?.title,
     locale: currentLocale,
     jsonLd,
   });
@@ -80,22 +80,18 @@ export default function ArticlesPage({ articles }: ArticlesPageProps) {
           </section>
 
           <section css={contentSection}>
-            {articles.length === 0 ? (
+            {blogs.length === 0 ? (
               <div css={emptyState}>
                 <Empty title={t('list.empty')} />
               </div>
             ) : (
-              <div css={articleGrid}>
-                {articles.map((article, index) => (
-                  <Link
-                    key={article.slug}
-                    href={ROUTES.ARTICLE_DETAIL(article.slug)}
-                    css={articleCard}
-                  >
+              <div css={blogGrid}>
+                {blogs.map((blog, index) => (
+                  <Link key={blog.slug} href={ROUTES.BLOG_DETAIL(blog.slug)} css={blogCard}>
                     <div css={cardImageFrame}>
                       <Image
-                        src={article.coverImage}
-                        alt={article.title}
+                        src={blog.coverImage}
+                        alt={blog.title}
                         fill
                         priority={index === 0}
                         fetchPriority={index === 0 ? 'high' : undefined}
@@ -107,21 +103,21 @@ export default function ArticlesPage({ articles }: ArticlesPageProps) {
                     <div css={cardBody}>
                       <div css={metaRow}>
                         <Text typo="body_S" color="primary50">
-                          {article.category}
+                          {blog.category}
                         </Text>
                         <Text typo="body_S" color="text_tertiary">
-                          {formatArticleDate(article.publishedAt, currentLocale)}
+                          {formatBlogDate(blog.publishedAt, currentLocale)}
                         </Text>
                       </div>
                       <Text tag="h2" typo="title_M" color="text_primary" css={cardTitle}>
-                        {article.title}
+                        {blog.title}
                       </Text>
                       <Text typo="body_M" color="text_secondary" css={cardExcerpt}>
-                        {article.excerpt}
+                        {blog.excerpt}
                       </Text>
                       <div css={cardFooter}>
                         <Text typo="body_S" color="text_tertiary">
-                          {t('detail.readingTime', { minutes: article.readingMinutes })}
+                          {t('detail.readingTime', { minutes: blog.readingMinutes })}
                         </Text>
                         <Text typo="button_M" color="primary50">
                           {t('list.readMore')}
@@ -181,7 +177,7 @@ const emptyState = css`
   padding: 32px 0;
 `;
 
-const articleGrid = css`
+const blogGrid = css`
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
@@ -191,7 +187,7 @@ const articleGrid = css`
   }
 `;
 
-const articleCard = css`
+const blogCard = css`
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -259,16 +255,15 @@ const cardFooter = css`
   padding-top: 6px;
 `;
 
-export const getServerSideProps: GetServerSideProps<ArticlesPageProps> =
-  withI18nGssp<ArticlesPageProps>(
-    async (context) => {
-      const locale = resolveI18nLocale(context);
+export const getServerSideProps: GetServerSideProps<BlogPageProps> = withI18nGssp<BlogPageProps>(
+  async (context) => {
+    const locale = resolveI18nLocale(context);
 
-      return {
-        props: {
-          articles: getLocalizedArticles(locale),
-        },
-      };
-    },
-    ['article']
-  );
+    return {
+      props: {
+        blogs: getLocalizedBlogs(locale),
+      },
+    };
+  },
+  ['blog']
+);

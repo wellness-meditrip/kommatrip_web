@@ -1,5 +1,5 @@
 export const MESSAGE_NAMESPACES = [
-  'article',
+  'blog',
   'auth',
   'booking',
   'booking-detail',

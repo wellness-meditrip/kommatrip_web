@@ -144,9 +144,8 @@ export function DesktopAppBar({
       <div css={menuWrapper}>
         <ul css={menuList}>
           <li onClick={() => handleMenuClick(ROUTES.HOME)}>{t('main')}</li>
-          <li onClick={() => handleMenuClick(ROUTES.ARTICLES)}>{t('articles')}</li>
+          <li onClick={() => handleMenuClick(ROUTES.BLOG)}>{t('blog')}</li>
           <li onClick={() => handleMenuClick(ROUTES.COMPANY)}>{t('programs')}</li>
-          {/* <li onClick={() => handleMenuClick(ROUTES.MYPAGE)}>{t('mypage')}</li> */}
           <li
             onClick={() =>
               window.open(

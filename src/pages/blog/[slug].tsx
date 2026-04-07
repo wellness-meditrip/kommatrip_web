@@ -4,67 +4,67 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { AppBar, DesktopAppBar, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
-import { getLocalizedArticleBySlug } from '@/data/articles';
+import { getLocalizedBlogBySlug } from '@/data/blogs';
 import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
 import { resolveI18nLocale, withI18nGssp } from '@/i18n/page-props';
 import type { Locale } from '@/i18n/routing';
-import type { ArticleDetail } from '@/models/article';
-import { Meta, buildArticleDetailJsonLd, createPageMeta, toIsoMetaDateTime } from '@/seo';
+import type { BlogDetail } from '@/models/blog';
+import { Meta, buildBlogDetailJsonLd, createPageMeta, toIsoMetaDateTime } from '@/seo';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { useTranslations } from 'next-intl';
 
-interface ArticleDetailPageProps {
-  article: ArticleDetail;
+interface BlogDetailPageProps {
+  blog: BlogDetail;
 }
 
-const ARTICLE_CONTENT_MAX_WIDTH = '980px';
-const ARTICLE_FAQ_SECTION_ID = 'section-faq';
+const BLOG_CONTENT_MAX_WIDTH = '980px';
+const BLOG_FAQ_SECTION_ID = 'section-faq';
 
-const formatArticleDate = (value: string, locale: Locale) =>
+const formatBlogDate = (value: string, locale: Locale) =>
   new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   }).format(new Date(value));
 
-export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
+export default function BlogDetailPage({ blog }: BlogDetailPageProps) {
   const router = useRouter();
-  const t = useTranslations('article');
+  const t = useTranslations('blog');
   const tCommon = useTranslations('common');
   const currentLocale = useCurrentLocale();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const articlePath = `/${currentLocale}${ROUTES.ARTICLE_DETAIL(article.slug)}`;
-  const jsonLd = buildArticleDetailJsonLd({
-    article,
+  const blogPath = `/${currentLocale}${ROUTES.BLOG_DETAIL(blog.slug)}`;
+  const jsonLd = buildBlogDetailJsonLd({
+    blog,
     locale: currentLocale,
-    articlePath,
+    blogPath,
     homeLabel: tCommon('app.name'),
-    articleListLabel: t('title'),
+    blogListLabel: t('title'),
   });
   const meta = createPageMeta({
-    pageTitle: article.title,
-    description: article.seoDescription,
-    path: articlePath,
-    image: article.coverImage,
-    imageAlt: article.coverImageAlt || article.title,
+    pageTitle: blog.title,
+    description: blog.seoDescription,
+    path: blogPath,
+    image: blog.coverImage,
+    imageAlt: blog.coverImageAlt || blog.title,
     type: 'article',
     locale: currentLocale,
-    publishedTime: toIsoMetaDateTime(article.publishedAt),
-    modifiedTime: toIsoMetaDateTime(article.modifiedAt ?? article.publishedAt),
-    articleSection: article.category,
+    publishedTime: toIsoMetaDateTime(blog.publishedAt),
+    modifiedTime: toIsoMetaDateTime(blog.modifiedAt ?? blog.publishedAt),
+    articleSection: blog.category,
     jsonLd,
   });
-  const tocEntries = article.faqItems?.length
-    ? [...article.sections.map((section) => section.heading), t('detail.faqTitle')]
-    : article.sections.map((section) => section.heading);
+  const tocEntries = blog.faqItems?.length
+    ? [...blog.sections.map((section) => section.heading), t('detail.faqTitle')]
+    : blog.sections.map((section) => section.heading);
 
   return (
     <>
       <Meta {...meta} />
       <Layout
         isAppBarExist={false}
-        title={article.title}
+        title={blog.title}
         scrollMode="page"
         style={{ backgroundColor: theme.colors.bg_surface1 }}
       >
@@ -75,14 +75,14 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
             <AppBar
               leftButton
               buttonType="dark"
-              onBackClick={() => router.push(`/${currentLocale}${ROUTES.ARTICLES}`)}
+              onBackClick={() => router.push(`/${currentLocale}${ROUTES.BLOG}`)}
               backgroundColor="bg_surface1"
             />
           )}
 
-          <article css={articleLayout}>
+          <article css={blogLayout}>
             <div css={topBar}>
-              <Link href={ROUTES.ARTICLES} css={backLink}>
+              <Link href={ROUTES.BLOG} css={backLink}>
                 <Text typo="button_M" color="primary50">
                   {t('detail.backToList')}
                 </Text>
@@ -92,16 +92,16 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
             <header css={heroHeader}>
               <div css={categoryBadge}>
                 <Text typo="body_S" color="primary50">
-                  {article.category}
+                  {blog.category}
                 </Text>
               </div>
 
               <Text tag="h1" typo="title_XL" color="text_primary" css={heroTitle}>
-                {article.title}
+                {blog.title}
               </Text>
 
               <Text typo="body_L" color="text_secondary" css={heroExcerpt}>
-                {article.excerpt}
+                {blog.excerpt}
               </Text>
 
               <div css={heroMeta}>
@@ -113,7 +113,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                     </Text>
                     <Text typo="body_S" color="text_tertiary">
                       {t('detail.published', {
-                        date: formatArticleDate(article.publishedAt, currentLocale),
+                        date: formatBlogDate(blog.publishedAt, currentLocale),
                       })}
                     </Text>
                   </div>
@@ -121,7 +121,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
 
                 <div css={readingPill}>
                   <Text typo="body_S" color="text_tertiary">
-                    {t('detail.readingTime', { minutes: article.readingMinutes })}
+                    {t('detail.readingTime', { minutes: blog.readingMinutes })}
                   </Text>
                 </div>
               </div>
@@ -130,19 +130,19 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
             <div css={heroFigure}>
               <div css={heroImageFrame}>
                 <Image
-                  src={article.coverImage}
-                  alt={article.coverImageAlt || article.title}
+                  src={blog.coverImage}
+                  alt={blog.coverImageAlt || blog.title}
                   fill
                   priority
                   fetchPriority="high"
-                  sizes={`(min-width: ${theme.breakpoints.desktop}) ${ARTICLE_CONTENT_MAX_WIDTH}, 100vw`}
+                  sizes={`(min-width: ${theme.breakpoints.desktop}) ${BLOG_CONTENT_MAX_WIDTH}, 100vw`}
                   css={heroImage}
                 />
                 <div css={heroImageOverlay} aria-hidden="true" />
               </div>
             </div>
 
-            <div css={articleBodyLayout}>
+            <div css={blogBodyLayout}>
               <aside css={sideRail}>
                 <div css={sideRailInner}>
                   <Text typo="body_S" color="primary50">
@@ -153,9 +153,9 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                       <li key={label}>
                         <a
                           href={
-                            index < article.sections.length
+                            index < blog.sections.length
                               ? `#section-${index + 1}`
-                              : `#${ARTICLE_FAQ_SECTION_ID}`
+                              : `#${BLOG_FAQ_SECTION_ID}`
                           }
                           css={tocLink}
                         >
@@ -169,7 +169,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
               </aside>
 
               <div css={bodyContent}>
-                {article.sections.map((section, index) => (
+                {blog.sections.map((section, index) => (
                   <section key={section.heading} id={`section-${index + 1}`} css={sectionBlock}>
                     <div css={sectionMarker}>
                       <span css={sectionNumber}>{String(index + 1).padStart(2, '0')}</span>
@@ -240,11 +240,11 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                     </div>
                   </section>
                 ))}
-                {article.faqItems && article.faqItems.length > 0 && (
-                  <section id={ARTICLE_FAQ_SECTION_ID} css={sectionBlock}>
+                {blog.faqItems && blog.faqItems.length > 0 && (
+                  <section id={BLOG_FAQ_SECTION_ID} css={sectionBlock}>
                     <div css={sectionMarker}>
                       <span css={sectionNumber}>
-                        {String(article.sections.length + 1).padStart(2, '0')}
+                        {String(blog.sections.length + 1).padStart(2, '0')}
                       </span>
                     </div>
                     <div css={sectionMain}>
@@ -252,7 +252,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                         {t('detail.faqTitle')}
                       </Text>
                       <div css={faqList}>
-                        {article.faqItems.map((item) => (
+                        {blog.faqItems.map((item) => (
                           <div key={item.question} css={faqCard}>
                             <Text tag="h3" typo="title_S" color="text_primary" css={faqQuestion}>
                               {item.question}
@@ -269,7 +269,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
               </div>
             </div>
 
-            <footer css={articleFooter}>
+            <footer css={blogFooter}>
               <div css={footerCard}>
                 <Text typo="body_S" color="primary50">
                   {t('detail.footerEyebrow')}
@@ -280,7 +280,7 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                 <Text typo="body_M" color="text_secondary" css={footerDescription}>
                   {t('detail.footerDescription')}
                 </Text>
-                <Link href={ROUTES.ARTICLES} css={footerLink}>
+                <Link href={ROUTES.BLOG} css={footerLink}>
                   <Text typo="button_M" color="white">
                     {t('detail.backToList')}
                   </Text>
@@ -305,7 +305,7 @@ const page = css`
     linear-gradient(180deg, #fbfaf6 0%, ${theme.colors.bg_surface1} 28%, #f6f4ee 100%);
 `;
 
-const articleLayout = css`
+const blogLayout = css`
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
@@ -336,7 +336,7 @@ const heroHeader = css`
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  max-width: ${ARTICLE_CONTENT_MAX_WIDTH};
+  max-width: ${BLOG_CONTENT_MAX_WIDTH};
   margin: 0 auto;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
@@ -420,7 +420,7 @@ const readingPill = css`
 
 const heroFigure = css`
   width: 100%;
-  max-width: ${ARTICLE_CONTENT_MAX_WIDTH};
+  max-width: ${BLOG_CONTENT_MAX_WIDTH};
   margin: 28px auto 0;
 `;
 
@@ -449,10 +449,10 @@ const heroImageOverlay = css`
   pointer-events: none;
 `;
 
-const articleBodyLayout = css`
+const blogBodyLayout = css`
   display: block;
   width: 100%;
-  max-width: ${ARTICLE_CONTENT_MAX_WIDTH};
+  max-width: ${BLOG_CONTENT_MAX_WIDTH};
   margin: 34px auto 0;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
@@ -628,9 +628,9 @@ const faqAnswer = css`
   line-height: 1.9;
 `;
 
-const articleFooter = css`
+const blogFooter = css`
   width: 100%;
-  max-width: ${ARTICLE_CONTENT_MAX_WIDTH};
+  max-width: ${BLOG_CONTENT_MAX_WIDTH};
   margin: 64px auto 0;
 `;
 
@@ -663,8 +663,8 @@ const footerLink = css`
   text-decoration: none;
 `;
 
-export const getServerSideProps: GetServerSideProps<ArticleDetailPageProps> =
-  withI18nGssp<ArticleDetailPageProps>(
+export const getServerSideProps: GetServerSideProps<BlogDetailPageProps> =
+  withI18nGssp<BlogDetailPageProps>(
     async (context) => {
       const { params } = context;
       const slugParam = params?.slug;
@@ -675,17 +675,17 @@ export const getServerSideProps: GetServerSideProps<ArticleDetailPageProps> =
       }
 
       const locale = resolveI18nLocale(context);
-      const article = getLocalizedArticleBySlug(slug, locale);
+      const blog = getLocalizedBlogBySlug(slug, locale);
 
-      if (!article) {
+      if (!blog) {
         return { notFound: true };
       }
 
       return {
         props: {
-          article,
+          blog,
         },
       };
     },
-    ['article']
+    ['blog']
   );

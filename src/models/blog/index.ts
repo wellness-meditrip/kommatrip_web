@@ -1,6 +1,6 @@
 import type { Locale } from '@/i18n';
 
-export interface ArticleSectionImage {
+export interface BlogSectionImage {
   src: string;
   alt: string;
   caption?: string;
@@ -8,39 +8,39 @@ export interface ArticleSectionImage {
   height?: number;
 }
 
-export interface ArticleSection {
+export interface BlogSection {
   heading: string;
   paragraphs: string[];
   bullets?: string[];
-  images?: ArticleSectionImage[];
+  images?: BlogSectionImage[];
 }
 
-export interface ArticleFaqItem {
+export interface BlogFaqItem {
   question: string;
   answer: string;
 }
 
-export interface ArticleTranslation {
+export interface BlogTranslation {
   category: string;
   title: string;
   excerpt: string;
   seoDescription: string;
   coverImageAlt?: string;
   keywords?: string[];
-  faqItems?: ArticleFaqItem[];
-  sections: ArticleSection[];
+  faqItems?: BlogFaqItem[];
+  sections: BlogSection[];
 }
 
-export interface ArticleRecord {
+export interface BlogRecord {
   slug: string;
   publishedAt: string;
   modifiedAt?: string;
   readingMinutes: number;
   coverImage: string;
-  translations: Record<Locale, ArticleTranslation>;
+  translations: Record<Locale, BlogTranslation>;
 }
 
-export interface ArticleListItem {
+export interface BlogListItem {
   slug: string;
   publishedAt: string;
   readingMinutes: number;
@@ -50,11 +50,11 @@ export interface ArticleListItem {
   excerpt: string;
 }
 
-export interface ArticleDetail extends ArticleListItem {
+export interface BlogDetail extends BlogListItem {
   seoDescription: string;
   modifiedAt?: string;
   coverImageAlt?: string;
   keywords?: string[];
-  faqItems?: ArticleFaqItem[];
-  sections: ArticleSection[];
+  faqItems?: BlogFaqItem[];
+  sections: BlogSection[];
 }

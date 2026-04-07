@@ -1,14 +1,14 @@
 {
-  "title": "아티클",
+  "title": "블로그",
   "list": {
     "eyebrow": "에디토리얼",
     "title": "웰니스 여행 노트",
     "description": "여행 준비, 예약, 방문 전 확인에 도움이 되는 실무형 가이드를 모았습니다.",
-    "empty": "등록된 아티클이 없습니다.",
-    "readMore": "아티클 보기"
+    "empty": "등록된 블로그 글이 없습니다.",
+    "readMore": "블로그 글 보기"
   },
   "detail": {
-    "backToList": "아티클 목록으로",
+    "backToList": "블로그 목록으로",
     "editor": "KOMMA Editorial",
     "onThisPage": "이 글의 구성",
     "faqTitle": "자주 묻는 질문",

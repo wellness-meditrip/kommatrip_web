@@ -1,14 +1,14 @@
 {
-  "title": "記事",
+  "title": "ブログ",
   "list": {
     "eyebrow": "Editorial",
     "title": "ウェルネストラベルノート",
     "description": "旅行準備、予約、訪問前の確認に役立つガイドをまとめました。",
-    "empty": "公開された記事がまだありません。",
-    "readMore": "記事を見る"
+    "empty": "公開されたブログ記事がまだありません。",
+    "readMore": "ブログ記事を見る"
   },
   "detail": {
-    "backToList": "記事一覧へ",
+    "backToList": "ブログ一覧へ",
     "editor": "KOMMA Editorial",
     "onThisPage": "このページの内容",
     "footerEyebrow": "続きを読む",
