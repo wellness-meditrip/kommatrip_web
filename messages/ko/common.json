@@ -42,6 +42,11 @@
     "deleted": "삭제되었습니다",
     "updated": "업데이트되었습니다"
   },
+  "company": {
+    "exclusive": "단독",
+    "imageAlt": "{name} 이미지",
+    "fallbackImageAlt": "기본 업체 이미지"
+  },
   "home": {
     "heroTitle": "진정한 한국 웰니스를 발견하세요",
     "heroSubtitle": "몸과 마음을 회복하는 큐레이션 경험",

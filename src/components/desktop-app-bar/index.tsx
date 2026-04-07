@@ -117,7 +117,7 @@ export function DesktopAppBar({
         css={logo}
         role="button"
         tabIndex={0}
-        aria-label="Go to home"
+        aria-label={tCommon('button.home')}
         onClick={() => handleMenuClick(ROUTES.HOME)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {

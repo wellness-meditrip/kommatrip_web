@@ -42,6 +42,11 @@
     "deleted": "Deleted",
     "updated": "Updated"
   },
+  "company": {
+    "exclusive": "Exclusive",
+    "imageAlt": "{name} image",
+    "fallbackImageAlt": "Default company image"
+  },
   "home": {
     "heroTitle": "Discover Authentic Korean Wellness",
     "heroSubtitle": "Curated experiences that heal your body and mind",

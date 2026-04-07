@@ -42,6 +42,11 @@
     "deleted": "削除されました",
     "updated": "更新されました"
   },
+  "company": {
+    "exclusive": "限定",
+    "imageAlt": "{name} の画像",
+    "fallbackImageAlt": "デフォルト施設画像"
+  },
   "home": {
     "heroTitle": "本格的な韓国ウェルネスを発見",
     "heroSubtitle": "心と体を癒すキュレーション体験",
