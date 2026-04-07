@@ -78,6 +78,9 @@ export function useUserInfoForm() {
   const profileImageUrl = watch('profileImageUrl');
   const passwordSet = !!profileData?.user?.password_set;
   const email = profileData?.user?.email ?? '';
+  const canEditProfileImage = profileData?.user
+    ? profileData.user.login_method !== 'google'
+    : false;
 
   const selectedContactValue = watch(CONTACT_METHOD_FIELD_MAP[contactMethod]);
   const contactPlaceholder = CONTACT_PLACEHOLDER_MAP[contactMethod];
@@ -155,6 +158,7 @@ export function useUserInfoForm() {
     email,
     passwordSet,
     profileImageUrl,
+    canEditProfileImage,
     contactMethod,
     selectedContactValue,
     contactPlaceholder,

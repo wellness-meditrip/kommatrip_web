@@ -31,6 +31,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
     email,
     passwordSet,
     profileImageUrl,
+    canEditProfileImage,
     contactMethod,
     selectedContactValue,
     contactPlaceholder,
@@ -64,7 +65,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
           <ProfileAvatar
             src={profileImageUrl}
             isDesktop={isDesktop}
-            onAvatarClick={() => !isDesktop && setIsImageModalOpen(true)}
+            editable={canEditProfileImage}
+            onAvatarClick={() => {
+              if (!isDesktop && canEditProfileImage) {
+                setIsImageModalOpen(true);
+              }
+            }}
             onEditClick={handleEditClick}
             onDeleteClick={handleDelete}
           />
@@ -198,7 +204,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
         </CTAButton>
       )}
 
-      {!isDesktop && isImageModalOpen && (
+      {!isDesktop && isImageModalOpen && canEditProfileImage && (
         <ImageActionSheet
           onEdit={handleEditClick}
           onDelete={handleDelete}

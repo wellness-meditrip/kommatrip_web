@@ -6,6 +6,7 @@ import { theme } from '@/styles';
 interface ProfileAvatarProps {
   src: string;
   isDesktop: boolean;
+  editable?: boolean;
   onAvatarClick: () => void;
   onEditClick: () => void;
   onDeleteClick: () => void;
@@ -14,6 +15,7 @@ interface ProfileAvatarProps {
 export function ProfileAvatar({
   src,
   isDesktop,
+  editable = true,
   onAvatarClick,
   onEditClick,
   onDeleteClick,
@@ -25,6 +27,7 @@ export function ProfileAvatar({
         css={profileButton(isDesktop)}
         onClick={onAvatarClick}
         aria-label="Edit profile image"
+        disabled={!editable}
       >
         <SafeProfileImage
           src={src}
@@ -33,7 +36,7 @@ export function ProfileAvatar({
           fallback={<ImageUploadPlus width={22} height={22} />}
         />
       </button>
-      {isDesktop && (
+      {isDesktop && editable && (
         <div css={profileActions}>
           <button type="button" css={actionButton} onClick={onEditClick}>
             Edit
@@ -66,6 +69,10 @@ const profileButton = (isDesktop: boolean) => css`
   background: ${theme.colors.primary10};
   cursor: ${isDesktop ? 'default' : 'pointer'};
   overflow: hidden;
+
+  &:disabled {
+    cursor: default;
+  }
 
   svg path {
     stroke: ${theme.colors.primary50};
