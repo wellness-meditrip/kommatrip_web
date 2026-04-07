@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { DefaultProfile, ReviewFold, ReviewUnfold, Clock, Wallet, ChevronRight } from '@/icons';
 import { ROUTES } from '@/constants';
+import { formatDurationMinutes, formatNumberWithCurrencyCode, toIntlLocale } from '@/i18n/format';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   isOptimizableImage,
@@ -33,7 +34,6 @@ import {
   actionArea,
   reportButton,
 } from './index.styles';
-import dayjs from 'dayjs';
 
 interface Props {
   reviewId: number;
@@ -73,7 +73,7 @@ export function Card({
   onReportClick,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('review');
   const normalizedProgramImageSrc = useMemo(
     () => normalizeSafeImageSrc(programImageUrl) || '/default.png',
@@ -88,14 +88,25 @@ export function Card({
   const handleProgramClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation();
     if (!companyId || !programId) return;
-    router.push(ROUTES.COMPANY_PROGRAM_DETAIL(companyId, programId));
+    void router.push(ROUTES.COMPANY_PROGRAM_DETAIL(companyId, programId));
   };
 
   const formattedPrice =
     programPrice !== null && programPrice !== undefined
-      ? `${new Intl.NumberFormat('en-US').format(programPrice)} KRW`
+      ? formatNumberWithCurrencyCode(programPrice, router.currentLocale, 'KRW')
       : '';
-  const formattedDuration = programDurationMinutes ? `${programDurationMinutes} mins` : '';
+  const formattedDuration = programDurationMinutes
+    ? formatDurationMinutes(programDurationMinutes, router.currentLocale)
+    : '';
+  const formattedVisitedDate = useMemo(
+    () =>
+      new Intl.DateTimeFormat(toIntlLocale(router.currentLocale), {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date(createdAt)),
+    [createdAt, router.currentLocale]
+  );
   const programImageSrc = hasProgramImageError ? '/default.png' : normalizedProgramImageSrc;
   const shouldUseNextProgramImage = isOptimizableImage(programImageSrc);
   const shouldBypassProgramImageOptimization = shouldBypassNextImageOptimization(programImageSrc);
@@ -117,7 +128,7 @@ export function Card({
             {reviewerName}
           </Text>
           <Text typo="body_S" color="text_secondary">
-            {t('firstTimeVisitorMeta', { date: dayjs(createdAt).format('YY.MM.DD') })}
+            {t('firstTimeVisitorMeta', { date: formattedVisitedDate })}
           </Text>
         </div>
 

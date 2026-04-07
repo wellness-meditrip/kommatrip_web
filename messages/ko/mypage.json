@@ -43,7 +43,15 @@
   "settings": {
     "title": "설정",
     "language": "언어",
-    "notifications": "알림"
+    "notifications": "알림",
+    "marketingConsent": {
+      "title": "마케팅 수신 동의",
+      "description": "마케팅 수신에 동의하시면 설정해 주세요."
+    },
+    "actions": {
+      "logout": "로그아웃",
+      "deleteAccount": "회원 탈퇴"
+    }
   },
   "menu": {
     "userInfo": "내 정보 관리",
@@ -66,7 +74,36 @@
   "profile": {
     "manage": "내 정보 관리",
     "fallbackName": "ONYU 회원",
-    "imageAlt": "프로필 이미지"
+    "imageAlt": "프로필 이미지",
+    "editImage": "프로필 이미지 수정"
+  },
+  "userInfo": {
+    "sections": {
+      "contact": "연락처",
+      "country": "국가"
+    },
+    "fields": {
+      "userName": "사용자 이름",
+      "password": "비밀번호",
+      "emailAddress": "이메일 주소",
+      "contactMethod": "연락 방법",
+      "country": "국가"
+    },
+    "contactMethods": {
+      "line": "Line",
+      "whatsApp": "WhatsApp",
+      "kakao": "Kakao",
+      "phone": "전화번호"
+    },
+    "contactPlaceholders": {
+      "line": "Line ID",
+      "whatsApp": "WhatsApp 전화번호",
+      "kakao": "Kakao ID",
+      "phone": "전화번호"
+    },
+    "notSet": "설정되지 않음",
+    "saving": "저장 중...",
+    "editPassword": "비밀번호 수정"
   },
   "improvement": {
     "title": "ONYU 개선에 참여하기",
@@ -82,10 +119,14 @@
   },
   "toast": {
     "profileUpdated": "프로필 정보가 수정되었습니다.",
+    "profileUpdateFailed": "프로필 정보를 수정하지 못했습니다. 다시 시도해 주세요.",
     "profileImageUploaded": "프로필 이미지가 업로드되었습니다.",
+    "profileImageUploadFailed": "프로필 이미지를 수정하지 못했습니다. 다시 시도해 주세요.",
     "profileImageDeleted": "프로필 이미지가 삭제되었습니다.",
+    "profileImageDeleteFailed": "프로필 이미지를 삭제하지 못했습니다. 다시 시도해 주세요.",
     "profileImageTypeError": "JPG, PNG, WEBP 형식의 이미지만 업로드하실 수 있습니다.",
     "profileImageSizeError": "이미지 용량은 5MB 이하만 업로드하실 수 있습니다.",
-    "marketingConsentUpdated": "마케팅 수신 동의가 변경되었습니다."
+    "marketingConsentUpdated": "마케팅 수신 동의가 변경되었습니다.",
+    "marketingConsentUpdateFailed": "마케팅 수신 동의를 변경하지 못했습니다. 다시 시도해 주세요."
   }
 }

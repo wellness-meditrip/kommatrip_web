@@ -1,34 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_AUTH_COOKIE_KEYS, AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
-import { defaultLocale, locales, type Locale } from './i18n/routing';
+import { locales, type Locale } from './i18n/routing';
+import { detectRequestLocale, LOCALE_COOKIE_NAME } from './i18n/locale';
 
-const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1년
 
 /**
  * 로케일 감지 순서:
  * 1. URL 경로의 로케일 프리픽스
  * 2. 쿠키 (NEXT_LOCALE)
- * 3. 브라우저 Accept-Language 헤더 (일본어만 감지)
- * 4. 기본값: en
+ * 3. 기본값: en
  */
 function detectLocale(request: NextRequest): Locale {
-  const { pathname } = request.nextUrl;
-
-  // 1. URL 경로에서 로케일 확인
-  const pathnameLocale = pathname.split('/')[1];
-  if (pathnameLocale && locales.includes(pathnameLocale as Locale)) {
-    return pathnameLocale as Locale;
-  }
-
-  // 2. 쿠키에서 로케일 확인
-  const cookieLocale = request.cookies.get(LOCALE_COOKIE_NAME)?.value;
-  if (cookieLocale && locales.includes(cookieLocale as Locale)) {
-    return cookieLocale as Locale;
-  }
-
-  // 3. 기본값
-  return defaultLocale;
+  return detectRequestLocale({
+    pathname: request.nextUrl.pathname,
+    cookieLocale: request.cookies.get(LOCALE_COOKIE_NAME)?.value,
+  });
 }
 
 /**

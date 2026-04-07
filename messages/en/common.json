@@ -21,6 +21,15 @@
     "reset": "Reset",
     "home": "Go to home"
   },
+  "navigation": {
+    "home": "Home",
+    "bookings": "My bookings",
+    "search": "Search",
+    "mypage": "My page"
+  },
+  "date": {
+    "selectDates": "Select dates"
+  },
   "loading": {
     "text": "Loading...",
     "pleaseWait": "Please wait"
@@ -41,6 +50,11 @@
     "saved": "Saved",
     "deleted": "Deleted",
     "updated": "Updated"
+  },
+  "company": {
+    "exclusive": "Exclusive",
+    "imageAlt": "{name} image",
+    "fallbackImageAlt": "Default company image"
   },
   "home": {
     "heroTitle": "Discover Authentic Korean Wellness",

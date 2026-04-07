@@ -1,6 +1,11 @@
 import { defaultLocale, routing } from '@/i18n/routing';
 import type { MetaAlternate } from './meta.types';
 
+const OPEN_GRAPH_LOCALE_MAP: Record<string, string> = {
+  en: 'en_US',
+  ko: 'ko_KR',
+};
+
 export const toAbsoluteUrl = (siteUrl: string, value?: string) => {
   if (!value) return undefined;
   if (value.startsWith('http://') || value.startsWith('https://')) return value;
@@ -53,6 +58,9 @@ export const buildLocaleAlternates = (siteUrl: string, value?: string): MetaAlte
 
   return alternates;
 };
+
+export const toOpenGraphLocale = (locale?: string) =>
+  locale ? (OPEN_GRAPH_LOCALE_MAP[locale] ?? locale) : undefined;
 
 export const buildTitle = ({
   keyword,

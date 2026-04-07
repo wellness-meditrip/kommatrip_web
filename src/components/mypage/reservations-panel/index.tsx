@@ -39,6 +39,7 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
   const t = useTranslations('mypage.reservations');
   const router = useRouter();
   const currentLocale = useCurrentLocale();
+  const intlLocale = currentLocale === 'ko' ? 'ko-KR' : 'en-US';
   const [selectedFilter, setSelectedFilter] = useState<FilterStatus>('total');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const { isAuthenticated, isLoading } = useRequireAuth(true);
@@ -75,26 +76,29 @@ export function ReservationsPanel({ variant = 'page' }: Props) {
     isAuthenticated
   );
 
-  const formatReservationDate = useCallback((date?: string, time?: string) => {
-    if (!date) return '-';
-    const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
-    if (Number.isNaN(dateTime.getTime())) return date;
-    const hasTimeInDate = /\d{2}:\d{2}/.test(date);
-    const shouldShowTime = Boolean(time) || hasTimeInDate;
-    const dateText = new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(dateTime);
-    const dayText = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(dateTime);
-    if (!shouldShowTime) return `${dateText} (${dayText})`;
-    const timeText = new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }).format(dateTime);
-    return `${dateText} (${dayText}) ${timeText}`;
-  }, []);
+  const formatReservationDate = useCallback(
+    (date?: string, time?: string) => {
+      if (!date) return '-';
+      const dateTime = time ? new Date(`${date}T${time}`) : new Date(date);
+      if (Number.isNaN(dateTime.getTime())) return date;
+      const hasTimeInDate = /\d{2}:\d{2}/.test(date);
+      const shouldShowTime = Boolean(time) || hasTimeInDate;
+      const dateText = new Intl.DateTimeFormat(intlLocale, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(dateTime);
+      const dayText = new Intl.DateTimeFormat(intlLocale, { weekday: 'short' }).format(dateTime);
+      if (!shouldShowTime) return `${dateText} (${dayText})`;
+      const timeText = new Intl.DateTimeFormat(intlLocale, {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: currentLocale !== 'ko',
+      }).format(dateTime);
+      return `${dateText} (${dayText}) ${timeText}`;
+    },
+    [currentLocale, intlLocale]
+  );
 
   const normalizeStatus = useCallback((status?: string): ReservationStatus => {
     const value = (status ?? '').toLowerCase();

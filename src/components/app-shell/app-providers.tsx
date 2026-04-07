@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { DehydratedState } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
 import { SkeletonTheme } from 'react-loading-skeleton';
@@ -17,6 +17,10 @@ interface AppProvidersProps {
 }
 
 export function AppProviders({ locale, messages, dehydratedState, children }: AppProvidersProps) {
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   return (
     <NextIntlClientProvider
       locale={locale}

@@ -21,6 +21,15 @@
     "reset": "초기화",
     "home": "홈으로"
   },
+  "navigation": {
+    "home": "홈",
+    "bookings": "내 예약",
+    "search": "검색",
+    "mypage": "마이페이지"
+  },
+  "date": {
+    "selectDates": "날짜 선택"
+  },
   "loading": {
     "text": "로딩 중...",
     "pleaseWait": "잠시만 기다려주세요"
@@ -41,6 +50,11 @@
     "saved": "저장되었습니다",
     "deleted": "삭제되었습니다",
     "updated": "업데이트되었습니다"
+  },
+  "company": {
+    "exclusive": "단독",
+    "imageAlt": "{name} 이미지",
+    "fallbackImageAlt": "기본 업체 이미지"
   },
   "home": {
     "heroTitle": "진정한 한국 웰니스를 발견하세요",

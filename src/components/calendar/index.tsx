@@ -1,7 +1,10 @@
 /** @jsxImportSource @emotion/react */
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Text } from '../text';
 import { CalenderWhite, ChevronLeft, ChevronRight, GnbCalendarActive } from '@/icons';
+import { formatMonthDayWithWeekday, formatMonthYearLabel, getWeekdayLabels } from '@/i18n/format';
+import { useCurrentLocale } from '@/i18n/navigation';
 import {
   calendarContainer,
   calendarHeader,
@@ -35,8 +38,6 @@ interface Props {
   variant?: 'default' | 'desktop';
 }
 
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
   a.getMonth() === b.getMonth() &&
@@ -66,22 +67,19 @@ const getCalendarDays = (baseDate: Date) => {
 };
 
 export function Calendar({ selectedRange, onRangeSelect, variant = 'default' }: Props) {
+  const locale = useCurrentLocale();
+  const tCommon = useTranslations('common');
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
 
   const days = useMemo(() => getCalendarDays(currentMonth), [currentMonth]);
+  const dayLabels = useMemo(() => getWeekdayLabels(locale), [locale]);
   const dateLabel = useMemo(() => {
-    if (!selectedRange?.start) return 'Select dates';
-    const formatDateWithDay = (date: Date) => {
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
-      return `${month}.${day}(${weekday})`;
-    };
+    if (!selectedRange?.start) return tCommon('date.selectDates');
     if (!selectedRange.end) {
-      return formatDateWithDay(selectedRange.start);
+      return formatMonthDayWithWeekday(selectedRange.start, locale);
     }
-    return `${formatDateWithDay(selectedRange.start)} - ${formatDateWithDay(selectedRange.end)}`;
-  }, [selectedRange]);
+    return `${formatMonthDayWithWeekday(selectedRange.start, locale)} - ${formatMonthDayWithWeekday(selectedRange.end, locale)}`;
+  }, [locale, selectedRange, tCommon]);
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => addMonths(prev, -1));
@@ -114,12 +112,8 @@ export function Calendar({ selectedRange, onRangeSelect, variant = 'default' }: 
   };
 
   const monthLabelText = useMemo(
-    () =>
-      currentMonth.toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric',
-      }),
-    [currentMonth]
+    () => formatMonthYearLabel(currentMonth, locale),
+    [currentMonth, locale]
   );
 
   return (
@@ -149,7 +143,7 @@ export function Calendar({ selectedRange, onRangeSelect, variant = 'default' }: 
         </div>
 
         <div css={dayNamesRow}>
-          {DAY_LABELS.map((label) => (
+          {dayLabels.map((label) => (
             <div key={label} css={dayName}>
               {label}
             </div>

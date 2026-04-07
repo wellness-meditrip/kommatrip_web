@@ -2,6 +2,7 @@ import { routing } from './routing';
 import { getMergedMessages } from './getMergedMessages';
 import type { Locale } from './routing';
 import type { MessageNamespace } from './namespaces';
+import { detectRequestLocale } from './locale';
 
 /**
  * Pages Router용 request config
@@ -30,21 +31,8 @@ export const detectLocale = (): Locale => {
     return routing.defaultLocale;
   }
 
-  // 쿠키에서 로케일 확인
-  const cookieLocale = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('NEXT_LOCALE='))
-    ?.split('=')[1];
-
-  if (cookieLocale && routing.locales.includes(cookieLocale as Locale)) {
-    return cookieLocale as Locale;
-  }
-
-  // 브라우저 언어 감지
-  const browserLang = navigator.language.split('-')[0];
-  if (browserLang === 'ko' && routing.locales.includes('ko')) {
-    return 'ko';
-  }
-
-  return routing.defaultLocale;
+  return detectRequestLocale({
+    pathname: window.location.pathname,
+    cookieHeader: document.cookie,
+  });
 };

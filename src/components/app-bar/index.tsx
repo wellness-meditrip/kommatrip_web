@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import {
   KommaSpaceLogo,
   KommaSpaceLogoWhite,
@@ -75,6 +76,7 @@ export function AppBar({
   rightButtonType = 'share',
   onRightButtonClick,
 }: Props) {
+  const t = useTranslations('common');
   const router = useRouter();
   const currentLocale = useCurrentLocale();
 
@@ -96,7 +98,12 @@ export function AppBar({
         )}
         <div css={center}>
           {logo && (
-            <button type="button" css={logoButton} onClick={handleLogoClick} aria-label="Home">
+            <button
+              type="button"
+              css={logoButton}
+              onClick={handleLogoClick}
+              aria-label={t('button.home')}
+            >
               {LOGO_MAP[logo]}
             </button>
           )}

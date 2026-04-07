@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
 import { Layout, Text, SelectButton, AppBar, DesktopAppBar, RoundButton } from '@/components';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
@@ -19,7 +18,8 @@ import type { Gender, AgeGroup } from '@/models/auth';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { useAuthStore } from '@/store/auth';
 import { useTranslations } from 'next-intl';
-import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { useLocalizedRouter } from '@/i18n/navigation';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 // 관심사 옵션
 const INTEREST_OPTIONS = [
@@ -61,7 +61,7 @@ const AGE_GROUP_OPTIONS: { id: AgeGroup; label: string }[] = [
 ];
 
 export default function InterestPage() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const queryClient = useQueryClient();
   const t = useTranslations('interest');
   const { showToast } = useToast();
@@ -155,7 +155,7 @@ export default function InterestPage() {
 
   const handleSearch = () => {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
   const isFormValid = selectedInterests.length > 0 && selectedGender && selectedAgeGroup;
 
@@ -370,4 +370,4 @@ const submitButtonStyle = css`
   }
 `;
 
-export const getStaticProps = getPrivateI18nStaticProps(['interest']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['interest']);

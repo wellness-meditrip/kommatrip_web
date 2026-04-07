@@ -31,6 +31,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     messages,
     routePolicyName,
     path: router.asPath || '/',
+    locale: pageLocale,
     pageMeta: (pageProps as { meta?: MetaProps }).meta,
   });
 

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { css } from '@emotion/react';
-import { useRouter } from 'next/router';
 import { AppBar, DesktopAppBar, Layout, Text } from '@/components';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { ROUTES } from '@/constants';
 import { useMediaQuery, useToast } from '@/hooks';
 import { useAuthState } from '@/hooks/auth/use-auth-state';
-import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { useLocalizedRouter } from '@/i18n/navigation';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 import { useAuthStore } from '@/store/auth';
 import { theme } from '@/styles';
 import { createPageMeta, Meta } from '@/seo';
@@ -15,7 +15,7 @@ import { getAuthFeedback, resolveLoginErrorFeedbackCode } from '@/utils/auth-fee
 import { resolveSafeAuthRedirect } from '@/utils/auth-session';
 
 export default function Login() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('auth.login');
   const tCommon = useTranslations('common');
   const { showToast } = useToast();
@@ -51,17 +51,17 @@ export default function Login() {
 
     void router.replace(
       {
-        pathname: router.pathname,
+        pathname: ROUTES.LOGIN,
         query: nextQuery,
       },
       undefined,
       { shallow: true }
     );
-  }, [router, router.isReady, router.pathname, router.query, showToast, t]);
+  }, [router, router.isReady, router.query, showToast, t]);
 
   const handleSearch = () => {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
-    void router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   const meta = createPageMeta({
@@ -139,4 +139,4 @@ const content = css`
   }
 `;
 
-export const getStaticProps = getPrivateI18nStaticProps(['auth']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['auth']);

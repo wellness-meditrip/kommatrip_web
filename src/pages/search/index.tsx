@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import {
   AppBar,
   SearchBar,
@@ -15,12 +14,13 @@ import { CATEGORIES } from '@/constants/commons/categories';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 import { useMediaQuery } from '@/hooks';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getPublicUtilityI18nStaticProps } from '@/i18n/page-props';
+import { getPublicUtilityI18nServerSideProps } from '@/i18n/page-props';
 
 // 검색 페이지
 export default function SearchPage() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [selectedRange, setSelectedRange] = useState<{ start: Date | null; end: Date | null }>({
@@ -209,7 +209,7 @@ export default function SearchPage() {
           </div>
 
           <div css={ctaSection}>
-            <CTAButton onClick={handleSeeAll}>See all</CTAButton>
+            <CTAButton onClick={handleSeeAll}>{tSearch('seeAll')}</CTAButton>
           </div>
         </div>
       </div>
@@ -298,4 +298,4 @@ const desktopSearchWrapper = css`
   }
 `;
 
-export const getStaticProps = getPublicUtilityI18nStaticProps(['search', 'categories']);
+export const getServerSideProps = getPublicUtilityI18nServerSideProps(['search', 'categories']);

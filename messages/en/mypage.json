@@ -43,7 +43,15 @@
   "settings": {
     "title": "Settings",
     "language": "Language",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "marketingConsent": {
+      "title": "Consent to receiving marketing",
+      "description": "If you agree to receive marketing, please set it up."
+    },
+    "actions": {
+      "logout": "Log out",
+      "deleteAccount": "Delete account"
+    }
   },
   "menu": {
     "userInfo": "My Information",
@@ -66,7 +74,36 @@
   "profile": {
     "manage": "My Information",
     "fallbackName": "ONYU Member",
-    "imageAlt": "Profile image"
+    "imageAlt": "Profile image",
+    "editImage": "Edit profile image"
+  },
+  "userInfo": {
+    "sections": {
+      "contact": "Contact",
+      "country": "Country"
+    },
+    "fields": {
+      "userName": "User name",
+      "password": "Password",
+      "emailAddress": "Email Address",
+      "contactMethod": "Contact Method",
+      "country": "Country"
+    },
+    "contactMethods": {
+      "line": "Line",
+      "whatsApp": "WhatsApp",
+      "kakao": "Kakao",
+      "phone": "Phone"
+    },
+    "contactPlaceholders": {
+      "line": "Line ID",
+      "whatsApp": "WhatsApp Phone Number",
+      "kakao": "Kakao ID",
+      "phone": "Phone Number"
+    },
+    "notSet": "Not set",
+    "saving": "Saving...",
+    "editPassword": "Edit password"
   },
   "improvement": {
     "title": "Help Improve ONYU",
@@ -82,10 +119,14 @@
   },
   "toast": {
     "profileUpdated": "Your profile has been updated.",
+    "profileUpdateFailed": "We couldn't update your profile. Please try again.",
     "profileImageUploaded": "Your profile image has been uploaded.",
+    "profileImageUploadFailed": "We couldn't update your profile image. Please try again.",
     "profileImageDeleted": "Your profile image has been deleted.",
+    "profileImageDeleteFailed": "We couldn't delete your profile image. Please try again.",
     "profileImageTypeError": "Please upload an image in JPG, PNG, or WEBP format.",
     "profileImageSizeError": "Please upload an image that is 5MB or smaller.",
-    "marketingConsentUpdated": "Your marketing consent has been updated."
+    "marketingConsentUpdated": "Your marketing consent has been updated.",
+    "marketingConsentUpdateFailed": "We couldn't update your marketing consent. Please try again."
   }
 }

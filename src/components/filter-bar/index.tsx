@@ -4,6 +4,8 @@ import { theme } from '@/styles';
 import { CATEGORIES } from '@/constants/commons/categories';
 import { css } from '@emotion/react';
 import { GnbCalendarActive } from '@/icons';
+import { formatMonthDayWithWeekday } from '@/i18n/format';
+import { useCurrentLocale } from '@/i18n/navigation';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 
@@ -34,7 +36,9 @@ export function FilterBar(props: FilterBarProps) {
     centered = false,
     sticky = true,
   } = props;
+  const locale = useCurrentLocale();
   const t = useTranslations('categories');
+  const tCommon = useTranslations('common');
   const filteredCategories =
     categories ?? CATEGORIES.filter((category) => category.id !== 'all-care');
   const allCategoryIds = filteredCategories
@@ -43,17 +47,14 @@ export function FilterBar(props: FilterBarProps) {
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
-    return `${month}.${day}(${weekday})`;
+    return formatMonthDayWithWeekday(date, locale);
   };
 
   const dateText = selectedRange?.start
     ? selectedRange.end
       ? `${formatDate(selectedRange.start)} - ${formatDate(selectedRange.end)}`
       : `${formatDate(selectedRange.start)}`
-    : 'Select dates';
+    : tCommon('date.selectDates');
 
   return (
     <div css={filterContainer({ variant, centered, sticky })}>

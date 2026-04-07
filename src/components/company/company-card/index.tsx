@@ -170,7 +170,7 @@ export function CompanyCard({
               {currentImageUrl && !imageError ? (
                 <NextImage
                   src={currentImageUrl}
-                  alt="프로필 이미지"
+                  alt={t('company.imageAlt', { name: companyName })}
                   fill
                   sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
                   quality={80}
@@ -180,7 +180,7 @@ export function CompanyCard({
                   css={carouselImage}
                 />
               ) : (
-                <img src="/default.png" alt="기본 이미지" css={carouselImage} />
+                <img src="/default.png" alt={t('company.fallbackImageAlt')} css={carouselImage} />
               )}
               <button
                 type="button"
@@ -215,7 +215,7 @@ export function CompanyCard({
             {currentImageUrl && !imageError ? (
               <NextImage
                 src={currentImageUrl}
-                alt="프로필 이미지"
+                alt={t('company.imageAlt', { name: companyName })}
                 fill
                 sizes="(min-width: 1024px) 353px, (min-width: 768px) 50vw, 100vw"
                 quality={80}
@@ -224,7 +224,7 @@ export function CompanyCard({
                 css={carouselImage}
               />
             ) : (
-              <img src="/default.png" alt="기본 이미지" css={carouselImage} />
+              <img src="/default.png" alt={t('company.fallbackImageAlt')} css={carouselImage} />
             )}
           </>
         )}
@@ -248,7 +248,7 @@ export function CompanyCard({
           <Text typo="title_M" color="text_primary" css={titleText}>
             {companyName}
           </Text>
-          {isExclusive && <span css={exclusiveBadge}>Exclusive</span>}
+          {isExclusive && <span css={exclusiveBadge}>{t('company.exclusive')}</span>}
         </div>
 
         <div css={fixedHeight ? tagsFixedHeight : tags}>

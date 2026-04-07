@@ -29,6 +29,7 @@ import { css } from '@emotion/react';
 import { filterCompanies, normalizeSearchTerm } from '@/utils/search';
 import type { Company } from '@/models';
 import { useTranslations } from 'next-intl';
+import { formatMonthDayWithWeekday } from '@/i18n/format';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useMediaQuery } from '@/hooks';
 import { GnbCalendarActive, GnbSearchActive } from '@/icons';
@@ -116,10 +117,7 @@ export default function CompanyPage({ initialKeyword, initialCanonicalPath }: Co
 
   const formatDateDisplay = (date: Date | null) => {
     if (!date) return '';
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
-    return `${month}.${day}(${weekday})`;
+    return formatMonthDayWithWeekday(date, currentLocale);
   };
 
   const dateText = selectedRange.start
