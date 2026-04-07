@@ -22,7 +22,7 @@ import {
 import { isSessionExpiredError, normalizeError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
-import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 interface SignupFormData {
   email: string;
@@ -610,4 +610,4 @@ const underlineText = css`
   text-decoration: underline;
 `;
 
-export const getStaticProps = getPrivateI18nStaticProps(['auth.signup', 'validation']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['auth.signup', 'validation']);

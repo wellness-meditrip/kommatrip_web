@@ -238,3 +238,6 @@ export const getAdminI18nStaticProps = (namespaces?: readonly string[]) =>
 
 export const getPublicUtilityI18nStaticProps = (namespaces?: readonly string[]) =>
   getI18nStaticProps(namespaces, { pagePolicy: 'public-utility' });
+
+export const getPublicUtilityI18nServerSideProps = (namespaces?: readonly string[]) =>
+  getI18nServerSideProps(namespaces, { pagePolicy: 'public-utility' });
