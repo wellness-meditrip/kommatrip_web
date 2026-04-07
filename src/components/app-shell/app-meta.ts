@@ -11,11 +11,13 @@ export function buildResolvedMeta({
   messages,
   routePolicyName,
   path,
+  locale,
   pageMeta,
 }: {
   messages: Record<string, unknown>;
   routePolicyName: PagePolicyName;
   path: string;
+  locale: string;
   pageMeta?: MetaProps;
 }): MetaProps {
   const routePolicy = PAGE_POLICIES[routePolicyName];
@@ -36,6 +38,7 @@ export function buildResolvedMeta({
     description: pageDescription,
     path,
     image: '/og/OG_image.jpg',
+    locale,
     policy: routePolicyName,
     noindex: routePolicy.noindex,
   });
@@ -47,6 +50,7 @@ export function buildResolvedMeta({
   return {
     ...baseMeta,
     ...pageMeta,
+    locale: pageMeta.locale ?? baseMeta.locale,
     noindex: routePolicy.noindex || pageMeta.noindex,
     robots:
       routePolicy.noindex || pageMeta.noindex
