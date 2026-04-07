@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { css } from '@emotion/react';
 import { CTAButton, RoundButton, Text } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
@@ -18,15 +17,15 @@ interface Props {
 }
 
 export function UserInfoForm({ variant = 'page' }: Props) {
-  const tValidation = useTranslations('validation');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const isEmbedded = variant === 'embedded';
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const {
-    register,
-    watch,
+    usernameField,
+    countryField,
+    errors,
     setValue,
     onSubmit,
     email,
@@ -45,13 +44,6 @@ export function UserInfoForm({ variant = 'page' }: Props) {
     profileImageUrl,
     onImageChange: (url) => setValue('profileImageUrl', url),
   });
-
-  const usernameValue = watch('username') ?? '';
-  const usernameError = (() => {
-    if (!usernameValue) return tValidation('username.required');
-    if (!/^[A-Za-z0-9]{2,10}$/.test(usernameValue)) return tValidation('username.invalid');
-    return '';
-  })();
 
   return (
     <section css={page(isEmbedded)}>
@@ -80,10 +72,10 @@ export function UserInfoForm({ variant = 'page' }: Props) {
             <Text typo="title_S" color="text_primary">
               User name
             </Text>
-            <input css={input} {...register('username')} />
-            {usernameError && (
+            <input css={input} {...usernameField} />
+            {errors.username?.message && (
               <Text typo="body_S" color="red200">
-                {usernameError}
+                {errors.username.message}
               </Text>
             )}
           </div>
@@ -174,7 +166,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
               Country
             </Text>
             <div css={selectContainer}>
-              <select css={select} {...register('country')}>
+              <select css={select} {...countryField}>
                 <option value="">Select country</option>
                 {countryOptions.map((option) => (
                   <option key={option.code} value={option.code}>
@@ -183,6 +175,11 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                 ))}
               </select>
             </div>
+            {errors.country?.message && (
+              <Text typo="body_S" color="red200">
+                {errors.country.message}
+              </Text>
+            )}
           </div>
         </div>
       </div>

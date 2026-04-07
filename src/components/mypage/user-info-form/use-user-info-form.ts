@@ -67,6 +67,8 @@ export function useUserInfoForm() {
     formState: { errors },
   } = useForm<UserInfoFormValues>({
     values: formValues,
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     resetOptions: { keepDirtyValues: true },
   });
 
@@ -87,49 +89,67 @@ export function useUserInfoForm() {
       ? [...COUNTRY_OPTIONS, { code: country, label: country }]
       : COUNTRY_OPTIONS;
 
-  const onSubmit = handleSubmit((data) => {
-    const normalizedCountry = normalizeCountryCode(data.country);
-
-    if (!data.username) {
-      showToast({ title: tValidation('username.required'), icon: 'exclaim' });
-      return;
-    }
-    if (!/^[A-Za-z0-9]{2,10}$/.test(data.username)) {
-      showToast({ title: tValidation('username.invalid'), icon: 'exclaim' });
-      return;
-    }
-    if (!normalizedCountry) {
-      showToast({ title: tValidation('country.required'), icon: 'exclaim' });
-      return;
-    }
-
-    patchMutation.mutate(
-      {
-        username: data.username,
-        country: normalizedCountry,
-        line: data.line,
-        whatsapp: data.whatsapp,
-        kakao: data.kakao,
-        phone: data.phone,
-      },
-      {
-        onSuccess: (response) => {
-          reset(mapProfileToFormValues(response.user));
-          queryClient.setQueryData(QUERY_KEYS.GET_USER_PROFILE, response);
-          showToast({ title: t('toast.profileUpdated'), icon: 'check' });
-        },
-        onError: (error: unknown) => {
-          const message = getErrorMessage(error, 'Failed to update profile');
-          showToast({ title: message, icon: 'exclaim' });
-        },
+  const usernameField = register('username', {
+    required: tValidation('username.required'),
+    validate: (value) => {
+      if (!value) return tValidation('username.required');
+      if (!/^[A-Za-z0-9]{2,10}$/.test(value)) {
+        return tValidation('username.invalid');
       }
-    );
+      return true;
+    },
   });
 
+  const countryField = register('country', {
+    required: tValidation('country.required'),
+    validate: (value) => {
+      if (!normalizeCountryCode(value)) {
+        return tValidation('country.required');
+      }
+      return true;
+    },
+  });
+
+  const onSubmit = handleSubmit(
+    (data) => {
+      const normalizedCountry = normalizeCountryCode(data.country);
+
+      patchMutation.mutate(
+        {
+          username: data.username,
+          country: normalizedCountry,
+          line: data.line,
+          whatsapp: data.whatsapp,
+          kakao: data.kakao,
+          phone: data.phone,
+        },
+        {
+          onSuccess: (response) => {
+            reset(mapProfileToFormValues(response.user));
+            queryClient.setQueryData(QUERY_KEYS.GET_USER_PROFILE, response);
+            showToast({ title: t('toast.profileUpdated'), icon: 'check' });
+          },
+          onError: (error: unknown) => {
+            const message = getErrorMessage(error, 'Failed to update profile');
+            showToast({ title: message, icon: 'exclaim' });
+          },
+        }
+      );
+    },
+    (fieldErrors) => {
+      const firstErrorMessage =
+        fieldErrors.username?.message ?? fieldErrors.country?.message ?? fieldErrors.root?.message;
+
+      if (firstErrorMessage) {
+        showToast({ title: firstErrorMessage, icon: 'exclaim' });
+      }
+    }
+  );
+
   return {
-    register,
+    usernameField,
+    countryField,
     errors,
-    watch,
     setValue,
     onSubmit,
     email,
