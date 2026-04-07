@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 export default function MyBookingsPage() {
   const router = useRouter();
@@ -47,4 +47,4 @@ const contentWrap = {
   paddingBottom: `calc(${theme.size.gnbHeight} + 24px + env(safe-area-inset-bottom))`,
 };
 
-export const getStaticProps = getPrivateI18nStaticProps(['mypage']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['mypage']);

@@ -58,9 +58,11 @@ export function useBookingDetailViewModel(): BookingDetailViewModel {
   const languageLabelMap = useMemo<Record<LanguagePreference, string>>(
     () => ({
       korean: tReservation('form.contact.languages.korean'),
-      english: tReservation('form.contact.languages.english'),
       chinese: tReservation('form.contact.languages.chinese'),
       japanese: tReservation('form.contact.languages.japanese'),
+      english: tReservation('form.contact.languages.english'),
+      bahasaMelayu: tReservation('form.contact.languages.bahasaMelayu'),
+      bahasaIndonesia: tReservation('form.contact.languages.bahasaIndonesia'),
     }),
     [tReservation]
   );

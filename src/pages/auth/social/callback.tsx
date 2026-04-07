@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { css } from '@emotion/react';
-import { useRouter } from 'next/router';
 import { useTranslations } from 'next-intl';
 import { Loading } from '@/components';
 import { useToast } from '@/hooks';
@@ -13,10 +12,11 @@ import {
   validateSocialCallback,
 } from '@/utils/social-auth';
 import { getAuthFeedback, resolveSocialLoginFailureFeedbackCode } from '@/utils/auth-feedback';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 
 export default function SocialAuthCallbackPage() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('auth.login');
   const { showToast } = useToast();
   const hasHandledCallback = useRef(false);

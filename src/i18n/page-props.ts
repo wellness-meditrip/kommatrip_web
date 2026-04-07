@@ -8,7 +8,8 @@ import type {
 } from 'next';
 import type { DehydratedState } from '@tanstack/react-query';
 import { getI18nConfig } from './request';
-import { routing, type Locale } from './routing';
+import type { Locale } from './routing';
+import { detectRequestLocale } from './locale';
 import { MESSAGE_NAMESPACES, type MessageNamespace } from './namespaces';
 import { PAGE_POLICIES, resolvePagePolicy, type PagePolicyName } from '@/seo/page-policy';
 
@@ -74,45 +75,15 @@ const pickMessages = (
   return picked;
 };
 
-const resolveLocaleFromPath = (path?: string): Locale => {
-  const firstSegment = path?.split('/').filter(Boolean)[0];
-  if (firstSegment && routing.locales.includes(firstSegment as Locale)) {
-    return firstSegment as Locale;
-  }
-  return routing.defaultLocale;
-};
-
-const resolveLocaleFromHeader = (context: GetServerSidePropsContext): Locale | null => {
-  const headerValue = context.req.headers['x-locale'];
-  const localeFromHeader = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-
-  if (localeFromHeader && routing.locales.includes(localeFromHeader as Locale)) {
-    return localeFromHeader as Locale;
-  }
-
-  return null;
-};
-
 export const resolveI18nLocale = (
   context: GetServerSidePropsContext | GetStaticPropsContext
 ): Locale => {
-  if ('req' in context) {
-    const localeFromHeader = resolveLocaleFromHeader(context);
-    if (localeFromHeader) {
-      return localeFromHeader;
-    }
-  }
-
-  const localeFromContext = context.locale;
-  if (localeFromContext && routing.locales.includes(localeFromContext as Locale)) {
-    return localeFromContext as Locale;
-  }
-
-  if ('resolvedUrl' in context && typeof context.resolvedUrl === 'string') {
-    return resolveLocaleFromPath(context.resolvedUrl);
-  }
-
-  return routing.defaultLocale;
+  return detectRequestLocale({
+    locale: context.locale,
+    localeHeader: 'req' in context ? context.req.headers['x-locale'] : undefined,
+    pathname: 'resolvedUrl' in context ? context.resolvedUrl : undefined,
+    cookieHeader: 'req' in context ? context.req.headers.cookie : undefined,
+  });
 };
 
 const applyCacheControl = (
@@ -224,9 +195,6 @@ export const getI18nServerSideProps = (namespaces?: readonly string[], options?:
     options
   );
 
-export const getPrivateI18nStaticProps = (namespaces?: readonly string[]) =>
-  getI18nStaticProps(namespaces, { pagePolicy: 'private-app' });
-
 export const getPrivateI18nServerSideProps = (namespaces?: readonly string[]) =>
   getI18nServerSideProps(namespaces, { pagePolicy: 'private-app' });
 
@@ -238,3 +206,6 @@ export const getAdminI18nStaticProps = (namespaces?: readonly string[]) =>
 
 export const getPublicUtilityI18nStaticProps = (namespaces?: readonly string[]) =>
   getI18nStaticProps(namespaces, { pagePolicy: 'public-utility' });
+
+export const getPublicUtilityI18nServerSideProps = (namespaces?: readonly string[]) =>
+  getI18nServerSideProps(namespaces, { pagePolicy: 'public-utility' });

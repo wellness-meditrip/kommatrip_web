@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import type { MetaProps } from './meta.types';
-import { toAbsoluteUrl } from './meta.utils';
+import { toAbsoluteUrl, toOpenGraphLocale } from './meta.utils';
 
 export function Meta({
   title,
@@ -24,6 +24,7 @@ export function Meta({
   const resolvedUrl = toAbsoluteUrl(siteUrl, url);
   const resolvedImage = toAbsoluteUrl(siteUrl, image);
   const robotsContent = robots ?? (noindex ? 'noindex,nofollow' : undefined);
+  const resolvedLocale = toOpenGraphLocale(locale);
 
   return (
     <Head>
@@ -40,7 +41,7 @@ export function Meta({
         />
       ))}
       <meta property="og:type" content={type} />
-      {locale ? <meta property="og:locale" content={locale} /> : null}
+      {resolvedLocale ? <meta property="og:locale" content={resolvedLocale} /> : null}
       {siteName ? <meta property="og:site_name" content={siteName} /> : null}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />

@@ -1,11 +1,15 @@
 export { routing, defaultLocale, locales, type Locale, type ContentLocale } from './routing';
 export { getMergedMessages } from './getMergedMessages';
 export { getI18nConfig, detectLocale } from './request';
-export { I18nLink as Link, useChangeLocale, useCurrentLocale } from './navigation';
+export {
+  I18nLink as Link,
+  useChangeLocale,
+  useCurrentLocale,
+  useLocalizedRouter,
+} from './navigation';
 export {
   getAdminI18nStaticProps,
   getPrivateI18nServerSideProps,
-  getPrivateI18nStaticProps,
   getPublicUtilityI18nStaticProps,
   getSystemI18nStaticProps,
   withI18nGsp,

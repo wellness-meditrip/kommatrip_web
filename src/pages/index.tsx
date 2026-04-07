@@ -1,8 +1,7 @@
-import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
-import type { GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 import {
   Layout,
   HeroSection,
@@ -21,8 +20,8 @@ import { QUERY_KEYS } from '@/queries/query-keys';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
-import { withI18nGsp } from '@/i18n/page-props';
-import { useCurrentLocale } from '@/i18n/navigation';
+import { withI18nGssp } from '@/i18n/page-props';
+import { useLocalizedRouter } from '@/i18n/navigation';
 
 interface HomePageProps {
   heroImages: string[];
@@ -30,7 +29,6 @@ interface HomePageProps {
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
 const MAX_RECENT_SKELETON_COUNT = 6;
-const HOME_REVALIDATE_SECONDS = 300;
 const PRIORITY_RECOMMENDED_COMPANY_ID = 17; // TODO: 이벤트 기간 동안 우선순위로 노출, 기간 후 제거 예정
 
 const normalizeSkeletonCount = (count: number) => {
@@ -64,9 +62,8 @@ const prioritizeRecommendedCompanies = <T extends { id: number }>(companies: T[]
 
 // 홈 페이지 (루트 경로)
 export default function HomePage({ heroImages }: HomePageProps) {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('common');
-  const currentLocale = useCurrentLocale();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { isAuthenticated } = useAuthState();
@@ -82,9 +79,9 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const appDescription = t('app.description');
   const pageTitle = `${appName} | ${appTitle}`;
   const ogImagePath = '/og/OG_image.jpg';
-  const homePath = router.asPath || `/${currentLocale}`;
+  const homePath = router.asPath || router.localize(ROUTES.HOME);
   const jsonLd = buildHomeJsonLd({
-    locale: currentLocale,
+    locale: router.currentLocale,
     path: homePath,
     siteName: appName,
     description: appDescription,
@@ -175,7 +172,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
 
   const handleSearch = () => {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   const handleGoToSearch = () => {
@@ -183,7 +180,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
   };
 
   const handleCompanyClick = (companyId: number) => {
-    router.push(`${ROUTES.COMPANY}/${companyId}`);
+    void router.push(ROUTES.COMPANY_DETAIL(companyId));
   };
 
   return (
@@ -295,8 +292,8 @@ export const bottom = css`
   height: 18px;
 `;
 
-export const getStaticProps: GetStaticProps<HomePageProps> =
-  withI18nGsp<HomePageProps>(async () => {
+export const getServerSideProps: GetServerSideProps<HomePageProps> =
+  withI18nGssp<HomePageProps>(async () => {
     const path = await import('node:path');
     const { readdir } = await import('node:fs/promises');
 
@@ -319,6 +316,5 @@ export const getStaticProps: GetStaticProps<HomePageProps> =
       props: {
         heroImages,
       },
-      revalidate: HOME_REVALIDATE_SECONDS,
     };
   }, ['common']);

@@ -3,7 +3,25 @@ export interface AvailabilityOption {
   times: string[];
 }
 
-export type LanguagePreference = 'korean' | 'english' | 'chinese' | 'japanese';
+export type LanguagePreference =
+  | 'korean'
+  | 'chinese'
+  | 'japanese'
+  | 'english'
+  | 'bahasaMelayu'
+  | 'bahasaIndonesia';
+
+export const LANGUAGE_PREFERENCES: LanguagePreference[] = [
+  'korean',
+  'chinese',
+  'japanese',
+  'english',
+  'bahasaMelayu',
+  'bahasaIndonesia',
+];
+
+export const isLanguagePreference = (value: string): value is LanguagePreference =>
+  LANGUAGE_PREFERENCES.includes(value as LanguagePreference);
 
 export interface PostCreateReservationRequest {
   program_id: number;

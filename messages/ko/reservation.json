@@ -18,9 +18,11 @@
       "language": "언어 선택",
       "languages": {
         "korean": "한국어",
-        "english": "English",
         "chinese": "中文",
-        "japanese": "日本語"
+        "japanese": "日本語",
+        "english": "English",
+        "bahasaMelayu": "Bahasa Melayu",
+        "bahasaIndonesia": "Bahasa Indonesia"
       },
       "methods": {
         "line": "Line",

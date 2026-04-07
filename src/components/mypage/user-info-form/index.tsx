@@ -1,38 +1,15 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { css } from '@emotion/react';
-import { CTAButton, RoundButton, SafeProfileImage, Text } from '@/components';
+import { useTranslations } from 'next-intl';
+import { CTAButton, RoundButton, Text } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
-import { ImageUploadPlus } from '@/icons';
-import { COUNTRY_OPTIONS, isSupportedCountryCode, normalizeCountryCode } from '@/constants';
 import { theme } from '@/styles';
-import { useMediaQuery, useToast } from '@/hooks';
-import {
-  useDeleteUserProfileImageMutation,
-  useGetUserProfileQuery,
-  usePatchUserProfileMutation,
-  usePostUserProfileImageMutation,
-} from '@/queries';
-import { getErrorMessage } from '@/utils/error-handler';
-import { QUERY_KEYS } from '@/queries/query-keys';
-
-const CONTACT_METHODS = ['Line', 'Whats App', 'Kakao', 'Phone'] as const;
-const CONTACT_METHOD_FIELD_MAP = {
-  Line: 'line',
-  'Whats App': 'whatsapp',
-  Kakao: 'kakao',
-  Phone: 'phone',
-} as const;
-const CONTACT_PLACEHOLDER_MAP = {
-  Line: 'Line ID',
-  'Whats App': '010-1234-5678',
-  Kakao: 'Kakao ID',
-  Phone: '010-1234-5678',
-} as const;
-
-type ContactMethod = (typeof CONTACT_METHODS)[number];
-type ContactField = (typeof CONTACT_METHOD_FIELD_MAP)[ContactMethod];
+import { useMediaQuery } from '@/hooks';
+import { CONTACT_METHODS, CONTACT_METHOD_FIELD_MAP, CONTACT_METHOD_I18N_KEYS } from './constants';
+import { useUserInfoForm } from './use-user-info-form';
+import { useProfileImage } from './use-profile-image';
+import { ProfileAvatar } from './profile-avatar';
+import { ImageActionSheet } from './image-action-sheet';
 
 type Variant = 'page' | 'embedded';
 
@@ -41,229 +18,37 @@ interface Props {
 }
 
 export function UserInfoForm({ variant = 'page' }: Props) {
-  const queryClient = useQueryClient();
-  const { showToast } = useToast();
-  const t = useTranslations('mypage');
-  const tValidation = useTranslations('validation');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [isPasswordResetModalOpen, setIsPasswordResetModalOpen] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userNameError, setUserNameError] = useState('');
-  const [email, setEmail] = useState('');
-  const [passwordSet, setPasswordSet] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState('');
-  const [contactMethod, setContactMethod] = useState<ContactMethod>('Line');
-  const [contactValues, setContactValues] = useState<Record<ContactField, string>>({
-    line: '',
-    whatsapp: '',
-    kakao: '',
-    phone: '',
-  });
-  const [country, setCountry] = useState('');
-  const [countryError, setCountryError] = useState('');
-  const hasInitialized = useRef(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const previewUrlRef = useRef<string | null>(null);
-  const previousImageUrlRef = useRef('');
-
-  const { data: profileData } = useGetUserProfileQuery();
-  const patchMutation = usePatchUserProfileMutation();
-  const postImageMutation = usePostUserProfileImageMutation();
-  const deleteImageMutation = useDeleteUserProfileImageMutation();
-
-  const validateUsername = useCallback(
-    (value: string) => {
-      if (!value) return tValidation('username.required');
-      if (!/^[A-Za-z0-9]{2,10}$/.test(value)) {
-        return tValidation('username.invalid');
-      }
-      return '';
-    },
-    [tValidation]
-  );
-
-  useEffect(() => {
-    if (!profileData?.user || hasInitialized.current) return;
-
-    const user = profileData.user;
-    const normalizedCountry = normalizeCountryCode(user.country);
-    setUserName(user.username ?? '');
-    setUserNameError(validateUsername(user.username ?? ''));
-    setEmail(user.email ?? '');
-    setPasswordSet(!!user.password_set);
-    setProfileImageUrl(user.profile_image_url ?? '');
-    setCountry(normalizedCountry);
-    setCountryError('');
-    setContactValues({
-      line: user.line ?? '',
-      whatsapp: user.whatsapp ?? '',
-      kakao: user.kakao ?? '',
-      phone: user.phone ?? '',
-    });
-
-    const initialMethod = CONTACT_METHODS.find((method) => {
-      const field = CONTACT_METHOD_FIELD_MAP[method];
-      return (user[field] ?? '').length > 0;
-    });
-    setContactMethod(initialMethod ?? 'Line');
-    hasInitialized.current = true;
-  }, [profileData, validateUsername]);
-
-  useEffect(() => {
-    return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
-      }
-    };
-  }, []);
-
-  const handleAvatarClick = () => {
-    if (!isDesktop) {
-      setIsImageModalOpen(true);
-    }
-  };
-
-  const handleImageEditClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-      showToast({ title: t('toast.profileImageTypeError'), icon: 'exclaim' });
-      event.target.value = '';
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast({ title: t('toast.profileImageSizeError'), icon: 'exclaim' });
-      event.target.value = '';
-      return;
-    }
-
-    previousImageUrlRef.current = profileImageUrl;
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-    }
-    const previewUrl = URL.createObjectURL(file);
-    previewUrlRef.current = previewUrl;
-    setProfileImageUrl(previewUrl);
-
-    postImageMutation.mutate(file, {
-      onSuccess: (response) => {
-        if (response.user?.profile_image_url) {
-          setProfileImageUrl(response.user.profile_image_url);
-        }
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
-        showToast({ title: t('toast.profileImageUploaded'), icon: 'check' });
-        if (previewUrlRef.current) {
-          URL.revokeObjectURL(previewUrlRef.current);
-          previewUrlRef.current = null;
-        }
-      },
-      onError: (error: unknown) => {
-        const message = getErrorMessage(error, 'Failed to update profile image');
-        showToast({ title: message, icon: 'exclaim' });
-        setProfileImageUrl(previousImageUrlRef.current);
-        if (previewUrlRef.current) {
-          URL.revokeObjectURL(previewUrlRef.current);
-          previewUrlRef.current = null;
-        }
-      },
-      onSettled: () => {
-        event.target.value = '';
-      },
-    });
-  };
-
-  const handleImageDelete = () => {
-    deleteImageMutation.mutate(undefined, {
-      onSuccess: (response) => {
-        if (response.user?.profile_image_url === '' || response.user?.profile_image_url == null) {
-          setProfileImageUrl('');
-        }
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.GET_USER_PROFILE });
-        showToast({ title: t('toast.profileImageDeleted'), icon: 'check' });
-      },
-      onError: (error: unknown) => {
-        const message = getErrorMessage(error, 'Failed to delete profile image');
-        showToast({ title: message, icon: 'exclaim' });
-      },
-    });
-  };
-
-  const handleContactMethodChange = (method: ContactMethod) => {
-    setContactMethod(method);
-  };
-
-  const handleContactValueChange = (value: string) => {
-    const field = CONTACT_METHOD_FIELD_MAP[contactMethod];
-    setContactValues((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSave = () => {
-    const normalizedCountry = normalizeCountryCode(country);
-    const nextUsernameError = validateUsername(userName);
-    setUserNameError(nextUsernameError);
-    const nextCountryError = normalizedCountry ? '' : tValidation('country.required');
-    setCountryError(nextCountryError);
-
-    const firstError = nextUsernameError || nextCountryError;
-    if (firstError) {
-      showToast({ title: firstError, icon: 'exclaim' });
-      return;
-    }
-
-    patchMutation.mutate(
-      {
-        username: userName,
-        country: normalizedCountry,
-        line: contactValues.line,
-        whatsapp: contactValues.whatsapp,
-        kakao: contactValues.kakao,
-        phone: contactValues.phone,
-      },
-      {
-        onSuccess: (response) => {
-          const user = response.user;
-          const nextCountry = normalizeCountryCode(user.country);
-          setUserName(user.username ?? '');
-          setEmail(user.email ?? '');
-          setPasswordSet(!!user.password_set);
-          setProfileImageUrl(user.profile_image_url ?? '');
-          setCountry(nextCountry);
-          setContactValues({
-            line: user.line ?? '',
-            whatsapp: user.whatsapp ?? '',
-            kakao: user.kakao ?? '',
-            phone: user.phone ?? '',
-          });
-
-          queryClient.setQueryData(QUERY_KEYS.GET_USER_PROFILE, response);
-          showToast({ title: t('toast.profileUpdated'), icon: 'check' });
-        },
-        onError: (error: unknown) => {
-          const message = getErrorMessage(error, 'Failed to update profile');
-          showToast({ title: message, icon: 'exclaim' });
-        },
-      }
-    );
-  };
-
-  const selectedContactValue = contactValues[CONTACT_METHOD_FIELD_MAP[contactMethod]] ?? '';
-  const contactPlaceholder = CONTACT_PLACEHOLDER_MAP[contactMethod];
-  const countryOptions = isSupportedCountryCode(country)
-    ? COUNTRY_OPTIONS
-    : country
-      ? [...COUNTRY_OPTIONS, { code: country, label: country }]
-      : COUNTRY_OPTIONS;
-
-  const isSaving = patchMutation.isPending;
   const isEmbedded = variant === 'embedded';
+  const t = useTranslations('mypage');
+  const tCommon = useTranslations('common');
+  const tSignup = useTranslations('auth.signup');
+
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  const {
+    usernameField,
+    countryField,
+    errors,
+    setValue,
+    onSubmit,
+    email,
+    passwordSet,
+    profileImageUrl,
+    canEditProfileImage,
+    contactMethod,
+    selectedContactValue,
+    contactPlaceholder,
+    countryOptions,
+    isSaving,
+    isPasswordResetModalOpen,
+    setIsPasswordResetModalOpen,
+  } = useUserInfoForm();
+
+  const { fileInputRef, handleEditClick, handleFileChange, handleDelete } = useProfileImage({
+    profileImageUrl,
+    onImageChange: (url) => setValue('profileImageUrl', url),
+  });
 
   return (
     <section css={page(isEmbedded)}>
@@ -271,67 +56,42 @@ export function UserInfoForm({ variant = 'page' }: Props) {
         ref={fileInputRef}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/jpg"
-        onChange={handleImageFileChange}
+        onChange={handleFileChange}
         css={hiddenInput}
       />
       <div css={contentWrapper(isDesktop, isEmbedded)}>
         <div css={[card, userInfoCard(isDesktop)]}>
           {!isEmbedded && (
             <Text typo="title_M" color="text_primary">
-              User Information
+              {t('detail.userInfo')}
             </Text>
           )}
-          <div css={profileRow(isDesktop)}>
-            <button
-              type="button"
-              css={profileButton(isDesktop)}
-              onClick={handleAvatarClick}
-              aria-label="Edit profile image"
-            >
-              <SafeProfileImage
-                src={profileImageUrl}
-                css={profileImage}
-                alt="Profile"
-                fallback={<ImageUploadPlus width={22} height={22} />}
-              />
-            </button>
-            {isDesktop && (
-              <div css={profileActions}>
-                <button type="button" css={actionButton} onClick={handleImageEditClick}>
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  css={[actionButton, actionButtonDanger]}
-                  onClick={handleImageDelete}
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
+          <ProfileAvatar
+            src={profileImageUrl}
+            isDesktop={isDesktop}
+            editable={canEditProfileImage}
+            onAvatarClick={() => {
+              if (!isDesktop && canEditProfileImage) {
+                setIsImageModalOpen(true);
+              }
+            }}
+            onEditClick={handleEditClick}
+            onDeleteClick={handleDelete}
+          />
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              User name
+              {t('userInfo.fields.userName')}
             </Text>
-            <input
-              css={input}
-              value={userName}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                setUserName(nextValue);
-                setUserNameError(validateUsername(nextValue));
-              }}
-            />
-            {userNameError && (
+            <input css={input} {...usernameField} />
+            {errors.username?.message && (
               <Text typo="body_S" color="red200">
-                {userNameError}
+                {errors.username.message}
               </Text>
             )}
           </div>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Password
+              {t('userInfo.fields.password')}
             </Text>
             <div css={inputWithIcon}>
               <input
@@ -339,12 +99,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                 type="password"
                 value={passwordSet ? '********' : ''}
                 readOnly
-                placeholder={passwordSet ? undefined : 'Not set'}
+                placeholder={passwordSet ? undefined : t('userInfo.notSet')}
               />
               <button
                 type="button"
                 css={iconButton}
-                aria-label="Edit password"
+                aria-label={t('userInfo.editPassword')}
                 onClick={() => setIsPasswordResetModalOpen(true)}
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
@@ -368,17 +128,17 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
         <div css={card}>
           <Text typo="title_M" color="text_primary">
-            Contact
+            {t('userInfo.sections.contact')}
           </Text>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Email Address
+              {t('userInfo.fields.emailAddress')}
             </Text>
             <input css={input} type="email" value={email} readOnly />
           </div>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Contact Method
+              {t('userInfo.fields.contactMethod')}
             </Text>
             <div css={contactMethods}>
               {CONTACT_METHODS.map((method) => (
@@ -386,14 +146,14 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                   key={method}
                   type="button"
                   css={contactButton(method === contactMethod)}
-                  onClick={() => handleContactMethodChange(method)}
+                  onClick={() => setValue('contactMethod', method)}
                   aria-pressed={method === contactMethod}
                 >
                   <Text
                     typo="button_XS"
                     color={method === contactMethod ? 'text_primary' : 'text_tertiary'}
                   >
-                    {method}
+                    {t(`userInfo.contactMethods.${CONTACT_METHOD_I18N_KEYS[method]}`)}
                   </Text>
                 </button>
               ))}
@@ -401,7 +161,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
             <input
               css={input}
               value={selectedContactValue}
-              onChange={(event) => handleContactValueChange(event.target.value)}
+              onChange={(e) => setValue(CONTACT_METHOD_FIELD_MAP[contactMethod], e.target.value)}
               placeholder={contactPlaceholder}
             />
           </div>
@@ -409,22 +169,15 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
         <div css={card}>
           <Text typo="title_M" color="text_primary">
-            Country
+            {t('userInfo.sections.country')}
           </Text>
           <div css={field}>
             <Text typo="title_S" color="text_primary">
-              Country
+              {t('userInfo.fields.country')}
             </Text>
             <div css={selectContainer}>
-              <select
-                css={select}
-                value={country}
-                onChange={(event) => {
-                  setCountry(event.target.value);
-                  setCountryError('');
-                }}
-              >
-                <option value="">Select country</option>
+              <select css={select} {...countryField}>
+                <option value="">{tSignup('selectCountry')}</option>
                 {countryOptions.map((option) => (
                   <option key={option.code} value={option.code}>
                     {option.label}
@@ -432,9 +185,9 @@ export function UserInfoForm({ variant = 'page' }: Props) {
                 ))}
               </select>
             </div>
-            {countryError && (
+            {errors.country?.message && (
               <Text typo="body_S" color="red200">
-                {countryError}
+                {errors.country.message}
               </Text>
             )}
           </div>
@@ -443,52 +196,26 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
       {isDesktop ? (
         <div css={desktopActions(isEmbedded)}>
-          <RoundButton size="L" disabled={isSaving} onClick={handleSave}>
+          <RoundButton size="L" disabled={isSaving} onClick={onSubmit}>
             <Text typo="button_L" color="bg_default">
-              {isSaving ? 'Saving...' : 'Save'}
+              {isSaving ? t('userInfo.saving') : tCommon('button.save')}
             </Text>
           </RoundButton>
         </div>
       ) : (
-        <CTAButton disabled={isSaving} onClick={handleSave}>
-          {isSaving ? 'Saving...' : 'Save'}
+        <CTAButton disabled={isSaving} onClick={onSubmit}>
+          {isSaving ? t('userInfo.saving') : tCommon('button.save')}
         </CTAButton>
       )}
 
-      {!isDesktop && isImageModalOpen && (
-        <>
-          <div css={modalOverlay} onClick={() => setIsImageModalOpen(false)} />
-          <div css={modalSheet}>
-            <div css={modalHandle} />
-            <div css={modalOptions}>
-              <button
-                type="button"
-                css={modalOption}
-                onClick={() => {
-                  setIsImageModalOpen(false);
-                  handleImageEditClick();
-                }}
-              >
-                <Text typo="title_M" color="primary50">
-                  Edit
-                </Text>
-              </button>
-              <button
-                type="button"
-                css={[modalOption, modalOptionDanger]}
-                onClick={() => {
-                  setIsImageModalOpen(false);
-                  handleImageDelete();
-                }}
-              >
-                <Text typo="title_M" color="red200">
-                  Delete
-                </Text>
-              </button>
-            </div>
-          </div>
-        </>
+      {!isDesktop && isImageModalOpen && canEditProfileImage && (
+        <ImageActionSheet
+          onEdit={handleEditClick}
+          onDelete={handleDelete}
+          onClose={() => setIsImageModalOpen(false)}
+        />
       )}
+
       <PasswordResetModal
         isOpen={isPasswordResetModalOpen}
         onClose={() => setIsPasswordResetModalOpen(false)}
@@ -527,57 +254,6 @@ const userInfoCard = (isDesktop: boolean) =>
         grid-column: 1 / -1;
       `
     : css``;
-
-const profileRow = (isDesktop: boolean) => css`
-  display: flex;
-  align-items: center;
-  justify-content: ${isDesktop ? 'flex-start' : 'center'};
-  gap: 16px;
-  margin-top: 4px;
-`;
-
-const profileButton = (isDesktop: boolean) => css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: ${isDesktop ? '96px' : '84px'};
-  height: ${isDesktop ? '96px' : '84px'};
-  border-radius: 50%;
-  border: none;
-  background: ${theme.colors.primary10};
-  cursor: ${isDesktop ? 'default' : 'pointer'};
-  overflow: hidden;
-
-  svg path {
-    stroke: ${theme.colors.primary50};
-  }
-`;
-
-const profileImage = css`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const profileActions = css`
-  display: flex;
-  gap: 8px;
-`;
-
-const actionButton = css`
-  padding: 8px 16px;
-  border-radius: 20px;
-  border: 1px solid ${theme.colors.border_default};
-  background: ${theme.colors.white};
-  color: ${theme.colors.text_primary};
-  font-size: 13px;
-  cursor: pointer;
-`;
-
-const actionButtonDanger = css`
-  border-color: ${theme.colors.red200};
-  color: ${theme.colors.red200};
-`;
 
 const field = css`
   display: flex;
@@ -670,67 +346,6 @@ const desktopActions = (isEmbedded: boolean) => css`
   margin: ${isEmbedded ? '16px 0 0' : '8px auto 40px'};
   padding: ${isEmbedded ? '0' : '0 40px'};
   max-width: ${isEmbedded ? '100%' : '960px'};
-`;
-
-const modalOverlay = css`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: ${theme.zIndex.overlay};
-`;
-
-const modalSheet = css`
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 24px;
-  border-radius: 24px 24px 0 0;
-  background: ${theme.colors.white};
-  z-index: ${theme.zIndex.actionSheet};
-  animation: slideUp 0.3s ease-out;
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-`;
-
-const modalHandle = css`
-  width: 40px;
-  height: 4px;
-  margin: 0 auto 24px;
-  border-radius: 2px;
-  background: ${theme.colors.gray300};
-`;
-
-const modalOptions = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const modalOption = css`
-  padding: 16px;
-  border-radius: 12px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: ${theme.colors.bg_surface1};
-  }
-`;
-
-const modalOptionDanger = css`
-  &:hover {
-    background: rgba(255, 103, 103, 0.12);
-  }
 `;
 
 const hiddenInput = css`

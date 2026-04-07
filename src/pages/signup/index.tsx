@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { Layout, Text, RoundButton, AppBar } from '@/components';
 import { theme } from '@/styles';
 import { css } from '@emotion/react';
-import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
 import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
 import {
@@ -22,7 +21,8 @@ import {
 import { isSessionExpiredError, normalizeError } from '@/utils/error-handler';
 import { Input } from '@/components/input';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
-import { getPrivateI18nStaticProps } from '@/i18n/page-props';
+import { useLocalizedRouter } from '@/i18n/navigation';
+import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 interface SignupFormData {
   email: string;
@@ -33,7 +33,7 @@ interface SignupFormData {
 }
 
 export default function Signup() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('auth.signup');
   const tValidation = useTranslations('validation');
   const { showToast } = useToast();
@@ -209,7 +209,7 @@ export default function Signup() {
         onSuccess: () => {
           // 회원가입 후에는 accessToken이 제공되지 않을 수 있으므로 로그인 페이지로 이동
           showToast({ title: t('accountCreated'), icon: 'check' });
-          router.push(ROUTES.LOGIN);
+          void router.push(ROUTES.LOGIN);
         },
         onError: (error: unknown) => {
           showErrorToast(error, { fallbackMessage: t('failedToCreateAccount') });
@@ -224,7 +224,7 @@ export default function Signup() {
 
   const handleSearch = () => {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   const prevEmailRef = useRef('');
@@ -436,7 +436,7 @@ export default function Signup() {
               <Text typo="body_M" color="text_secondary">
                 {t('alreadyHaveAccount')}{' '}
               </Text>
-              <button type="button" css={linkButton} onClick={() => router.push(ROUTES.LOGIN)}>
+              <button type="button" css={linkButton} onClick={() => void router.push(ROUTES.LOGIN)}>
                 <Text typo="body_M" color="primary50" css={underlineText}>
                   {t('logIn')}
                 </Text>
@@ -610,4 +610,4 @@ const underlineText = css`
   text-decoration: underline;
 `;
 
-export const getStaticProps = getPrivateI18nStaticProps(['auth.signup', 'validation']);
+export const getServerSideProps = getPrivateI18nServerSideProps(['auth.signup', 'validation']);

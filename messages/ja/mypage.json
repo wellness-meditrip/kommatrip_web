@@ -43,7 +43,15 @@
   "settings": {
     "title": "設定",
     "language": "言語",
-    "notifications": "通知"
+    "notifications": "通知",
+    "marketingConsent": {
+      "title": "マーケティング配信の同意",
+      "description": "マーケティング配信に同意する場合は設定してください。"
+    },
+    "actions": {
+      "logout": "ログアウト",
+      "deleteAccount": "退会"
+    }
   },
   "menu": {
     "userInfo": "個人情報の管理",
@@ -66,7 +74,36 @@
   "profile": {
     "manage": "個人情報の管理",
     "fallbackName": "ONYU メンバー",
-    "imageAlt": "プロフィール画像"
+    "imageAlt": "プロフィール画像",
+    "editImage": "プロフィール画像を編集"
+  },
+  "userInfo": {
+    "sections": {
+      "contact": "連絡先",
+      "country": "国"
+    },
+    "fields": {
+      "userName": "ユーザー名",
+      "password": "パスワード",
+      "emailAddress": "メールアドレス",
+      "contactMethod": "連絡方法",
+      "country": "国"
+    },
+    "contactMethods": {
+      "line": "Line",
+      "whatsApp": "WhatsApp",
+      "kakao": "Kakao",
+      "phone": "電話番号"
+    },
+    "contactPlaceholders": {
+      "line": "Line ID",
+      "whatsApp": "WhatsApp電話番号",
+      "kakao": "Kakao ID",
+      "phone": "電話番号"
+    },
+    "notSet": "未設定",
+    "saving": "保存中...",
+    "editPassword": "パスワードを編集"
   },
   "improvement": {
     "title": "ONYU改善にご協力ください",
@@ -82,10 +119,14 @@
   },
   "toast": {
     "profileUpdated": "プロフィール情報を更新しました。",
+    "profileUpdateFailed": "プロフィール情報を更新できませんでした。もう一度お試しください。",
     "profileImageUploaded": "プロフィール画像をアップロードしました。",
+    "profileImageUploadFailed": "プロフィール画像を更新できませんでした。もう一度お試しください。",
     "profileImageDeleted": "プロフィール画像を削除しました。",
+    "profileImageDeleteFailed": "プロフィール画像を削除できませんでした。もう一度お試しください。",
     "profileImageTypeError": "JPG、PNG、WEBP形式の画像のみアップロードできます。",
     "profileImageSizeError": "画像サイズは5MB以下でアップロードしてください。",
-    "marketingConsentUpdated": "マーケティング配信の同意設定を更新しました。"
+    "marketingConsentUpdated": "マーケティング配信の同意設定を更新しました。",
+    "marketingConsentUpdateFailed": "マーケティング配信の同意設定を更新できませんでした。もう一度お試しください。"
   }
 }

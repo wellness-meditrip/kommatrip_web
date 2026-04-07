@@ -30,6 +30,7 @@ import { PaymentLocation } from '@/icons';
 import { useTranslations } from 'next-intl';
 import { Meta, createPageMeta } from '@/seo';
 import type { PaymentOrder } from '@/models/payment';
+import type { LanguagePreference } from '@/models/reservation';
 import type { CurrencyCode } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 import { RESERVATION_REFUND_POLICY_URL } from '@/utils/reservation-policy';
@@ -44,7 +45,7 @@ interface ReservationDraft {
   program_duration_minutes: number;
   program_price: number;
   preferred_contact: string;
-  language_preference: string;
+  language_preference: LanguagePreference;
   availability_options: Array<{
     date: string;
     times: string[];
@@ -260,11 +261,7 @@ export default function ReservationPaymentPage() {
       await createReservation({
         program_id: draft.program_id,
         preferred_contact: draft.preferred_contact,
-        language_preference: draft.language_preference as
-          | 'korean'
-          | 'english'
-          | 'chinese'
-          | 'japanese',
+        language_preference: draft.language_preference,
         availability_options: draft.availability_options,
         inquiries: draft.inquiries,
         contact_line: draft.contact_line,

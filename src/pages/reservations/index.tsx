@@ -34,7 +34,8 @@ import {
   PaymentVariantKey,
   isPayNowPaymentMethod,
 } from '@/constants';
-import { CompanyDetail } from '@/models';
+import type { CompanyDetail, LanguagePreference } from '@/models';
+import { isLanguagePreference } from '@/models';
 import type { PaymentOrder } from '@/models/payment';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -58,7 +59,7 @@ interface ReservationDraft {
   program_price: number;
   program_primary_image_url?: string;
   preferred_contact: string;
-  language_preference: string;
+  language_preference: LanguagePreference;
   availability_options: Array<{
     date: string;
     times: string[];
@@ -169,12 +170,14 @@ export default function ReservationPage() {
     ],
     [t]
   );
-  const languageOptions = useMemo(
+  const languageOptions = useMemo<{ value: LanguagePreference; label: string }[]>(
     () => [
       { value: 'korean', label: t('form.contact.languages.korean') },
-      { value: 'english', label: t('form.contact.languages.english') },
       { value: 'chinese', label: t('form.contact.languages.chinese') },
       { value: 'japanese', label: t('form.contact.languages.japanese') },
+      { value: 'english', label: t('form.contact.languages.english') },
+      { value: 'bahasaMelayu', label: t('form.contact.languages.bahasaMelayu') },
+      { value: 'bahasaIndonesia', label: t('form.contact.languages.bahasaIndonesia') },
     ],
     [t]
   );
@@ -218,7 +221,7 @@ export default function ReservationPage() {
     kakao: '',
     phone: '',
   });
-  const [language, setLanguage] = useState('korean');
+  const [language, setLanguage] = useState<LanguagePreference>('korean');
   const hasInitializedProfile = useRef(false);
 
   // Inquiries
@@ -646,14 +649,6 @@ export default function ReservationPage() {
     return method;
   };
 
-  const normalizeLanguage = (value: string) => {
-    if (value === 'korean') return 'korean';
-    if (value === 'english') return 'english';
-    if (value === 'chinese') return 'chinese';
-    if (value === 'japanese') return 'japanese';
-    return 'korean';
-  };
-
   const buildDraft = (showErrors: boolean): ReservationDraft | null => {
     const showError = (key: string) => {
       if (showErrors) {
@@ -767,7 +762,7 @@ export default function ReservationPage() {
       program_price: programPriceKrw,
       program_primary_image_url: selectedProgram.primary_image_url ?? '',
       preferred_contact: normalizedContact,
-      language_preference: normalizeLanguage(language),
+      language_preference: language,
       availability_options: availabilityOptions,
       inquiries: inquiryText,
       contact_line: contactValues.line,
@@ -858,11 +853,7 @@ export default function ReservationPage() {
       await createReservation({
         program_id: pendingDraft.program_id,
         preferred_contact: pendingDraft.preferred_contact,
-        language_preference: pendingDraft.language_preference as
-          | 'korean'
-          | 'english'
-          | 'chinese'
-          | 'japanese',
+        language_preference: pendingDraft.language_preference,
         availability_options: pendingDraft.availability_options,
         inquiries: pendingDraft.inquiries,
         contact_line: pendingDraft.contact_line,
@@ -1017,7 +1008,11 @@ export default function ReservationPage() {
                   }
                   onPhoneChange={handleContactValueChange}
                   language={language}
-                  onLanguageChange={setLanguage}
+                  onLanguageChange={(value) => {
+                    if (isLanguagePreference(value)) {
+                      setLanguage(value);
+                    }
+                  }}
                   languageOptions={languageOptions}
                 />
 

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import { css } from '@emotion/react';
 import { useTranslations } from 'next-intl';
@@ -12,6 +11,7 @@ import { RoundButton } from '@/components/button';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { useToast } from '@/hooks';
 import { useValidateAuthForm } from '@/hooks/auth/use-validate-auth-form';
+import { I18nLink, useLocalizedRouter } from '@/i18n/navigation';
 import { usePostLoginMutation } from '@/queries';
 import { theme } from '@/styles';
 import { normalizeError } from '@/utils/error-handler';
@@ -61,7 +61,7 @@ export function LoginForm({
   onSuccess,
   onNavigateAway,
 }: LoginFormProps) {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('auth.login');
   const { showToast } = useToast();
   const validation = useValidateAuthForm();
@@ -285,11 +285,11 @@ export function LoginForm({
               </Text>
             </button>
           ) : (
-            <Link href={ROUTES.SIGNUP}>
+            <I18nLink href={ROUTES.SIGNUP}>
               <Text typo="body_M" color="primary50" css={underlineText}>
                 {t('signUp')}
               </Text>
-            </Link>
+            </I18nLink>
           )}
         </div>
 
