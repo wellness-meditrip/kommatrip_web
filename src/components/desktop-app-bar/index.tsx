@@ -28,10 +28,8 @@ import {
   languageItemActive,
 } from './index.styles';
 import { SearchBar } from '@/components';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { ROUTES } from '@/constants';
-import { useChangeLocale, useCurrentLocale } from '@/i18n/navigation';
+import { I18nLink as Link, useChangeLocale, useLocalizedRouter } from '@/i18n/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { css } from '@emotion/react';
 import type { Locale } from '@/i18n/routing';
@@ -65,11 +63,11 @@ export function DesktopAppBar({
   const t = useTranslations('header');
   const tCommon = useTranslations('common');
 
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const { isAuthenticated } = useAuthState();
   const isLoggedIn = isAuthenticated;
   const changeLocale = useChangeLocale();
-  const currentLocale = useCurrentLocale();
+  const currentLocale = router.currentLocale;
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const languageMenuRef = useRef<HTMLDivElement>(null);
 
@@ -82,11 +80,11 @@ export function DesktopAppBar({
       onSearch();
       return;
     }
-    router.push(ROUTES.SEARCH);
+    void router.push(ROUTES.SEARCH);
   };
 
   const handleMenuClick = (path: string) => {
-    router.push(path);
+    void router.push(path);
   };
 
   const handleLanguageChange = (locale: Locale) => {

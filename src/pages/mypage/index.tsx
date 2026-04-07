@@ -1,7 +1,6 @@
 import { AppBar, DesktopAppBar, GNB, SafeProfileImage } from '@/components';
 import { Layout } from '@/components/layout';
 import { Meta, createPageMeta } from '@/seo';
-import { useRouter } from 'next/router';
 import { Text } from '@/components/text';
 import { ChevronRight, ChevronRightWhite, DefaultProfile } from '@/icons';
 import { css } from '@emotion/react';
@@ -13,7 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { UserInfoForm } from '@/components/mypage/user-info-form';
 import { SettingsForm } from '@/components/mypage/settings-form';
 import { useTranslations } from 'next-intl';
-import { routing, type Locale } from '@/i18n/routing';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { MyReviewsPanel } from '@/components/mypage/reviews-panel';
 import { ReservationsPanel } from '@/components/mypage/reservations-panel';
 import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
@@ -70,7 +69,7 @@ const hasRoute = (item?: MenuItem | null): item is MenuItem & { route: string } 
 
 // 마이페이지
 export default function MyPage() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { data: profileData } = useGetUserProfileQuery();
   const t = useTranslations('mypage');
@@ -80,12 +79,6 @@ export default function MyPage() {
   const user = profileData?.user;
   const tallyImproveUrl = 'https://tally.so/r/wkDMRj';
   const termsUrl = 'https://linen-sofa-f6f.notion.site/ebd//2958bf64ec2180b69375d5abbb8f8869';
-  const currentLocale = useMemo<Locale>(() => {
-    const pathLocale = router.asPath.split('/')[1];
-    return routing.locales.includes(pathLocale as Locale)
-      ? (pathLocale as Locale)
-      : routing.defaultLocale;
-  }, [router.asPath]);
 
   const menuItems = useMemo(
     () =>
@@ -95,8 +88,6 @@ export default function MyPage() {
       })),
     [t]
   );
-
-  const toLocalePath = (path: string) => `/${currentLocale}${path}`;
 
   const detailTitleMap = useMemo(
     () =>
@@ -111,12 +102,12 @@ export default function MyPage() {
   );
 
   const handleClick = (path: string) => {
-    router.push(toLocalePath(path));
+    void router.push(path);
   };
 
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
-    router.push(`${toLocalePath(ROUTES.SEARCH)}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   const handleOpenTally = () => {
@@ -147,7 +138,7 @@ export default function MyPage() {
     if (isDesktop) {
       router.replace(
         {
-          pathname: toLocalePath(ROUTES.MYPAGE),
+          pathname: ROUTES.MYPAGE,
           query: { tab: item.id },
         },
         undefined,

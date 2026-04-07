@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
 import { Text } from '@/components';
 import { theme } from '@/styles';
 import { useToast } from '@/hooks';
@@ -9,6 +8,7 @@ import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queri
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { ROUTES } from '@/constants';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { useAuthStore } from '@/store/auth';
 import {
   clearClientAuthSession,
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function SettingsForm({ variant = 'page' }: Props) {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const t = useTranslations('mypage');

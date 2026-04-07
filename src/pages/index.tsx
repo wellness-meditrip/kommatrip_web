@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,7 +21,7 @@ import { theme } from '@/styles';
 import { css } from '@emotion/react';
 import { ROUTES } from '@/constants';
 import { withI18nGssp } from '@/i18n/page-props';
-import { useCurrentLocale } from '@/i18n/navigation';
+import { useLocalizedRouter } from '@/i18n/navigation';
 
 interface HomePageProps {
   heroImages: string[];
@@ -63,9 +62,8 @@ const prioritizeRecommendedCompanies = <T extends { id: number }>(companies: T[]
 
 // 홈 페이지 (루트 경로)
 export default function HomePage({ heroImages }: HomePageProps) {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const t = useTranslations('common');
-  const currentLocale = useCurrentLocale();
   const [inputValue, setInputValue] = useState('');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const { isAuthenticated } = useAuthState();
@@ -81,9 +79,9 @@ export default function HomePage({ heroImages }: HomePageProps) {
   const appDescription = t('app.description');
   const pageTitle = `${appName} | ${appTitle}`;
   const ogImagePath = '/og/OG_image.jpg';
-  const homePath = router.asPath || `/${currentLocale}`;
+  const homePath = router.asPath || router.localize(ROUTES.HOME);
   const jsonLd = buildHomeJsonLd({
-    locale: currentLocale,
+    locale: router.currentLocale,
     path: homePath,
     siteName: appName,
     description: appDescription,
@@ -174,7 +172,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
 
   const handleSearch = () => {
     const query = inputValue.trim() ? `?q=${encodeURIComponent(inputValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   const handleGoToSearch = () => {
@@ -182,7 +180,7 @@ export default function HomePage({ heroImages }: HomePageProps) {
   };
 
   const handleCompanyClick = (companyId: number) => {
-    router.push(`${ROUTES.COMPANY}/${companyId}`);
+    void router.push(ROUTES.COMPANY_DETAIL(companyId));
   };
 
   return (

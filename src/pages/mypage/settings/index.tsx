@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { AppBar, DesktopAppBar, Layout } from '@/components';
 import { SettingsForm } from '@/components/mypage/settings-form';
 import { theme } from '@/styles';
 import { useMediaQuery } from '@/hooks';
 import { ROUTES } from '@/constants';
+import { useLocalizedRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Meta, createPageMeta } from '@/seo';
 import { getPrivateI18nServerSideProps } from '@/i18n/page-props';
 
 export default function MyPageSettings() {
-  const router = useRouter();
+  const router = useLocalizedRouter();
   const tMypage = useTranslations('mypage');
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
@@ -24,7 +24,7 @@ export default function MyPageSettings() {
 
   const handleSearch = () => {
     const query = searchValue.trim() ? `?q=${encodeURIComponent(searchValue)}` : '';
-    router.push(`${ROUTES.SEARCH}${query}`);
+    void router.push(`${router.localize(ROUTES.SEARCH)}${query}`);
   };
 
   useEffect(() => {
