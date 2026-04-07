@@ -7,7 +7,12 @@ import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
 import { DesktopAppBar } from '@/components/desktop-app-bar';
 import { useMediaQuery, useToast, useErrorHandler } from '@/hooks';
-import { ROUTES } from '@/constants';
+import {
+  COUNTRY_OPTIONS,
+  ROUTES,
+  type SupportedCountryCode,
+  normalizeCountryCode,
+} from '@/constants';
 import {
   usePostVerifyEmailCodeMutation,
   usePostConfirmEmailMutation,
@@ -41,6 +46,17 @@ export default function Signup() {
   const [codeVerified, setCodeVerified] = useState(false);
   const [verificationToken, setVerificationToken] = useState('');
   const validation = useValidateAuthForm();
+  const countryLabels: Record<SupportedCountryCode, string> = {
+    US: t('usa'),
+    JP: t('japan'),
+    CN: t('china'),
+    KR: t('korea'),
+    EU: t('europe'),
+    SG: t('singapore'),
+    MY: t('malaysia'),
+    ID: t('indonesia'),
+    ETC: t('etc'),
+  };
 
   const verifyEmailCodeMutation = usePostVerifyEmailCodeMutation();
   const confirmEmailMutation = usePostConfirmEmailMutation();
@@ -179,12 +195,14 @@ export default function Signup() {
       return;
     }
 
+    const normalizedCountry = normalizeCountryCode(data.country);
+
     signupMutation.mutate(
       {
         email: data.email,
         verification_token: verificationToken,
         password: data.password,
-        country: data.country,
+        country: normalizedCountry,
         marketing_consent: false, // TODO: 마케팅 동의 체크박스 추가 시 수정
       },
       {
@@ -386,11 +404,11 @@ export default function Signup() {
                   aria-invalid={!!errors.country}
                 >
                   <option value="">{t('selectCountry')}</option>
-                  <option value="KR">{t('southKorea')}</option>
-                  <option value="US">{t('unitedStates')}</option>
-                  <option value="CN">{t('china')}</option>
-                  <option value="JP">{t('japan')}</option>
-                  <option value="GB">{t('unitedKingdom')}</option>
+                  {COUNTRY_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {countryLabels[option.code]}
+                    </option>
+                  ))}
                 </select>
               </div>
               {errors.country && (

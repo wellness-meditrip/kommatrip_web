@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { CTAButton, RoundButton, SafeProfileImage, Text } from '@/components';
 import { PasswordResetModal } from '@/components/password-reset-modal';
 import { ImageUploadPlus } from '@/icons';
+import { COUNTRY_OPTIONS, isSupportedCountryCode, normalizeCountryCode } from '@/constants';
 import { theme } from '@/styles';
 import { useMediaQuery, useToast } from '@/hooks';
 import {
@@ -29,7 +30,6 @@ const CONTACT_PLACEHOLDER_MAP = {
   Kakao: 'Kakao ID',
   Phone: '010-1234-5678',
 } as const;
-const COUNTRY_OPTIONS = ['Japan', 'Korea', 'United States'] as const;
 
 type ContactMethod = (typeof CONTACT_METHODS)[number];
 type ContactField = (typeof CONTACT_METHOD_FIELD_MAP)[ContactMethod];
@@ -87,12 +87,13 @@ export function UserInfoForm({ variant = 'page' }: Props) {
     if (!profileData?.user || hasInitialized.current) return;
 
     const user = profileData.user;
+    const normalizedCountry = normalizeCountryCode(user.country);
     setUserName(user.username ?? '');
     setUserNameError(validateUsername(user.username ?? ''));
     setEmail(user.email ?? '');
     setPasswordSet(!!user.password_set);
     setProfileImageUrl(user.profile_image_url ?? '');
-    setCountry(user.country ?? '');
+    setCountry(normalizedCountry);
     setCountryError('');
     setContactValues({
       line: user.line ?? '',
@@ -205,9 +206,10 @@ export function UserInfoForm({ variant = 'page' }: Props) {
   };
 
   const handleSave = () => {
+    const normalizedCountry = normalizeCountryCode(country);
     const nextUsernameError = validateUsername(userName);
     setUserNameError(nextUsernameError);
-    const nextCountryError = country ? '' : '';
+    const nextCountryError = normalizedCountry ? '' : tValidation('country.required');
     setCountryError(nextCountryError);
 
     const firstError = nextUsernameError || nextCountryError;
@@ -219,7 +221,7 @@ export function UserInfoForm({ variant = 'page' }: Props) {
     patchMutation.mutate(
       {
         username: userName,
-        country,
+        country: normalizedCountry,
         line: contactValues.line,
         whatsapp: contactValues.whatsapp,
         kakao: contactValues.kakao,
@@ -228,11 +230,12 @@ export function UserInfoForm({ variant = 'page' }: Props) {
       {
         onSuccess: (response) => {
           const user = response.user;
+          const nextCountry = normalizeCountryCode(user.country);
           setUserName(user.username ?? '');
           setEmail(user.email ?? '');
           setPasswordSet(!!user.password_set);
           setProfileImageUrl(user.profile_image_url ?? '');
-          setCountry(user.country ?? '');
+          setCountry(nextCountry);
           setContactValues({
             line: user.line ?? '',
             whatsapp: user.whatsapp ?? '',
@@ -253,10 +256,10 @@ export function UserInfoForm({ variant = 'page' }: Props) {
 
   const selectedContactValue = contactValues[CONTACT_METHOD_FIELD_MAP[contactMethod]] ?? '';
   const contactPlaceholder = CONTACT_PLACEHOLDER_MAP[contactMethod];
-  const countryOptions = COUNTRY_OPTIONS.includes(country as (typeof COUNTRY_OPTIONS)[number])
+  const countryOptions = isSupportedCountryCode(country)
     ? COUNTRY_OPTIONS
     : country
-      ? [...COUNTRY_OPTIONS, country]
+      ? [...COUNTRY_OPTIONS, { code: country, label: country }]
       : COUNTRY_OPTIONS;
 
   const isSaving = patchMutation.isPending;
@@ -423,8 +426,8 @@ export function UserInfoForm({ variant = 'page' }: Props) {
               >
                 <option value="">Select country</option>
                 {countryOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.code} value={option.code}>
+                    {option.label}
                   </option>
                 ))}
               </select>
