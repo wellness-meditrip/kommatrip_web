@@ -19,6 +19,7 @@ import {
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useAuthState, useMediaQuery } from '@/hooks';
+import { formatNumberWithCurrencyCode } from '@/i18n/format';
 import { useCurrentLocale } from '@/i18n/navigation';
 import type { GetServerSideProps } from 'next';
 import { ProgramDetail } from '@/models/program';
@@ -195,7 +196,9 @@ export default function ProgramDetailPage({
     priceInfo: program.price_info,
   });
   const formattedPrice =
-    typeof krwPrice === 'number' ? `${new Intl.NumberFormat('en-US').format(krwPrice)} KRW` : '-';
+    typeof krwPrice === 'number'
+      ? formatNumberWithCurrencyCode(krwPrice, currentLocale, 'KRW')
+      : '-';
   const bookingInfo = program.booking_information?.replace(/\\n/g, '\n') ?? '';
   const refundInfo = program.refund_regulation?.replace(/\\n/g, '\n') ?? '';
   const processItems = program.process ?? [];

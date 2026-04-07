@@ -21,6 +21,15 @@
     "reset": "Reset",
     "home": "Go to home"
   },
+  "navigation": {
+    "home": "Home",
+    "bookings": "My bookings",
+    "search": "Search",
+    "mypage": "My page"
+  },
+  "date": {
+    "selectDates": "Select dates"
+  },
   "loading": {
     "text": "Loading...",
     "pleaseWait": "Please wait"

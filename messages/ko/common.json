@@ -21,6 +21,15 @@
     "reset": "초기화",
     "home": "홈으로"
   },
+  "navigation": {
+    "home": "홈",
+    "bookings": "내 예약",
+    "search": "검색",
+    "mypage": "마이페이지"
+  },
+  "date": {
+    "selectDates": "날짜 선택"
+  },
   "loading": {
     "text": "로딩 중...",
     "pleaseWait": "잠시만 기다려주세요"
