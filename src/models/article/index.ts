@@ -15,6 +15,11 @@ export interface ArticleSection {
   images?: ArticleSectionImage[];
 }
 
+export interface ArticleSummaryItem {
+  title: string;
+  description: string;
+}
+
 export interface ArticleFaqItem {
   question: string;
   answer: string;
@@ -27,6 +32,7 @@ export interface ArticleTranslation {
   seoDescription: string;
   coverImageAlt?: string;
   keywords?: string[];
+  summaryItems?: ArticleSummaryItem[];
   faqItems?: ArticleFaqItem[];
   sections: ArticleSection[];
 }
@@ -55,6 +61,7 @@ export interface ArticleDetail extends ArticleListItem {
   modifiedAt?: string;
   coverImageAlt?: string;
   keywords?: string[];
+  summaryItems?: ArticleSummaryItem[];
   faqItems?: ArticleFaqItem[];
   sections: ArticleSection[];
 }

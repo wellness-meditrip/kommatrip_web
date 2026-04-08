@@ -15,6 +15,23 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           'A practical checklist for narrowing down locations, comparing programs, and avoiding timing mistakes before you book.',
         seoDescription:
           'Learn how to shortlist companies, compare programs, and plan a first wellness trip to Korea with less guesswork.',
+        summaryItems: [
+          {
+            title: 'Define the goal first',
+            description:
+              'Choose recovery, relaxation, skin care, or a quiet reset before comparing companies.',
+          },
+          {
+            title: 'Check logistics early',
+            description:
+              'Review operating days, language support, refund rules, and transit buffer while building the shortlist.',
+          },
+          {
+            title: 'Send a short request',
+            description:
+              'Share preferred dates, contact method, and one priority so confirmation stays simple.',
+          },
+        ],
         sections: [
           {
             heading: 'Start with the outcome, not the brand',
@@ -51,6 +68,23 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           '지역, 프로그램, 일정 조건을 빠르게 좁혀서 처음 예약할 때 실수하기 쉬운 포인트를 줄이는 체크리스트입니다.',
         seoDescription:
           '업체 비교, 프로그램 선택, 일정 검토까지 첫 웰니스 여행 예약 전에 먼저 정리해야 할 항목을 안내합니다.',
+        summaryItems: [
+          {
+            title: '여행 목적부터 정리',
+            description:
+              '휴식, 회복, 피부 관리처럼 원하는 결과를 먼저 정하면 후보 비교가 훨씬 쉬워집니다.',
+          },
+          {
+            title: '운영 조건 선확인',
+            description:
+              '운영일, 언어 지원, 환불 규정, 이동 시간을 초반에 보면 뒤에서 일정이 덜 꼬입니다.',
+          },
+          {
+            title: '문의는 짧고 명확하게',
+            description:
+              '희망 날짜, 연락 방식, 핵심 요청 한 줄만 정리해도 예약 속도가 훨씬 빨라집니다.',
+          },
+        ],
         sections: [
           {
             heading: '브랜드보다 목적부터 정리하세요',
@@ -95,6 +129,22 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           'A short pre-booking review for price, contact details, schedule fit, and refund rules so the reservation holds up after payment.',
         seoDescription:
           'Review the most important pre-booking checks for price, schedule fit, contact details, and refund rules before payment.',
+        summaryItems: [
+          {
+            title: 'Scope before price',
+            description:
+              'Check consultation, add-ons, aftercare, and actual duration before comparing deals.',
+          },
+          {
+            title: 'Use a reachable channel',
+            description:
+              'Pick a contact path you can answer during flights, check-in, and local transit.',
+          },
+          {
+            title: 'Read the policy once',
+            description: 'Know the change deadline and core cancellation rule before you pay.',
+          },
+        ],
         sections: [
           {
             heading: 'Confirm the exact scope of the program',
@@ -130,6 +180,22 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           '가격, 연락처, 일정 적합성, 환불 규정처럼 결제 후에도 예약이 흔들리지 않게 만드는 핵심 확인 사항만 짧게 정리했습니다.',
         seoDescription:
           '프로그램 예약과 결제 전에 가격, 일정, 연락 채널, 환불 규정을 어떻게 확인해야 하는지 정리한 안내입니다.',
+        summaryItems: [
+          {
+            title: '범위를 먼저 확인',
+            description:
+              '상담, 추가 옵션, 사후 관리, 실제 소요 시간이 무엇인지부터 확인하는 편이 안전합니다.',
+          },
+          {
+            title: '답할 수 있는 연락 채널',
+            description:
+              '여행 중에도 확인 가능한 전화나 메신저를 써야 예약 확정이 흔들리지 않습니다.',
+          },
+          {
+            title: '정책은 한 번만 읽기',
+            description: '결제 전 변경 가능 시점과 취소 기준만 알아도 일정 변경 대응이 쉬워집니다.',
+          },
+        ],
         sections: [
           {
             heading: '프로그램 범위를 정확히 보세요',
@@ -173,6 +239,23 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           'See the usual flow from the first request to confirmed arrival so you know what should happen before, during, and after payment.',
         seoDescription:
           'Understand the usual reservation flow from inquiry to arrival, including confirmation timing and what to prepare after payment.',
+        summaryItems: [
+          {
+            title: 'Structure the first inquiry',
+            description:
+              'Start with date options, contact preference, and one must-have condition.',
+          },
+          {
+            title: 'Align before payment',
+            description:
+              'Price, timing, and key conditions should already be confirmed when payment begins.',
+          },
+          {
+            title: 'Prepare the arrival day',
+            description:
+              'Save the route and confirmation details so check-in stays calm and on time.',
+          },
+        ],
         sections: [
           {
             heading: 'Inquiry stage',
@@ -209,6 +292,23 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           '첫 문의, 예약 확인, 결제, 방문 당일까지 보통 어떤 순서로 진행되는지 짧은 타임라인으로 정리했습니다.',
         seoDescription:
           '문의부터 결제, 방문 당일까지 예약 과정이 어떻게 이어지는지 이해하기 쉽게 정리한 아티클입니다.',
+        summaryItems: [
+          {
+            title: '첫 문의는 구조 있게',
+            description:
+              '가능한 날짜, 연락 방식, 꼭 필요한 조건을 먼저 주면 응답이 훨씬 빨라집니다.',
+          },
+          {
+            title: '결제 전 조건 정렬',
+            description:
+              '가격, 시간, 주요 조건은 결제 단계에 들어가기 전에 이미 맞춰져 있어야 합니다.',
+          },
+          {
+            title: '방문 당일 준비',
+            description:
+              '이동 경로와 예약 확인 정보를 미리 꺼내 둘 수 있어야 현장 흐름이 편합니다.',
+          },
+        ],
         sections: [
           {
             heading: '문의 단계',
@@ -262,6 +362,28 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           'the gate spa',
           'kommatrip',
           'seoul spa guide',
+        ],
+        summaryItems: [
+          {
+            title: 'Balance sightseeing with recovery',
+            description:
+              'Build the itinerary around pace by mixing busy districts with planned wellness time.',
+          },
+          {
+            title: 'Shop with a district strategy',
+            description:
+              'Match Myeong-dong, Gangnam, Hongdae, and Garosu-gil to the kind of beauty shopping you actually want.',
+          },
+          {
+            title: 'Choose local wellness on purpose',
+            description:
+              'Traditional bathhouses, quieter spas, and reservation-based care feel more authentic than crowded tourist chains.',
+          },
+          {
+            title: 'Learn the etiquette first',
+            description:
+              'Showering before communal areas and respecting privacy rules makes the experience much smoother.',
+          },
         ],
         faqItems: [
           {
@@ -465,6 +587,28 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           '더 게이트 스파',
           '코마트립',
           '서울 스파 가이드',
+        ],
+        summaryItems: [
+          {
+            title: '관광과 회복의 균형',
+            description:
+              '복잡한 관광 일정 사이에 웰니스 시간을 넣으면 여행 리듬이 훨씬 안정적입니다.',
+          },
+          {
+            title: '지역별 쇼핑 역할 구분',
+            description:
+              '명동, 강남, 홍대, 가로수길은 목적이 다르니 필요한 지역만 골라 움직이는 편이 좋습니다.',
+          },
+          {
+            title: '로컬 웰니스 우선 선택',
+            description:
+              '전통 목욕 문화나 조용한 예약형 스파가 관광형 체인보다 더 진한 경험을 주는 경우가 많습니다.',
+          },
+          {
+            title: '예절을 먼저 익히기',
+            description:
+              '공용 시설 전 샤워와 프라이버시 규칙만 알아도 현장 적응이 훨씬 쉬워집니다.',
+          },
         ],
         faqItems: [
           {
@@ -680,6 +824,28 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           'gangnam spa',
           'korean bathhouse',
           'k-beauty spa',
+        ],
+        summaryItems: [
+          {
+            title: 'Understand the format',
+            description:
+              'A Korean spa combines wet areas, heat rooms, treatments, and rest into one full rhythm.',
+          },
+          {
+            title: 'Pick treatments by goal',
+            description:
+              'Scrubs, massage, facials, and combo sessions each fit a different recovery need.',
+          },
+          {
+            title: 'Prepare for etiquette',
+            description:
+              'Wet-area nudity, no-phone rules, and direct communication about scrub pressure are standard.',
+          },
+          {
+            title: 'Match the spa to the trip',
+            description:
+              'Neighborhood jjimjilbangs, mid-range centers, and luxury resorts serve different comfort levels.',
+          },
         ],
         faqItems: [
           {
@@ -984,6 +1150,28 @@ const ARTICLE_RECORDS: readonly ArticleRecord[] = [
           '강남 스파',
           '한국 목욕 문화',
           'K뷰티 스파',
+        ],
+        summaryItems: [
+          {
+            title: '기본 구조 이해하기',
+            description:
+              '한국 스파는 습식 공간, 열 치료, 시술, 휴식이 하나의 흐름으로 이어지는 경험입니다.',
+          },
+          {
+            title: '목적별 시술 선택',
+            description:
+              '스크럽, 마사지, 페이셜, 콤보 세션은 기대하는 회복 방식에 따라 선택지가 달라집니다.',
+          },
+          {
+            title: '예절을 먼저 준비',
+            description:
+              '습식 공간 탈의, 휴대폰 제한, 스크럽 강도 조절 요청은 기본적으로 알고 가는 편이 좋습니다.',
+          },
+          {
+            title: '여행 스타일에 맞는 시설 고르기',
+            description:
+              '동네 찜질방, 중간 가격대 센터, 럭셔리 리조트는 원하는 프라이버시와 편의 수준이 다릅니다.',
+          },
         ],
         faqItems: [
           {
@@ -1320,6 +1508,7 @@ export const getLocalizedArticleBySlug = (slug: string, locale: Locale): Article
     seoDescription: translation.seoDescription,
     coverImageAlt: translation.coverImageAlt,
     keywords: translation.keywords,
+    summaryItems: translation.summaryItems,
     faqItems: translation.faqItems,
     sections: translation.sections,
   };
