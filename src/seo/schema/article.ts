@@ -17,9 +17,12 @@ import {
 
 const countWords = (value: string) => value.trim().split(/\s+/u).filter(Boolean).length;
 
-const buildArticleBody = (article: Pick<ArticleDetail, 'excerpt' | 'sections'>) => {
+const buildArticleBody = (
+  article: Pick<ArticleDetail, 'excerpt' | 'summaryItems' | 'sections'>
+) => {
   const content = [
     article.excerpt,
+    ...(article.summaryItems ?? []).flatMap((item) => [item.title, item.description]),
     ...article.sections.flatMap((section) => [
       section.heading,
       ...section.paragraphs,
