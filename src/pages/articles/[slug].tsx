@@ -854,7 +854,6 @@ const faqAnswerWrap = css`
   transition:
     grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.24s ease;
-  will-change: grid-template-rows, opacity;
 `;
 
 const faqAnswerWrapOpen = css`
@@ -925,9 +924,7 @@ const faqChevron = (isOpen: boolean) => css`
   height: 36px;
   color: ${theme.colors.text_primary};
   transform: ${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
-  transition:
-    transform 0.2s ease,
-    background-color 0.2s ease;
+  transition: transform 0.2s ease;
 `;
 
 const articleFooter = css`
