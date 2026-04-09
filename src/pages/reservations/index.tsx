@@ -29,7 +29,9 @@ import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
 import {
   ROUTES,
+  DEFAULT_RESERVATION_PAYMENT_METHOD,
   PAYMENT_WIDGET_CONFIG,
+  PAY_ON_SITE_ENABLED,
   PaymentMethod,
   PaymentVariantKey,
   isPayNowPaymentMethod,
@@ -235,7 +237,11 @@ export default function ReservationPage() {
   const [timeSelectionOpen, setTimeSelectionOpen] = useState<{ [key: string]: boolean }>({});
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<ReservationDraft | null>(null);
-  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>('onSite');
+  const [paymentMethodChoice, setPaymentMethodChoice] = useState<PaymentMethod>(
+    DEFAULT_RESERVATION_PAYMENT_METHOD
+  );
+  // TODO: 현장 결제 재오픈 시 PAY_ON_SITE_ENABLED 복구
+  const isPayOnSiteDisabled = !PAY_ON_SITE_ENABLED;
   const isPayNowPayment = isPayNowPaymentMethod(paymentMethodChoice);
   const paymentWidgetConfig = isPayNowPayment ? PAYMENT_WIDGET_CONFIG[paymentMethodChoice] : null;
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
@@ -1078,10 +1084,16 @@ export default function ReservationPage() {
                       type="button"
                       css={paymentMethodButton}
                       data-selected={paymentMethodChoice === 'onSite'}
+                      data-disabled={isPayOnSiteDisabled}
+                      disabled={isPayOnSiteDisabled}
+                      aria-disabled={isPayOnSiteDisabled}
                       onClick={() => setPaymentMethodChoice('onSite')}
                     >
                       <span css={radioDot(paymentMethodChoice === 'onSite')} />
-                      <Text typo="body_M" color="text_primary">
+                      <Text
+                        typo="body_M"
+                        color={isPayOnSiteDisabled ? 'text_disabled' : 'text_primary'}
+                      >
                         {t('payment.payOnSite')}
                       </Text>
                     </button>
@@ -1419,6 +1431,13 @@ const paymentMethodButton = css`
     border-color: ${theme.colors.primary50};
 
     box-shadow: 0 4px 10px ${theme.colors.grayOpacity50};
+  }
+
+  &[data-disabled='true'] {
+    cursor: not-allowed;
+    border-color: ${theme.colors.border_default};
+    background: ${theme.colors.bg_surface1};
+    box-shadow: none;
   }
 `;
 
