@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { AppBar, DesktopAppBar, Layout, Text } from '@/components';
 import { ROUTES } from '@/constants';
 import { getLocalizedArticleBySlug } from '@/data/articles';
+import { ArrowDown } from '@/icons';
 import { I18nLink as Link, useCurrentLocale } from '@/i18n/navigation';
 import { resolveI18nLocale, withI18nGssp } from '@/i18n/page-props';
 import type { Locale } from '@/i18n/routing';
@@ -337,7 +338,11 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                       </div>
                       <div css={faqList}>
                         {article.faqItems.map((item, index) => (
-                          <article key={item.question} id={`faq-item-${index + 1}`} css={faqCard}>
+                          <article
+                            key={item.question}
+                            id={`faq-item-${index + 1}`}
+                            css={[faqCard, openFaqIndex === index && faqCardActive]}
+                          >
                             <button
                               type="button"
                               id={`faq-question-${index + 1}`}
@@ -353,16 +358,21 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                                 )
                               }
                             >
-                              <span css={faqRow}>
-                                <span css={faqInlineLabel}>Q</span>
-                                <Text
-                                  tag="span"
-                                  typo="title_S"
-                                  color="text_primary"
-                                  css={faqQuestion}
-                                >
-                                  {item.question}
-                                </Text>
+                              <span css={faqQuestionRow}>
+                                <span css={faqRow}>
+                                  <span css={faqInlineLabel}>Q</span>
+                                  <Text
+                                    tag="span"
+                                    typo="title_S"
+                                    color="text_primary"
+                                    css={faqQuestion}
+                                  >
+                                    {item.question}
+                                  </Text>
+                                </span>
+                                <span css={faqChevron(openFaqIndex === index)} aria-hidden="true">
+                                  <ArrowDown width={20} height={20} />
+                                </span>
                               </span>
                             </button>
                             <div
@@ -371,7 +381,9 @@ export default function ArticleDetailPage({ article }: ArticleDetailPageProps) {
                               aria-labelledby={`faq-question-${index + 1}`}
                               css={[faqAnswerWrap, openFaqIndex === index && faqAnswerWrapOpen]}
                             >
-                              <div css={faqAnswerInner}>
+                              <div
+                                css={[faqAnswerInner, openFaqIndex === index && faqAnswerInnerOpen]}
+                              >
                                 <div css={faqRow}>
                                   <span css={faqInlineLabel}>A</span>
                                   <Text
@@ -798,13 +810,26 @@ const faqCard = css`
   display: flex;
   flex-direction: column;
   gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(71, 97, 85, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 20px rgba(73, 69, 58, 0.06);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+`;
+
+const faqCardActive = css`
+  border-color: rgba(71, 97, 85, 0.2);
+  box-shadow: 0 12px 28px rgba(73, 69, 58, 0.08);
 `;
 
 const faqQuestionButton = css`
   width: 100%;
   padding: 18px 22px;
   border: 0;
-  border-radius: 24px;
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -813,21 +838,23 @@ const faqQuestionButton = css`
     color 0.2s ease;
 
   &:hover {
-    background: rgba(61, 58, 53, 0.04);
+    background: rgba(61, 58, 53, 0.03);
   }
 `;
 
 const faqQuestionButtonActive = css`
-  background: rgba(61, 58, 53, 0.06);
+  background: rgba(71, 97, 85, 0.05);
 `;
 
 const faqAnswerWrap = css`
   display: grid;
   grid-template-rows: 0fr;
+  overflow: hidden;
   opacity: 0;
   transition:
-    grid-template-rows 0.24s ease,
-    opacity 0.2s ease;
+    grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.24s ease;
+  will-change: grid-template-rows, opacity;
 `;
 
 const faqAnswerWrapOpen = css`
@@ -837,7 +864,30 @@ const faqAnswerWrapOpen = css`
 
 const faqAnswerInner = css`
   overflow: hidden;
-  padding: 10px 22px 0;
+  min-height: 0;
+  padding: 0 22px;
+  border-top: 1px solid transparent;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    padding 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    border-top-color 0.24s ease,
+    opacity 0.2s ease,
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+`;
+
+const faqAnswerInnerOpen = css`
+  padding: 18px 22px 22px;
+  border-top-color: rgba(71, 97, 85, 0.1);
+  opacity: 1;
+  transform: translateY(0);
+`;
+
+const faqQuestionRow = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
 `;
 
 const faqRow = css`
@@ -845,6 +895,7 @@ const faqRow = css`
   grid-template-columns: 28px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
+  min-width: 0;
 `;
 
 const faqInlineLabel = css`
@@ -857,12 +908,26 @@ const faqInlineLabel = css`
 const faqQuestion = css`
   margin: 0;
   line-height: 1.8;
-  font-weight: 400;
+  font-weight: 500;
 `;
 
 const faqAnswer = css`
   line-height: 1.9;
   margin: 0;
+`;
+
+const faqChevron = (isOpen: boolean) => css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  color: ${theme.colors.text_primary};
+  transform: ${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 `;
 
 const articleFooter = css`
