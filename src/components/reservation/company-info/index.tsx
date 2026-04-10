@@ -1,6 +1,15 @@
 import { ReactNode } from 'react';
 import { Text } from '@/components';
-import { card, locationIcon, locationRow, tagChip, tagList } from './index.styles';
+import { isTheGateSpaCompany } from '@/utils/the-gate-spa-discount';
+import {
+  card,
+  discountBadge,
+  locationIcon,
+  locationRow,
+  tagChip,
+  tagList,
+  titleRow,
+} from './index.styles';
 
 interface Props {
   name: string;
@@ -17,11 +26,16 @@ export function CompanyInfoCard({
   addressIconNode,
   variant = 'reservation',
 }: Props) {
+  const isDiscountCompany = isTheGateSpaCompany({ name });
+
   return (
     <div css={card}>
-      <Text typo="title_L" color="text_primary">
-        {name}
-      </Text>
+      <div css={titleRow}>
+        <Text typo="title_L" color="text_primary">
+          {name}
+        </Text>
+        {isDiscountCompany && <span css={discountBadge}>30%</span>}
+      </div>
       {address && (
         <div css={locationRow}>
           {addressIconNode && <span css={locationIcon}>{addressIconNode}</span>}

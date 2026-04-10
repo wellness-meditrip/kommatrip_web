@@ -21,6 +21,13 @@ export const itemWrapper = css`
   gap: 6px;
 `;
 
+export const programTitleRow = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+`;
+
 export const tags = css`
   display: flex;
   flex-wrap: wrap;
@@ -56,4 +63,36 @@ export const separator = css`
   margin: 0 4px;
 
   background-color: ${theme.colors.text_secondary};
+`;
+
+export const discountPriceGroup = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+`;
+
+export const discountRateBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+`;
+
+export const originalPriceText = css`
+  color: ${theme.colors.text_disabled};
+  text-decoration: line-through;
+`;
+
+export const discountedPriceText = css`
+  color: ${theme.colors.red200};
+  font-weight: 500;
 `;

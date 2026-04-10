@@ -48,6 +48,7 @@ import {
   getCompanyAvailableReservationTimes,
   isCompanyClosedOnDate,
 } from '@/utils/company-schedule';
+import { getTheGateSpaPriceDisplay, type ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
 
 interface ReservationDraft {
   company_id: number;
@@ -616,6 +617,10 @@ export default function ReservationPage() {
     return `${minutes} ${t('form.programs.minutes')}`;
   };
 
+  const formatAmountByCurrency = (price: number, currency: CurrencyCode) => {
+    return `${new Intl.NumberFormat(locale).format(price)} ${currency}`;
+  };
+
   const formatPriceByCurrency = (
     priceInfo: { krw: number; usd: number } | undefined,
     currency: CurrencyCode
@@ -625,11 +630,29 @@ export default function ReservationPage() {
       priceInfo,
     });
     if (typeof price !== 'number') return '';
-    return `${new Intl.NumberFormat(locale).format(price)} ${currency}`;
+    return formatAmountByCurrency(price, currency);
+  };
+
+  const getPriceDisplay = (
+    priceInfo: { krw: number; usd: number } | undefined,
+    currency: CurrencyCode
+  ): ProgramPriceDisplay => {
+    const discountedPrice = resolvePrice({
+      currency,
+      priceInfo,
+    });
+
+    return getTheGateSpaPriceDisplay({
+      company,
+      discountedPrice,
+      currency,
+      formatAmount: formatAmountByCurrency,
+      fallbackText: formatPriceByCurrency(priceInfo, currency),
+    });
   };
 
   const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
-    return formatPriceByCurrency(priceInfo, 'KRW');
+    return getPriceDisplay(priceInfo, 'KRW');
   };
 
   const toTimeString = (timeString: string) => {
@@ -895,9 +918,12 @@ export default function ReservationPage() {
   const summaryDateKey = summaryDate ? formatDateForRequest(summaryDate) : '';
   const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
   const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
-  const summaryPriceText = selectedProgram
-    ? formatPriceByCurrency(selectedProgram.price_info, selectedPaymentCurrency) || '-'
-    : '-';
+  const summaryPriceDisplay = selectedProgram
+    ? getPriceDisplay(selectedProgram.price_info, selectedPaymentCurrency)
+    : ({
+        type: 'regular',
+        priceText: '-',
+      } satisfies ProgramPriceDisplay);
 
   const handleOpenRefundPolicy = () => {
     if (typeof window === 'undefined') return;
@@ -1125,11 +1151,21 @@ export default function ReservationPage() {
                       {t('payment.program')}
                     </Text>
                     <Text typo="title_S" color="text_primary" css={summaryValueRight}>
-                      {selectedProgram
-                        ? `${selectedProgram.name} (${selectedProgram.duration_minutes}${t(
-                            'payment.minutes'
-                          )})`
-                        : '-'}
+                      {selectedProgram ? (
+                        <span css={summaryProgramNameGroup}>
+                          <span>
+                            {selectedProgram.name} ({selectedProgram.duration_minutes}
+                            {t('payment.minutes')})
+                          </span>
+                          {summaryPriceDisplay.type === 'discount' && (
+                            <span css={summaryDiscountRateBadge}>
+                              {summaryPriceDisplay.discountRateText}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
                     </Text>
                   </div>
                 </div>
@@ -1143,7 +1179,13 @@ export default function ReservationPage() {
                       {t('payment.paymentAmountLabel')}
                     </Text>
                     <Text typo="body_M" color="text_primary">
-                      {summaryPriceText}
+                      {summaryPriceDisplay.type === 'discount' ? (
+                        <span css={summaryOriginalPriceText}>
+                          {summaryPriceDisplay.originalPriceText}
+                        </span>
+                      ) : (
+                        summaryPriceDisplay.priceText
+                      )}
                     </Text>
                   </div>
                   <div css={summaryDivider} />
@@ -1151,8 +1193,13 @@ export default function ReservationPage() {
                     <Text typo="title_S" color="text_primary">
                       {t('payment.finalPaymentAmount')}
                     </Text>
-                    <Text typo="title_S" color="primary50">
-                      {summaryPriceText}
+                    <Text
+                      typo="title_S"
+                      color={summaryPriceDisplay.type === 'discount' ? 'red200' : 'primary50'}
+                    >
+                      {summaryPriceDisplay.type === 'discount'
+                        ? summaryPriceDisplay.discountedPriceText
+                        : summaryPriceDisplay.priceText}
                     </Text>
                   </div>
                 </div>
@@ -1519,6 +1566,34 @@ const summaryRow = css`
 
 const summaryValueRight = css`
   text-align: right;
+`;
+
+const summaryProgramNameGroup = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+`;
+
+const summaryOriginalPriceText = css`
+  color: ${theme.colors.text_disabled};
+  text-decoration: line-through;
+`;
+
+const summaryDiscountRateBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
 `;
 
 const summaryDivider = css`

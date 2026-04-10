@@ -33,6 +33,7 @@ import {
   shouldBypassNextImageOptimization,
 } from '@/utils/image';
 import { resolvePrice } from '@/utils/price';
+import { getTheGateSpaPriceDisplay } from '@/utils/the-gate-spa-discount';
 import { createQueryClient } from '@/providers';
 
 interface ProgramDetailPageProps extends Record<string, unknown> {
@@ -195,10 +196,13 @@ export default function ProgramDetailPage({
     currency: 'KRW',
     priceInfo: program.price_info,
   });
-  const formattedPrice =
-    typeof krwPrice === 'number'
-      ? formatNumberWithCurrencyCode(krwPrice, currentLocale, 'KRW')
-      : '-';
+  const priceDisplay = getTheGateSpaPriceDisplay({
+    company: schemaCompany ?? { company_code: program.company_code },
+    discountedPrice: krwPrice,
+    currency: 'KRW',
+    formatAmount: (price, currency) => formatNumberWithCurrencyCode(price, currentLocale, currency),
+    fallbackText: '-',
+  });
   const bookingInfo = program.booking_information?.replace(/\\n/g, '\n') ?? '';
   const refundInfo = program.refund_regulation?.replace(/\\n/g, '\n') ?? '';
   const processItems = program.process ?? [];
@@ -248,9 +252,14 @@ export default function ProgramDetailPage({
                   )}
                 </div>
 
-                <Text typo="title_L" color="text_primary" css={programTitle}>
-                  {program.name}
-                </Text>
+                <div css={programTitle}>
+                  <Text typo="title_L" color="text_primary">
+                    {program.name}
+                  </Text>
+                  {priceDisplay.type === 'discount' && (
+                    <span css={discountRateBadge}>{priceDisplay.discountRateText}</span>
+                  )}
+                </div>
               </div>
               <div css={programSection}>
                 <div css={titleWrapper}>
@@ -268,7 +277,14 @@ export default function ProgramDetailPage({
                   <div css={infoRow}>
                     <Wallet width={16} height={16} />
                     <Text typo="button_S" color="text_secondary">
-                      {formattedPrice}
+                      {priceDisplay.type === 'discount' ? (
+                        <span css={discountPriceGroup}>
+                          <span css={originalPriceText}>{priceDisplay.originalPriceText}</span>
+                          <span css={discountedPriceText}>{priceDisplay.discountedPriceText}</span>
+                        </span>
+                      ) : (
+                        priceDisplay.priceText
+                      )}
                     </Text>
                   </div>
                 </div>
@@ -520,6 +536,11 @@ const programSection = css`
 `;
 
 const programTitle = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
   padding: 16px 20px;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
@@ -562,6 +583,38 @@ const infoRow = css`
   &:last-child {
     margin-bottom: 0;
   }
+`;
+
+const discountPriceGroup = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+`;
+
+const discountRateBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+`;
+
+const originalPriceText = css`
+  color: ${theme.colors.text_disabled};
+  text-decoration: line-through;
+`;
+
+const discountedPriceText = css`
+  color: ${theme.colors.red200};
+  font-weight: 500;
 `;
 
 const processSection = css`

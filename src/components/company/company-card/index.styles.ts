@@ -108,18 +108,46 @@ export const titleRow = css`
   gap: 8px;
 `;
 
-export const titleText = css`
+export const titleNameGroup = css`
+  display: inline-flex;
   flex: 1;
+  align-items: center;
+  gap: 6px;
   overflow: hidden;
 
   min-width: 0;
+`;
+
+export const titleText = css`
+  flex: 0 1 auto;
+  overflow: hidden;
+
+  min-width: 0;
+  max-width: 100%;
 
   white-space: nowrap;
   text-overflow: ellipsis;
 `;
 
+export const discountBadge = css`
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+`;
+
 export const exclusiveBadge = css`
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
 
   padding: 2px 8px;
