@@ -12,18 +12,24 @@ import {
 } from '@/utils/image';
 
 import {
+  discountedPriceText,
+  discountPriceGroup,
+  discountRateBadge,
   infoWrapper,
   itemWrapper,
   itemImage,
+  originalPriceText,
   programDetails,
+  programTitleRow,
   detailRow,
   separator,
 } from './index.styles';
+import type { ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
 
 interface ProgramCardProps {
   title: string;
   duration: string;
-  price: string;
+  price: ProgramPriceDisplay;
   image: string;
   badges?: string[];
   companyId?: string;
@@ -55,6 +61,18 @@ export function ProgramCard({
   const imageSrc = hasImageError ? '/default.png' : normalizedImageSrc;
   const shouldUseNextImage = isOptimizableImage(imageSrc);
   const shouldBypassOptimization = shouldBypassNextImageOptimization(imageSrc);
+  const renderPrice = (priceDisplay: ProgramPriceDisplay) => {
+    if (priceDisplay.type === 'discount') {
+      return (
+        <span css={discountPriceGroup}>
+          <span css={originalPriceText}>{priceDisplay.originalPriceText}</span>
+          <span css={discountedPriceText}>{priceDisplay.discountedPriceText}</span>
+        </span>
+      );
+    }
+
+    return priceDisplay.priceText;
+  };
 
   return (
     <div css={infoWrapper} onClick={handleCardClick} style={{ cursor: 'pointer' }}>
@@ -80,9 +98,14 @@ export function ProgramCard({
         />
       )}
       <div css={itemWrapper}>
-        <Text typo="title_M" color="text_primary">
-          {title}
-        </Text>
+        <div css={programTitleRow}>
+          <Text typo="title_M" color="text_primary">
+            {title}
+          </Text>
+          {price.type === 'discount' && (
+            <span css={discountRateBadge}>{price.discountRateText}</span>
+          )}
+        </div>
         <div css={programDetails}>
           <div css={detailRow}>
             <Clock width={16} height={16} />
@@ -91,7 +114,7 @@ export function ProgramCard({
             </Text>
             <div css={separator} />
             <Text typo="button_S" color="text_secondary">
-              {price}
+              {renderPrice(price)}
             </Text>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import { theme } from '@/styles';
+import { theme, typography } from '@/styles';
 
 export const sectionCard = css`
   margin: 12px 16px 8px;
@@ -72,4 +72,43 @@ export const programInfo = css`
   flex-direction: column;
   justify-content: center;
   gap: 4px;
+`;
+
+export const programTitleRow = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+`;
+
+export const discountPriceGroup = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+`;
+
+export const discountRateBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+`;
+
+export const originalPriceText = css`
+  color: ${theme.colors.text_disabled};
+  text-decoration: line-through;
+`;
+
+export const discountedPriceText = css`
+  color: ${theme.colors.red200};
+  ${typography.button_S};
 `;
