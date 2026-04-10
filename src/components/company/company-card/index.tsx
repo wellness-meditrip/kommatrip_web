@@ -4,6 +4,7 @@ import { Location, ChevronLeftWhite } from '@/icons';
 import NextImage from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { normalizeSafeImageSrc, shouldBypassNextImageOptimization } from '@/utils/image';
+import { isTheGateSpaCompany } from '@/utils/the-gate-spa-discount';
 import { useTranslations } from 'next-intl';
 import {
   wrapper,
@@ -16,7 +17,9 @@ import {
   tagsFixedHeight,
   ratingBadge,
   titleRow,
+  titleNameGroup,
   titleText,
+  discountBadge,
   exclusiveBadge,
   wrapperCompact,
   profileWrapperCompact,
@@ -79,6 +82,7 @@ export function CompanyCard({
   }, [images, companyImage]);
   const currentImageUrl = imageList[currentImageIndex];
   const shouldBypassOptimization = shouldBypassNextImageOptimization(currentImageUrl);
+  const isDiscountCompany = isTheGateSpaCompany({ name: companyName });
 
   const handleImageError = () => {
     console.log('Image load failed, falling back to default image for:', companyName);
@@ -245,9 +249,12 @@ export function CompanyCard({
         ]}
       >
         <div css={titleRow}>
-          <Text typo="title_M" color="text_primary" css={titleText}>
-            {companyName}
-          </Text>
+          <div css={titleNameGroup}>
+            <Text typo="title_M" color="text_primary" css={titleText}>
+              {companyName}
+            </Text>
+            {isDiscountCompany && <span css={discountBadge}>30%</span>}
+          </div>
           {isExclusive && <span css={exclusiveBadge}>{t('company.exclusive')}</span>}
         </div>
 

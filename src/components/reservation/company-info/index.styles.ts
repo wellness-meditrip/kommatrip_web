@@ -18,6 +18,29 @@ export const card = css`
   }
 `;
 
+export const titleRow = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+`;
+
+export const discountBadge = css`
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+`;
+
 export const locationRow = css`
   display: flex;
   align-items: center;
