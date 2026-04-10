@@ -36,6 +36,7 @@ import type { LanguagePreference } from '@/models/reservation';
 import type { CurrencyCode } from '@/utils/price';
 import { getI18nServerSideProps } from '@/i18n/page-props';
 import { RESERVATION_REFUND_POLICY_URL } from '@/utils/reservation-policy';
+import { getTheGateSpaPriceDisplay, type ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
 
 interface ReservationDraft {
   company_id: number;
@@ -112,8 +113,24 @@ export default function ReservationPaymentPage() {
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat(locale).format(price);
+  const formatAmountByCurrency = (price: number, currency: CurrencyCode) => {
+    return `${formatPrice(price)} ${currency}`;
+  };
   const normalizeCurrency = (currency?: string): CurrencyCode => {
     return currency === 'USD' ? 'USD' : 'KRW';
+  };
+  const getAmountDisplay = (
+    amount: number | null,
+    currency: CurrencyCode,
+    companyName?: string
+  ): ProgramPriceDisplay => {
+    return getTheGateSpaPriceDisplay({
+      company: { name: companyName },
+      discountedPrice: typeof amount === 'number' ? amount : undefined,
+      currency,
+      formatAmount: formatAmountByCurrency,
+      fallbackText: '-',
+    });
   };
 
   useEffect(() => {
@@ -139,6 +156,7 @@ export default function ReservationPaymentPage() {
   const displayCurrency: CurrencyCode = isPayNowPayment
     ? normalizeCurrency(paymentOrder?.currency ?? selectedPaymentCurrency)
     : 'KRW';
+  const amountDisplay = getAmountDisplay(displayAmount, displayCurrency, draft?.company_name);
 
   const handleOpenRefundPolicy = () => {
     if (typeof window === 'undefined') return;
@@ -446,8 +464,15 @@ export default function ReservationPaymentPage() {
                     {t('payment.program')}
                   </Text>
                   <Text typo="title_S" color="text_primary" css={programText}>
-                    {draft.program_name} ({draft.program_duration_minutes}
-                    {t('payment.minutes')})
+                    <span css={programNameGroup}>
+                      <span>
+                        {draft.program_name} ({draft.program_duration_minutes}
+                        {t('payment.minutes')})
+                      </span>
+                      {amountDisplay.type === 'discount' && (
+                        <span css={amountDiscountRateBadge}>{amountDisplay.discountRateText}</span>
+                      )}
+                    </span>
                   </Text>
                 </div>
               </div>
@@ -526,9 +551,11 @@ export default function ReservationPaymentPage() {
                       {t('payment.paymentAmountLabel')}
                     </Text>
                     <Text typo="body_M" color="text_primary">
-                      {typeof displayAmount === 'number'
-                        ? `${formatPrice(displayAmount)} ${displayCurrency}`
-                        : '-'}
+                      {amountDisplay.type === 'discount' ? (
+                        <span css={amountOriginalPriceText}>{amountDisplay.originalPriceText}</span>
+                      ) : (
+                        amountDisplay.priceText
+                      )}
                     </Text>
                   </div>
                   <div css={divider} />
@@ -536,10 +563,13 @@ export default function ReservationPaymentPage() {
                     <Text typo="title_S" color="text_primary">
                       {t('payment.finalPaymentAmount')}
                     </Text>
-                    <Text typo="title_S" color="primary50">
-                      {typeof displayAmount === 'number'
-                        ? `${formatPrice(displayAmount)} ${displayCurrency}`
-                        : '-'}
+                    <Text
+                      typo="title_S"
+                      color={amountDisplay.type === 'discount' ? 'red200' : 'primary50'}
+                    >
+                      {amountDisplay.type === 'discount'
+                        ? amountDisplay.discountedPriceText
+                        : amountDisplay.priceText}
                     </Text>
                   </div>
                 </div>
@@ -684,6 +714,14 @@ const programText = css`
   text-align: right;
 `;
 
+const programNameGroup = css`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+`;
+
 const paymentMethodOptions = css`
   display: flex;
   flex-wrap: wrap;
@@ -744,6 +782,26 @@ const amountRow = css`
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+`;
+
+const amountOriginalPriceText = css`
+  color: ${theme.colors.text_disabled};
+  text-decoration: line-through;
+`;
+
+const amountDiscountRateBadge = css`
+  display: inline-flex;
+  align-items: center;
+
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  background: ${theme.colors.red200};
+  color: ${theme.colors.white};
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
 `;
 
 const divider = css`

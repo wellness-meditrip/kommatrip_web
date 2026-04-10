@@ -5,10 +5,13 @@ import { HeroImage } from '@/components/common';
 import { useState } from 'react';
 import { useToast } from '@/hooks';
 import { useTranslations } from 'next-intl';
+import { isTheGateSpaCompany } from '@/utils/the-gate-spa-discount';
 import {
   wrapper,
   profileWrapper,
   DetailsWrapper,
+  companyTitleRow,
+  discountBadge,
   address,
   addressText,
   copyButton,
@@ -24,6 +27,7 @@ import {
 interface Props {
   companyImage: string;
   companyName: string;
+  companyCode?: string;
   companyAddress: string;
   badges: string[];
   images?: string[]; // 이미지 캐러셀용 배열 추가
@@ -33,6 +37,7 @@ interface Props {
 export default function CompanyDetail({
   companyImage,
   companyName,
+  companyCode,
   companyAddress,
   badges,
   images = [],
@@ -40,6 +45,10 @@ export default function CompanyDetail({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { showToast } = useToast();
   const t = useTranslations('company-detail');
+  const isDiscountCompany = isTheGateSpaCompany({
+    name: companyName,
+    company_code: companyCode,
+  });
 
   // 이미지 배열이 있으면 사용, 없으면 기본 이미지 사용
   const imageList = images.length > 0 ? images : [companyImage];
@@ -126,9 +135,12 @@ export default function CompanyDetail({
         )}
       </div>
       <div css={DetailsWrapper}>
-        <Text typo="title_M" color="text_primary">
-          {companyName}
-        </Text>
+        <div css={companyTitleRow}>
+          <Text typo="title_M" color="text_primary">
+            {companyName}
+          </Text>
+          {isDiscountCompany && <span css={discountBadge}>30%</span>}
+        </div>
         <div css={address}>
           <Text typo="body_M" color="text_secondary" css={addressText}>
             {companyAddress}

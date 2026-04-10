@@ -348,6 +348,7 @@ export default function ClinicDetailPage({
                 badges={company.tags || []}
                 companyImage={company.primary_image_url || '/default.png'}
                 companyName={company.name}
+                companyCode={company.company_code}
                 companyAddress={company.address}
                 images={company.image_urls || []}
               />
@@ -373,7 +374,12 @@ export default function ClinicDetailPage({
                   </div>
 
                   <div ref={programRef} data-section="program" css={section}>
-                    <CompanyProgram badges={company.tags || []} companyId={companyIdNumber} />
+                    <CompanyProgram
+                      badges={company.tags || []}
+                      companyId={companyIdNumber}
+                      companyName={company.name}
+                      companyCode={company.company_code}
+                    />
                   </div>
 
                   <div ref={reviewRef} data-section="review" css={section}>
