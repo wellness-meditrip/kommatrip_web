@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { Text } from '@/components';
-import { Chevron } from '@/icons';
+import { Chevron, Clock } from '@/icons';
 import { css } from '@emotion/react';
 import { Skeleton } from '@/components/common/skeleton';
 import type { ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
@@ -9,10 +9,15 @@ import {
   discountedPriceText,
   discountPriceGroup,
   discountRateBadge,
+  durationGroup,
+  durationText,
   originalPriceText,
   programCard,
   programImage,
   programInfo,
+  programMetaRow,
+  priceGroup,
+  programTitleText,
   programTitleRow,
   sectionCard,
   sectionContent,
@@ -111,16 +116,27 @@ export function ProgramSection({
                   />
                   <div css={programInfo}>
                     <div css={programTitleRow}>
-                      <Text typo="title_S" color="text_primary">
+                      <Text typo="title_S" color="text_primary" css={programTitleText}>
                         {program.name}
                       </Text>
                       {priceDisplay.type === 'discount' && (
                         <span css={discountRateBadge}>{priceDisplay.discountRateText}</span>
                       )}
                     </div>
-                    <Text typo="body_S" color="text_tertiary">
-                      ⏱ {formatDuration(program.duration_minutes)} | {renderPrice(priceDisplay)}
-                    </Text>
+                    <div css={programMetaRow}>
+                      <div css={durationGroup}>
+                        <Clock width={14} height={14} />
+                        <Text typo="body_S" color="text_tertiary" css={durationText}>
+                          {formatDuration(program.duration_minutes)}
+                        </Text>
+                      </div>
+                      <Text typo="body_S" color="text_tertiary">
+                        |
+                      </Text>
+                      <Text typo="body_S" color="text_tertiary" css={priceGroup}>
+                        {renderPrice(priceDisplay)}
+                      </Text>
+                    </div>
                   </div>
                 </div>
               );
