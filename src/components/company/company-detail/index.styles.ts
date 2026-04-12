@@ -131,16 +131,27 @@ export const DetailsWrapper = css`
 `;
 
 export const companyTitleRow = css`
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
+
+  min-width: 0;
+`;
+
+export const companyTitleText = css`
+  flex: 1 1 auto;
+
+  min-width: 0;
+
+  line-height: 1.25;
+  white-space: normal;
 `;
 
 export const discountBadge = css`
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
+  align-self: flex-start;
 
   height: 18px;
   padding: 0 5px;

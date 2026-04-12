@@ -11,6 +11,7 @@ import {
   profileWrapper,
   DetailsWrapper,
   companyTitleRow,
+  companyTitleText,
   discountBadge,
   address,
   addressText,
@@ -136,7 +137,7 @@ export default function CompanyDetail({
       </div>
       <div css={DetailsWrapper}>
         <div css={companyTitleRow}>
-          <Text typo="title_M" color="text_primary">
+          <Text typo="title_M" color="text_primary" css={companyTitleText}>
             {companyName}
           </Text>
           {isDiscountCompany && <span css={discountBadge}>30%</span>}

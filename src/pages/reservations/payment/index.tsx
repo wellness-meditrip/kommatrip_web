@@ -465,7 +465,7 @@ export default function ReservationPaymentPage() {
                   </Text>
                   <Text typo="title_S" color="text_primary" css={programText}>
                     <span css={programNameGroup}>
-                      <span>
+                      <span css={programNameText}>
                         {draft.program_name} ({draft.program_duration_minutes}
                         {t('payment.minutes')})
                       </span>
@@ -715,11 +715,21 @@ const programText = css`
 `;
 
 const programNameGroup = css`
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   justify-content: flex-end;
   gap: 6px;
+
+  min-width: 0;
+`;
+
+const programNameText = css`
+  flex: 1 1 auto;
+
+  min-width: 0;
+
+  white-space: normal;
+  line-height: 1.25;
 `;
 
 const paymentMethodOptions = css`

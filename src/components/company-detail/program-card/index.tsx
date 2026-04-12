@@ -15,11 +15,15 @@ import {
   discountedPriceText,
   discountPriceGroup,
   discountRateBadge,
+  durationGroup,
+  durationText,
   infoWrapper,
   itemWrapper,
   itemImage,
   originalPriceText,
+  priceGroup,
   programDetails,
+  programTitleText,
   programTitleRow,
   detailRow,
   separator,
@@ -99,7 +103,7 @@ export function ProgramCard({
       )}
       <div css={itemWrapper}>
         <div css={programTitleRow}>
-          <Text typo="title_M" color="text_primary">
+          <Text typo="title_M" color="text_primary" css={programTitleText}>
             {title}
           </Text>
           {price.type === 'discount' && (
@@ -108,12 +112,14 @@ export function ProgramCard({
         </div>
         <div css={programDetails}>
           <div css={detailRow}>
-            <Clock width={16} height={16} />
-            <Text typo="button_S" color="text_secondary">
-              {duration}
-            </Text>
+            <div css={durationGroup}>
+              <Clock width={16} height={16} />
+              <Text typo="button_S" color="text_secondary" css={durationText}>
+                {duration}
+              </Text>
+            </div>
             <div css={separator} />
-            <Text typo="button_S" color="text_secondary">
+            <Text typo="button_S" color="text_secondary" css={priceGroup}>
               {renderPrice(price)}
             </Text>
           </div>
