@@ -253,7 +253,7 @@ export default function ProgramDetailPage({
                 </div>
 
                 <div css={programTitle}>
-                  <Text typo="title_L" color="text_primary">
+                  <Text typo="title_L" color="text_primary" css={programTitleText}>
                     {program.name}
                   </Text>
                   {priceDisplay.type === 'discount' && (
@@ -536,16 +536,26 @@ const programSection = css`
 `;
 
 const programTitle = css`
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
+
+  min-width: 0;
 
   padding: 16px 20px;
 
   @media (min-width: ${theme.breakpoints.desktop}) {
     padding: 0;
   }
+`;
+
+const programTitleText = css`
+  flex: 1 1 auto;
+
+  min-width: 0;
+
+  white-space: normal;
+  line-height: 1.2;
 `;
 
 const headerRow = css`

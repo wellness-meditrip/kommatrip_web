@@ -1153,7 +1153,7 @@ export default function ReservationPage() {
                     <Text typo="title_S" color="text_primary" css={summaryValueRight}>
                       {selectedProgram ? (
                         <span css={summaryProgramNameGroup}>
-                          <span>
+                          <span css={summaryProgramNameText}>
                             {selectedProgram.name} ({selectedProgram.duration_minutes}
                             {t('payment.minutes')})
                           </span>
@@ -1569,11 +1569,21 @@ const summaryValueRight = css`
 `;
 
 const summaryProgramNameGroup = css`
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   justify-content: flex-end;
   gap: 6px;
+
+  min-width: 0;
+`;
+
+const summaryProgramNameText = css`
+  flex: 1 1 auto;
+
+  min-width: 0;
+
+  white-space: normal;
+  line-height: 1.25;
 `;
 
 const summaryOriginalPriceText = css`

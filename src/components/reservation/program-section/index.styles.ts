@@ -72,13 +72,30 @@ export const programInfo = css`
   flex-direction: column;
   justify-content: center;
   gap: 4px;
+
+  min-width: 0;
 `;
 
 export const programTitleRow = css`
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: flex;
+  align-items: flex-start;
   gap: 6px;
+
+  min-width: 0;
+`;
+
+export const programTitleText = css`
+  display: -webkit-box;
+  flex: 1 1 auto;
+  overflow: hidden;
+
+  min-width: 0;
+
+  line-height: 1.25;
+  white-space: normal;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
 export const discountPriceGroup = css`
@@ -88,9 +105,38 @@ export const discountPriceGroup = css`
   gap: 4px;
 `;
 
+export const programMetaRow = css`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  min-width: 0;
+`;
+
+export const durationGroup = css`
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+
+  white-space: nowrap;
+`;
+
+export const durationText = css`
+  white-space: nowrap;
+`;
+
+export const priceGroup = css`
+  flex: 1 1 auto;
+
+  min-width: 0;
+`;
+
 export const discountRateBadge = css`
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
+  align-self: flex-start;
 
   height: 16px;
   padding: 0 4px;
