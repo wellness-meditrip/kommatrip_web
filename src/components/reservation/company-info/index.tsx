@@ -8,6 +8,7 @@ import {
   locationRow,
   tagChip,
   tagList,
+  titleText,
   titleRow,
 } from './index.styles';
 
@@ -31,7 +32,7 @@ export function CompanyInfoCard({
   return (
     <div css={card}>
       <div css={titleRow}>
-        <Text typo="title_L" color="text_primary">
+        <Text typo="title_L" color="text_primary" css={titleText}>
           {name}
         </Text>
         {isDiscountCompany && <span css={discountBadge}>30%</span>}
