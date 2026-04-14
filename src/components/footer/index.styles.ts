@@ -16,7 +16,6 @@ export const inner = css`
 
   width: 100%;
   max-width: ${theme.size.maxWidth};
-  margin: 0 auto;
   padding: 28px 20px calc(28px + ${theme.size.gnbHeight});
 
   @media (min-width: ${theme.breakpoints.tablet}) {
@@ -26,7 +25,7 @@ export const inner = css`
   @media (min-width: ${theme.breakpoints.desktop}) {
     gap: 20px;
 
-    padding: 40px 32px;
+    padding: 40px;
   }
 `;
 
