@@ -27,6 +27,7 @@ export function Footer() {
     'address',
     'phone',
     'businessNumber',
+    'mailOrderSalesRegistrationNumber',
     'foreignPatient',
     'venture',
     'email',
