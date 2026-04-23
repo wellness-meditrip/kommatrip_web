@@ -3,6 +3,7 @@ import type { AvailabilityOption, LanguagePreference } from '@/models/reservatio
 export interface PaymentOrder {
   order_id: string;
   amount: number;
+  original_amount?: number;
   currency: string;
   program_id: number;
 }
@@ -10,11 +11,24 @@ export interface PaymentOrder {
 export interface PostCreatePaymentOrderRequest {
   programId: number;
   currency: 'KRW' | 'USD';
+  promotionCode?: string;
 }
 
 export interface PostCreatePaymentOrderResponse {
   message: string;
   order: PaymentOrder;
+}
+
+export interface PostValidatePromotionRequest {
+  program_id: number;
+  promotion_code: string;
+  currency: 'KRW' | 'USD';
+}
+
+export interface PostValidatePromotionResponse {
+  original_price: number;
+  final_price: number;
+  currency: 'KRW' | 'USD';
 }
 
 export interface ReservationDataForPaymentConfirm {
@@ -34,6 +48,7 @@ export interface PostConfirmPaymentRequest {
   paymentKey: string;
   amount: number;
   programId: number;
+  promotionCode?: string;
   reservationData: ReservationDataForPaymentConfirm;
 }
 

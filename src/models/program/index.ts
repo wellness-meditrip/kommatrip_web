@@ -23,15 +23,25 @@ export interface ProgramCompanyListResponse {
   total: number;
 }
 
+export interface ProgramDiscountInfo {
+  rate: number;
+  original_krw: number;
+  original_usd: number;
+  discounted_krw: number;
+  discounted_usd: number;
+}
+
 export interface ProgramPriceInfo {
   krw: number;
   usd: number;
+  discount_info?: ProgramDiscountInfo | null;
 }
 
 export interface ProgramListItem {
   id: number;
   name: string;
   price_info: ProgramPriceInfo;
+  is_promotion_period?: boolean;
   duration_minutes: number;
   status: string;
   process: string[];
@@ -48,6 +58,7 @@ export interface ProgramDetail {
   name: string;
   description: string;
   price_info: ProgramPriceInfo;
+  is_promotion_period?: boolean;
   guidelines: string;
   status: string;
   is_active: boolean;
@@ -77,6 +88,7 @@ export interface Program {
   description: string;
   time: string;
   price_info: ProgramPriceInfo;
+  is_promotion_period?: boolean;
   duration: number;
   notice: string;
   process: string;
