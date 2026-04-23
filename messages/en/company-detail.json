@@ -18,6 +18,46 @@
   "noticeTitle": "Notice",
   "bookingInfo": "Booking information",
   "refundRegulation": "Refund regulation",
+  "theGateSpa": {
+    "kicker": "THE GATE SPA",
+    "title": "THE GATE SPA × KOMMA TRIP — Exclusive Program",
+    "intro": [
+      "Korean Wellness Rituals at The Gate Spa — Seorae Maeul, Seoul",
+      "Discover The Gate Spa, a private Korean spa tucked into Seorae Maeul — Seoul's quiet Parisian quarter, where diplomats and long-settled French families come to slow down. Through our exclusive partnership, KOMMA TRIP offers three signature Korean wellness rituals, reserved only for international guests. Each ritual is built around a single traditional material — bangjja (hand-forged royal bronze), ock (Korean blue jade), or pyeonbaek (Korean hinoki cypress).",
+      "Bronze draws out heat and tension. Jade holds warmth along the spine. Cypress releases terpenes that calm the nervous system. Choose the ritual your body needs."
+    ],
+    "privateSpa": {
+      "title": "A private spa focused on care",
+      "description": "The Gate Spa values quiet, focused time for one guest over the bustle of a large venue. Soft lighting, deep wood tones, clean bedding, and neatly arranged amenities create a calm atmosphere, while premium goose-down bedding and adjustable wooden electric beds help the body settle comfortably during care. Single-use amenities and attentive cleaning standards add another layer of confidence, so the experience feels private, refined, and hygienic from beginning to end."
+    },
+    "featuresTitle": "Key Features",
+    "features": {
+      "privateRoom": {
+        "title": "Private Treatment Room",
+        "description": "Care takes place in an independent room away from outside noise and distraction. The treatment bed, washing area, and amenities are arranged in one compact flow, reducing unnecessary movement from preparation to finish. After checking the guest's condition and areas of tension, the therapist continues with a rhythm and pressure tailored to that individual."
+      },
+      "showerPowder": {
+        "title": "Shower and Powder Space",
+        "description": "Each room includes a shower area and basin for use before and after treatment. Guests can lightly refresh before care, then adjust their outfit and skin condition immediately afterward, making the visit comfortable even when another schedule follows. Because there is no need to move back and forth through a shared area, the private flow continues until the end."
+      },
+      "calmFlow": {
+        "title": "A Calm Guest Flow",
+        "description": "The path from reception to corridor to room is composed with restrained materials and low lighting. As guests move through the space, the atmosphere naturally becomes quieter and the body begins to shift toward rest even before the treatment starts. Although the spa is located in the city, the experience is designed to feel separate from the speed outside."
+      }
+    },
+    "imageAlt": {
+      "hero": "The Gate Spa treatment room overview",
+      "sign": "The Gate Spa entrance sign",
+      "privateRoomEntrance": "The Gate Spa private room entrance",
+      "treatmentRoom": "The Gate Spa treatment room",
+      "roomVanity": "The Gate Spa in-room vanity area",
+      "shower": "The Gate Spa shower area",
+      "basin": "The Gate Spa basin",
+      "bathDetail": "The Gate Spa bathroom detail",
+      "hallway": "The Gate Spa hallway",
+      "roomEntrance": "The Gate Spa room entrance area"
+    }
+  },
   "tabs": {
     "info": "Information",
     "program": "Programs",
