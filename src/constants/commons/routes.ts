@@ -31,7 +31,6 @@ export const ROUTES = {
 
   // RESERVATIONS
   RESERVATIONS: '/reservations',
-  RESERVATIONS_PAYMENT: '/reservations/payment',
   RESERVATIONS_PAYMENT_SUCCESS: '/reservations/payment/success',
   RESERVATIONS_PAYMENT_FAIL: '/reservations/payment/fail',
   RESERVATIONS_PAYMENT_PENDING: '/reservations/payment/pending',
