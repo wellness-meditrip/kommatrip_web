@@ -19,6 +19,22 @@ import {
   contactRow,
   contactLabel,
   facilityIcon,
+  theGateSpaArticle,
+  theGateSpaFeature,
+  theGateSpaFeatureCopy,
+  theGateSpaFeatureGrid,
+  theGateSpaFeatureStack,
+  theGateSpaHeader,
+  theGateSpaHeroImage,
+  theGateSpaImageGrid,
+  theGateSpaIntro,
+  theGateSpaKicker,
+  theGateSpaParagraph,
+  theGateSpaSection,
+  theGateSpaSectionCopy,
+  theGateSpaSectionImage,
+  theGateSpaSectionTitle,
+  theGateSpaTitle,
 } from './index.styles';
 import { Text } from '@/components/text';
 import {
@@ -36,6 +52,7 @@ import { CompanyGoogleMap } from '@/components/map/google-map';
 import { useState } from 'react';
 import { ArrowDown } from '@/icons';
 import { useTranslations } from 'next-intl';
+import { isTheGateSpaCompany } from '@/utils/the-gate-spa-discount';
 
 // Facilities 매핑 (API 데이터 -> 아이콘 + 한글 텍스트)
 const FACILITY_MAP: Record<string, { icon: React.ReactElement; label: string }> = {
@@ -66,9 +83,136 @@ const DAYS_ORDER = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 const WEEKEND_DAYS = ['Sat', 'Sun'];
 
+const THE_GATE_SPA_IMAGES = {
+  roomWide: '/images/company/the-gate-spa/080A5895-HDR 복사본.jpg',
+  hallway: '/images/company/the-gate-spa/080A5877 복사본.jpg',
+  roomDoor: '/images/company/the-gate-spa/080A5907 복사본.jpg',
+  bathDetail: '/images/company/the-gate-spa/080A5908 복사본.jpg',
+  shower: '/images/company/the-gate-spa/080A5910 복사본.jpg',
+  basin: '/images/company/the-gate-spa/080A5912 복사본.jpg',
+  vanity: '/images/company/the-gate-spa/080A5914 복사본.jpg',
+  sign: '/images/company/the-gate-spa/080A5938 복사본.jpg',
+} as const;
+
+const THE_GATE_SPA_FEATURES = [
+  {
+    key: 'privateRoom',
+    images: [
+      { src: THE_GATE_SPA_IMAGES.roomDoor, altKey: 'privateRoomEntrance' },
+      { src: THE_GATE_SPA_IMAGES.roomWide, altKey: 'treatmentRoom' },
+      { src: THE_GATE_SPA_IMAGES.vanity, altKey: 'roomVanity' },
+    ],
+  },
+  {
+    key: 'showerPowder',
+    images: [
+      { src: THE_GATE_SPA_IMAGES.shower, altKey: 'shower' },
+      { src: THE_GATE_SPA_IMAGES.basin, altKey: 'basin' },
+      { src: THE_GATE_SPA_IMAGES.bathDetail, altKey: 'bathDetail' },
+    ],
+  },
+  {
+    key: 'calmFlow',
+    images: [
+      { src: THE_GATE_SPA_IMAGES.sign, altKey: 'sign' },
+      { src: THE_GATE_SPA_IMAGES.hallway, altKey: 'hallway' },
+      { src: THE_GATE_SPA_IMAGES.roomDoor, altKey: 'roomEntrance' },
+    ],
+  },
+] as const;
+
+const getStringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+
 interface CompanyInfoProps {
   data: CompanyDetail;
 }
+
+function TheGateSpaStory() {
+  const t = useTranslations('company-detail');
+  const translatedIntroParagraphs = getStringArray(t.raw('theGateSpa.intro'));
+
+  return (
+    <article css={theGateSpaArticle}>
+      <header css={theGateSpaHeader}>
+        <Text tag="p" typo="button_S" color="primary50" css={theGateSpaKicker}>
+          {t('theGateSpa.kicker')}
+        </Text>
+        <Text tag="h2" typo="title_L" color="text_primary" css={theGateSpaTitle}>
+          {t('theGateSpa.title')}
+        </Text>
+      </header>
+
+      <img
+        src={THE_GATE_SPA_IMAGES.roomWide}
+        alt={t('theGateSpa.imageAlt.hero')}
+        css={theGateSpaHeroImage}
+      />
+
+      <div css={theGateSpaIntro}>
+        {translatedIntroParagraphs.map((paragraph, index) => (
+          <Text
+            key={`${paragraph.slice(0, 20)}-${index}`}
+            tag="p"
+            typo="body_M"
+            color="text_secondary"
+            css={theGateSpaParagraph}
+          >
+            {paragraph}
+          </Text>
+        ))}
+      </div>
+
+      <section css={theGateSpaSection}>
+        <img
+          src={THE_GATE_SPA_IMAGES.sign}
+          alt={t('theGateSpa.imageAlt.sign')}
+          css={theGateSpaSectionImage}
+          loading="lazy"
+        />
+        <div css={theGateSpaSectionCopy}>
+          <Text tag="h3" typo="title_M" color="text_primary" css={theGateSpaSectionTitle}>
+            {t('theGateSpa.privateSpa.title')}
+          </Text>
+          <Text tag="p" typo="body_M" color="text_secondary" css={theGateSpaParagraph}>
+            {t('theGateSpa.privateSpa.description')}
+          </Text>
+        </div>
+      </section>
+
+      <section css={theGateSpaFeatureStack}>
+        <Text tag="h3" typo="title_M" color="text_primary" css={theGateSpaSectionTitle}>
+          {t('theGateSpa.featuresTitle')}
+        </Text>
+
+        {THE_GATE_SPA_FEATURES.map((feature) => (
+          <div key={feature.key} css={theGateSpaFeature}>
+            <div css={theGateSpaImageGrid}>
+              {feature.images.map((image) => (
+                <img
+                  key={image.src}
+                  src={image.src}
+                  alt={t(`theGateSpa.imageAlt.${image.altKey}`)}
+                  css={theGateSpaFeatureGrid}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+            <div css={theGateSpaFeatureCopy}>
+              <Text tag="h4" typo="title_S" color="text_primary" css={theGateSpaSectionTitle}>
+                {t(`theGateSpa.features.${feature.key}.title`)}
+              </Text>
+              <Text tag="p" typo="body_M" color="text_secondary" css={theGateSpaParagraph}>
+                {t(`theGateSpa.features.${feature.key}.description`)}
+              </Text>
+            </div>
+          </div>
+        ))}
+      </section>
+    </article>
+  );
+}
+
 export function CompanyInfo({ data }: CompanyInfoProps) {
   const t = useTranslations('company-detail');
   const [isHoursOpen, setIsHoursOpen] = useState(false);
@@ -137,6 +281,10 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
   const websiteUrl = data.website_url?.trim() ?? '';
   const instagramUrl = data.instagram_url?.trim() ?? '';
   const whatsappUrl = data.whats_app_url?.trim() ?? '';
+  const isTheGateSpa = isTheGateSpaCompany({
+    name: data.name,
+    company_code: data.company_code,
+  });
 
   const handleOpenLink = (value: string, type?: 'instagram') => {
     if (!value) return;
@@ -156,59 +304,63 @@ export function CompanyInfo({ data }: CompanyInfoProps) {
 
   return (
     <div css={container}>
-      <div css={wrapper}>
-        <Text typo="title_M" color="text_primary">
-          {t('editorComment')}
-        </Text>
+      {isTheGateSpa ? (
+        <TheGateSpaStory />
+      ) : (
+        <div css={wrapper}>
+          <Text typo="title_M" color="text_primary">
+            {t('editorComment')}
+          </Text>
 
-        {recognitionText && (
+          {recognitionText && (
+            <div css={infoWrapper}>
+              <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
+                <Text typo="title_S" color="text_primary">
+                  {t('officialRecognition')}
+                </Text>
+                <div css={hoursArrow(isRecognitionOpen)}>
+                  <ArrowDown width={30} height={30} />
+                </div>
+              </div>
+              {isRecognitionOpen && (
+                <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+                  {recognitionText}
+                </Text>
+              )}
+            </div>
+          )}
           <div css={infoWrapper}>
-            <div css={recognitionHeader} onClick={() => setIsRecognitionOpen((prev) => !prev)}>
+            <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
               <Text typo="title_S" color="text_primary">
-                {t('officialRecognition')}
+                {t('gettingHere')}
               </Text>
-              <div css={hoursArrow(isRecognitionOpen)}>
+              <div css={hoursArrow(isGettingHereOpen)}>
                 <ArrowDown width={30} height={30} />
               </div>
             </div>
-            {isRecognitionOpen && (
+            {isGettingHereOpen && (
               <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-                {recognitionText}
+                {gettingHereText || t('infoPending')}
               </Text>
             )}
           </div>
-        )}
-        <div css={infoWrapper}>
-          <div css={recognitionHeader} onClick={() => setIsGettingHereOpen((prev) => !prev)}>
-            <Text typo="title_S" color="text_primary">
-              {t('gettingHere')}
-            </Text>
-            <div css={hoursArrow(isGettingHereOpen)}>
-              <ArrowDown width={30} height={30} />
+          <div css={infoWrapper}>
+            <div css={recognitionHeader} onClick={() => setIsHighlightsOpen((prev) => !prev)}>
+              <Text typo="title_S" color="text_primary">
+                {t('highlights')}
+              </Text>
+              <div css={hoursArrow(isHighlightsOpen)}>
+                <ArrowDown width={30} height={30} />
+              </div>
             </div>
+            {isHighlightsOpen && (
+              <Text typo="body_M" color="text_secondary" css={recognitionContent}>
+                {highlightsText || t('infoPending')}
+              </Text>
+            )}
           </div>
-          {isGettingHereOpen && (
-            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {gettingHereText || t('infoPending')}
-            </Text>
-          )}
         </div>
-        <div css={infoWrapper}>
-          <div css={recognitionHeader} onClick={() => setIsHighlightsOpen((prev) => !prev)}>
-            <Text typo="title_S" color="text_primary">
-              {t('highlights')}
-            </Text>
-            <div css={hoursArrow(isHighlightsOpen)}>
-              <ArrowDown width={30} height={30} />
-            </div>
-          </div>
-          {isHighlightsOpen && (
-            <Text typo="body_M" color="text_secondary" css={recognitionContent}>
-              {highlightsText || t('infoPending')}
-            </Text>
-          )}
-        </div>
-      </div>
+      )}
       <div css={wrapper}>
         <Text typo="title_M" color="text_primary">
           {t('operationInfo')}
