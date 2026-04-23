@@ -84,14 +84,14 @@ const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 const WEEKEND_DAYS = ['Sat', 'Sun'];
 
 const THE_GATE_SPA_IMAGES = {
-  roomWide: '/images/company/the-gate-spa/080A5895-HDR 복사본.jpg',
-  hallway: '/images/company/the-gate-spa/080A5877 복사본.jpg',
-  roomDoor: '/images/company/the-gate-spa/080A5907 복사본.jpg',
-  bathDetail: '/images/company/the-gate-spa/080A5908 복사본.jpg',
-  shower: '/images/company/the-gate-spa/080A5910 복사본.jpg',
-  basin: '/images/company/the-gate-spa/080A5912 복사본.jpg',
-  vanity: '/images/company/the-gate-spa/080A5914 복사본.jpg',
-  sign: '/images/company/the-gate-spa/080A5938 복사본.jpg',
+  roomWide: '/images/company/the-gate-spa/treatment-room-wide.jpg',
+  hallway: '/images/company/the-gate-spa/hallway.jpg',
+  roomDoor: '/images/company/the-gate-spa/private-room-entrance.jpg',
+  bathDetail: '/images/company/the-gate-spa/bathroom-detail.jpg',
+  shower: '/images/company/the-gate-spa/shower.jpg',
+  basin: '/images/company/the-gate-spa/basin.jpg',
+  vanity: '/images/company/the-gate-spa/vanity.jpg',
+  sign: '/images/company/the-gate-spa/entrance-sign.jpg',
 } as const;
 
 const THE_GATE_SPA_FEATURES = [
