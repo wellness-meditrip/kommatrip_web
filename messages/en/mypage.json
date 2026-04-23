@@ -73,7 +73,7 @@
   },
   "profile": {
     "manage": "My Information",
-    "fallbackName": "ONYU Member",
+    "fallbackName": "KOMMA Member",
     "imageAlt": "Profile image",
     "editImage": "Edit profile image"
   },
@@ -106,7 +106,7 @@
     "editPassword": "Edit password"
   },
   "improvement": {
-    "title": "Help Improve ONYU",
+    "title": "Help Improve KOMMA",
     "subtitle": "Help us refine your experience."
   },
   "sections": {
@@ -114,8 +114,8 @@
     "support": "Customer Support"
   },
   "iframe": {
-    "improvementTitle": "ONYU service improvement form",
-    "termsTitle": "ONYU terms of use"
+    "improvementTitle": "KOMMA service improvement form",
+    "termsTitle": "KOMMA terms of use"
   },
   "toast": {
     "profileUpdated": "Your profile has been updated.",
