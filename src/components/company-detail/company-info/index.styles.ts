@@ -179,3 +179,125 @@ export const facilityIcon = css`
     stroke: ${theme.colors.primary30};
   }
 `;
+
+export const theGateSpaArticle = css`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 28px 24px 16px;
+
+  background: ${theme.colors.white};
+  box-sizing: border-box;
+`;
+
+export const theGateSpaHeader = css`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const theGateSpaKicker = css`
+  margin: 0;
+
+  line-height: 1.4;
+`;
+
+export const theGateSpaTitle = css`
+  margin: 0;
+
+  line-height: 1.45;
+`;
+
+export const theGateSpaHeroImage = css`
+  display: block;
+
+  width: 100%;
+  aspect-ratio: 3 / 2;
+
+  border-radius: 6px;
+  object-fit: cover;
+  object-position: center;
+`;
+
+export const theGateSpaIntro = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const theGateSpaParagraph = css`
+  margin: 0;
+
+  line-height: 1.8;
+`;
+
+export const theGateSpaSection = css`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+`;
+
+export const theGateSpaSectionImage = css`
+  display: block;
+
+  width: 100%;
+  aspect-ratio: 16 / 9;
+
+  border-radius: 6px;
+  object-fit: cover;
+  object-position: center 42%;
+`;
+
+export const theGateSpaSectionCopy = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const theGateSpaSectionTitle = css`
+  margin: 0;
+
+  line-height: 1.45;
+`;
+
+export const theGateSpaFeatureStack = css`
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+`;
+
+export const theGateSpaFeature = css`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+export const theGateSpaImageGrid = css`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  width: 100%;
+`;
+
+export const theGateSpaFeatureGrid = css`
+  display: block;
+
+  width: 100%;
+  aspect-ratio: 4 / 3;
+
+  border-radius: 6px;
+  object-fit: cover;
+  object-position: center;
+`;
+
+export const theGateSpaFeatureCopy = css`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
