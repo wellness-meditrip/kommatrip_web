@@ -66,5 +66,8 @@
     "review": "レビュー",
     "notice": "お知らせ"
   },
+  "toast": {
+    "watchingNow": "現在{count}人が閲覧中"
+  },
   "bookNow": "今すぐ予約"
 }

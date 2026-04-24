@@ -74,4 +74,5 @@ export * from './Share';
 export * from './ShareWhite';
 export * from './Smile';
 export * from './ToastCheck';
+export * from './ToastEye';
 export * from './ToastExclaim';
