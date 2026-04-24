@@ -64,5 +64,8 @@
     "review": "Reviews",
     "notice": "Notice"
   },
+  "toast": {
+    "watchingNow": "{count} people viewing now"
+  },
   "bookNow": "Book Now"
 }
