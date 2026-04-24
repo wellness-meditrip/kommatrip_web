@@ -59,4 +59,5 @@ export const ROUTES = {
     `/admin/companies/${companyId}/programs/new`,
   ADMIN_COMPANY_PROGRAM_EDIT: (companyId: number | string, programId: number | string) =>
     `/admin/companies/${companyId}/programs/${programId}/edit`,
+  ADMIN_INFLUENCERS: '/admin/influencers',
 } as const;

@@ -51,6 +51,9 @@ export default function AdminIndexPage() {
           <Link href={ROUTES.ADMIN_REVIEWS} css={secondaryLinkButton}>
             리뷰 관리
           </Link>
+          <Link href={ROUTES.ADMIN_INFLUENCERS} css={secondaryLinkButton}>
+            인플루언서 프로모션
+          </Link>
           <Link href={ROUTES.ADMIN_COMPANY_NEW} css={primaryLinkButton}>
             업체 등록
           </Link>
