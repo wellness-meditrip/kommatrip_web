@@ -50,7 +50,11 @@
     },
     "actions": {
       "logout": "Log out",
-      "deleteAccount": "Delete account"
+      "deleteAccount": "Delete account",
+      "deleteAccountModalTitle": "Are you sure you want to delete your account?",
+      "deleteAccountModalDescription": "All your reservations and reviews will be permanently deleted and cannot be recovered.",
+      "deleteAccountModalCancel": "Cancel",
+      "deleteAccountModalConfirm": "Delete account"
     }
   },
   "menu": {

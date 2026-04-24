@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '../query-keys';
 import {
+  deleteUserAccount,
   deleteUserProfileImage,
   getUserProfile,
   patchUserProfile,
@@ -65,5 +66,12 @@ export const usePostMarketingConsentMutation = () => {
   return useMutation<PostMarketingConsentResponse, Error, PostMarketingConsentRequest>({
     mutationKey: QUERY_KEYS.POST_MARKETING_CONSENT,
     mutationFn: postMarketingConsent,
+  });
+};
+
+export const useDeleteUserAccountMutation = () => {
+  return useMutation<unknown, Error, number | string>({
+    mutationKey: QUERY_KEYS.DELETE_USER_ACCOUNT,
+    mutationFn: deleteUserAccount,
   });
 };

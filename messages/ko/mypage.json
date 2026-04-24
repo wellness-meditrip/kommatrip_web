@@ -50,7 +50,11 @@
     },
     "actions": {
       "logout": "로그아웃",
-      "deleteAccount": "회원 탈퇴"
+      "deleteAccount": "회원 탈퇴",
+      "deleteAccountModalTitle": "정말 탈퇴하시겠어요?",
+      "deleteAccountModalDescription": "탈퇴하면 모든 예약 내역과 리뷰가 삭제되며 복구할 수 없습니다.",
+      "deleteAccountModalCancel": "취소",
+      "deleteAccountModalConfirm": "탈퇴하기"
     }
   },
   "menu": {
