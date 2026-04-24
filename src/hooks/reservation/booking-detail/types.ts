@@ -28,6 +28,7 @@ export interface BookingDetailData {
     currency?: string | null;
     amount?: string;
     finalAmount?: string;
+    refundAmount?: string | null;
   };
   hasReview?: boolean;
 }
@@ -65,6 +66,7 @@ export interface BookingDetailDisplayModel {
     currency: string | null;
     amount: string;
     finalAmount: string;
+    refundAmount?: string | null;
   };
   programId?: number;
 }

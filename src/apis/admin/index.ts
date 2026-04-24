@@ -23,6 +23,13 @@ import type {
   AdminReservationsResponse,
   AdminReservationStatsResponse,
   AdminLoginResponse,
+  AdminInfluencersResponse,
+  AdminInfluencerCreateRequest,
+  AdminInfluencerUpdateRequest,
+  AdminInfluencerActionResponse,
+  AdminPromotionCodeCreateRequest,
+  AdminPromotionCodeUpdateRequest,
+  AdminPromotionCodeActionResponse,
 } from '@/models';
 import { normalizeError } from '@/utils/error-handler';
 import {
@@ -592,4 +599,72 @@ export const deleteAdminProgram = async (programId: number) => {
 export const postAdminProgramActivate = async (programId: number) => {
   const response = await adminApi.post(`/api/admin/programs/${programId}/activate`);
   return parseAdminProgramActionResponse(response);
+};
+
+export const getAdminInfluencers = async (params?: {
+  skip?: number;
+  limit?: number;
+}): Promise<AdminInfluencersResponse> => {
+  const response = await adminApi.get('/api/admin/influencers', { params });
+  const data = unwrapPayload<AdminInfluencersResponse>(response);
+  return {
+    items: Array.isArray(data?.items) ? data.items : [],
+    skip: typeof data?.skip === 'number' ? data.skip : 0,
+    limit: typeof data?.limit === 'number' ? data.limit : 100,
+  };
+};
+
+export const postAdminInfluencer = async (
+  body: AdminInfluencerCreateRequest
+): Promise<AdminInfluencerActionResponse> => {
+  const response = await adminApi.post('/api/admin/influencers', body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return unwrapPayload<AdminInfluencerActionResponse>(response);
+};
+
+export const patchAdminInfluencer = async (
+  influencerId: number,
+  body: AdminInfluencerUpdateRequest
+): Promise<AdminInfluencerActionResponse> => {
+  const response = await adminApi.patch(`/api/admin/influencers/${influencerId}`, body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return unwrapPayload<AdminInfluencerActionResponse>(response);
+};
+
+export const deleteAdminInfluencer = async (
+  influencerId: number
+): Promise<AdminInfluencerActionResponse> => {
+  const response = await adminApi.delete(`/api/admin/influencers/${influencerId}`);
+  return unwrapPayload<AdminInfluencerActionResponse>(response);
+};
+
+export const postAdminPromotionCode = async (
+  influencerId: number,
+  body: AdminPromotionCodeCreateRequest
+): Promise<AdminPromotionCodeActionResponse> => {
+  const response = await adminApi.post(
+    `/api/admin/influencers/${influencerId}/promotion-codes`,
+    body,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  return unwrapPayload<AdminPromotionCodeActionResponse>(response);
+};
+
+export const patchAdminPromotionCode = async (
+  codeId: number,
+  body: AdminPromotionCodeUpdateRequest
+): Promise<AdminPromotionCodeActionResponse> => {
+  const response = await adminApi.patch(`/api/admin/promotion-codes/${codeId}`, body, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return unwrapPayload<AdminPromotionCodeActionResponse>(response);
+};
+
+export const deleteAdminPromotionCode = async (
+  codeId: number
+): Promise<AdminPromotionCodeActionResponse> => {
+  const response = await adminApi.delete(`/api/admin/promotion-codes/${codeId}`);
+  return unwrapPayload<AdminPromotionCodeActionResponse>(response);
 };

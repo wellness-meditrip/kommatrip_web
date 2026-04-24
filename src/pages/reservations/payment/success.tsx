@@ -34,6 +34,7 @@ interface ReservationPaymentContext {
   amount: number;
   currency: 'KRW' | 'USD';
   programId: number;
+  promotionCode?: string;
 }
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -135,9 +136,10 @@ export default function ReservationPaymentSuccessPage() {
       const amountText = Array.isArray(amount) ? amount[0] : amount;
       const queryAmount = Number(amountText);
       const paymentContextRaw = window.sessionStorage.getItem('reservation_payment_context');
+      let paymentContext: ReservationPaymentContext | null = null;
       if (paymentContextRaw) {
         try {
-          const paymentContext = JSON.parse(paymentContextRaw) as ReservationPaymentContext;
+          paymentContext = JSON.parse(paymentContextRaw) as ReservationPaymentContext;
           const isOrderMatched = paymentContext.orderId === orderIdText;
           const isAmountMatched = Number.isFinite(queryAmount)
             ? isSameAmount(paymentContext.amount, queryAmount, paymentContext.currency)
@@ -159,6 +161,7 @@ export default function ReservationPaymentSuccessPage() {
             amount: paymentContext.amount,
             currency: paymentContext.currency,
             programId: paymentContext.programId,
+            hasPromotionCode: Boolean(paymentContext.promotionCode),
           });
         } catch {
           console.error('[payment][confirm] invalid reservation_payment_context');
@@ -180,8 +183,13 @@ export default function ReservationPaymentSuccessPage() {
       const confirmWithAuth = async () => {
         let reservationData: ReservationDataForPaymentConfirm | null = null;
         let completeData: ReservationCompleteData | null = null;
+        let promotionCode: string | undefined;
         try {
           const draft = JSON.parse(storedDraft);
+          promotionCode =
+            typeof draft.promotion_code === 'string' && draft.promotion_code.trim().length > 0
+              ? draft.promotion_code
+              : paymentContext?.promotionCode;
           reservationData = {
             program_id: draft.program_id,
             preferred_contact: draft.preferred_contact,
@@ -237,6 +245,7 @@ export default function ReservationPaymentSuccessPage() {
           paymentKey: Array.isArray(paymentKey) ? paymentKey[0] : paymentKey,
           amount: resolvedAmount,
           programId: reservationData.program_id,
+          promotionCode,
           reservationData,
         };
         logPaymentInfo('[payment][confirm] request', {
@@ -247,6 +256,7 @@ export default function ReservationPaymentSuccessPage() {
               : confirmRequest.paymentKey,
           amount: confirmRequest.amount,
           programId: confirmRequest.programId,
+          hasPromotionCode: Boolean(confirmRequest.promotionCode),
         });
 
         confirmPayment(confirmRequest)

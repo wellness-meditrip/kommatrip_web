@@ -57,6 +57,8 @@ interface PaymentInfoSectionProps {
   paymentAmount: string;
   finalPaymentAmountLabel: string;
   finalPaymentAmount: string;
+  refundAmountLabel?: string;
+  refundAmount?: string | null;
 }
 
 export function BookingInfoSection({
@@ -160,12 +162,24 @@ export function PaymentInfoSection({
   paymentAmount,
   finalPaymentAmountLabel,
   finalPaymentAmount,
+  refundAmountLabel,
+  refundAmount,
 }: PaymentInfoSectionProps) {
   return (
     <BookingDetailSection title={title}>
       <BookingDetailRow label={paymentMethodLabel} value={paymentMethod} />
       <BookingDetailRow label={paymentAmountLabel} value={paymentAmount} />
       <BookingDetailRow label={finalPaymentAmountLabel} value={finalPaymentAmount} />
+      {refundAmount && refundAmountLabel && (
+        <BookingDetailRow
+          label={refundAmountLabel}
+          value={
+            <Text typo="body_M" color="red200">
+              {refundAmount}
+            </Text>
+          }
+        />
+      )}
     </BookingDetailSection>
   );
 }
