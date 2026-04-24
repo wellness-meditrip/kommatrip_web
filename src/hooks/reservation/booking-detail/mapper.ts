@@ -64,7 +64,10 @@ export function buildBookingDetailData({
       method: hasOnlinePayment ? payOnlineLabel(paymentCurrency) : payOnSiteLabel,
       currency: hasOnlinePayment ? (reservation.currency ?? 'KRW') : null,
       amount: formatters.formatAmount(programPrice, paymentCurrency),
-      finalAmount: formatters.formatAmount(programPrice, paymentCurrency),
+      finalAmount: formatters.formatAmount(
+        typeof reservation.payment_amount === 'number' ? reservation.payment_amount : programPrice,
+        paymentCurrency
+      ),
     },
     hasReview: previousDetail?.hasReview ?? false,
   };
