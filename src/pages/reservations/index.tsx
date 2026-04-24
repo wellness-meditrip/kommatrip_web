@@ -27,6 +27,7 @@ import { useGetProgramCompanyListQuery } from '@/queries/program';
 import { useGetUserProfileQuery } from '@/queries/user';
 import { usePostCreateReservationMutation } from '@/queries/reservation';
 import { usePostCreatePaymentOrderMutation } from '@/queries/payment';
+import { usePromotion } from '@/hooks/reservation/use-promotion';
 import {
   ROUTES,
   DEFAULT_RESERVATION_PAYMENT_METHOD,
@@ -48,7 +49,12 @@ import {
   getCompanyAvailableReservationTimes,
   isCompanyClosedOnDate,
 } from '@/utils/company-schedule';
-import { getTheGateSpaPriceDisplay, type ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
+import type { ProgramPriceDisplay } from '@/utils/the-gate-spa-discount';
+import {
+  getProgramPromotionSummary,
+  type ProgramPromotionSummary,
+} from '@/utils/program-promotion';
+import type { ProgramPriceInfo } from '@/models/program';
 
 interface ReservationDraft {
   company_id: number;
@@ -60,7 +66,10 @@ interface ReservationDraft {
   program_name: string;
   program_duration_minutes: number;
   program_price: number;
+  program_price_info?: ProgramPriceInfo;
   program_primary_image_url?: string;
+  is_promotion_period?: boolean;
+  promotion_code?: string;
   preferred_contact: string;
   language_preference: LanguagePreference;
   availability_options: Array<{
@@ -159,6 +168,7 @@ export default function ReservationPage() {
     usePostCreateReservationMutation();
   const { mutateAsync: createPaymentOrder, isPending: isPaymentOrderPending } =
     usePostCreatePaymentOrderMutation();
+  const promotion = usePromotion();
   const company = companyData?.company ?? prefetchedCompany;
   const programs = useMemo(() => programList?.programs ?? [], [programList?.programs]);
   const shouldShowCompanySkeleton = hasValidCompanyId && !company && isCompanyLoading;
@@ -209,6 +219,10 @@ export default function ReservationPage() {
 
   // Programs
   const [selectedProgramId, setSelectedProgramId] = useState<number | null>(null);
+  const selectedProgram = useMemo(
+    () => programs.find((program) => program.id === selectedProgramId),
+    [programs, selectedProgramId]
+  );
 
   // Contact Information
   const [email, setEmail] = useState('');
@@ -245,7 +259,9 @@ export default function ReservationPage() {
   const isPayOnSiteDisabled = !PAY_ON_SITE_ENABLED;
   const isPayNowPayment = isPayNowPaymentMethod(paymentMethodChoice);
   const paymentWidgetConfig = isPayNowPayment ? PAYMENT_WIDGET_CONFIG[paymentMethodChoice] : null;
+  const selectedPaymentCurrency: CurrencyCode = paymentMethodChoice === 'payNowUsd' ? 'USD' : 'KRW';
   const [paymentOrder, setPaymentOrder] = useState<PaymentOrder | null>(null);
+  const [paymentOrderPromotionCode, setPaymentOrderPromotionCode] = useState<string | undefined>();
   const [isWidgetReady, setIsWidgetReady] = useState(false);
   const paymentWidgetsRef = useRef<ReturnType<
     Awaited<ReturnType<typeof loadTossPayments>>['widgets']
@@ -324,6 +340,7 @@ export default function ReservationPage() {
       hasRenderedWidgetRef.current = false;
       setIsWidgetReady(false);
       setPaymentOrder(null);
+      setPaymentOrderPromotionCode(undefined);
       return;
     }
   }, [isPayNowPayment]);
@@ -335,6 +352,7 @@ export default function ReservationPage() {
     hasRenderedWidgetRef.current = false;
     setIsWidgetReady(false);
     setPaymentOrder(null);
+    setPaymentOrderPromotionCode(undefined);
   }, [paymentMethodChoice, isPayNowPayment]);
 
   useEffect(() => {
@@ -361,12 +379,20 @@ export default function ReservationPage() {
           currency: selectedCurrency,
           priceInfo: programs.find((program) => program.id === pendingDraft.program_id)?.price_info,
         });
+        const promotionAmount =
+          pendingDraft.promotion_code &&
+          promotion.applied?.code === pendingDraft.promotion_code &&
+          promotion.applied.currency === selectedCurrency
+            ? promotion.applied.finalPrice
+            : null;
         await widgets.setAmount({
           currency: selectedCurrency,
           value:
-            typeof programPriceByCurrency === 'number'
-              ? programPriceByCurrency
-              : pendingDraft.program_price,
+            typeof promotionAmount === 'number'
+              ? promotionAmount
+              : typeof programPriceByCurrency === 'number'
+                ? programPriceByCurrency
+                : pendingDraft.program_price,
         });
         if (!hasRenderedWidgetRef.current) {
           await widgets.renderPaymentMethods({
@@ -397,6 +423,7 @@ export default function ReservationPage() {
   }, [
     isPayNowPayment,
     pendingDraft,
+    promotion.applied,
     paymentWidgetConfig,
     programs,
     isPaymentWidgetOpen,
@@ -440,6 +467,19 @@ export default function ReservationPage() {
     });
   }, [company]);
 
+  useEffect(() => {
+    promotion.reset();
+    setPaymentOrder(null);
+    setPaymentOrderPromotionCode(undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProgram?.id, selectedPaymentCurrency]);
+
+  // payment order 무효화: 프로모션 적용/해제 시
+  useEffect(() => {
+    setPaymentOrder(null);
+    setPaymentOrderPromotionCode(undefined);
+  }, [promotion.applied]);
+
   const handleSelectContactMethod = (method: string) => {
     setSelectedContactMethod(method);
   };
@@ -450,6 +490,14 @@ export default function ReservationPage() {
       ...prev,
       [selectedContactMethod]: value,
     }));
+  };
+
+  const handleValidatePromotionCode = async () => {
+    if (!selectedProgram) {
+      showToast({ title: t('validation.selectProgram'), icon: 'exclaim' });
+      return;
+    }
+    await promotion.handleValidateCode(selectedProgram.id, selectedPaymentCurrency);
   };
 
   // 로딩 중이면 대기
@@ -565,7 +613,6 @@ export default function ReservationPage() {
       });
     } else {
       if (currentTimes.length < 3) {
-        // Add and sort the times
         const newTimes = [...currentTimes, time].sort((a, b) => {
           const timeA = parseInt(a.replace(':', ''));
           const timeB = parseInt(b.replace(':', ''));
@@ -622,7 +669,7 @@ export default function ReservationPage() {
   };
 
   const formatPriceByCurrency = (
-    priceInfo: { krw: number; usd: number } | undefined,
+    priceInfo: ProgramPriceInfo | undefined,
     currency: CurrencyCode
   ) => {
     const price = resolvePrice({
@@ -634,24 +681,20 @@ export default function ReservationPage() {
   };
 
   const getPriceDisplay = (
-    priceInfo: { krw: number; usd: number } | undefined,
+    priceInfo: ProgramPriceInfo | undefined,
     currency: CurrencyCode
   ): ProgramPriceDisplay => {
-    const discountedPrice = resolvePrice({
-      currency,
+    return getProgramPromotionSummary({
       priceInfo,
-    });
-
-    return getTheGateSpaPriceDisplay({
-      company,
-      discountedPrice,
       currency,
       formatAmount: formatAmountByCurrency,
       fallbackText: formatPriceByCurrency(priceInfo, currency),
-    });
+      company,
+      // useDiscountInfo: true,
+    }).priceDisplay;
   };
 
-  const formatPrice = (priceInfo?: { krw: number; usd: number }) => {
+  const formatPrice = (priceInfo?: ProgramPriceInfo) => {
     return getPriceDisplay(priceInfo, 'KRW');
   };
 
@@ -761,7 +804,6 @@ export default function ReservationPage() {
     }
 
     const normalizedContact = normalizeContactMethod(selectedContactMethod);
-    const selectedProgram = programs.find((program) => program.id === selectedProgramId);
     if (!selectedProgram) {
       showError('validation.programNotFound');
       return null;
@@ -789,7 +831,10 @@ export default function ReservationPage() {
       program_name: selectedProgram.name,
       program_duration_minutes: selectedProgram.duration_minutes,
       program_price: programPriceKrw,
+      program_price_info: selectedProgram.price_info,
       program_primary_image_url: selectedProgram.primary_image_url ?? '',
+      is_promotion_period: selectedProgram.is_promotion_period ?? false,
+      promotion_code: promotion.applied?.code,
       preferred_contact: normalizedContact,
       language_preference: language,
       availability_options: availabilityOptions,
@@ -814,14 +859,22 @@ export default function ReservationPage() {
 
     try {
       const selectedCurrency = paymentWidgetConfig?.currency ?? 'KRW';
+      const activePromotionCode = draft.promotion_code;
       let order = paymentOrder;
-      if (!order || order.program_id !== draft.program_id || order.currency !== selectedCurrency) {
+      if (
+        !order ||
+        order.program_id !== draft.program_id ||
+        order.currency !== selectedCurrency ||
+        paymentOrderPromotionCode !== activePromotionCode
+      ) {
         const response = await createPaymentOrder({
           programId: draft.program_id,
           currency: selectedCurrency,
+          promotionCode: activePromotionCode,
         });
         order = response.order;
         setPaymentOrder(order);
+        setPaymentOrderPromotionCode(activePromotionCode);
       }
 
       logPaymentInfo('[payment][request] prepared order', {
@@ -830,6 +883,7 @@ export default function ReservationPage() {
         orderId: order.order_id,
         orderCurrency: order.currency,
         orderAmount: order.amount,
+        hasPromotionCode: Boolean(activePromotionCode),
       });
 
       // Keep widget amount in sync with the order that will be confirmed on backend.
@@ -844,6 +898,7 @@ export default function ReservationPage() {
           amount: order.amount,
           currency: selectedCurrency,
           programId: draft.program_id,
+          promotionCode: activePromotionCode,
         })
       );
 
@@ -912,19 +967,58 @@ export default function ReservationPage() {
     }
   };
 
-  const selectedProgram = programs.find((program) => program.id === selectedProgramId);
-  const selectedPaymentCurrency: CurrencyCode = paymentMethodChoice === 'payNowUsd' ? 'USD' : 'KRW';
   const summaryDate = selectedDates[0];
   const summaryDateKey = summaryDate ? formatDateForRequest(summaryDate) : '';
   const summaryTimes = summaryDateKey ? (selectedTimes[summaryDateKey] ?? []) : [];
   const summaryTimeText = summaryTimes.length > 0 ? summaryTimes.join(' / ') : '-';
-  const summaryPriceDisplay = selectedProgram
-    ? getPriceDisplay(selectedProgram.price_info, selectedPaymentCurrency)
-    : ({
-        type: 'regular',
-        priceText: '-',
-      } satisfies ProgramPriceDisplay);
+  const appliedPromotionDiscount =
+    promotion.applied?.currency === selectedPaymentCurrency
+      ? {
+          originalPrice: promotion.applied.originalPrice,
+          finalPrice: promotion.applied.finalPrice,
+        }
+      : null;
+  const summaryPrice: ProgramPromotionSummary = selectedProgram
+    ? getProgramPromotionSummary({
+        priceInfo: selectedProgram.price_info,
+        currency: selectedPaymentCurrency,
+        formatAmount: formatAmountByCurrency,
+        fallbackText: formatPriceByCurrency(selectedProgram.price_info, selectedPaymentCurrency),
+        company,
+        // useDiscountInfo: true,
+        overrideDiscount: appliedPromotionDiscount,
+      })
+    : {
+        hasDiscount: false,
+        priceDisplay: {
+          type: 'regular',
+          priceText: '-',
+        } satisfies ProgramPriceDisplay,
+        originalPriceText: '-',
+        finalPriceText: '-',
+      };
 
+  const shouldShowPromotionCodeInput = Boolean(selectedProgram?.is_promotion_period);
+
+  const verifiedPromotionDiscountAmount = promotion.verified
+    ? promotion.verified.currency === 'USD'
+      ? Number(
+          Math.max(promotion.verified.originalPrice - promotion.verified.finalPrice, 0).toFixed(2)
+        )
+      : Math.round(Math.max(promotion.verified.originalPrice - promotion.verified.finalPrice, 0))
+    : 0;
+  const verifiedPromotionDiscountText = promotion.verified
+    ? t('payment.promotionDiscountAmount', {
+        amount: formatAmountByCurrency(
+          verifiedPromotionDiscountAmount,
+          promotion.verified.currency
+        ),
+      })
+    : '';
+  const shouldShowPromotionApplyButton =
+    promotion.selection === 'verified' &&
+    Boolean(promotion.verified) &&
+    promotion.applied?.code !== promotion.verified?.code;
   const handleOpenRefundPolicy = () => {
     if (typeof window === 'undefined') return;
     window.open(RESERVATION_REFUND_POLICY_URL, '_blank', 'noopener,noreferrer');
@@ -1021,7 +1115,6 @@ export default function ReservationPage() {
                   formatDuration={formatDuration}
                   formatPrice={formatPrice}
                 />
-
                 {/* Contact Information Section */}
                 <ContactSection
                   isOpen={isContactOpen}
@@ -1047,7 +1140,6 @@ export default function ReservationPage() {
                   }}
                   languageOptions={languageOptions}
                 />
-
                 {/* Inquiries Section */}
                 <InquiriesSection
                   isOpen={isInquiriesOpen}
@@ -1056,7 +1148,6 @@ export default function ReservationPage() {
                   inquiryText={inquiryText}
                   onInquiryChange={setInquiryText}
                 />
-
                 {/* Reservation Section */}
                 <ScheduleSection
                   currentMonth={currentMonth}
@@ -1078,7 +1169,6 @@ export default function ReservationPage() {
                   formatDateForDisplay={formatDateForDisplay}
                   formatDateKey={formatDateForRequest}
                 />
-
                 <div css={paymentSection}>
                   <Text typo="title_M" color="text_primary">
                     {t('payment.paymentMethod')}
@@ -1125,7 +1215,6 @@ export default function ReservationPage() {
                     </button>
                   </div>
                 </div>
-
                 <div css={summaryCard}>
                   <Text typo="title_M" color="text_primary">
                     {t('payment.bookingInfo')}
@@ -1157,11 +1246,6 @@ export default function ReservationPage() {
                             {selectedProgram.name} ({selectedProgram.duration_minutes}
                             {t('payment.minutes')})
                           </span>
-                          {summaryPriceDisplay.type === 'discount' && (
-                            <span css={summaryDiscountRateBadge}>
-                              {summaryPriceDisplay.discountRateText}
-                            </span>
-                          )}
                         </span>
                       ) : (
                         '-'
@@ -1169,41 +1253,133 @@ export default function ReservationPage() {
                     </Text>
                   </div>
                 </div>
-
+                {shouldShowPromotionCodeInput && (
+                  <div css={summaryCard}>
+                    <div css={promotionHeaderRow}>
+                      <Text typo="title_M" color="text_primary">
+                        {t('payment.promotionTitle')}
+                      </Text>
+                      {/* TODO: 프로모션 중복 적용 가능할 때 문구 추가 예정 */}
+                      {/* <Text typo="body_M" color="text_tertiary">
+                        {t('payment.promotionAvailableCount', { count: promotionAvailableCount })}
+                      </Text> */}
+                    </div>
+                    <div css={promotionInputRow}>
+                      <input
+                        type="text"
+                        value={promotion.codeInput}
+                        onChange={(event) => promotion.handleCodeInputChange(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            event.preventDefault();
+                            handleValidatePromotionCode();
+                          }
+                        }}
+                        placeholder={t('payment.promotionCodePlaceholder')}
+                        css={promotionCodeInputField}
+                        maxLength={32}
+                        autoCapitalize="characters"
+                      />
+                      <button
+                        type="button"
+                        css={promotionValidateButton}
+                        onClick={handleValidatePromotionCode}
+                        disabled={promotion.isValidationPending}
+                      >
+                        <Text typo="body_M" color="white">
+                          {t('payment.validatePromotionCode')}
+                        </Text>
+                      </button>
+                    </div>
+                    <div css={promotionOptionList}>
+                      <label css={promotionOptionRow(promotion.selection === 'none')}>
+                        <input
+                          type="radio"
+                          name="promotionSelection"
+                          value="none"
+                          checked={promotion.selection === 'none'}
+                          onChange={promotion.handleSelectNone}
+                          css={promotionRadioInput}
+                        />
+                        <div css={promotionOptionText}>
+                          <Text typo="body_M" color="text_primary">
+                            {t('payment.noPromotionCode')}
+                          </Text>
+                        </div>
+                        <span css={promotionRadioMark(promotion.selection === 'none')} />
+                      </label>
+                      {promotion.verified && (
+                        <label css={promotionOptionRow(promotion.selection === 'verified')}>
+                          <input
+                            type="radio"
+                            name="promotionSelection"
+                            value="verified"
+                            checked={promotion.selection === 'verified'}
+                            onChange={promotion.handleSelectVerified}
+                            css={promotionRadioInput}
+                          />
+                          <div css={promotionOptionText}>
+                            <div css={promotionOptionTitleRow}>
+                              <Text typo="title_S" color="text_primary">
+                                {t('payment.validatedPromotionCode')}
+                              </Text>
+                              <span css={promotionCodeChip}>{promotion.verified.code}</span>
+                            </div>
+                            <Text typo="body_M" color="text_tertiary">
+                              {verifiedPromotionDiscountText}
+                            </Text>
+                          </div>
+                          <span css={promotionRadioMark(promotion.selection === 'verified')} />
+                        </label>
+                      )}
+                    </div>
+                    {shouldShowPromotionApplyButton && (
+                      <CTAButton onClick={promotion.handleApply}>
+                        <Text typo="button_L" color="white">
+                          {t('payment.applyPromotionCount', { count: 1 })}
+                        </Text>
+                      </CTAButton>
+                    )}
+                  </div>
+                )}
                 <div css={summaryCard}>
                   <Text typo="title_M" color="text_primary">
                     {t('payment.paymentAmount')}
                   </Text>
                   <div css={summaryRow}>
                     <Text typo="body_M" color="text_secondary">
-                      {t('payment.paymentAmountLabel')}
+                      {summaryPrice.hasDiscount
+                        ? t('payment.originalPaymentAmount')
+                        : t('payment.paymentAmountLabel')}
                     </Text>
                     <Text typo="body_M" color="text_primary">
-                      {summaryPriceDisplay.type === 'discount' ? (
-                        <span css={summaryOriginalPriceText}>
-                          {summaryPriceDisplay.originalPriceText}
-                        </span>
+                      {summaryPrice.hasDiscount ? (
+                        <span css={summaryOriginalPriceText}>{summaryPrice.originalPriceText}</span>
                       ) : (
-                        summaryPriceDisplay.priceText
+                        summaryPrice.originalPriceText
                       )}
                     </Text>
                   </div>
+                  {summaryPrice.hasDiscount && summaryPrice.discountAmountText && (
+                    <div css={summaryRow}>
+                      <Text typo="body_M" color="text_secondary">
+                        {t('payment.discountAmount')}
+                      </Text>
+                      <Text typo="body_M" color="red200">
+                        {summaryPrice.discountAmountText}
+                      </Text>
+                    </div>
+                  )}
                   <div css={summaryDivider} />
                   <div css={summaryRow}>
                     <Text typo="title_S" color="text_primary">
                       {t('payment.finalPaymentAmount')}
                     </Text>
-                    <Text
-                      typo="title_S"
-                      color={summaryPriceDisplay.type === 'discount' ? 'red200' : 'primary50'}
-                    >
-                      {summaryPriceDisplay.type === 'discount'
-                        ? summaryPriceDisplay.discountedPriceText
-                        : summaryPriceDisplay.priceText}
+                    <Text typo="title_S" color={summaryPrice.hasDiscount ? 'red200' : 'primary50'}>
+                      {summaryPrice.finalPriceText}
                     </Text>
                   </div>
                 </div>
-
                 {isPayNowPayment && (
                   <div css={policyCard}>
                     <ReservationPolicyPanel
@@ -1591,25 +1767,154 @@ const summaryOriginalPriceText = css`
   text-decoration: line-through;
 `;
 
-const summaryDiscountRateBadge = css`
-  display: inline-flex;
-  align-items: center;
-
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 4px;
-
-  background: ${theme.colors.red200};
-  color: ${theme.colors.white};
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1;
-`;
-
 const summaryDivider = css`
   height: 1px;
 
   background: ${theme.colors.border_default};
+`;
+
+const promotionHeaderRow = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const promotionInputRow = css`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+`;
+
+const promotionCodeInputField = css`
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid ${theme.colors.border_default};
+  border-radius: 12px;
+
+  background: ${theme.colors.bg_surface1};
+  color: ${theme.colors.text_primary};
+  font: inherit;
+
+  &::placeholder {
+    color: ${theme.colors.text_tertiary};
+  }
+
+  &:focus {
+    border-color: ${theme.colors.primary50};
+    outline: none;
+  }
+`;
+
+const promotionValidateButton = css`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 72px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+
+  background: ${theme.colors.primary50};
+
+  cursor: pointer;
+
+  &:disabled {
+    background: ${theme.colors.text_disabled};
+    cursor: not-allowed;
+  }
+`;
+
+const promotionOptionList = css`
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid ${theme.colors.gray200};
+`;
+
+const promotionOptionRow = (selected: boolean) => css`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 64px;
+  padding: 16px;
+  border-bottom: 1px solid ${theme.colors.gray200};
+
+  background: ${selected ? theme.colors.bg_surface1 : theme.colors.white};
+
+  cursor: pointer;
+`;
+
+const promotionOptionText = css`
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 6px;
+
+  min-width: 0;
+`;
+
+const promotionOptionTitleRow = css`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  min-width: 0;
+`;
+
+const promotionRadioInput = css`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  pointer-events: none;
+`;
+
+const promotionRadioMark = (selected: boolean) => css`
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+  border: 2px solid ${selected ? theme.colors.gray400 : theme.colors.gray300};
+  border-radius: 50%;
+
+  background: ${theme.colors.white};
+
+  &::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: ${selected ? theme.colors.primary50 : 'transparent'};
+  }
+`;
+
+const promotionCodeChip = css`
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  background: ${theme.colors.sub_sub_3};
+  color: ${theme.colors.primary50};
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
 
 const policyCard = css`

@@ -1,20 +1,34 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ToastCheck, ToastExclaim } from '../../icons';
+import { ToastCheck, ToastExclaim, ToastEye } from '../../icons';
 import { Text } from '../text';
 import { Portal } from '../portal';
-import { toast } from './index.styles';
+import { ToastVariant, toastContainer, watchingIcon, watchingTitle } from './index.styles';
 
 export interface ToastProps {
   isShow: boolean;
   title: string;
   time?: number;
   service?: 'daengle' | 'partner';
-  icon?: 'check' | 'exclaim';
+  icon?: 'check' | 'exclaim' | 'eye';
+  variant?: ToastVariant;
 }
 
-export function Toast({ isShow, title, time = 5000, icon = 'check' }: ToastProps) {
+const renderIcon = (icon: NonNullable<ToastProps['icon']>) => {
+  switch (icon) {
+    case 'exclaim':
+      return <ToastExclaim width={16} height={16} />;
+    case 'eye':
+      return <ToastEye width={20} height={20} />;
+    case 'check':
+    default:
+      return <ToastCheck width={16} height={16} />;
+  }
+};
+
+export function Toast({ isShow, title, time = 5000, icon, variant = 'default' }: ToastProps) {
   const [isOpen, setIsOpen] = useState<boolean>(isShow);
+  const resolvedIcon = icon ?? (variant === 'watching' ? 'eye' : 'check');
 
   useEffect(() => {
     if (isShow) {
@@ -38,16 +52,20 @@ export function Toast({ isShow, title, time = 5000, icon = 'check' }: ToastProps
               if (!isShow) setIsOpen(false);
             }}
           >
-            <div css={toast}>
-              {icon === 'check' ? (
-                <ToastCheck width={16} height={16} />
+            <div css={toastContainer(variant)}>
+              {variant === 'watching' ? (
+                <>
+                  <span css={watchingIcon}>{renderIcon(resolvedIcon)}</span>
+                  <span css={watchingTitle}>{title}</span>
+                </>
               ) : (
-                <ToastExclaim width={16} height={16} />
+                <>
+                  {renderIcon(resolvedIcon)}
+                  <Text typo="body12" color="white">
+                    {title}
+                  </Text>
+                </>
               )}
-
-              <Text typo="body12" color="white">
-                {title}
-              </Text>
             </div>
           </motion.div>
         )}

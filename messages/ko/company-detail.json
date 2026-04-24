@@ -64,5 +64,8 @@
     "review": "리뷰",
     "notice": "공지"
   },
+  "toast": {
+    "watchingNow": "현재 {count}명 보는중"
+  },
   "bookNow": "바로 예약"
 }

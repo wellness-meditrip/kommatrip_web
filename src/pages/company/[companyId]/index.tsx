@@ -28,7 +28,7 @@ import {
 import { CompanyDetail as CompanyDetailType } from '@/models';
 import { theme } from '@/styles';
 import { ROUTES } from '@/constants';
-import { useAuthState, useMediaQuery } from '@/hooks';
+import { useAuthState, useMediaQuery, useToast } from '@/hooks';
 import { useCurrentLocale } from '@/i18n/navigation';
 import { withI18nGssp } from '@/i18n/page-props';
 import { openLoginModal } from '@/utils/auth-modal';
@@ -41,6 +41,12 @@ interface ClinicDetailPageProps extends Record<string, unknown> {
   initialCanonicalPath: string;
 }
 
+const watchingRandMin = 2;
+const watchingRandMax = 20;
+
+const getWatchingRandomCount = () =>
+  Math.floor(Math.random() * (watchingRandMax - watchingRandMin + 1)) + watchingRandMin;
+
 export default function ClinicDetailPage({
   companyId,
   initialCompany,
@@ -52,6 +58,7 @@ export default function ClinicDetailPage({
   const tCommon = useTranslations('common');
   const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.desktop})`);
   const currentLocale = useCurrentLocale();
+  const { showToast } = useToast();
   const [searchValue, setSearchValue] = useState('');
 
   const companyIdNumber = companyId;
@@ -75,6 +82,7 @@ export default function ClinicDetailPage({
   const programRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
   const noticeRef = useRef<HTMLDivElement>(null);
+  const lastShownWatchingToastCompanyId = useRef<number | null>(null);
   const isScrollingToSection = useRef(false);
   const isObserverSyncing = useRef(false);
   const hasHandledQueryTab = useRef(false);
@@ -88,6 +96,18 @@ export default function ClinicDetailPage({
     ],
     [t]
   );
+
+  useEffect(() => {
+    if (!company) return;
+    if (lastShownWatchingToastCompanyId.current === companyIdNumber) return;
+
+    lastShownWatchingToastCompanyId.current = companyIdNumber;
+    showToast({
+      title: t('toast.watchingNow', { count: getWatchingRandomCount() }),
+      time: 3000,
+      variant: 'watching',
+    });
+  }, [company, companyIdNumber, showToast, t]);
 
   useEffect(() => {
     if (!router.isReady) return;

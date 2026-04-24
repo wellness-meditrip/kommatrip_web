@@ -9,6 +9,7 @@ import {
   getAdminReservationDetail,
   getAdminReservations,
   getAdminReservationStats,
+  getAdminInfluencers,
 } from '@/apis';
 import type {
   AdminCompanyStatusFilter,
@@ -152,5 +153,17 @@ export const useGetAdminCompanyReviewsQuery = (
     ],
     queryFn: () => getAdminCompanyReviews(companyId as number, params),
     enabled: enabled && typeof companyId === 'number' && !Number.isNaN(companyId),
+  });
+};
+
+export const useGetAdminInfluencersQuery = (
+  params: { skip?: number; limit?: number },
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.GET_ADMIN_INFLUENCERS, params.skip ?? 0, params.limit ?? 50],
+    queryFn: () => getAdminInfluencers(params),
+    enabled,
+    placeholderData: (previousData) => previousData,
   });
 };

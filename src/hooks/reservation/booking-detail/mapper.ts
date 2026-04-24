@@ -64,7 +64,13 @@ export function buildBookingDetailData({
       method: hasOnlinePayment ? payOnlineLabel(paymentCurrency) : payOnSiteLabel,
       currency: hasOnlinePayment ? (reservation.currency ?? 'KRW') : null,
       amount: formatters.formatAmount(programPrice, paymentCurrency),
-      finalAmount: formatters.formatAmount(programPrice, paymentCurrency),
+      finalAmount: formatters.formatAmount(
+        typeof reservation.payment_amount === 'number' ? reservation.payment_amount : programPrice,
+        paymentCurrency
+      ),
+      refundAmount: reservation.refund_info
+        ? formatters.formatAmount(reservation.refund_info.amount, reservation.refund_info.currency)
+        : null,
     },
     hasReview: previousDetail?.hasReview ?? false,
   };
@@ -105,6 +111,7 @@ export function buildBookingDetailDisplayModel(
       currency: paymentInfo?.currency ?? null,
       amount: paymentInfo?.amount || FALLBACK_TEXT,
       finalAmount: paymentInfo?.finalAmount || FALLBACK_TEXT,
+      refundAmount: paymentInfo?.refundAmount ?? null,
     },
     programId: detail?.programId,
   };

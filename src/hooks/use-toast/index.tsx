@@ -18,13 +18,16 @@ const ToastContext = createContext<ToastContextType | null>(null);
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toastProps, setToastProps] = useState<ToastProps | null>(null);
 
-  const showToast = useCallback(({ title, time, service, icon }: Omit<ToastProps, 'isShow'>) => {
-    setToastProps({ isShow: true, title, time, service, icon });
+  const showToast = useCallback(
+    ({ title, time, service, icon, variant }: Omit<ToastProps, 'isShow'>) => {
+      setToastProps({ isShow: true, title, time, service, icon, variant });
 
-    setTimeout(() => {
-      setToastProps((prev) => (prev ? { ...prev, isShow: false } : null));
-    }, time || 4000);
-  }, []);
+      setTimeout(() => {
+        setToastProps((prev) => (prev ? { ...prev, isShow: false } : null));
+      }, time || 4000);
+    },
+    []
+  );
 
   useEffect(() => {
     const unsubscribe = subscribeToast(showToast);
@@ -42,6 +45,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           time={toastProps.time}
           service={toastProps.service}
           icon={toastProps.icon}
+          variant={toastProps.variant}
         />
       )}
     </ToastContext.Provider>

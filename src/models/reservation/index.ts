@@ -127,8 +127,9 @@ export interface ReservationDetail {
   availability_options?: AvailabilityOption[];
   status?: string;
   currency?: string;
+  payment_amount?: number | null;
   display_order_id?: string;
-  refund_info?: string | null;
+  refund_info?: { currency: string; amount: number; status: string } | null;
   admin_notes?: string | null;
   created_at?: string | null;
   updated_at?: string | null;

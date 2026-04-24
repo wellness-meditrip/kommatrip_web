@@ -4,7 +4,21 @@ import {
   PostConfirmPaymentResponse,
   PostCreatePaymentOrderRequest,
   PostCreatePaymentOrderResponse,
+  PostValidatePromotionRequest,
+  PostValidatePromotionResponse,
 } from '@/models/payment';
+
+export const postValidatePromotion = async (data: PostValidatePromotionRequest) => {
+  return await bffApi.post<PostValidatePromotionResponse>(
+    '/api/payments/promotions/validate',
+    data,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+};
 
 export const postCreatePaymentOrder = async (data: PostCreatePaymentOrderRequest) => {
   return await bffApi.post<PostCreatePaymentOrderResponse>('/api/payments/orders', data, {
