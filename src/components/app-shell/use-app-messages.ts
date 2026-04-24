@@ -39,10 +39,18 @@ export function useAppMessages(pageProps: Partial<I18nPageProps>) {
     });
   }, [pageProps.locale, pageProps.messages]);
 
-  const messages = useMemo(
-    () => messageCache[pageLocale] ?? pageMessages ?? EMPTY_MESSAGES,
-    [messageCache, pageLocale, pageMessages]
-  );
+  const messages = useMemo(() => {
+    const cachedMessages = messageCache[pageLocale] ?? EMPTY_MESSAGES;
+
+    if (!pageMessages) {
+      return cachedMessages;
+    }
+
+    return {
+      ...cachedMessages,
+      ...pageMessages,
+    };
+  }, [messageCache, pageLocale, pageMessages]);
 
   return {
     pageLocale,
