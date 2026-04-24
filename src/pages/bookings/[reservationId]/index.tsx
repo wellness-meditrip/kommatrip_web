@@ -167,6 +167,8 @@ export default function BookingDetailPage() {
             paymentAmount={paymentInfo.amount}
             finalPaymentAmountLabel={t('labels.finalPaymentAmount')}
             finalPaymentAmount={paymentInfo.finalAmount}
+            refundAmountLabel={t('labels.refundAmount')}
+            refundAmount={paymentInfo.refundAmount}
           />
 
           {policy.kind === 'refundPolicy' && (
