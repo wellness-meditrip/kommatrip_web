@@ -332,3 +332,60 @@ export interface AdminCompanyReviewsResponse {
   total: number;
   reviews: GuestCompanyReviewItem[];
 }
+
+export interface AdminPromotionCode {
+  id: number;
+  influencer_id: number;
+  promotion_code: string;
+  rate: number;
+  is_multi_use: boolean;
+  usage_count: number;
+  expires_on: string | null;
+}
+
+export interface AdminInfluencer {
+  id: number;
+  influencer_name: string;
+  program_id: number;
+  promotion_codes: AdminPromotionCode[];
+}
+
+export interface AdminInfluencersResponse {
+  items: AdminInfluencer[];
+  skip: number;
+  limit: number;
+}
+
+export interface AdminInfluencerCreateRequest {
+  influencer_name: string;
+  program_id: number;
+}
+
+export interface AdminInfluencerUpdateRequest {
+  influencer_name?: string;
+  program_id?: number;
+}
+
+export interface AdminInfluencerActionResponse {
+  message: string;
+  influencer?: AdminInfluencer;
+}
+
+export interface AdminPromotionCodeCreateRequest {
+  promotion_code: string;
+  rate: number;
+  is_multi_use: boolean;
+  expires_on?: string | null;
+}
+
+export interface AdminPromotionCodeUpdateRequest {
+  promotion_code?: string;
+  rate?: number;
+  is_multi_use?: boolean;
+  expires_on?: string | null;
+}
+
+export interface AdminPromotionCodeActionResponse {
+  message: string;
+  promotion_code?: AdminPromotionCode;
+}
