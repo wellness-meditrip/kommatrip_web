@@ -50,7 +50,11 @@
     },
     "actions": {
       "logout": "ログアウト",
-      "deleteAccount": "退会"
+      "deleteAccount": "退会",
+      "deleteAccountModalTitle": "本当に退会しますか？",
+      "deleteAccountModalDescription": "退会すると、すべての予約履歴とレビューが削除され、復元できません。",
+      "deleteAccountModalCancel": "キャンセル",
+      "deleteAccountModalConfirm": "退会する"
     }
   },
   "menu": {

@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { css } from '@emotion/react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Text } from '@/components';
+import { Text, Dim } from '@/components';
 import { theme } from '@/styles';
 import { useToast } from '@/hooks';
-import { useGetUserProfileQuery, usePostMarketingConsentMutation } from '@/queries';
+import {
+  useGetUserProfileQuery,
+  usePostMarketingConsentMutation,
+  useDeleteUserAccountMutation,
+} from '@/queries';
 import { getErrorMessage } from '@/utils/error-handler';
 import { QUERY_KEYS } from '@/queries/query-keys';
 import { ROUTES } from '@/constants';
@@ -20,7 +24,7 @@ import { useTranslations } from 'next-intl';
 type Variant = 'page' | 'embedded';
 
 interface Props {
-  variant?: Variant;
+  readonly variant?: Variant;
 }
 
 export function SettingsForm({ variant = 'page' }: Props) {
@@ -29,9 +33,11 @@ export function SettingsForm({ variant = 'page' }: Props) {
   const { showToast } = useToast();
   const t = useTranslations('mypage');
   const [isMarketingEnabled, setIsMarketingEnabled] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const isEmbedded = variant === 'embedded';
   const { data: profileData } = useGetUserProfileQuery();
   const postMarketingConsentMutation = usePostMarketingConsentMutation();
+  const deleteUserAccountMutation = useDeleteUserAccountMutation();
 
   useEffect(() => {
     if (!profileData?.user) return;
@@ -70,50 +76,109 @@ export function SettingsForm({ variant = 'page' }: Props) {
     }
   };
 
+  const handleDeleteAccount = () => {
+    const userId = profileData?.user?.id;
+    if (!userId) return;
+
+    deleteUserAccountMutation.mutate(userId, {
+      onSuccess: async () => {
+        setIsDeleteModalOpen(false);
+        await clearClientAuthSession();
+        queryClient.clear();
+        await router.replace(ROUTES.HOME);
+      },
+      onError: (error: unknown) => {
+        setIsDeleteModalOpen(false);
+        const message = getErrorMessage(error, '회원 탈퇴에 실패했습니다. 다시 시도해 주세요.');
+        showToast({ title: message, icon: 'exclaim' });
+      },
+    });
+  };
+
   return (
-    <section css={page(isEmbedded)}>
-      {!isEmbedded && (
-        <Text tag="p" typo="title_M" color="text_primary" css={pageTitle}>
-          {t('settings.title')}
-        </Text>
-      )}
-      <div css={contentWrapper(isEmbedded)}>
-        <div css={card}>
-          <div css={settingRow}>
-            <div css={settingText}>
-              <Text typo="title_S" color="text_primary">
-                {t('settings.marketingConsent.title')}
-              </Text>
-              <Text typo="body_S" color="text_secondary">
-                {t('settings.marketingConsent.description')}
-              </Text>
+    <>
+      <section css={page(isEmbedded)}>
+        {!isEmbedded && (
+          <Text tag="p" typo="title_M" color="text_primary" css={pageTitle}>
+            {t('settings.title')}
+          </Text>
+        )}
+        <div css={contentWrapper(isEmbedded)}>
+          <div css={card}>
+            <div css={settingRow}>
+              <div css={settingText}>
+                <Text typo="title_S" color="text_primary">
+                  {t('settings.marketingConsent.title')}
+                </Text>
+                <Text typo="body_S" color="text_secondary">
+                  {t('settings.marketingConsent.description')}
+                </Text>
+              </div>
+              <label css={toggleWrapper} aria-label={t('settings.marketingConsent.title')}>
+                <input
+                  type="checkbox"
+                  checked={isMarketingEnabled}
+                  onChange={handleMarketingToggle}
+                  css={toggleInput}
+                  disabled={postMarketingConsentMutation.isPending}
+                />
+                <span css={toggleTrack(isMarketingEnabled)} />
+              </label>
             </div>
-            <label css={toggleWrapper}>
-              <input
-                type="checkbox"
-                checked={isMarketingEnabled}
-                onChange={handleMarketingToggle}
-                css={toggleInput}
-                disabled={postMarketingConsentMutation.isPending}
-              />
-              <span css={toggleTrack(isMarketingEnabled)} />
-            </label>
+          </div>
+          <div css={card}>
+            <button type="button" css={textButton} onClick={handleLogout}>
+              <Text typo="title_S" color="text_primary">
+                {t('settings.actions.logout')}
+              </Text>
+            </button>
+            <button type="button" css={textButtonMuted} onClick={() => setIsDeleteModalOpen(true)}>
+              <Text typo="title_S" color="text_tertiary">
+                {t('settings.actions.deleteAccount')}
+              </Text>
+            </button>
           </div>
         </div>
-        <div css={card}>
-          <button type="button" css={textButton} onClick={handleLogout}>
-            <Text typo="title_S" color="text_primary">
-              {t('settings.actions.logout')}
-            </Text>
-          </button>
-          <button type="button" css={textButtonMuted}>
-            <Text typo="title_S" color="text_tertiary">
-              {t('settings.actions.deleteAccount')}
-            </Text>
-          </button>
-        </div>
-      </div>
-    </section>
+      </section>
+
+      {isDeleteModalOpen && (
+        <>
+          <Dim fullScreen onClick={() => setIsDeleteModalOpen(false)} />
+          <div css={modalCard}>
+            <div css={modalText}>
+              <Text typo="title_M" color="text_primary">
+                {t('settings.actions.deleteAccountModalTitle')}
+              </Text>
+              <Text typo="body_M" color="text_tertiary" css={modalDescription}>
+                {t('settings.actions.deleteAccountModalDescription')}
+              </Text>
+            </div>
+            <div css={modalButtonRow}>
+              <button
+                css={modalCancel}
+                onClick={() => setIsDeleteModalOpen(false)}
+                disabled={deleteUserAccountMutation.isPending}
+              >
+                <Text typo="title_S" color="text_primary">
+                  {t('settings.actions.deleteAccountModalCancel')}
+                </Text>
+              </button>
+              <button
+                css={modalConfirm}
+                onClick={handleDeleteAccount}
+                disabled={deleteUserAccountMutation.isPending}
+              >
+                <Text typo="title_S" color="white">
+                  {deleteUserAccountMutation.isPending
+                    ? '처리 중...'
+                    : t('settings.actions.deleteAccountModalConfirm')}
+                </Text>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }
 
@@ -213,4 +278,63 @@ const textButtonMuted = css`
   background: none;
   border: none;
   cursor: pointer;
+`;
+
+const modalCard = css`
+  position: fixed;
+  bottom: 50%;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  width: calc(100% - 48px);
+  max-width: 360px;
+  background: ${theme.colors.bg_default};
+  border-radius: 20px;
+  padding: 28px 24px 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const modalText = css`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const modalDescription = css`
+  line-height: 1.5;
+`;
+
+const modalButtonRow = css`
+  display: flex;
+  gap: 10px;
+`;
+
+const modalCancel = css`
+  flex: 1;
+  padding: 14px 0;
+  border-radius: 12px;
+  border: 1px solid ${theme.colors.gray200};
+  background: ${theme.colors.bg_default};
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const modalConfirm = css`
+  flex: 1;
+  padding: 14px 0;
+  border-radius: 12px;
+  border: none;
+  background: ${theme.colors.red200};
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;

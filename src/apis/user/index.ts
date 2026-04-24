@@ -36,6 +36,10 @@ export const deleteUserProfileImage = async () => {
   return await bffApi.delete<DeleteUserProfileImageResponse>('/api/users/profile/image');
 };
 
+export const deleteUserAccount = async (userId: number | string) => {
+  return await bffApi.delete(`/api/users/delete/${userId}`);
+};
+
 // 마케팅 정보 수신 동의 설정
 export const postMarketingConsent = async (data: PostMarketingConsentRequest) => {
   return await bffApi.patch<PostMarketingConsentResponse>('/api/users/marketing-consent', data, {
