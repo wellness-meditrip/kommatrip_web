@@ -73,7 +73,7 @@
   },
   "profile": {
     "manage": "個人情報の管理",
-    "fallbackName": "ONYU メンバー",
+    "fallbackName": "KOMMA メンバー",
     "imageAlt": "プロフィール画像",
     "editImage": "プロフィール画像を編集"
   },
@@ -106,7 +106,7 @@
     "editPassword": "パスワードを編集"
   },
   "improvement": {
-    "title": "ONYU改善にご協力ください",
+    "title": "KOMMA改善にご協力ください",
     "subtitle": "体験向上のためご意見をお聞かせください。"
   },
   "sections": {
@@ -114,8 +114,8 @@
     "support": "カスタマーサポート"
   },
   "iframe": {
-    "improvementTitle": "ONYU サービス改善フォーム",
-    "termsTitle": "ONYU 利用規約"
+    "improvementTitle": "KOMMA サービス改善フォーム",
+    "termsTitle": "KOMMA 利用規約"
   },
   "toast": {
     "profileUpdated": "プロフィール情報を更新しました。",
