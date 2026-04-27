@@ -492,17 +492,17 @@ export default function AdminInfluencersPage() {
                                   />
                                 </label>
                                 <label css={formLabel}>
-                                  할인율 (%)
+                                  할인율
                                   <input
                                     css={formInput}
                                     type="number"
-                                    min={1}
+                                    min={0}
                                     max={100}
                                     value={promoForm.rate}
                                     onChange={(e) =>
                                       setPromoForm((prev) => ({ ...prev, rate: e.target.value }))
                                     }
-                                    placeholder="예: 0.3"
+                                    placeholder="30퍼센트 할인 적용 시 0.3 입력"
                                   />
                                 </label>
                                 <label css={formLabel}>
@@ -589,7 +589,7 @@ export default function AdminInfluencersPage() {
                                       </td>
                                       <td>
                                         <Text typo="body10" css={secondaryCellText}>
-                                          {code.rate}%
+                                          {code.rate}
                                         </Text>
                                       </td>
                                       <td>
