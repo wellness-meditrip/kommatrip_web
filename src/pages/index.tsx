@@ -28,6 +28,10 @@ interface HomePageProps {
 }
 
 const ALLOWED_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif']);
+const DEFAULT_HERO_IMAGES = Array.from({ length: 7 }, (_, index) => {
+  const imageNumber = index + 1;
+  return `/images/hero/hero${imageNumber}.webp`;
+});
 const MAX_RECENT_SKELETON_COUNT = 6;
 const PRIORITY_RECOMMENDED_COMPANY_ID = 17; // TODO: 이벤트 기간 동안 우선순위로 노출, 기간 후 제거 예정
 
@@ -310,6 +314,12 @@ export const getServerSideProps: GetServerSideProps<HomePageProps> =
         .map((name) => `/images/hero/${name}`);
     } catch {
       heroImages = [];
+    }
+
+    // Standalone/server runtime에 따라 process.cwd() 기준 public 탐색이 실패할 수 있으므로
+    // 런타임 디렉터리와 무관한 기본 목록으로 보정한다.
+    if (heroImages.length === 0) {
+      heroImages = DEFAULT_HERO_IMAGES;
     }
 
     return {

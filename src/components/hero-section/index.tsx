@@ -80,7 +80,7 @@ export function HeroSection({
             fetchPriority={currentIndex === 0 ? 'high' : undefined}
             quality={75}
             css={[image, !isCurrentImageReady && settledImage && hiddenImage]}
-            onLoadingComplete={handleCurrentImageLoad}
+            onLoad={handleCurrentImageLoad}
           />
         </div>
         <div css={overlay} />
