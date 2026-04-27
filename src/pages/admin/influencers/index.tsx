@@ -497,7 +497,8 @@ export default function AdminInfluencersPage() {
                                     css={formInput}
                                     type="number"
                                     min={0}
-                                    max={100}
+                                    max={1}
+                                    step="0.1"
                                     value={promoForm.rate}
                                     onChange={(e) =>
                                       setPromoForm((prev) => ({ ...prev, rate: e.target.value }))
