@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { proxyRawToBackend, validateMethod } from '@/server/http/bff-proxy';
+import { getAdminBackendBaseUrl } from '@/server/config/admin-backend';
 
 export const config = {
   api: {
@@ -82,10 +83,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ message: 'Not Found' });
   }
 
+  const backendBaseUrl = getAdminBackendBaseUrl(req);
+
   return proxyRawToBackend({
     req,
     res,
     method,
+    baseURL: backendBaseUrl,
     backendPath: route.backendPath,
     omitQueryKeys: route.omitQueryKeys,
     errorMessage: 'Admin programs proxy failed',

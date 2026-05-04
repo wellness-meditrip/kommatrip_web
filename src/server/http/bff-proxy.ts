@@ -71,18 +71,20 @@ const requestJsonFromBackend = async ({
   backendPath,
   omitQueryKeys,
   includeCookie,
+  baseURL,
 }: {
   req: NextApiRequest;
   method: HttpMethod;
   backendPath: string;
   omitQueryKeys?: string[];
   includeCookie?: boolean;
+  baseURL?: string;
 }) => {
-  const baseURL = getBackendBaseUrl();
+  const resolvedBaseUrl = baseURL ?? getBackendBaseUrl();
 
   return axios.request({
     method,
-    url: `${baseURL}${backendPath}`,
+    url: `${resolvedBaseUrl}${backendPath}`,
     params: toAxiosParams(req.query, omitQueryKeys),
     data: METHODS_WITH_BODY.has(method) ? req.body : undefined,
     headers: buildHeaders(req, { includeCookie }),
@@ -110,6 +112,7 @@ export const proxyJsonToBackend = async ({
   backendPath,
   omitQueryKeys,
   includeCookie,
+  baseURL,
   errorMessage,
 }: {
   req: NextApiRequest;
@@ -118,6 +121,7 @@ export const proxyJsonToBackend = async ({
   backendPath: string;
   omitQueryKeys?: string[];
   includeCookie?: boolean;
+  baseURL?: string;
   errorMessage: string;
 }) => {
   try {
@@ -127,6 +131,7 @@ export const proxyJsonToBackend = async ({
       backendPath,
       omitQueryKeys,
       includeCookie,
+      baseURL,
     });
 
     return res.status(response.status).send(response.data);
@@ -142,6 +147,7 @@ export const proxyRawToBackend = async ({
   backendPath,
   omitQueryKeys,
   includeCookie,
+  baseURL,
   errorMessage,
 }: {
   req: NextApiRequest;
@@ -150,13 +156,14 @@ export const proxyRawToBackend = async ({
   backendPath: string;
   omitQueryKeys?: string[];
   includeCookie?: boolean;
+  baseURL?: string;
   errorMessage: string;
 }) => {
   try {
-    const baseURL = getBackendBaseUrl();
+    const resolvedBaseUrl = baseURL ?? getBackendBaseUrl();
     const response = await axios.request({
       method,
-      url: `${baseURL}${backendPath}`,
+      url: `${resolvedBaseUrl}${backendPath}`,
       params: toAxiosParams(req.query, omitQueryKeys),
       data: METHODS_WITH_BODY.has(method) ? req : undefined,
       headers: buildHeaders(req, {

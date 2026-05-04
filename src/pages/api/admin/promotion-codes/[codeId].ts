@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { proxyJsonToBackend, validateMethod } from '@/server/http/bff-proxy';
+import { getAdminBackendBaseUrl } from '@/server/config/admin-backend';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const method = validateMethod(req, res, ['PATCH', 'DELETE']);
@@ -10,10 +11,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Missing codeId' });
   }
 
+  const backendBaseUrl = getAdminBackendBaseUrl(req);
+
   return proxyJsonToBackend({
     req,
     res,
     method,
+    baseURL: backendBaseUrl,
     backendPath: `/api/users/admin/promotion-codes/${codeId}`,
     omitQueryKeys: ['codeId'],
     errorMessage: 'Admin promotion-codes proxy failed',

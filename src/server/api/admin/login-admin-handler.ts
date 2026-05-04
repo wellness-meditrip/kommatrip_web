@@ -8,6 +8,7 @@ import {
   extractContractMessage,
   resolveTraceId,
 } from '@/server/http/api-contract';
+import { getAdminBackendBaseUrl } from '@/server/config/admin-backend';
 import { createAdminRefreshTokenCookies } from '@/server/auth/cookies';
 import { applyRefreshTokenCookies, sanitizeAuthPayload } from '@/server/api/auth/auth-proxy-utils';
 
@@ -28,12 +29,18 @@ export const handleAdminLogin = async (req: NextApiRequest, res: NextApiResponse
   }
 
   try {
-    const backendResponse = await postBackend(BACKEND_ADMIN_LOGIN_PATH, req.body, {
-      headers: {
-        'Content-Type': 'application/json',
+    const backendBaseUrl = getAdminBackendBaseUrl(req);
+    const backendResponse = await postBackend(
+      BACKEND_ADMIN_LOGIN_PATH,
+      req.body,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 7000,
       },
-      timeout: 7000,
-    });
+      { baseURL: backendBaseUrl }
+    );
 
     applyRefreshTokenCookies(res, backendResponse.data, createAdminRefreshTokenCookies);
     const payload = sanitizeAuthPayload(resolveBackendPayload(backendResponse.data));

@@ -1,6 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { useRouter } from 'next/router';
+import { AdminBackendTargetSelector } from '@/components/admin/admin-backend-target-selector';
 import {
   adminAccentButton,
   adminConsolePalette,
@@ -10,10 +11,16 @@ import {
 } from '@/components/admin/admin-console.styles';
 import { Input } from '@/components/input';
 import { Text } from '@/components/text';
+import { ADMIN_BACKEND_TARGET_LABELS, type AdminBackendTarget } from '@/constants/admin-backend';
 import { ROUTES } from '@/constants';
 import { useToast } from '@/hooks';
 import { postAdminLogin, postAdminRegister } from '@/apis';
 import { getAdminI18nStaticProps } from '@/i18n/page-props';
+import {
+  getStoredAdminBackendTarget,
+  isAdminTestBackendEnabled,
+  persistAdminBackendTarget,
+} from '@/utils/admin-backend-target';
 import { applyAdminAuthSession } from '@/utils/admin-auth-session';
 import { normalizeError } from '@/utils/error-handler';
 
@@ -38,7 +45,23 @@ export default function AdminLoginPage() {
   const [signupSecretKey, setSignupSecretKey] = useState('');
   const [signupErrorMessage, setSignupErrorMessage] = useState('');
   const [isSignupSubmitting, setIsSignupSubmitting] = useState(false);
+  const [backendTarget, setBackendTarget] = useState<AdminBackendTarget>(() =>
+    getStoredAdminBackendTarget()
+  );
   const nextPath = useMemo(() => resolveNextPath(router.query.next), [router.query.next]);
+
+  const handleBackendTargetChange = (nextTarget: AdminBackendTarget) => {
+    if (nextTarget === backendTarget) return;
+
+    setBackendTarget(nextTarget);
+    persistAdminBackendTarget(nextTarget);
+    setErrorMessage('');
+    setSignupErrorMessage('');
+    showToast({
+      title: `${ADMIN_BACKEND_TARGET_LABELS[nextTarget]} 연결로 변경되었습니다.`,
+      icon: 'check',
+    });
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,6 +75,7 @@ export default function AdminLoginPage() {
     setIsSubmitting(true);
 
     try {
+      persistAdminBackendTarget(backendTarget);
       const response = await postAdminLogin({
         email: email.trim(),
         password,
@@ -98,6 +122,7 @@ export default function AdminLoginPage() {
     setIsSignupSubmitting(true);
 
     try {
+      persistAdminBackendTarget(backendTarget);
       const response = await postAdminRegister({
         username: signupUsername.trim(),
         email: signupEmail.trim(),
@@ -128,6 +153,15 @@ export default function AdminLoginPage() {
           <Text typo="body9" css={adminHeroDescription}>
             업체 등록과 수정은 관리자 토큰으로만 접근합니다.
           </Text>
+        </div>
+
+        <div css={backendSelectorSection}>
+          <AdminBackendTargetSelector
+            value={backendTarget}
+            onChange={handleBackendTargetChange}
+            isTestEnabled={isAdminTestBackendEnabled}
+            disabled={isSubmitting || isSignupSubmitting}
+          />
         </div>
 
         <form css={formLayout} onSubmit={handleSubmit}>
@@ -270,6 +304,10 @@ const titleArea = css`
   flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
+`;
+
+const backendSelectorSection = css`
+  margin-bottom: 22px;
 `;
 
 const formLayout = css`

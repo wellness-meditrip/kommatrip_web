@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_MAPS_API_KEY: process.env.NEXT_PUBLIC_MAPS_API_KEY,
     NEXT_PUBLIC_MAP_ID: process.env.NEXT_PUBLIC_MAP_ID,
+    NEXT_PUBLIC_ADMIN_TEST_BACKEND_ENABLED: process.env.BACKEND_TEST_API_URL ? 'true' : 'false',
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_BUCKET: process.env.AWS_BUCKET,
