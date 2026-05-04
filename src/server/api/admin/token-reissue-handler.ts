@@ -4,6 +4,7 @@ import { ADMIN_AUTH_COOKIE_KEYS } from '@/constants/commons/auth-cookies';
 import { createAdminRefreshTokenCookies } from '@/server/auth/cookies';
 import { resolvePayload, extractRefreshToken } from '@/server/auth/token-payload';
 import { postBackend, resolveBackendPayload } from '@/server/http/backend-client';
+import { getAdminBackendBaseUrl } from '@/server/config/admin-backend';
 import {
   buildErrorContract,
   buildSuccessContract,
@@ -32,6 +33,7 @@ export const handleAdminTokenReissue = async (req: NextApiRequest, res: NextApiR
   try {
     const refreshTokenFromCookie = req.cookies?.[ADMIN_AUTH_COOKIE_KEYS.REFRESH_TOKEN];
     const refreshToken = refreshTokenFromCookie || undefined;
+    const backendBaseUrl = getAdminBackendBaseUrl(req);
 
     const backendResponse = await postBackend(
       BACKEND_ADMIN_REISSUE_PATH,
@@ -41,7 +43,8 @@ export const handleAdminTokenReissue = async (req: NextApiRequest, res: NextApiR
           'Content-Type': 'application/json',
           cookie: req.headers.cookie ?? '',
         },
-      }
+      },
+      { baseURL: backendBaseUrl }
     );
 
     const payload = resolvePayload(resolveBackendPayload(backendResponse.data));

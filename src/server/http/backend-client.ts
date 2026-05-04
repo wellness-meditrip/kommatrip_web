@@ -4,12 +4,13 @@ import { getBackendBaseUrl } from '@/server/config/backend-url';
 const DEFAULT_TIMEOUT_MS = 10000;
 
 export const requestBackend = async <T = unknown>(
-  config: AxiosRequestConfig
+  config: AxiosRequestConfig,
+  options?: { baseURL?: string }
 ): Promise<AxiosResponse<T>> => {
   const { headers, ...restConfig } = config;
 
   return axios.request<T>({
-    baseURL: getBackendBaseUrl(),
+    baseURL: options?.baseURL ?? getBackendBaseUrl(),
     timeout: DEFAULT_TIMEOUT_MS,
     ...restConfig,
     headers: {
@@ -22,14 +23,18 @@ export const requestBackend = async <T = unknown>(
 export const postBackend = async <T = unknown>(
   path: string,
   body?: unknown,
-  config?: Omit<AxiosRequestConfig, 'url' | 'method' | 'data'>
+  config?: Omit<AxiosRequestConfig, 'url' | 'method' | 'data'>,
+  options?: { baseURL?: string }
 ) =>
-  requestBackend<T>({
-    ...(config ?? {}),
-    method: 'POST',
-    url: path,
-    data: body,
-  });
+  requestBackend<T>(
+    {
+      ...(config ?? {}),
+      method: 'POST',
+      url: path,
+      data: body,
+    },
+    options
+  );
 
 export const resolveBackendPayload = <T = unknown>(data: unknown): T => {
   if (data && typeof data === 'object' && 'response' in data) {

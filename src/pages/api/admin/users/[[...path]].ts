@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { proxyJsonToBackend, validateMethod } from '@/server/http/bff-proxy';
+import { getAdminBackendBaseUrl } from '@/server/config/admin-backend';
 
 const isNonEmpty = (value: string | undefined): value is string => !!value && value.length > 0;
 
@@ -45,10 +46,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(404).json({ message: 'Not Found' });
   }
 
+  const backendBaseUrl = getAdminBackendBaseUrl(req);
+
   return proxyJsonToBackend({
     req,
     res,
     method,
+    baseURL: backendBaseUrl,
     backendPath: route.backendPath,
     omitQueryKeys: route.omitQueryKeys,
     errorMessage: 'Admin users proxy failed',
