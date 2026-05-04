@@ -1,7 +1,17 @@
 import { css } from '@emotion/react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import { AdminBackendTargetSelector } from '@/components/admin/admin-backend-target-selector';
 import { Text } from '@/components/text';
+import { ADMIN_BACKEND_TARGET_LABELS, type AdminBackendTarget } from '@/constants/admin-backend';
+import { ROUTES } from '@/constants';
+import { useToast } from '@/hooks';
+import { useAdminAuth } from '@/hooks/admin/use-admin-auth';
+import {
+  getStoredAdminBackendTarget,
+  isAdminTestBackendEnabled,
+  persistAdminBackendTarget,
+} from '@/utils/admin-backend-target';
 import { adminConsolePalette } from './admin-console.styles';
 
 const resolvePageTitleSegments = (pathname: string) => {
@@ -38,7 +48,34 @@ const resolvePageTitleSegments = (pathname: string) => {
 
 export function AdminTopbar() {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { logout } = useAdminAuth();
+  const [backendTarget, setBackendTarget] = useState<AdminBackendTarget>(() =>
+    getStoredAdminBackendTarget()
+  );
+  const [isSwitchingBackend, setIsSwitchingBackend] = useState(false);
   const titleSegments = useMemo(() => resolvePageTitleSegments(router.pathname), [router.pathname]);
+
+  const handleBackendTargetChange = async (nextTarget: AdminBackendTarget) => {
+    if (nextTarget === backendTarget || isSwitchingBackend) return;
+
+    setIsSwitchingBackend(true);
+    persistAdminBackendTarget(nextTarget);
+    setBackendTarget(nextTarget);
+
+    try {
+      await logout();
+      showToast({
+        title: `${ADMIN_BACKEND_TARGET_LABELS[nextTarget]}로 전환되어 다시 로그인해주세요.`,
+        icon: 'check',
+      });
+      await router.replace(
+        `${ROUTES.ADMIN_LOGIN}?next=${encodeURIComponent(router.asPath || ROUTES.ADMIN_DASHBOARD)}`
+      );
+    } finally {
+      setIsSwitchingBackend(false);
+    }
+  };
 
   return (
     <header css={topbar}>
@@ -57,6 +94,16 @@ export function AdminTopbar() {
           ))}
         </div>
       </div>
+
+      <div css={backendTargetBlock}>
+        <AdminBackendTargetSelector
+          value={backendTarget}
+          onChange={(target) => void handleBackendTargetChange(target)}
+          isTestEnabled={isAdminTestBackendEnabled}
+          disabled={isSwitchingBackend}
+          compact
+        />
+      </div>
     </header>
   );
 }
@@ -64,7 +111,7 @@ export function AdminTopbar() {
 const topbar = css`
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 16px;
   padding: 20px 24px;
   border-bottom: 1px solid ${adminConsolePalette.borderSoft};
@@ -81,6 +128,17 @@ const topbar = css`
 const titleBlock = css`
   display: flex;
   min-width: 0;
+`;
+
+const backendTargetBlock = css`
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 320px;
+
+  @media (max-width: 960px) {
+    max-width: none;
+  }
 `;
 
 const breadcrumbRow = css`
